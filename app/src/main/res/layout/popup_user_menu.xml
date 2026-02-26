@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="260dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_popup_menu"
+    android:padding="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#F9FAFB"
+        android:padding="12dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Signed in as"
+            android:textSize="12sp"
+            android:textColor="#6B7280"/>
+
+        <TextView
+            android:id="@+id/tvUserName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="admin"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:textColor="#111827"
+            android:paddingTop="4dp"/>
+
+        <TextView
+            android:id="@+id/tvUserRole"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="cashier"
+            android:textSize="12sp"
+            android:textColor="#6B7280"
+            android:paddingTop="2dp"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/btnChangePassword"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center_vertical"
+        android:paddingLeft="14dp"
+        android:paddingRight="14dp"
+        android:text="🔑   Change Password"
+        android:textStyle="bold"
+        android:textColor="#111827"
+        android:background="?android:attr/selectableItemBackground" />
+
+    <TextView
+        android:id="@+id/btnPrivacy"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center_vertical"
+        android:paddingLeft="14dp"
+        android:paddingRight="14dp"
+        android:text="🛡️   Privacy Policy"
+        android:textStyle="bold"
+        android:textColor="#111827"
+        android:background="?android:attr/selectableItemBackground" />
+
+    <TextView
+        android:id="@+id/btnCloseShift"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center_vertical"
+        android:paddingLeft="14dp"
+        android:paddingRight="14dp"
+        android:text="🧾   Close Shift"
+        android:textStyle="bold"
+        android:textColor="#111827"
+        android:background="?android:attr/selectableItemBackground" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E5E7EB"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp"/>
+
+    <TextView
+        android:id="@+id/btnLogout"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center_vertical"
+        android:paddingLeft="14dp"
+        android:paddingRight="14dp"
+        android:text="🚪   Log Out"
+        android:textStyle="bold"
+        android:textColor="#DC2626"
+        android:background="?android:attr/selectableItemBackground" />
+
+</LinearLayout>

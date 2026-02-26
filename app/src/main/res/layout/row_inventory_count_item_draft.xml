@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="10dp">
+
+    <Spinner
+        android:id="@+id/spProduct"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_weight="1.6" />
+
+    <EditText
+        android:id="@+id/etCounted"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_weight="0.8"
+        android:layout_marginStart="10dp"
+        android:hint="Counted"
+        android:inputType="number" />
+
+    <ImageView
+        android:id="@+id/btnRemove"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="8dp"
+        android:contentDescription="Remove"
+        android:src="@android:drawable/ic_menu_delete" />
+
+</LinearLayout>

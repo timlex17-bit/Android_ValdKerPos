@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Nasi Goreng"
+        android:textSize="18sp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/tvMeta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SKU: ... • Code: ..."
+        android:textSize="12sp"
+        android:alpha="0.75"
+        android:layout_marginTop="4dp"/>
+
+    <TextView
+        android:id="@+id/tvType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Type: SALE • 2026-02-20T10:45:12Z"
+        android:textStyle="bold"
+        android:layout_marginTop="14dp"/>
+
+    <TextView
+        android:id="@+id/tvQty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Quantity Δ: -10"
+        android:layout_marginTop="10dp"/>
+
+    <TextView
+        android:id="@+id/tvStock"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Stock: 49 → 39"
+        android:layout_marginTop="6dp"/>
+
+    <TextView
+        android:id="@+id/tvRef"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Ref: Order #22"
+        android:layout_marginTop="6dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Note"
+        android:textStyle="bold"
+        android:layout_marginTop="14dp"/>
+
+    <TextView
+        android:id="@+id/tvNote"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="-"
+        android:layout_marginTop="6dp"/>
+</LinearLayout>

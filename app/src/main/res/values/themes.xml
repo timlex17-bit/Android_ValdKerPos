@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.ValdKer" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">#1BA0F2</item>
+        <item name="colorPrimaryContainer">#1BA0F2</item>
+
+        <item name="android:statusBarColor">#1BA0F2</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <item name="android:navigationBarColor">#FFFFFF</item>
+    </style>
+
+</resources>

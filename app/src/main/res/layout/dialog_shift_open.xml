@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="18dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Loke Turnu"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:paddingBottom="8dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Espesifika montante osan iha ita-boot nia gaveta iha inísiu turnu nian."
+        android:textSize="13sp"
+        android:paddingBottom="12dp"/>
+
+    <EditText
+        android:id="@+id/etOpeningCash"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Osan Abertura (exemplo: $100.00)"
+        android:inputType="numberDecimal"/>
+
+    <EditText
+        android:id="@+id/etNote"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nota (opsional)"
+        android:layout_marginTop="10dp"/>
+
+</LinearLayout>

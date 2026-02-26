@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:orientation="vertical">
+
+        <!-- Order / Invoice -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Invoice"
+            android:textStyle="bold"/>
+
+        <Spinner
+            android:id="@+id/spOrder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <!-- Customer Auto -->
+        <TextView
+            android:id="@+id/tvCustomerAuto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Customer: -"
+            android:textStyle="bold"
+            android:layout_marginTop="10dp"/>
+
+        <!-- Items from selected invoice -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Item in Invoice"
+            android:textStyle="bold"
+            android:layout_marginTop="12dp"/>
+
+        <Spinner
+            android:id="@+id/spOrderItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <!-- Qty Return -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Qty Return"
+            android:textStyle="bold"
+            android:layout_marginTop="12dp"/>
+
+        <EditText
+            android:id="@+id/etQty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:hint="Qty"/>
+
+        <!-- Unit Price (auto from invoice item) -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Unit Price"
+            android:textStyle="bold"
+            android:layout_marginTop="12dp"/>
+
+        <EditText
+            android:id="@+id/etUnitPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:hint="Price"/>
+
+        <!-- Note -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Note"
+            android:textStyle="bold"
+            android:layout_marginTop="12dp"/>
+
+        <EditText
+            android:id="@+id/etNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minLines="2"
+            android:hint="Reason / note"/>
+
+        <Button
+            android:id="@+id/btnAddItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add Item"
+            android:layout_marginTop="12dp"/>
+
+        <TextView
+            android:id="@+id/tvItemsPreview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="No items yet"
+            android:layout_marginTop="8dp"/>
+
+    </LinearLayout>
+</ScrollView>

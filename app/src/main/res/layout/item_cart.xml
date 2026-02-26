@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="12dp"
+    android:descendantFocusability="afterDescendants"
+    android:clickable="false"
+    android:focusable="false">
+
+    <!-- Product thumbnail -->
+    <ImageView
+        android:id="@+id/imgCartThumb"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_alignParentStart="true"
+        android:scaleType="centerCrop"
+        android:src="@android:color/darker_gray"
+        android:contentDescription="Product image" />
+
+    <!-- Right action column (make it WRAP, not fixed 160dp) -->
+    <LinearLayout
+        android:id="@+id/rightActions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:orientation="vertical"
+        android:gravity="end">
+
+        <!-- Quantity row -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical">
+
+            <!-- Minus -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCartMinus"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:drawableBottom="@drawable/ic_remove"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#F97316"
+                android:backgroundTint="@android:color/white"
+                app:cornerRadius="21dp"
+                app:strokeWidth="2dp"
+                app:strokeColor="#F97316" />
+
+            <!-- Quantity -->
+            <TextView
+                android:id="@+id/tvCartQty"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:gravity="center"
+                android:text="1"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#111827" />
+
+            <!-- Plus -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCartPlus"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:drawableBottom="@drawable/ic_add"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:backgroundTint="#F97316"
+                app:cornerRadius="21dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Product name -->
+    <TextView
+        android:id="@+id/tvCartName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/imgCartThumb"
+        android:layout_toStartOf="@id/rightActions"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:text="Product name"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:textColor="#111827"
+        android:maxLines="2"
+        android:ellipsize="end" />
+
+    <!-- Product price -->
+    <TextView
+        android:id="@+id/tvCartPrice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tvCartName"
+        android:layout_toEndOf="@id/imgCartThumb"
+        android:layout_toStartOf="@id/rightActions"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="6dp"
+        android:text="$0.00"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:textColor="#F97316" />
+
+    <!-- ✅ Order type chips (NOW uses FULL width to the right edge) -->
+    <HorizontalScrollView
+        android:id="@+id/scrollItemType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tvCartPrice"
+        android:layout_toEndOf="@id/imgCartThumb"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="10dp"
+        android:scrollbars="none"
+        android:fillViewport="true">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupItemType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:singleLine="true"
+            app:singleSelection="true"
+            app:selectionRequired="false"
+            app:chipSpacingHorizontal="8dp"
+            app:chipSpacingVertical="0dp">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipItemDineIn"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:text="Dine-In"
+                android:checkable="true"
+                android:textStyle="bold"
+                android:textSize="12sp"
+                android:textColor="#111827"
+                app:chipBackgroundColor="@android:color/white"
+                app:chipStrokeColor="#E5E7EB"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="18dp"
+                app:checkedIconVisible="false"
+                app:ensureMinTouchTargetSize="false" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipItemTakeOut"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:text="Take-Out"
+                android:checkable="true"
+                android:textStyle="bold"
+                android:textSize="12sp"
+                android:textColor="#111827"
+                app:chipBackgroundColor="@android:color/white"
+                app:chipStrokeColor="#E5E7EB"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="18dp"
+                app:checkedIconVisible="false"
+                app:ensureMinTouchTargetSize="false" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipItemDelivery"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:text="Delivery"
+                android:checkable="true"
+                android:textStyle="bold"
+                android:textSize="12sp"
+                android:textColor="#111827"
+                app:chipBackgroundColor="@android:color/white"
+                app:chipStrokeColor="#E5E7EB"
+                app:chipStrokeWidth="1dp"
+                app:chipCornerRadius="18dp"
+                app:checkedIconVisible="false"
+                app:ensureMinTouchTargetSize="false" />
+
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@id/scrollItemType"
+        android:layout_marginTop="12dp"
+        android:background="#11000000" />
+
+</RelativeLayout>

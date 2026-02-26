@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="2dp"
+    android:backgroundTint="@android:color/white">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="14dp">
+
+        <TextView
+            android:id="@+id/tvSupplierName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Wfour Store"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="#111827"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btnSupplierEdit"
+            android:layout_marginEnd="10dp"/>
+
+        <TextView
+            android:id="@+id/tvSupplierContact"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Contact: 77328324"
+            android:textSize="13sp"
+            android:textColor="#374151"
+            android:layout_marginTop="4dp"
+            app:layout_constraintStart_toStartOf="@id/tvSupplierName"
+            app:layout_constraintTop_toBottomOf="@id/tvSupplierName"
+            app:layout_constraintEnd_toEndOf="@id/tvSupplierName"/>
+
+        <TextView
+            android:id="@+id/tvSupplierCell"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Cell: 34343484"
+            android:textSize="13sp"
+            android:textColor="#374151"
+            android:layout_marginTop="2dp"
+            app:layout_constraintStart_toStartOf="@id/tvSupplierName"
+            app:layout_constraintTop_toBottomOf="@id/tvSupplierContact"
+            app:layout_constraintEnd_toEndOf="@id/tvSupplierName"/>
+
+        <TextView
+            android:id="@+id/tvSupplierMeta"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="wfourstore@gmail.com • Liberdade dan Imprensa"
+            android:textSize="12sp"
+            android:textColor="#6B7280"
+            android:layout_marginTop="4dp"
+            android:maxLines="2"
+            android:ellipsize="end"
+            app:layout_constraintStart_toStartOf="@id/tvSupplierName"
+            app:layout_constraintTop_toBottomOf="@id/tvSupplierCell"
+            app:layout_constraintEnd_toEndOf="@id/tvSupplierName"/>
+
+        <ImageButton
+            android:id="@+id/btnSupplierEdit"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_menu_edit"
+            android:contentDescription="Edit"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btnSupplierDelete"/>
+
+        <ImageButton
+            android:id="@+id/btnSupplierDelete"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_menu_delete"
+            android:contentDescription="Delete"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

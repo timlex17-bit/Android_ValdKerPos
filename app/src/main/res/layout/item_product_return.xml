@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="1dp"
+    app:strokeWidth="0dp"
+    android:backgroundTint="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="14dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Return #1"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="#111827" />
+
+        <TextView
+            android:id="@+id/tvDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Returned: 20/02/2026 13:38"
+            android:textSize="12sp"
+            android:textColor="#6B7280"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/tvInvoice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Invoice: -"
+            android:textSize="13sp"
+            android:textColor="#374151"
+            android:layout_marginTop="10dp" />
+
+        <TextView
+            android:id="@+id/tvCustomer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Customer: -"
+            android:textSize="13sp"
+            android:textColor="#374151"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/tvReturnedBy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Returned by: -"
+            android:textSize="13sp"
+            android:textColor="#374151"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/tvNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Note: -"
+            android:textSize="13sp"
+            android:textColor="#374151"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/tvItems"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Items: 0 • Qty: 0 • Total: $0.00"
+            android:textSize="12sp"
+            android:textColor="#6B7280"
+            android:layout_marginTop="8dp" />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

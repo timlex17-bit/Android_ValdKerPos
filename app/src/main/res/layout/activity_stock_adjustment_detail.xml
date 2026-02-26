@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Stock Adjustment"
+        android:textSize="18sp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/tvMeta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ID: 1 • Product #3 • By #1 • 2026-02-19T15:15:50Z"
+        android:textSize="12sp"
+        android:alpha="0.75"
+        android:layout_marginTop="4dp"/>
+
+    <TextView
+        android:id="@+id/tvReason"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Reason: LOST"
+        android:textStyle="bold"
+        android:layout_marginTop="14dp"/>
+
+    <TextView
+        android:id="@+id/tvFromTo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Stock: 49 → 50"
+        android:layout_marginTop="8dp"/>
+
+    <TextView
+        android:id="@+id/tvDiff"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Diff: +1"
+        android:textStyle="bold"
+        android:layout_marginTop="6dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Note"
+        android:textStyle="bold"
+        android:layout_marginTop="14dp"/>
+
+    <TextView
+        android:id="@+id/tvNote"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="-"
+        android:layout_marginTop="6dp"
+        android:lineSpacingExtra="2dp"/>
+
+</LinearLayout>

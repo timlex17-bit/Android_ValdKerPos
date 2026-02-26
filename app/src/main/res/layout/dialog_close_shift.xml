@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="18dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Taka Turnu"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:paddingBottom="8dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Hatama osan kas iha turnu bainhira taka (Osan Taka nian)."
+        android:textSize="13sp"
+        android:alpha="0.75"
+        android:paddingBottom="14dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Osan Taka nian"
+        android:textStyle="bold"
+        android:paddingBottom="6dp" />
+
+    <EditText
+        android:id="@+id/etClosingCash"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="exemplo: $ 120.00"
+        android:inputType="numberDecimal"
+        android:padding="12dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Note (optional)"
+        android:textStyle="bold"
+        android:paddingTop="12dp"
+        android:paddingBottom="6dp" />
+
+    <EditText
+        android:id="@+id/etNote"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nota taka turnu..."
+        android:minLines="2"
+        android:gravity="top"
+        android:inputType="textMultiLine"
+        android:padding="12dp" />
+
+</LinearLayout>

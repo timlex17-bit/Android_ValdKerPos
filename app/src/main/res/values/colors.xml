@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="brand_orange">#1BA0F2</color>
+    <color name="brand_orange_light">#086CB4</color>
+
+    <color name="orange_200_fallback">#1BA0F2</color>
+    <color name="orange_400_fallback">#086CB4</color>
+    <color name="gray_200_fallback">#E5E7EB</color>
+
+</resources>

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- TOTAL -->
+        <TextView
+            android:id="@+id/tvTotalAmount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:text="$0.00"
+            android:gravity="center"
+            android:paddingBottom="16dp"/>
+
+        <!-- PAYMENT METHOD -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Payment Method"
+            android:textStyle="bold"/>
+
+        <RadioGroup
+            android:id="@+id/radioPayment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/radioCash"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cash"/>
+
+            <RadioButton
+                android:id="@+id/radioQris"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="QRIS"/>
+
+            <RadioButton
+                android:id="@+id/radioTransfer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Transfer"/>
+        </RadioGroup>
+
+        <!-- CASH INPUT -->
+        <EditText
+            android:id="@+id/etCashReceived"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Cash Received"
+            android:inputType="numberDecimal"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/tvChange"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Change: $0.00"
+            android:visibility="gone"
+            android:paddingTop="8dp"/>
+
+        <!-- TABLE -->
+        <EditText
+            android:id="@+id/etTable"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Table Number"
+            android:inputType="number"
+            android:visibility="gone"/>
+
+        <!-- DELIVERY -->
+        <EditText
+            android:id="@+id/etDeliveryAddress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Delivery Address"
+            android:visibility="gone"/>
+
+        <EditText
+            android:id="@+id/etDeliveryFee"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Delivery Fee"
+            android:inputType="numberDecimal"
+            android:visibility="gone"/>
+
+    </LinearLayout>
+</ScrollView>

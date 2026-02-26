@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardCategory"
+    android:layout_width="wrap_content"
+    android:layout_height="56dp"
+    android:layout_marginEnd="12dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:duplicateParentState="true"
+    app:cardCornerRadius="28dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="0dp"
+    app:cardBackgroundColor="@color/category_chip_bg">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="18dp"
+        android:duplicateParentState="true">
+
+        <!-- icon wrapper -->
+        <LinearLayout
+            android:id="@+id/iconWrapper"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="12dp"
+            android:gravity="center"
+            android:background="@drawable/bg_category_icon"
+            android:backgroundTint="@color/category_icon_bg_tint"
+            android:duplicateParentState="true">
+
+            <ImageView
+                android:id="@+id/imgIcon"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:scaleType="centerCrop"/>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bakery Dinning"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@color/category_text"
+            android:duplicateParentState="true" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>
