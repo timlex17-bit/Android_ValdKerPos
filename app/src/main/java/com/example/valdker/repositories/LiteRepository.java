@@ -13,6 +13,7 @@ import com.example.valdker.models.CustomerLite;
 import com.example.valdker.models.OrderLite;
 import com.example.valdker.models.ProductLite;
 import com.example.valdker.network.ApiClient;
+import com.example.valdker.network.ApiConfig;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -26,9 +27,9 @@ public class LiteRepository {
 
     private static final String TAG = "LITE_REPO";
 
-    private static final String ORDERS_URL = "https://valdker.onrender.com/api/orders/";
-    private static final String CUSTOMERS_URL = "https://valdker.onrender.com/api/customers/";
-    private static final String PRODUCTS_URL = "https://valdker.onrender.com/api/products/";
+    private static final String ORDERS_URL = "api/orders/";
+    private static final String CUSTOMERS_URL = "api/customers/";
+    private static final String PRODUCTS_URL = "api/products/";
 
     public interface LiteCallback<T> {
         void onSuccess(@NonNull List<T> items);
@@ -39,9 +40,13 @@ public class LiteRepository {
     // ORDERS
     // -----------------------
     public static void fetchOrdersLite(@NonNull Context ctx, @NonNull LiteCallback<OrderLite> cb) {
+
+        SessionManager sm = new SessionManager(ctx);
+        String url = ApiConfig.url(sm, ORDERS_URL);
+
         JsonArrayRequest req = new JsonArrayRequest(
                 Request.Method.GET,
-                ORDERS_URL,
+                url,
                 null,
                 (JSONArray response) -> {
                     try {
@@ -77,9 +82,13 @@ public class LiteRepository {
     // CUSTOMERS
     // -----------------------
     public static void fetchCustomersLite(@NonNull Context ctx, @NonNull LiteCallback<CustomerLite> cb) {
+
+        SessionManager sm = new SessionManager(ctx);
+        String url = ApiConfig.url(sm, CUSTOMERS_URL);
+
         JsonArrayRequest req = new JsonArrayRequest(
                 Request.Method.GET,
-                CUSTOMERS_URL,
+                url,
                 null,
                 (JSONArray response) -> {
                     try {
@@ -115,9 +124,13 @@ public class LiteRepository {
     // PRODUCTS
     // -----------------------
     public static void fetchProductsLite(@NonNull Context ctx, @NonNull LiteCallback<ProductLite> cb) {
+
+        SessionManager sm = new SessionManager(ctx);
+        String url = ApiConfig.url(sm, PRODUCTS_URL);
+
         JsonArrayRequest req = new JsonArrayRequest(
                 Request.Method.GET,
-                PRODUCTS_URL,
+                url,
                 null,
                 (JSONArray response) -> {
                     try {

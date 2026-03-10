@@ -68,6 +68,12 @@ public class StockAdjustmentFormDialog extends DialogFragment {
         etNew     = v.findViewById(R.id.etNewStock);
         etNote    = v.findViewById(R.id.etNote);
 
+        etOld.setFocusable(false);
+        etOld.setFocusableInTouchMode(false);
+        etOld.setClickable(false);
+        etOld.setCursorVisible(false);
+        etOld.setLongClickable(false);
+
         setupReasonSpinner();
         setupProductSpinner();
 
@@ -75,12 +81,33 @@ public class StockAdjustmentFormDialog extends DialogFragment {
 
         String title = (editId == null) ? "Add Stock Adjustment" : "Edit Stock Adjustment";
 
-        return new MaterialAlertDialogBuilder(requireContext())
-                .setTitle(title)
+        android.widget.TextView tvTitle = v.findViewById(R.id.tvTitleStockAdjustment);
+        if (tvTitle != null) {
+            tvTitle.setText(title);
+        }
+
+        androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
                 .setView(v)
                 .setNegativeButton("Cancel", (d, which) -> dismiss())
-                .setPositiveButton("Save", null) // override di onStart biar tidak auto dismiss
+                .setPositiveButton("Save", null)
                 .create();
+
+        dialog.setOnShowListener(dlg -> {
+            View positiveBtn = dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE);
+            View negativeBtn = dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEGATIVE);
+
+            if (positiveBtn instanceof android.widget.TextView) {
+                ((android.widget.TextView) positiveBtn).setTextColor(0xFF22C55E);
+            }
+            if (negativeBtn instanceof android.widget.TextView) {
+                ((android.widget.TextView) negativeBtn).setTextColor(0xFF22C55E);
+            }
+            if (positiveBtn != null && positiveBtn.getParent() instanceof View) {
+                ((View) positiveBtn.getParent()).setBackgroundColor(0xFFF9FAFB);
+            }
+        });
+
+        return dialog;
     }
 
     @Override
@@ -93,7 +120,6 @@ public class StockAdjustmentFormDialog extends DialogFragment {
     }
 
     private void setupReasonSpinner() {
-        // ✅ sesuaikan dengan choices backend kamu
         String[] reasons = new String[] {
                 "CORRECTION",
                 "LOST",
@@ -117,29 +143,32 @@ public class StockAdjustmentFormDialog extends DialogFragment {
             }
         }
 
-        ArrayAdapter<String> ad = new ArrayAdapter<>(requireContext(),
-                android.R.layout.simple_spinner_dropdown_item, names);
+        ArrayAdapter<String> ad = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_dropdown_item,
+                names
+        );
         spProduct.setAdapter(ad);
 
-        // ✅ Auto-fill old_stock dari product stock saat pilih product
         spProduct.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 try {
-                    JSONObject p = productsJson.getJSONObject(position);
-
-                    int stock = p.optInt("stock",
-                            p.optInt("current_stock", 0));
-
-                    if (TextUtils.isEmpty(etOld.getText().toString())) {
+                    if (productsJson != null && position >= 0 && position < productsJson.length()) {
+                        JSONObject p = productsJson.getJSONObject(position);
+                        int stock = p.optInt("stock", 0);
                         etOld.setText(String.valueOf(stock));
+                    } else {
+                        etOld.setText("");
                     }
-
-                } catch (Exception ignored) {}
+                } catch (Exception e) {
+                    etOld.setText("");
+                }
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
+                etOld.setText("");
             }
         });
     }
@@ -179,7 +208,7 @@ public class StockAdjustmentFormDialog extends DialogFragment {
         try {
             int pIndex = spProduct.getSelectedItemPosition();
             if (pIndex < 0 || productsJson == null || productsJson.length() == 0) {
-                Toast.makeText(requireContext(), "Product harus dipilih", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Product must be selected", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -191,8 +220,8 @@ public class StockAdjustmentFormDialog extends DialogFragment {
             String reason = String.valueOf(spReason.getSelectedItem());
             String note = etNote.getText().toString().trim();
 
-            if (TextUtils.isEmpty(sOld) || TextUtils.isEmpty(sNew)) {
-                Toast.makeText(requireContext(), "Old stock & New stock wajib diisi", Toast.LENGTH_SHORT).show();
+            if (TextUtils.isEmpty(sNew)) {
+                Toast.makeText(requireContext(), "New stock must be filled in", Toast.LENGTH_SHORT).show();
                 return;
             }
 

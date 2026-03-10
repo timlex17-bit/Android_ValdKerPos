@@ -5,28 +5,28 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="10dp"
+    android:backgroundTint="@android:color/white"
     app:cardCornerRadius="18dp"
     app:cardElevation="2dp"
-    app:strokeWidth="0dp"
-    android:backgroundTint="@android:color/white">
+    app:strokeWidth="0dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- IMAGE (full width like POS item_product) -->
+        <!-- IMAGE -->
         <ImageView
             android:id="@+id/imgProduct"
             android:layout_width="0dp"
             android:layout_height="170dp"
+            android:contentDescription="Product image"
             android:scaleType="centerCrop"
             android:src="@android:color/darker_gray"
-            android:contentDescription="Product image"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Soft overlay gradient (optional, makes chips readable) -->
+        <!-- Soft Overlay -->
         <View
             android:id="@+id/imgOverlay"
             android:layout_width="0dp"
@@ -34,26 +34,26 @@
             android:background="@drawable/bg_image_top_fade"
             app:layout_constraintTop_toTopOf="@id/imgProduct"
             app:layout_constraintStart_toStartOf="@id/imgProduct"
-            app:layout_constraintEnd_toEndOf="@id/imgProduct"/>
+            app:layout_constraintEnd_toEndOf="@id/imgProduct" />
 
-        <!-- Stock chip -->
+        <!-- Stock Chip -->
         <TextView
             android:id="@+id/tvChipStock"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
+            android:background="@drawable/bg_chip_soft"
+            android:paddingStart="10dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="6dp"
             android:text="STOCK"
+            android:textColor="#111827"
             android:textSize="12sp"
             android:textStyle="bold"
-            android:textColor="#111827"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
-            android:paddingTop="6dp"
-            android:paddingBottom="6dp"
-            android:background="@drawable/bg_chip_soft"
             app:layout_constraintStart_toStartOf="@id/imgProduct"
-            app:layout_constraintTop_toTopOf="@id/imgProduct"/>
+            app:layout_constraintTop_toTopOf="@id/imgProduct" />
 
         <!-- BODY -->
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -69,67 +69,84 @@
                 android:id="@+id/tvName"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Product Name"
-                android:textStyle="bold"
-                android:textSize="15sp"
-                android:textColor="#111827"
-                android:maxLines="2"
                 android:ellipsize="end"
+                android:maxLines="2"
+                android:text="Product Name"
+                android:textColor="#111827"
+                android:textSize="15sp"
+                android:textStyle="bold"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
+                app:layout_constraintEnd_toEndOf="parent" />
 
             <TextView
                 android:id="@+id/tvMeta"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Stock: 0 • $0.00"
-                android:textSize="13sp"
-                android:textColor="#6B7280"
                 android:layout_marginTop="6dp"
+                android:text="Stock: 0 • $0.00"
+                android:textColor="#6B7280"
+                android:textSize="13sp"
                 app:layout_constraintTop_toBottomOf="@id/tvName"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
+                app:layout_constraintEnd_toEndOf="parent" />
 
             <!-- ACTIONS -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnEdit"
+            <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="44dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:text="EDIT PRODUK"
-                android:textAllCaps="true"
-                android:textStyle="bold"
-                android:textSize="13sp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                app:cornerRadius="14dp"
-                app:backgroundTint="#4F46E5"
-                android:textColor="@android:color/white"
+                android:gravity="center"
+                android:orientation="horizontal"
                 app:layout_constraintTop_toBottomOf="@id/tvMeta"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/btnDelete"
-                app:layout_constraintWidth_percent="0.62"/>
+                app:layout_constraintEnd_toEndOf="parent">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDelete"
-                android:layout_width="0dp"
-                android:layout_height="44dp"
-                android:layout_marginTop="12dp"
-                android:layout_marginStart="10dp"
-                android:text="DELETE"
-                android:textAllCaps="true"
-                android:textStyle="bold"
-                android:textSize="13sp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                app:cornerRadius="14dp"
-                app:backgroundTint="#FEE2E2"
-                android:textColor="#991B1B"
-                app:layout_constraintTop_toBottomOf="@id/tvMeta"
-                app:layout_constraintStart_toEndOf="@id/btnEdit"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintWidth_percent="0.35"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnEdit"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:contentDescription="Edit"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp"
+                    android:text=""
+                    app:backgroundTint="#4F46E5"
+                    app:cornerRadius="14dp"
+                    app:icon="@android:drawable/ic_menu_edit"
+                    app:iconGravity="textTop"
+                    app:iconPadding="0dp"
+                    app:iconSize="20dp"
+                    app:iconTint="@android:color/white" />
+
+                <Space
+                    android:layout_width="10dp"
+                    android:layout_height="1dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDelete"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:contentDescription="Delete"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp"
+                    android:text=""
+                    app:backgroundTint="#FEE2E2"
+                    app:cornerRadius="14dp"
+                    app:icon="@android:drawable/ic_menu_delete"
+                    app:iconGravity="textTop"
+                    app:iconPadding="0dp"
+                    app:iconSize="20dp"
+                    app:iconTint="#991B1B" />
+
+            </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

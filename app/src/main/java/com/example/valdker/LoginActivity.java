@@ -10,6 +10,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -18,6 +19,8 @@ import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.valdker.network.ApiClient;
+import com.example.valdker.network.ApiConfig;
+import com.example.valdker.SessionManager;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -30,17 +33,19 @@ public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = "LOGIN";
 
-    private EditText etUsername, etPassword;
-    private TextView btnTogglePwd;
-    private Button btnLogin, btnDemo;
-
-    private boolean pwdVisible = false;
-
-    private static final String LOGIN_URL = "https://valdker.onrender.com/api/auth/login/";
+    private static final String ENDPOINT_LOGIN = "api/auth/login/";
 
     private static final int TIMEOUT_MS = 20000;
     private static final int MAX_RETRIES = 0;
     private static final float BACKOFF_MULT = 1.0f;
+
+    private EditText etUsername;
+    private EditText etPassword;
+    private TextView btnTogglePwd;
+    private Button btnLogin;
+    private Button btnDemo;
+
+    private boolean pwdVisible = false;
 
     private SessionManager sm;
 
@@ -59,8 +64,8 @@ public class LoginActivity extends AppCompatActivity {
 
         String token = sm.getToken();
         if (token != null && !token.trim().isEmpty()) {
-            // If cashier => go POS, else dashboard
             String role = sm.getRole() == null ? "" : sm.getRole().trim().toLowerCase();
+
             if ("cashier".equals(role)) {
                 goToPOS();
             } else {
@@ -68,24 +73,28 @@ public class LoginActivity extends AppCompatActivity {
             }
             return;
         } else {
-            sm.clear();
+            sm.clearAuth();
         }
 
-        btnDemo.setOnClickListener(v -> {
-            etUsername.setText("admin");
-            etPassword.setText("admin");
-        });
+        if (btnDemo != null) {
+            btnDemo.setOnClickListener(v -> {
+                if (etUsername != null) etUsername.setText("admin");
+                if (etPassword != null) etPassword.setText("admin");
+            });
+        }
 
-        btnTogglePwd.setOnClickListener(v -> togglePassword());
-        btnLogin.setOnClickListener(v -> doLogin());
+        if (btnTogglePwd != null) btnTogglePwd.setOnClickListener(v -> togglePassword());
+        if (btnLogin != null) btnLogin.setOnClickListener(v -> doLogin());
     }
 
     private void doLogin() {
-        String username = etUsername.getText().toString().trim();
-        String password = etPassword.getText().toString();
+        if (etUsername == null || etPassword == null) return;
+
+        String username = etUsername.getText() != null ? etUsername.getText().toString().trim() : "";
+        String password = etPassword.getText() != null ? etPassword.getText().toString() : "";
 
         if (username.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Username and password are required", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Username and password are required.", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -96,52 +105,17 @@ public class LoginActivity extends AppCompatActivity {
             body.put("username", username);
             body.put("password", password);
 
-            Log.i(TAG, "POST " + LOGIN_URL + " username=" + username);
+            String loginUrl = ApiConfig.url(sm, ENDPOINT_LOGIN);
+            Log.i(TAG, "POST " + loginUrl + " username=" + username);
+            Log.w("BASE_URL", "LoginActivity baseUrl=" + sm.getBaseUrl());
 
             JsonObjectRequest req = new JsonObjectRequest(
                     Request.Method.POST,
-                    LOGIN_URL,
+                    loginUrl,
                     body,
                     response -> {
                         setLoading(false);
-
-                        try {
-                            String newToken = response.optString("token", "");
-                            JSONObject user = response.optJSONObject("user");
-                            JSONArray perms = response.optJSONArray("permissions");
-
-                            String u = (user != null)
-                                    ? user.optString("username", username)
-                                    : username;
-
-                            String role = (user != null)
-                                    ? user.optString("role", "cashier")
-                                    : "cashier";
-
-                            role = role == null ? "cashier" : role.trim().toLowerCase();
-
-                            Log.i(TAG, "Login ok tokenLen=" + (newToken != null ? newToken.length() : 0));
-                            Log.i(TAG, "Login ok user=" + u + " role=" + role + " perms=" + (perms != null ? perms.length() : 0));
-
-                            if (newToken == null || newToken.trim().isEmpty()) {
-                                Toast.makeText(this, "Token missing from server response", Toast.LENGTH_LONG).show();
-                                return;
-                            }
-
-                            sm.clear();
-                            sm.saveSession(newToken, u, role, perms);
-
-                            // ✅ Cashier langsung POS
-                            if ("cashier".equals(role)) {
-                                goToPOS();
-                            } else {
-                                goToDashboard();
-                            }
-
-                        } catch (Exception e) {
-                            Log.e(TAG, "Response parse error", e);
-                            Toast.makeText(this, "Parse error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                        }
+                        handleLoginSuccess(response, username);
                     },
                     error -> {
                         setLoading(false);
@@ -152,7 +126,7 @@ public class LoginActivity extends AppCompatActivity {
                         Log.e(TAG, "Login failed HTTP " + code + " body=" + serverBody, error);
 
                         if (code == 401 || code == 403) {
-                            sm.clear();
+                            sm.clearAuth();
                         }
 
                         Toast.makeText(this, "Login failed (HTTP " + code + ")", Toast.LENGTH_LONG).show();
@@ -178,6 +152,45 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    private void handleLoginSuccess(@NonNull JSONObject response, @NonNull String fallbackUsername) {
+        try {
+            String newToken = response.optString("token", "");
+            JSONObject user = response.optJSONObject("user");
+            JSONArray perms = response.optJSONArray("permissions");
+
+            String u = (user != null)
+                    ? user.optString("username", fallbackUsername)
+                    : fallbackUsername;
+
+            String role = (user != null)
+                    ? user.optString("role", "cashier")
+                    : "cashier";
+
+            role = role == null ? "cashier" : role.trim().toLowerCase();
+
+            Log.i(TAG, "Login success tokenLen=" + (newToken != null ? newToken.length() : 0));
+            Log.i(TAG, "Login success user=" + u + " role=" + role + " perms=" + (perms != null ? perms.length() : 0));
+
+            if (newToken == null || newToken.trim().isEmpty()) {
+                Toast.makeText(this, "Token is missing from the server response.", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            sm.clearAuth();
+            sm.saveSession(newToken, u, role, perms);
+
+            if ("cashier".equals(role)) {
+                goToPOS();
+            } else {
+                goToDashboard();
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Response parse error", e);
+            Toast.makeText(this, "Parse error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
     private void goToDashboard() {
         Intent i = new Intent(this, com.example.valdker.ui.dashboard.HomeDashboardActivity.class);
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -193,11 +206,14 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void setLoading(boolean loading) {
+        if (btnLogin == null) return;
         btnLogin.setEnabled(!loading);
         btnLogin.setText(loading ? "Loading..." : "Login");
     }
 
     private void togglePassword() {
+        if (etPassword == null || btnTogglePwd == null) return;
+
         pwdVisible = !pwdVisible;
 
         if (pwdVisible) {
@@ -208,9 +224,12 @@ public class LoginActivity extends AppCompatActivity {
             btnTogglePwd.setText("👁");
         }
 
-        etPassword.setSelection(etPassword.getText().length());
+        if (etPassword.getText() != null) {
+            etPassword.setSelection(etPassword.getText().length());
+        }
     }
 
+    @NonNull
     private String extractErrorBody(@Nullable NetworkResponse nr) {
         if (nr == null || nr.data == null || nr.data.length == 0) return "";
         try {

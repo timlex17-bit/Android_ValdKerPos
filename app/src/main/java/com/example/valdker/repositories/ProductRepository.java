@@ -1,6 +1,7 @@
 package com.example.valdker.repositories;
 
 import android.content.Context;
+import android.net.Uri;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -12,8 +13,12 @@ import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.example.valdker.models.Product;
 import com.example.valdker.network.ApiClient;
+import com.example.valdker.SessionManager;
+import com.example.valdker.network.ApiConfig;
+import com.example.valdker.network.VolleyMultipartRequest;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -28,9 +33,7 @@ import java.util.Map;
 public class ProductRepository {
 
     private static final String TAG = "PRODUCT_REPO";
-    private static final String ENDPOINT_PRODUCTS =
-            "https://valdker.onrender.com/api/products/";
-
+    private static final String ENDPOINT_PRODUCTS = "api/products/";
     private static final int TIMEOUT_MS = 20000;
     private static final int MAX_RETRIES = 1;
     private static final float BACKOFF_MULT = 1.2f;
@@ -51,9 +54,11 @@ public class ProductRepository {
     }
 
     private final Context appContext;
+    private final SessionManager session;
 
     public ProductRepository(@NonNull Context context) {
         this.appContext = context.getApplicationContext();
+        this.session = new SessionManager(appContext);
     }
 
     public void fetchProducts(@Nullable String token,
@@ -125,12 +130,9 @@ public class ProductRepository {
         fetchProducts(token, "all", cb);
     }
 
-    // ==========================================================
-    // CREATE PRODUCT (JSON) - send dual keys for FK fields
-    // ==========================================================
     public void createProduct(@NonNull String token,
                               @NonNull String name,
-                              @NonNull String sku,          // ✅ NEW
+                              @NonNull String sku,
                               @NonNull String code,
                               int categoryId,
                               @Nullable String description,
@@ -140,62 +142,41 @@ public class ProductRepository {
                               @NonNull String weight,
                               int unitId,
                               int supplierId,
+                              @Nullable Uri imageUri,
                               @NonNull ItemCallback cb) {
 
-        final String url = ENDPOINT_PRODUCTS;
-        Log.i(TAG, "REQ: POST " + url);
+        final String url = ApiConfig.url(session, ENDPOINT_PRODUCTS);
 
-        JSONObject body = new JSONObject();
-        try {
-            body.put("name", name);
-            body.put("sku", sku); // ✅ NEW
-            body.put("code", code);
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Accept", "application/json");
+        headers.put("Authorization", "Token " + token.trim());
 
-            // category can be writable as "category" OR "category_id"
-            body.put("category", categoryId);
-            body.put("category_id", categoryId);
-
-            body.put("description", description != null ? description : "");
-            body.put("stock", stock);
-
-            body.put("buy_price", buyPrice);
-            body.put("sell_price", sellPrice);
-            body.put("weight", weight);
-
-            // unit/supplier can be writable as "_id" on many DRF serializers
-            body.put("unit", unitId);
-            body.put("unit_id", unitId);
-
-            body.put("supplier", supplierId);
-            body.put("supplier_id", supplierId);
-
-        } catch (Exception e) {
-            cb.onError(0, "Build body error: " + e.getMessage());
-            return;
-        }
-
-        Log.d(TAG, "POST body: " + body);
-
-        JsonObjectRequest req = new JsonObjectRequest(
+        VolleyMultipartRequest req = new VolleyMultipartRequest(
                 Request.Method.POST,
                 url,
-                body,
-                (JSONObject res) -> {
+                headers,
+                response -> {
                     try {
-                        Log.d(TAG, "Create product response: " + res);
+                        String json = new String(response.data, java.nio.charset.StandardCharsets.UTF_8);
+                        Log.d(TAG, "Create product response: " + json);
+
+                        JSONObject res = new JSONObject(json);
                         cb.onSuccess(parseProduct(res));
+
                     } catch (Exception e) {
                         cb.onError(0, "Parse error: " + e.getMessage());
                     }
                 },
                 err -> {
+
                     int code2 = -1;
                     String msg = "Network error";
 
                     NetworkResponse nr = err.networkResponse;
+
                     if (nr != null) {
                         code2 = nr.statusCode;
-                        msg = buildVolleyErrorMessage(nr);
+                        msg = new String(nr.data);
                     } else if (err.getMessage() != null) {
                         msg = err.getMessage();
                     }
@@ -204,13 +185,54 @@ public class ProductRepository {
                     cb.onError(code2, msg);
                 }
         ) {
+
             @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> h = new HashMap<>();
-                h.put("Accept", "application/json");
-                h.put("Content-Type", "application/json");
-                h.put("Authorization", "Token " + token.trim());
-                return h;
+            protected Map<String, String> getParams() {
+
+                Map<String, String> params = new HashMap<>();
+
+                params.put("name", name);
+                params.put("sku", sku);
+                params.put("code", code);
+
+                params.put("category", String.valueOf(categoryId));
+                params.put("description", description != null ? description : "");
+
+                params.put("stock", String.valueOf(stock));
+
+                params.put("buy_price", buyPrice);
+                params.put("sell_price", sellPrice);
+                params.put("weight", weight);
+
+                params.put("unit", String.valueOf(unitId));
+                params.put("supplier", String.valueOf(supplierId));
+
+                return params;
+            }
+
+            @Override
+            protected Map<String, DataPart> getByteData() {
+
+                Map<String, DataPart> data = new HashMap<>();
+
+                if (imageUri != null) {
+                    try {
+
+                        byte[] imageData = readBytesFromUri(imageUri);
+
+                        String mimeType = appContext.getContentResolver().getType(imageUri);
+                        if (mimeType == null) mimeType = "image/jpeg";
+
+                        String fileName = "product_" + System.currentTimeMillis() + ".jpg";
+
+                        data.put("image", new DataPart(fileName, imageData, mimeType));
+
+                    } catch (Exception e) {
+                        Log.e(TAG, "Image read error", e);
+                    }
+                }
+
+                return data;
             }
         };
 
@@ -220,13 +242,48 @@ public class ProductRepository {
         ApiClient.getInstance(appContext).add(req);
     }
 
+    private byte[] readBytesFromUri(@NonNull Uri uri) throws java.io.IOException {
+        java.io.InputStream is = appContext.getContentResolver().openInputStream(uri);
+        if (is == null) throw new java.io.IOException("Cannot open image uri");
+
+        java.io.ByteArrayOutputStream buffer = new java.io.ByteArrayOutputStream();
+        byte[] data = new byte[8192];
+        int nRead;
+
+        while ((nRead = is.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, nRead);
+        }
+
+        is.close();
+        return buffer.toByteArray();
+    }
+
+    @Nullable
+    private String getFileName(@NonNull Uri uri) {
+        android.database.Cursor cursor = null;
+        try {
+            cursor = appContext.getContentResolver().query(uri, null, null, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                int index = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME);
+                if (index >= 0) {
+                    return cursor.getString(index);
+                }
+            }
+        } catch (Exception ignored) {
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+        return null;
+    }
+
     // ==========================================================
-    // UPDATE PRODUCT (JSON) - send dual keys for FK fields
+    // UPDATE PRODUCT (JSON)
+    // IMPORTANT: Stock must NOT be sent on update (backend locks stock).
     // ==========================================================
     public void updateProduct(@NonNull String token,
-                              @NonNull String productId,
+                              int productId,
                               @NonNull String name,
-                              @NonNull String sku,          // ✅ NEW
+                              @NonNull String sku,
                               @NonNull String code,
                               int categoryId,
                               @Nullable String description,
@@ -236,50 +293,28 @@ public class ProductRepository {
                               @NonNull String weight,
                               int unitId,
                               int supplierId,
+                              @Nullable Uri imageUri,
                               @NonNull ItemCallback cb) {
 
-        final String url = ENDPOINT_PRODUCTS + productId + "/";
-        Log.i(TAG, "REQ: PUT " + url);
+        final String url = ApiConfig.url(session, ENDPOINT_PRODUCTS + productId + "/");
+        Log.i(TAG, "REQ: PUT MULTIPART " + url);
 
-        JSONObject body = new JSONObject();
-        try {
-            body.put("name", name);
-            body.put("sku", sku); // ✅ NEW
-            body.put("code", code);
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Accept", "application/json");
+        headers.put("Authorization", "Token " + token.trim());
 
-            // category dual keys
-            body.put("category", categoryId);
-            body.put("category_id", categoryId);
-
-            body.put("description", description != null ? description : "");
-            body.put("stock", stock);
-
-            body.put("buy_price", buyPrice);
-            body.put("sell_price", sellPrice);
-            body.put("weight", weight);
-
-            // unit/supplier dual keys (fix: server often expects unit_id/supplier_id)
-            body.put("unit", unitId);
-            body.put("unit_id", unitId);
-
-            body.put("supplier", supplierId);
-            body.put("supplier_id", supplierId);
-
-        } catch (Exception e) {
-            cb.onError(0, "Build body error: " + e.getMessage());
-            return;
-        }
-
-        Log.d(TAG, "PUT body: " + body);
-
-        JsonObjectRequest req = new JsonObjectRequest(
+        VolleyMultipartRequest req = new VolleyMultipartRequest(
                 Request.Method.PUT,
                 url,
-                body,
-                res -> {
+                headers,
+                response -> {
                     try {
-                        Log.d(TAG, "Update product response: " + res);
+                        String json = new String(response.data, StandardCharsets.UTF_8);
+                        Log.d(TAG, "Update product response: " + json);
+
+                        JSONObject res = new JSONObject(json);
                         cb.onSuccess(parseProduct(res));
+
                     } catch (Exception e) {
                         cb.onError(0, "Parse error: " + e.getMessage());
                     }
@@ -301,12 +336,55 @@ public class ProductRepository {
                 }
         ) {
             @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> h = new HashMap<>();
-                h.put("Accept", "application/json");
-                h.put("Content-Type", "application/json");
-                h.put("Authorization", "Token " + token.trim());
-                return h;
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+
+                params.put("name", name);
+                params.put("sku", sku);
+                params.put("code", code);
+
+                params.put("category", String.valueOf(categoryId));
+                params.put("description", description != null ? description : "");
+
+                // IMPORTANT: jangan kirim stock saat update
+                // params.put("stock", String.valueOf(stock));
+
+                params.put("buy_price", buyPrice);
+                params.put("sell_price", sellPrice);
+                params.put("weight", weight);
+
+                params.put("unit", String.valueOf(unitId));
+                params.put("supplier", String.valueOf(supplierId));
+
+                return params;
+            }
+
+            @Override
+            protected Map<String, DataPart> getByteData() {
+                Map<String, DataPart> data = new HashMap<>();
+
+                if (imageUri != null) {
+                    try {
+                        byte[] imageData = readBytesFromUri(imageUri);
+
+                        String mimeType = appContext.getContentResolver().getType(imageUri);
+                        if (mimeType == null || mimeType.trim().isEmpty()) {
+                            mimeType = "image/jpeg";
+                        }
+
+                        String fileName = getFileName(imageUri);
+                        if (fileName == null || fileName.trim().isEmpty()) {
+                            fileName = "product_" + System.currentTimeMillis() + ".jpg";
+                        }
+
+                        data.put("image", new DataPart(fileName, imageData, mimeType));
+
+                    } catch (Exception e) {
+                        Log.e(TAG, "Update image read error", e);
+                    }
+                }
+
+                return data;
             }
         };
 
@@ -323,14 +401,13 @@ public class ProductRepository {
                               @NonNull String productId,
                               @NonNull DeleteCallback cb) {
 
-        final String url = ENDPOINT_PRODUCTS + productId + "/";
+        final String url = ApiConfig.url(session, ENDPOINT_PRODUCTS + productId + "/");
         Log.i(TAG, "REQ: DELETE " + url);
 
-        JsonObjectRequest req = new JsonObjectRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.DELETE,
                 url,
-                null,
-                res -> cb.onSuccess(),
+                response -> cb.onSuccess(),
                 err -> {
                     int code2 = -1;
                     String msg = "Network error";
@@ -339,6 +416,11 @@ public class ProductRepository {
                     if (nr != null) {
                         code2 = nr.statusCode;
                         msg = buildVolleyErrorMessage(nr);
+
+                        if (code2 == 404) {
+                            cb.onSuccess();
+                            return;
+                        }
                     } else if (err.getMessage() != null) {
                         msg = err.getMessage();
                     }
@@ -356,7 +438,7 @@ public class ProductRepository {
             }
         };
 
-        req.setRetryPolicy(new DefaultRetryPolicy(TIMEOUT_MS, MAX_RETRIES, BACKOFF_MULT));
+        req.setRetryPolicy(new DefaultRetryPolicy(TIMEOUT_MS, 0, BACKOFF_MULT));
         req.setShouldCache(false);
 
         ApiClient.getInstance(appContext).add(req);
@@ -365,22 +447,24 @@ public class ProductRepository {
     // =========================
     // URL builder
     // =========================
-    private static String buildProductsUrl(@Nullable String categoryId) {
+    private String buildProductsUrl(@Nullable String categoryId) {
         String c = (categoryId == null) ? "" : categoryId.trim();
-        if (c.isEmpty() || "all".equalsIgnoreCase(c) || "-1".equals(c)) {
-            return ENDPOINT_PRODUCTS;
+
+        String path = ENDPOINT_PRODUCTS;
+        if (!(c.isEmpty() || "all".equalsIgnoreCase(c) || "-1".equals(c))) {
+            path = ENDPOINT_PRODUCTS + "?category=" + c;
         }
-        return ENDPOINT_PRODUCTS + "?category=" + c;
+
+        return ApiConfig.url(session, path);
     }
 
     // =========================
-    // Parsing (now includes sku + buy/sell/weight + unit/supplier ids)
+    // Parsing
     // =========================
     private static Product parseProduct(@NonNull JSONObject o) {
         String id = asString(o, "id", "uuid");
         String name = asString(o, "name", "title", "product_name");
 
-        // ✅ SKU is its own field (new backend field)
         String sku = asString(o, "sku");
 
         double price = asDouble(
@@ -391,7 +475,6 @@ public class ProductRepository {
                 "amount"
         );
 
-        // ✅ barcode/code is NOT sku (keep code first)
         String barcode = asString(o, "code", "barcode");
         int stock = asInt(o, "stock", "qty", "quantity", "current_stock");
 
@@ -413,7 +496,7 @@ public class ProductRepository {
         Product p = new Product(
                 id,
                 name,
-                sku,       // ✅ NEW (constructor param)
+                sku,
                 price,
                 imageUrl,
                 stock,
@@ -422,42 +505,30 @@ public class ProductRepository {
                 barcode
         );
 
-        // ✅ ensure sku also stored (even if you later change constructor)
         p.sku = sku;
 
-        // ✅ extra fields (used by ProductFormDialog)
         try {
             p.buyPrice = asString(o, "buy_price", "buyPrice");
             p.sellPrice = asString(o, "sell_price", "sellPrice");
             p.weight = asString(o, "weight");
 
-            // unit nested
             JSONObject unitObj = o.optJSONObject("unit");
             if (unitObj != null) {
                 p.unitId = asString(unitObj, "id");
                 p.unitName = asString(unitObj, "name");
             } else {
-                // fallback
                 p.unitId = asString(o, "unit_id", "unit");
             }
 
-            // supplier nested
             JSONObject supObj = o.optJSONObject("supplier");
             if (supObj != null) {
                 p.supplierId = asString(supObj, "id");
                 p.supplierName = asString(supObj, "name");
             } else {
-                // fallback
                 p.supplierId = asString(o, "supplier_id", "supplier");
             }
 
         } catch (Exception ignored) {}
-
-        Log.d(TAG, String.format(Locale.US,
-                "Parsed product: %s | %.2f | stock=%d | sku=%s | cat=%s | unit=%s | sup=%s",
-                name, price, stock, safe(p.sku), categoryIdOut,
-                safe(p.unitId), safe(p.supplierId)
-        ));
 
         return p;
     }

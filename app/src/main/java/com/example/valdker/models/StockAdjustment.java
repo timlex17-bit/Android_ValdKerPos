@@ -11,7 +11,10 @@ public class StockAdjustment {
 
     public String adjusted_at; // ISO string
     public int product;        // product id
-    public int adjusted_by;    // user id
+    public String product_name; // product name from API
+
+    public int adjusted_by;     // user id
+    public String adjusted_by_name; // user display/username from API
 
     public int diff() {
         return new_stock - old_stock;

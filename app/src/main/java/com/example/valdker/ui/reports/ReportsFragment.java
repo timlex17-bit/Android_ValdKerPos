@@ -23,6 +23,7 @@ import com.example.valdker.SessionManager;
 import com.example.valdker.models.DailyProfitReport;
 import com.example.valdker.models.DailyProfitRow;
 import com.example.valdker.repositories.ReportRepository;
+import com.example.valdker.utils.InsetsHelper;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.BarData;
@@ -31,6 +32,8 @@ import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.Chip;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -48,8 +51,8 @@ public class ReportsFragment extends Fragment {
 
     private EditText etStart, etEnd;
 
-    private Button btnFetch;
-    private Button btnToday, btn7Days, btnThisMonth;
+    private MaterialButton btnFetch;         // ✅ CHANGED
+    private Chip btnToday, btn7Days, btnThisMonth; // ✅ CHANGED
 
     private TextView tvSales, tvExpense, tvProfit;
     private ProgressBar progress;
@@ -65,6 +68,11 @@ public class ReportsFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        View root = view.findViewById(R.id.rootReports);
+        InsetsHelper.applySystemBarsPadding(root, root);
+
         session = new SessionManager(requireContext());
         repo = new ReportRepository(requireContext());
 
@@ -98,41 +106,32 @@ public class ReportsFragment extends Fragment {
         etEnd.setOnClickListener(v -> pickDate(etEnd));
 
         // Quick ranges
-        if (btnToday != null) {
-            btnToday.setOnClickListener(v -> {
-                String t = fmtDate(new Date());
-                setRange(t, t);
-                fetch();
-            });
-        }
+        btnToday.setOnClickListener(v -> {
+            String t = fmtDate(new Date());
+            setRange(t, t);
+            fetch();
+        });
 
-        if (btn7Days != null) {
-            btn7Days.setOnClickListener(v -> {
-                Calendar c = Calendar.getInstance();
-                String end = fmtDate(c.getTime());
-                c.add(Calendar.DAY_OF_MONTH, -6);
-                String start = fmtDate(c.getTime());
-                setRange(start, end);
-                fetch();
-            });
-        }
+        btn7Days.setOnClickListener(v -> {
+            Calendar c = Calendar.getInstance();
+            String end = fmtDate(c.getTime());
+            c.add(Calendar.DAY_OF_MONTH, -6);
+            String start = fmtDate(c.getTime());
+            setRange(start, end);
+            fetch();
+        });
 
-        if (btnThisMonth != null) {
-            btnThisMonth.setOnClickListener(v -> {
-                Calendar c = Calendar.getInstance();
-                String end = fmtDate(c.getTime());
-                c.set(Calendar.DAY_OF_MONTH, 1);
-                String start = fmtDate(c.getTime());
-                setRange(start, end);
-                fetch();
-            });
-        }
+        btnThisMonth.setOnClickListener(v -> {
+            Calendar c = Calendar.getInstance();
+            String end = fmtDate(c.getTime());
+            c.set(Calendar.DAY_OF_MONTH, 1);
+            String start = fmtDate(c.getTime());
+            setRange(start, end);
+            fetch();
+        });
 
-        if (btnFetch != null) {
-            btnFetch.setOnClickListener(v -> fetch());
-        }
+        btnFetch.setOnClickListener(v -> fetch());
 
-        // initial
         fetch();
     }
 

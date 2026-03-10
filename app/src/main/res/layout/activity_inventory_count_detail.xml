@@ -14,11 +14,12 @@
         android:textSize="18sp"
         android:textStyle="bold"/>
 
+    <!-- ✅ Meta: tanggal + by + status (tidak hardcode) -->
     <TextView
         android:id="@+id/tvMeta"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="ID: 1 • By: #1 • 2026-02-21T04:33:37Z"
+        android:text="01 Mar 2026 - 22:47 • By: Kerry • APPROVED"
         android:textSize="12sp"
         android:alpha="0.75"
         android:layout_marginTop="4dp"/>
@@ -39,12 +40,52 @@
         android:lineSpacingExtra="2dp"
         android:layout_marginTop="6dp"/>
 
+    <!-- ✅ Summary -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Summary"
+        android:textStyle="bold"
+        android:layout_marginTop="14dp"/>
+
+    <TextView
+        android:id="@+id/tvTotalItems"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Total Items: 0"
+        android:textSize="13sp"
+        android:layout_marginTop="6dp"/>
+
+    <TextView
+        android:id="@+id/tvTotalDiff"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Total Diff: 0"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:layout_marginTop="4dp"/>
+
+    <TextView
+        android:id="@+id/tvValueImpact"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Total Value Impact: -"
+        android:textSize="13sp"
+        android:layout_marginTop="4dp"/>
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Items"
         android:textStyle="bold"
         android:layout_marginTop="14dp"/>
+
+    <Button
+        android:id="@+id/btnFinalize"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Finalize"
+        android:layout_marginTop="10dp"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvItems"

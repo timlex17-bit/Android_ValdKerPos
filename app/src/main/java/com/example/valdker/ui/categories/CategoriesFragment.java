@@ -4,6 +4,8 @@ import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
@@ -22,7 +24,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -36,11 +37,12 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.bumptech.glide.Glide;
+import com.example.valdker.BuildConfig;
 import com.example.valdker.R;
 import com.example.valdker.SessionManager;
 import com.example.valdker.models.Category;
 import com.example.valdker.network.ApiClient;
-import com.example.valdker.offline.repositories.CategoryCacheRepository;
+import com.example.valdker.network.ApiConfig;
 import com.example.valdker.utils.InsetsHelper;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -59,8 +61,15 @@ import java.util.Map;
 public class CategoriesFragment extends Fragment {
 
     private static final String TAG = "CATEGORIES";
-    private static final String BASE_URL = "https://valdker.onrender.com/api/categories/";
-    private static final Object REQ_TAG = "CategoriesFragmentRequests";
+    private static final String ENDPOINT_CATEGORIES = "api/categories/";
+    private static final Object FETCH_TAG = "CategoriesFetchRequests";
+    private static final Object MUTATION_TAG = "CategoriesMutationRequests";
+
+    private static final int MAX_RAW_FILE_BYTES = 10 * 1024 * 1024;
+    private static final int MAX_UPLOAD_DIMENSION = 1024;
+    private static final int JPEG_QUALITY = 82;
+    private static final int PNG_COMPRESSION_QUALITY = 100;
+    private static final int WEBP_QUALITY = 82;
 
     private SessionManager session;
 
@@ -72,15 +81,10 @@ public class CategoriesFragment extends Fragment {
     private final List<Category> items = new ArrayList<>();
     private CategoryAdapter adapter;
 
-    private Uri pendingIconUri;
+    @Nullable
+    private PendingIconState currentFormState;
 
-    private final ActivityResultLauncher<String> pickIconLauncher =
-            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
-                if (uri != null && isAdded()) {
-                    pendingIconUri = uri;
-                    Toast.makeText(requireContext(), "Icon selected", Toast.LENGTH_SHORT).show();
-                }
-            });
+    private ActivityResultLauncher<String> pickIconLauncher;
 
     public CategoriesFragment() {
         super(R.layout.fragment_manage_categories);
@@ -90,6 +94,77 @@ public class CategoriesFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         session = new SessionManager(requireContext());
+
+        pickIconLauncher = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                uri -> {
+                    logd("pickIconLauncher callback uri=" + uri);
+
+                    final PendingIconState state = currentFormState;
+                    if (uri == null || state == null) {
+                        logw("Picker result ignored: uri/state null");
+                        return;
+                    }
+
+                    final Context appCtx = state.appContext;
+                    try {
+                        String originalMime = guessMime(appCtx, uri);
+                        String safeMime = normalizeAllowedMime(originalMime);
+
+                        if (safeMime == null) {
+                            showToast(appCtx, "Use JPG, PNG, or WEBP image only.");
+                            clearFormIconState(state, true);
+                            return;
+                        }
+
+                        byte[] rawBytes = readBytes(appCtx, uri);
+                        if (rawBytes == null || rawBytes.length == 0) {
+                            showToast(appCtx, "Failed to read selected image.");
+                            clearFormIconState(state, true);
+                            return;
+                        }
+
+                        if (rawBytes.length > MAX_RAW_FILE_BYTES) {
+                            showToast(appCtx, "Selected image is too large.");
+                            clearFormIconState(state, true);
+                            return;
+                        }
+
+                        byte[] uploadBytes = resizeAndCompressImage(rawBytes, safeMime, MAX_UPLOAD_DIMENSION);
+                        if (uploadBytes == null || uploadBytes.length == 0) {
+                            showToast(appCtx, "Selected image is invalid or unsupported.");
+                            clearFormIconState(state, true);
+                            return;
+                        }
+
+                        String fileName = ensureFileExtension(
+                                guessFileName(appCtx, uri, "category_icon"),
+                                safeMime
+                        );
+
+                        state.uri = uri;
+                        state.fileName = fileName;
+                        state.mime = safeMime;
+                        state.bytes = uploadBytes;
+
+                        if (state.preview != null) {
+                            state.preview.setVisibility(View.VISIBLE);
+                            Glide.with(this).load(uri).into(state.preview);
+                        }
+
+                        logd("Icon prepared mime=" + safeMime
+                                + ", fileName=" + fileName
+                                + ", uploadBytes=" + uploadBytes.length);
+
+                        showToast(appCtx, "Icon selected");
+
+                    } catch (Exception e) {
+                        loge("Failed preparing picked icon", e);
+                        clearFormIconState(state, true);
+                        showToast(appCtx, "Failed to load selected image.");
+                    }
+                }
+        );
     }
 
     @Override
@@ -101,75 +176,47 @@ public class CategoriesFragment extends Fragment {
         tvEmpty = view.findViewById(R.id.tvEmpty);
         btnAdd = view.findViewById(R.id.btnAdd);
 
-        if (rv == null) Log.w(TAG, "rvList not found (check fragment_manage_categories.xml / layout-land).");
-        if (progress == null) Log.w(TAG, "progress not found.");
-        if (tvEmpty == null) Log.w(TAG, "tvEmpty not found.");
-        if (btnAdd == null) Log.w(TAG, "btnAdd not found.");
-
         InsetsHelper.applyRecyclerBottomInsets(view, rv, TAG);
 
-        if (rv != null) rv.setLayoutManager(new LinearLayoutManager(requireContext()));
+        if (rv != null) {
+            rv.setLayoutManager(new LinearLayoutManager(requireContext()));
+            rv.setHasFixedSize(true);
+        }
 
         adapter = new CategoryAdapter(items, new CategoryAdapter.Listener() {
-            @Override public void onEdit(Category c) { openForm(c); }
-            @Override public void onDelete(Category c) { confirmDelete(c); }
+            @Override
+            public void onEdit(Category c) {
+                openForm(c);
+            }
+
+            @Override
+            public void onDelete(Category c) {
+                confirmDelete(c);
+            }
         });
+
         if (rv != null) rv.setAdapter(adapter);
 
-        if (btnAdd != null) btnAdd.setOnClickListener(v -> openForm(null));
+        if (btnAdd != null) {
+            btnAdd.setOnClickListener(v -> openForm(null));
+        }
 
-        // ✅ OFFLINE-FIRST:
-        // 1) load dari Room dulu (cepat)
-        loadCategoriesFromRoom();
-
-        // 2) lalu fetch online untuk refresh + cache (kalau offline, UI tetap pakai Room)
-        fetchOnlineAndCache();
+        fetch();
     }
 
     @Override
     public void onStop() {
         super.onStop();
         try {
-            ApiClient.getInstance(requireContext()).cancelAll(REQ_TAG);
+            Context ctx = getContext();
+            if (ctx != null) {
+                ApiClient.getInstance(ctx.getApplicationContext()).cancelAll(FETCH_TAG);
+            }
         } catch (Exception e) {
-            Log.w(TAG, "cancelAll failed: " + e.getMessage());
+            logw("cancel fetch failed: " + e.getMessage());
         }
-        try {
-            ApiClient.getInstance(requireContext()).cancelAll(CategoryCacheRepository.class.getSimpleName());
-        } catch (Exception ignored) {}
     }
 
-    // =========================================================
-    // OFFLINE-FIRST helpers
-    // =========================================================
-    private void loadCategoriesFromRoom() {
-        CategoryCacheRepository.loadFromRoom(requireContext(), new CategoryCacheRepository.ListCallback() {
-            @Override
-            public void onSuccess(@NonNull List<Category> models) {
-                if (!isAdded()) return;
-                requireActivity().runOnUiThread(() -> {
-                    items.clear();
-                    items.addAll(models);
-                    if (adapter != null) adapter.notifyDataSetChanged();
-                    setEmpty(items.isEmpty());
-                });
-            }
-
-            @Override
-            public void onError(@NonNull String message) {
-                Log.w(TAG, "loadFromRoom failed: " + message);
-            }
-        });
-    }
-
-    private void fetchOnlineAndCache() {
-        // gunakan fetch() online kamu, tapi kita tambahkan cache ke Room
-        fetch();
-    }
-
-    // =========================================================
-    // ONLINE FETCH (existing) + cache to room
-    // =========================================================
     private void fetch() {
         setLoading(true);
 
@@ -177,13 +224,21 @@ public class CategoriesFragment extends Fragment {
         if (token == null || token.trim().isEmpty()) {
             setLoading(false);
             setEmpty(true);
-            Toast.makeText(requireContext(), "Token kosong. Silakan login ulang.", Toast.LENGTH_SHORT).show();
+            showToast(getContext(), "Token is missing. Please login again.");
             return;
         }
 
+        final Context ctx = getContext();
+        if (ctx == null) {
+            setLoading(false);
+            return;
+        }
+
+        final String url = ApiConfig.url(session, ENDPOINT_CATEGORIES);
+
         JsonArrayRequest req = new JsonArrayRequest(
                 Request.Method.GET,
-                BASE_URL,
+                url,
                 null,
                 (JSONArray res) -> {
                     if (!isAdded()) return;
@@ -204,32 +259,12 @@ public class CategoriesFragment extends Fragment {
                     if (adapter != null) adapter.notifyDataSetChanged();
                     setLoading(false);
                     setEmpty(items.isEmpty());
-
-                    Log.i(TAG, "Fetched categories online: " + items.size());
-
-                    // ✅ cache ke Room (online sukses)
-                    CategoryCacheRepository.syncOnlineAndCache(
-                            requireContext(),
-                            new CategoryCacheRepository.ListCallback() {
-                                @Override public void onSuccess(@NonNull List<Category> ignored) {
-                                    Log.i(TAG, "Room cache updated from online");
-                                }
-                                @Override public void onError(@NonNull String message) {
-                                    Log.w(TAG, "Room cache update failed: " + message);
-                                }
-                            }
-                    );
                 },
                 err -> {
                     if (!isAdded()) return;
-
                     setLoading(false);
-
-                    // ✅ fallback: tetap tampilkan Room yang sudah diload tadi
                     setEmpty(items.isEmpty());
                     toastVolleyError("Fetch categories failed", err);
-
-                    Log.w(TAG, "Online failed, keep Room data (size=" + items.size() + ")");
                 }
         ) {
             @Override
@@ -238,87 +273,139 @@ public class CategoriesFragment extends Fragment {
             }
         };
 
-        req.setTag(REQ_TAG);
-        ApiClient.getInstance(requireContext()).add(req);
+        req.setTag(FETCH_TAG);
+        ApiClient.getInstance(ctx.getApplicationContext()).add(req);
     }
 
-    // =========================================================
-    // CRUD tetap sama
-    // =========================================================
     private void openForm(@Nullable Category edit) {
         if (!isAdded()) return;
 
-        pendingIconUri = null;
+        final Context formContext = requireContext();
+        final Context appContext = formContext.getApplicationContext();
+        final SessionManager formSession = new SessionManager(appContext);
 
-        View content = LayoutInflater.from(requireContext())
+        final PendingIconState state = new PendingIconState(appContext);
+        currentFormState = state;
+
+        View content = LayoutInflater.from(formContext)
                 .inflate(R.layout.dialog_category_form, null, false);
 
         TextInputEditText etName = content.findViewById(R.id.etCategoryName);
         MaterialButton btnPick = content.findViewById(R.id.btnPickIcon);
         ImageView imgPreview = content.findViewById(R.id.imgIconPreview);
+        state.preview = imgPreview;
 
         if (edit != null) {
-            etName.setText(edit.name);
-            if (edit.iconUrl != null && !edit.iconUrl.trim().isEmpty()) {
-                imgPreview.setVisibility(View.VISIBLE);
-                Glide.with(this).load(edit.iconUrl.trim()).into(imgPreview);
-            } else {
-                imgPreview.setVisibility(View.GONE);
+            if (etName != null) etName.setText(edit.name);
+
+            if (imgPreview != null) {
+                String iconUrl = normalizeIconUrl(edit.iconUrl);
+                if (iconUrl != null) {
+                    imgPreview.setVisibility(View.VISIBLE);
+                    Glide.with(this).load(iconUrl).into(imgPreview);
+                } else {
+                    Glide.with(this).clear(imgPreview);
+                    imgPreview.setImageDrawable(null);
+                    imgPreview.setVisibility(View.GONE);
+                }
             }
         } else {
-            imgPreview.setVisibility(View.GONE);
+            if (imgPreview != null) {
+                Glide.with(this).clear(imgPreview);
+                imgPreview.setImageDrawable(null);
+                imgPreview.setVisibility(View.GONE);
+            }
         }
 
-        btnPick.setOnClickListener(v -> pickIconLauncher.launch("image/*"));
+        if (btnPick != null) {
+            btnPick.setOnClickListener(v -> {
+                if (pickIconLauncher != null) {
+                    pickIconLauncher.launch("image/*");
+                } else {
+                    showToast(formContext, "Image picker not ready.");
+                }
+            });
+        }
 
-        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+        AlertDialog dialog = new AlertDialog.Builder(formContext)
                 .setTitle(edit == null ? "Add Category" : "Edit Category")
                 .setView(content)
                 .setNegativeButton("Cancel", (d, w) -> d.dismiss())
                 .setPositiveButton(edit == null ? "Create" : "Save", null)
                 .create();
 
-        dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
-            String name = safeText(etName);
-            if (name.isEmpty()) {
-                etName.setError("Name is required");
-                etName.requestFocus();
-                return;
+        dialog.setOnDismissListener(d -> {
+            if (currentFormState == state) {
+                currentFormState = null;
             }
+            clearFormIconState(state, false);
+        });
 
-            if (pendingIconUri != null) {
-                imgPreview.setImageURI(pendingIconUri);
-                imgPreview.setVisibility(View.VISIBLE);
-            }
+        dialog.setOnShowListener(d -> {
+            View positiveBtn = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            if (positiveBtn == null) return;
 
-            if (edit == null) {
-                createCategory(name, pendingIconUri, dialog);
-            } else {
-                updateCategory(edit.id, name, pendingIconUri, dialog);
-            }
-        }));
+            positiveBtn.setOnClickListener(v -> {
+                try {
+                    final String name = safeText(etName);
+                    if (name.isEmpty()) {
+                        if (etName != null) {
+                            etName.setError("Name is required");
+                            etName.requestFocus();
+                        }
+                        return;
+                    }
+
+                    positiveBtn.setEnabled(false);
+
+                    if (edit == null) {
+                        createCategory(appContext, formSession, name, dialog, positiveBtn, state);
+                    } else {
+                        updateCategory(appContext, formSession, edit.id, name, dialog, positiveBtn, state);
+                    }
+
+                } catch (Throwable t) {
+                    loge("Save dispatch crashed", t);
+                    try {
+                        positiveBtn.setEnabled(true);
+                    } catch (Exception ignored) {
+                    }
+                    showToast(formContext, "Unexpected error occurred.");
+                }
+            });
+        });
 
         dialog.show();
     }
 
-    private void createCategory(@NonNull String name, @Nullable Uri iconUri, @NonNull AlertDialog dialog) {
+    private void createCategory(
+            @NonNull Context appCtx,
+            @NonNull SessionManager formSession,
+            @NonNull String name,
+            @NonNull AlertDialog dialog,
+            @NonNull View positiveBtn,
+            @NonNull PendingIconState state
+    ) {
         setLoading(true);
 
-        final String token = session != null ? session.getToken() : null;
+        final String token = formSession.getToken();
+        final String url = ApiConfig.url(formSession, ENDPOINT_CATEGORIES);
 
         VolleyMultipartRequest req = new VolleyMultipartRequest(
                 Request.Method.POST,
-                BASE_URL,
+                url,
                 response -> {
-                    if (!isAdded()) return;
                     setLoading(false);
                     dialog.dismiss();
-                    Toast.makeText(requireContext(), "Category created", Toast.LENGTH_SHORT).show();
-                    fetch(); // refresh + cache
+                    showToast(appCtx, "Category created");
+
+                    if (isAdded()) {
+                        fetch();
+                    }
                 },
                 error -> {
-                    if (!isAdded()) return;
                     setLoading(false);
+                    positiveBtn.setEnabled(true);
                     toastVolleyError("Create category failed", error);
                 }
         ) {
@@ -332,14 +419,13 @@ public class CategoriesFragment extends Fragment {
             @Override
             protected Map<String, DataPart> getByteData() {
                 Map<String, DataPart> out = new HashMap<>();
-                if (iconUri != null) {
-                    byte[] bytes = readBytes(requireContext(), iconUri);
-                    if (bytes != null && bytes.length > 0) {
-                        String fileName = guessFileName(requireContext(), iconUri, "category_icon");
-                        String mime = guessMime(requireContext(), iconUri);
-                        out.put("category_icon", new DataPart(fileName, bytes, mime));
-                    }
+
+                if (state.bytes != null && state.bytes.length > 0) {
+                    String fileName = state.fileName != null ? state.fileName : "category_icon.jpg";
+                    String mime = state.mime != null ? state.mime : "image/jpeg";
+                    out.put("icon", new DataPart(fileName, state.bytes, mime));
                 }
+
                 return out;
             }
 
@@ -349,29 +435,39 @@ public class CategoriesFragment extends Fragment {
             }
         };
 
-        req.setTag(REQ_TAG);
-        ApiClient.getInstance(requireContext()).add(req);
+        req.setTag(MUTATION_TAG);
+        ApiClient.getInstance(appCtx).add(req);
     }
 
-    private void updateCategory(int id, @NonNull String name, @Nullable Uri iconUri, @NonNull AlertDialog dialog) {
+    private void updateCategory(
+            @NonNull Context appCtx,
+            @NonNull SessionManager formSession,
+            int id,
+            @NonNull String name,
+            @NonNull AlertDialog dialog,
+            @NonNull View positiveBtn,
+            @NonNull PendingIconState state
+    ) {
         setLoading(true);
 
-        final String token = session != null ? session.getToken() : null;
-        final String url = BASE_URL + id + "/";
+        final String token = formSession.getToken();
+        final String url = ApiConfig.url(formSession, ENDPOINT_CATEGORIES) + id + "/";
 
         VolleyMultipartRequest req = new VolleyMultipartRequest(
                 Request.Method.PUT,
                 url,
                 response -> {
-                    if (!isAdded()) return;
                     setLoading(false);
                     dialog.dismiss();
-                    Toast.makeText(requireContext(), "Category updated", Toast.LENGTH_SHORT).show();
-                    fetch(); // refresh + cache
+                    showToast(appCtx, "Category updated");
+
+                    if (isAdded()) {
+                        fetch();
+                    }
                 },
                 error -> {
-                    if (!isAdded()) return;
                     setLoading(false);
+                    positiveBtn.setEnabled(true);
                     toastVolleyError("Update category failed", error);
                 }
         ) {
@@ -385,14 +481,13 @@ public class CategoriesFragment extends Fragment {
             @Override
             protected Map<String, DataPart> getByteData() {
                 Map<String, DataPart> out = new HashMap<>();
-                if (iconUri != null) {
-                    byte[] bytes = readBytes(requireContext(), iconUri);
-                    if (bytes != null && bytes.length > 0) {
-                        String fileName = guessFileName(requireContext(), iconUri, "category_icon");
-                        String mime = guessMime(requireContext(), iconUri);
-                        out.put("category_icon", new DataPart(fileName, bytes, mime));
-                    }
+
+                if (state.bytes != null && state.bytes.length > 0) {
+                    String fileName = state.fileName != null ? state.fileName : "category_icon.jpg";
+                    String mime = state.mime != null ? state.mime : "image/jpeg";
+                    out.put("icon", new DataPart(fileName, state.bytes, mime));
                 }
+
                 return out;
             }
 
@@ -402,8 +497,20 @@ public class CategoriesFragment extends Fragment {
             }
         };
 
-        req.setTag(REQ_TAG);
-        ApiClient.getInstance(requireContext()).add(req);
+        req.setTag(MUTATION_TAG);
+        ApiClient.getInstance(appCtx).add(req);
+    }
+
+    @Nullable
+    private String normalizeIconUrl(@Nullable String url) {
+        if (url == null) return null;
+
+        String s = url.trim();
+        if (s.isEmpty()) return null;
+        if ("null".equalsIgnoreCase(s)) return null;
+        if ("/null".equalsIgnoreCase(s)) return null;
+
+        return s;
     }
 
     private void confirmDelete(@NonNull Category c) {
@@ -411,7 +518,7 @@ public class CategoriesFragment extends Fragment {
 
         new AlertDialog.Builder(requireContext())
                 .setTitle("Delete Category")
-                .setMessage("Delete \"" + c.name + "\" ?")
+                .setMessage("Delete \"" + c.name + "\"?")
                 .setNegativeButton("Cancel", (d, w) -> d.dismiss())
                 .setPositiveButton("Delete", (d, w) -> deleteCategory(c.id))
                 .show();
@@ -420,8 +527,14 @@ public class CategoriesFragment extends Fragment {
     private void deleteCategory(int id) {
         setLoading(true);
 
+        final Context ctx = getContext();
+        if (ctx == null) {
+            setLoading(false);
+            return;
+        }
+
         final String token = session != null ? session.getToken() : null;
-        final String url = BASE_URL + id + "/";
+        final String url = ApiConfig.url(session, ENDPOINT_CATEGORIES) + id + "/";
 
         StringRequest req = new StringRequest(
                 Request.Method.DELETE,
@@ -429,8 +542,8 @@ public class CategoriesFragment extends Fragment {
                 res -> {
                     if (!isAdded()) return;
                     setLoading(false);
-                    Toast.makeText(requireContext(), "Category deleted", Toast.LENGTH_SHORT).show();
-                    fetch(); // refresh + cache
+                    showToast(ctx, "Category deleted");
+                    fetch();
                 },
                 err -> {
                     if (!isAdded()) return;
@@ -444,12 +557,13 @@ public class CategoriesFragment extends Fragment {
             }
         };
 
-        req.setTag(REQ_TAG);
-        ApiClient.getInstance(requireContext()).add(req);
+        req.setTag(MUTATION_TAG);
+        ApiClient.getInstance(ctx.getApplicationContext()).add(req);
     }
 
     private void setLoading(boolean loading) {
         if (progress != null) progress.setVisibility(loading ? View.VISIBLE : View.GONE);
+        if (btnAdd != null) btnAdd.setEnabled(!loading);
     }
 
     private void setEmpty(boolean empty) {
@@ -457,6 +571,7 @@ public class CategoriesFragment extends Fragment {
         if (rv != null) rv.setVisibility(empty ? View.GONE : View.VISIBLE);
     }
 
+    @NonNull
     private String safeText(@Nullable TextInputEditText et) {
         if (et == null || et.getText() == null) return "";
         return et.getText().toString().trim();
@@ -464,6 +579,7 @@ public class CategoriesFragment extends Fragment {
 
     private Map<String, String> authHeaders(@Nullable String token) {
         Map<String, String> h = new HashMap<>();
+        h.put("Accept", "application/json");
         if (token != null && !token.trim().isEmpty()) {
             h.put("Authorization", "Token " + token.trim());
         }
@@ -472,22 +588,257 @@ public class CategoriesFragment extends Fragment {
 
     private void toastVolleyError(@NonNull String prefix, @NonNull VolleyError err) {
         String msg = prefix;
+
         try {
             NetworkResponse r = err.networkResponse;
             if (r != null && r.data != null) {
-                msg = prefix + " (" + r.statusCode + "): " + new String(r.data, StandardCharsets.UTF_8);
+                String body = new String(r.data, StandardCharsets.UTF_8);
+                msg = prefix + " (" + r.statusCode + ")";
+                logw(prefix + " body=" + body);
             } else if (err.getMessage() != null) {
                 msg = prefix + ": " + err.getMessage();
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
-        Log.w(TAG, msg);
-        if (isAdded()) Toast.makeText(requireContext(), prefix, Toast.LENGTH_SHORT).show();
+        logw(msg);
+        showToast(getContext(), msg);
     }
 
-    // =========================================================
-    // Adapter (tetap)
-    // =========================================================
+    private void clearFormIconState(@NonNull PendingIconState state, boolean clearPreview) {
+        state.uri = null;
+        state.bytes = null;
+        state.fileName = null;
+        state.mime = null;
+
+        if (clearPreview && state.preview != null) {
+            try {
+                Glide.with(this).clear(state.preview);
+                state.preview.setImageDrawable(null);
+                state.preview.setVisibility(View.GONE);
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
+    @Nullable
+    private static String normalizeAllowedMime(@Nullable String mime) {
+        if (mime == null) return null;
+
+        String m = mime.trim().toLowerCase();
+        switch (m) {
+            case "image/jpeg":
+            case "image/jpg":
+                return "image/jpeg";
+            case "image/png":
+                return "image/png";
+            case "image/webp":
+                return "image/webp";
+            default:
+                return null;
+        }
+    }
+
+    @NonNull
+    private static String ensureFileExtension(@NonNull String fileName, @NonNull String mime) {
+        String lower = fileName.toLowerCase();
+
+        if ("image/jpeg".equals(mime)) {
+            if (!lower.endsWith(".jpg") && !lower.endsWith(".jpeg")) {
+                return fileName + ".jpg";
+            }
+            return fileName;
+        }
+
+        if ("image/png".equals(mime)) {
+            if (!lower.endsWith(".png")) {
+                return fileName + ".png";
+            }
+            return fileName;
+        }
+
+        if ("image/webp".equals(mime)) {
+            if (!lower.endsWith(".webp")) {
+                return fileName + ".webp";
+            }
+            return fileName;
+        }
+
+        return fileName;
+    }
+
+    @Nullable
+    private static byte[] resizeAndCompressImage(@NonNull byte[] input, @NonNull String mime, int maxDimension) {
+        BitmapFactory.Options bounds = new BitmapFactory.Options();
+        bounds.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(input, 0, input.length, bounds);
+
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
+            return null;
+        }
+
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        opts.inSampleSize = calculateInSampleSize(bounds.outWidth, bounds.outHeight, maxDimension, maxDimension);
+
+        Bitmap bitmap = BitmapFactory.decodeByteArray(input, 0, input.length, opts);
+        if (bitmap == null) {
+            return null;
+        }
+
+        Bitmap scaled = bitmap;
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        int maxCurrent = Math.max(width, height);
+
+        if (maxCurrent > maxDimension) {
+            float ratio = (float) maxDimension / (float) maxCurrent;
+            int newW = Math.max(1, Math.round(width * ratio));
+            int newH = Math.max(1, Math.round(height * ratio));
+            scaled = Bitmap.createScaledBitmap(bitmap, newW, newH, true);
+            if (scaled != bitmap) {
+                bitmap.recycle();
+            }
+        }
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try {
+            Bitmap.CompressFormat format;
+            int quality;
+
+            switch (mime) {
+                case "image/png":
+                    format = Bitmap.CompressFormat.PNG;
+                    quality = PNG_COMPRESSION_QUALITY;
+                    break;
+                case "image/webp":
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                        format = Bitmap.CompressFormat.WEBP_LOSSY;
+                    } else {
+                        format = Bitmap.CompressFormat.WEBP;
+                    }
+                    quality = WEBP_QUALITY;
+                    break;
+                case "image/jpeg":
+                default:
+                    format = Bitmap.CompressFormat.JPEG;
+                    quality = JPEG_QUALITY;
+                    break;
+            }
+
+            boolean ok = scaled.compress(format, quality, bos);
+            if (!ok) return null;
+
+            return bos.toByteArray();
+        } finally {
+            if (!scaled.isRecycled()) {
+                scaled.recycle();
+            }
+        }
+    }
+
+    private static int calculateInSampleSize(int width, int height, int reqWidth, int reqHeight) {
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+            int halfHeight = height / 2;
+            int halfWidth = width / 2;
+
+            while ((halfHeight / inSampleSize) >= reqHeight
+                    && (halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+
+        return Math.max(1, inSampleSize);
+    }
+
+    @Nullable
+    private static byte[] readBytes(@NonNull Context ctx, @NonNull Uri uri) {
+        try (InputStream in = ctx.getContentResolver().openInputStream(uri)) {
+            if (in == null) return null;
+
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            byte[] buf = new byte[8192];
+            int n;
+            while ((n = in.read(buf)) > 0) bos.write(buf, 0, n);
+
+            return bos.toByteArray();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @NonNull
+    private static String guessMime(@NonNull Context ctx, @NonNull Uri uri) {
+        try {
+            ContentResolver cr = ctx.getContentResolver();
+            String mime = cr.getType(uri);
+            if (mime != null) return mime;
+
+            String ext = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
+            if (ext != null) {
+                String out = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
+                if (out != null) return out;
+            }
+        } catch (Exception ignored) {
+        }
+
+        return "image/jpeg";
+    }
+
+    @NonNull
+    private static String guessFileName(@NonNull Context ctx, @NonNull Uri uri, @NonNull String fallbackBase) {
+        Cursor c = null;
+
+        try {
+            c = ctx.getContentResolver().query(uri, null, null, null, null);
+            if (c != null && c.moveToFirst()) {
+                int idx = c.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                if (idx >= 0) {
+                    String name = c.getString(idx);
+                    if (name != null && !name.trim().isEmpty()) {
+                        return name;
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        } finally {
+            if (c != null) c.close();
+        }
+
+        return fallbackBase + "_" + System.currentTimeMillis() + ".jpg";
+    }
+
+    private void showToast(@Nullable Context ctx, @NonNull String msg) {
+        if (ctx == null) return;
+        Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show();
+    }
+
+    private static void logd(@NonNull String msg) {
+        if (BuildConfig.DEBUG) Log.d(TAG, msg);
+    }
+
+    private static void logw(@NonNull String msg) {
+        Log.w(TAG, msg);
+    }
+
+    private static void loge(@NonNull String msg, @NonNull Throwable t) {
+        Log.e(TAG, msg, t);
+    }
+
+    private static class PendingIconState {
+        final Context appContext;
+        @Nullable Uri uri;
+        @Nullable byte[] bytes;
+        @Nullable String fileName;
+        @Nullable String mime;
+        @Nullable ImageView preview;
+
+        PendingIconState(@NonNull Context appContext) {
+            this.appContext = appContext;
+        }
+    }
+
     static class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.VH> {
 
         interface Listener {
@@ -498,7 +849,7 @@ public class CategoriesFragment extends Fragment {
         private final List<Category> data;
         private final Listener listener;
 
-        CategoryAdapter(List<Category> data, Listener listener) {
+        CategoryAdapter(@NonNull List<Category> data, @NonNull Listener listener) {
             this.data = data;
             this.listener = listener;
         }
@@ -515,17 +866,29 @@ public class CategoriesFragment extends Fragment {
         public void onBindViewHolder(@NonNull VH h, int position) {
             Category c = data.get(position);
 
-            h.tvTitle.setText(c.name);
+            if (h.tvTitle != null) h.tvTitle.setText(c.name);
 
-            if (c.iconUrl != null && !c.iconUrl.trim().isEmpty()) {
-                h.img.setVisibility(View.VISIBLE);
-                Glide.with(h.img.getContext()).load(c.iconUrl.trim()).into(h.img);
-            } else {
-                h.img.setVisibility(View.GONE);
+            if (h.img != null) {
+                String iconUrl = c.iconUrl != null ? c.iconUrl.trim() : "";
+
+                if (!iconUrl.isEmpty()
+                        && !"null".equalsIgnoreCase(iconUrl)
+                        && !"/null".equalsIgnoreCase(iconUrl)) {
+                    h.img.setVisibility(View.VISIBLE);
+                    Glide.with(h.img.getContext())
+                            .load(iconUrl)
+                            .placeholder(R.drawable.ic_store)
+                            .error(R.drawable.ic_store)
+                            .into(h.img);
+                } else {
+                    Glide.with(h.img.getContext()).clear(h.img);
+                    h.img.setImageDrawable(null);
+                    h.img.setVisibility(View.GONE);
+                }
             }
 
-            h.btnEdit.setOnClickListener(v -> listener.onEdit(c));
-            h.btnDelete.setOnClickListener(v -> listener.onDelete(c));
+            if (h.btnEdit != null) h.btnEdit.setOnClickListener(v -> listener.onEdit(c));
+            if (h.btnDelete != null) h.btnDelete.setOnClickListener(v -> listener.onDelete(c));
         }
 
         @Override
@@ -549,13 +912,12 @@ public class CategoriesFragment extends Fragment {
         }
     }
 
-    // =========================================================
-    // Multipart Request (Volley) - tetap sama
-    // =========================================================
     public abstract static class VolleyMultipartRequest extends com.android.volley.Request<NetworkResponse> {
 
         private final Response.Listener<NetworkResponse> listener;
-        @Nullable private final Response.ErrorListener errorListener;
+        @Nullable
+        private final Response.ErrorListener errorListener;
+        private String boundary;
 
         public VolleyMultipartRequest(
                 int method,
@@ -600,8 +962,6 @@ public class CategoriesFragment extends Fragment {
             return buildMultipartBody();
         }
 
-        private String boundary;
-
         private String getBoundary() {
             if (boundary == null) boundary = "valdker-" + System.currentTimeMillis();
             return boundary;
@@ -613,31 +973,38 @@ public class CategoriesFragment extends Fragment {
 
             try {
                 Map<String, String> params = getParams();
+
                 if (params != null) {
                     for (Map.Entry<String, String> e : params.entrySet()) {
-                        bos.write(("--" + b + "\r\n").getBytes());
-                        bos.write(("Content-Disposition: form-data; name=\"" + e.getKey() + "\"\r\n\r\n").getBytes());
-                        bos.write((e.getValue() + "\r\n").getBytes());
+                        bos.write(("--" + b + "\r\n").getBytes(StandardCharsets.UTF_8));
+                        bos.write(("Content-Disposition: form-data; name=\"" + e.getKey() + "\"\r\n\r\n")
+                                .getBytes(StandardCharsets.UTF_8));
+                        bos.write((e.getValue() + "\r\n").getBytes(StandardCharsets.UTF_8));
                     }
                 }
 
                 Map<String, DataPart> data = getByteData();
+
                 if (data != null) {
                     for (Map.Entry<String, DataPart> e : data.entrySet()) {
                         DataPart p = e.getValue();
-                        bos.write(("--" + b + "\r\n").getBytes());
-                        bos.write(("Content-Disposition: form-data; name=\"" + e.getKey() + "\"; filename=\"" + p.fileName + "\"\r\n").getBytes());
-                        bos.write(("Content-Type: " + p.type + "\r\n\r\n").getBytes());
+
+                        bos.write(("--" + b + "\r\n").getBytes(StandardCharsets.UTF_8));
+                        bos.write(("Content-Disposition: form-data; name=\"" + e.getKey()
+                                + "\"; filename=\"" + p.fileName + "\"\r\n")
+                                .getBytes(StandardCharsets.UTF_8));
+                        bos.write(("Content-Type: " + p.type + "\r\n\r\n")
+                                .getBytes(StandardCharsets.UTF_8));
                         bos.write(p.content);
-                        bos.write("\r\n".getBytes());
+                        bos.write("\r\n".getBytes(StandardCharsets.UTF_8));
                     }
                 }
 
-                bos.write(("--" + b + "--\r\n").getBytes());
+                bos.write(("--" + b + "--\r\n").getBytes(StandardCharsets.UTF_8));
                 return bos.toByteArray();
 
             } catch (Exception ex) {
-                Log.w(TAG, "Multipart build failed: " + ex.getMessage());
+                loge("Multipart build failed", ex);
                 return new byte[0];
             }
         }
@@ -653,58 +1020,5 @@ public class CategoriesFragment extends Fragment {
                 this.type = type;
             }
         }
-    }
-
-    // =========================================================
-    // File helpers (tetap)
-    // =========================================================
-    private static byte[] readBytes(@NonNull Context ctx, @NonNull Uri uri) {
-        try (InputStream in = ctx.getContentResolver().openInputStream(uri)) {
-            if (in == null) return null;
-
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            byte[] buf = new byte[8192];
-            int n;
-            while ((n = in.read(buf)) > 0) bos.write(buf, 0, n);
-
-            return bos.toByteArray();
-        } catch (Exception e) {
-            Log.w(TAG, "readBytes failed: " + e.getMessage());
-            return null;
-        }
-    }
-
-    private static String guessMime(@NonNull Context ctx, @NonNull Uri uri) {
-        try {
-            ContentResolver cr = ctx.getContentResolver();
-            String mime = cr.getType(uri);
-            if (mime != null) return mime;
-
-            String ext = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
-            if (ext != null) {
-                String out = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
-                if (out != null) return out;
-            }
-        } catch (Exception ignored) {}
-        return "image/*";
-    }
-
-    private static String guessFileName(@NonNull Context ctx, @NonNull Uri uri, @NonNull String fallbackBase) {
-        Cursor c = null;
-        try {
-            c = ctx.getContentResolver().query(uri, null, null, null, null);
-            if (c != null && c.moveToFirst()) {
-                int idx = c.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-                if (idx >= 0) {
-                    String name = c.getString(idx);
-                    if (name != null && !name.trim().isEmpty()) return name;
-                }
-            }
-        } catch (Exception ignored) {
-        } finally {
-            if (c != null) c.close();
-        }
-
-        return fallbackBase + "_" + System.currentTimeMillis() + ".png";
     }
 }

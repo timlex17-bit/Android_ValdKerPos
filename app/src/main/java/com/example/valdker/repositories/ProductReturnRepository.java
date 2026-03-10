@@ -13,6 +13,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.valdker.SessionManager;
 import com.example.valdker.models.ProductReturn;
 import com.example.valdker.network.ApiClient;
+import com.example.valdker.network.ApiConfig;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -25,7 +26,7 @@ import java.util.Map;
 public class ProductReturnRepository {
 
     private static final String TAG = "PRODUCT_RETURN_REPO";
-    private static final String ENDPOINT = "https://valdker.onrender.com/api/productreturns/";
+    private static final String ENDPOINT = "api/productreturns/";
 
     // =======================
     // GET LIST
@@ -36,9 +37,12 @@ public class ProductReturnRepository {
     }
 
     public static void fetchAll(@NonNull Context ctx, @NonNull ListCallback cb) {
+
+        String url = ApiConfig.url(new SessionManager(ctx), ENDPOINT);
+
         JsonArrayRequest req = new JsonArrayRequest(
                 Request.Method.GET,
-                ENDPOINT,
+                url,
                 null,
                 (JSONArray response) -> {
                     try {
@@ -112,7 +116,6 @@ public class ProductReturnRepository {
             JSONObject body = new JSONObject();
             body.put("order", orderId);
 
-            // ✅ default backend field: "customer"
             if (customerId > 0) body.put("customer", customerId);
 
             if (note != null) body.put("note", note);
@@ -126,7 +129,6 @@ public class ProductReturnRepository {
             for (CreateItem it : items) {
                 JSONObject jo = new JSONObject();
 
-                // ✅ FIX: backend kamu minta product_id
                 jo.put("product_id", it.productId);
 
                 // optional fallback
@@ -138,9 +140,11 @@ public class ProductReturnRepository {
             }
             body.put("items", arr);
 
+            String url = ApiConfig.url(new SessionManager(ctx), ENDPOINT);
+
             JsonObjectRequest req = new JsonObjectRequest(
                     Request.Method.POST,
-                    ENDPOINT,
+                    url,
                     body,
                     (JSONObject response) -> {
                         try {
@@ -169,7 +173,7 @@ public class ProductReturnRepository {
                 @Override
                 public Map<String, String> getHeaders() {
                     Map<String, String> h = buildHeaders(ctx);
-                    h.put("Content-Type", "application/json"); // penting untuk POST JSON
+                    h.put("Content-Type", "application/json");
                     return h;
                 }
             };
@@ -216,7 +220,8 @@ public class ProductReturnRepository {
             int productReturnId,
             @NonNull DeleteCallback cb
     ) {
-        String url = ENDPOINT + productReturnId + "/";
+
+        String url = ApiConfig.url(new SessionManager(ctx), ENDPOINT + productReturnId + "/");
 
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.DELETE,

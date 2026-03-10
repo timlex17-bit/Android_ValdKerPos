@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,11 +22,15 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.bumptech.glide.Glide;
 import com.example.valdker.adapters.CategoryAdapter;
 import com.example.valdker.auth.AuthEvents;
@@ -33,23 +38,35 @@ import com.example.valdker.cart.CartManager;
 import com.example.valdker.models.Category;
 import com.example.valdker.models.Shop;
 import com.example.valdker.network.ApiClient;
-import com.example.valdker.offline.db.entities.ShiftEntity;
-import com.example.valdker.offline.repositories.CategoryCacheRepository;
+import com.example.valdker.network.ApiConfig;
 import com.example.valdker.repositories.ShiftRepository;
 import com.example.valdker.repositories.ShopRepository;
 import com.example.valdker.ui.ProductsFragment;
 import com.example.valdker.ui.shift.ShiftOpenDialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.zxing.integration.android.IntentIntegrator;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 
 @SuppressWarnings("deprecation")
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MAIN_NATIVE";
     private static final String TAG_SHIFT_DIALOG = "SHIFT_OPEN_DIALOG";
+    private static final String TAG_BARCODE_DIALOG = "BARCODE_DIALOG";
+
+    private static final int CAMERA_REQUEST = 100;
+
+    private volatile boolean barcodeDispatchRunning = false;
+    @Nullable
+    private String pendingBarcode = null;
 
     // -----------------------------
     // SHIFT GATE FLAGS
@@ -66,6 +83,8 @@ public class MainActivity extends AppCompatActivity {
     private PopupWindow userPopup;
     private ImageButton btnUser;
 
+    private View btnBarcode;
+    private EditText etSearch;
     private String allIconUrl = null;
     private CategoryAdapter categoryAdapter;
     private final List<Category> categoryList = new ArrayList<>();
@@ -74,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
     private String cachedUsername = "admin";
     private String cachedRole = "cashier";
 
-    private ImageView imgShopLogo;
+    private ImageView imgLogo;
     private TextView tvShopAddress;
 
     private final CartManager.Listener cartListener = this::refreshCartBadge;
@@ -86,12 +105,17 @@ public class MainActivity extends AppCompatActivity {
         return !isFinishing() && !isDestroyed();
     }
 
-    private void safeUi(Runnable r) {
+    private void safeUi(@NonNull Runnable r) {
         if (!isActivityAlive()) return;
         runOnUiThread(() -> {
             if (!isActivityAlive()) return;
             r.run();
         });
+    }
+
+    @NonNull
+    private String safeTrim(@Nullable String value) {
+        return value == null ? "" : value.trim();
     }
 
     // =============================
@@ -108,13 +132,13 @@ public class MainActivity extends AppCompatActivity {
     };
 
     // ============================================================
-    // SHIFT GATE (OPEN) - OFFLINE SAFE + AUTO SYNC ONLINE
+    // SHIFT GATE (OPEN) - ONLINE ONLY (NO ROOM / OFFLINE)
     // ============================================================
 
     /**
      * Ensures shift is open before allowing POS usage.
-     * OFFLINE: if no local active shift -> show dialog
-     * ONLINE: check Room first, then /shifts/current/; also auto-sync offline-open shift to server
+     * ONLINE ONLY: check /shifts/current/; if not open -> show dialog.
+     * OFFLINE: show message + show dialog (but open will fail without internet).
      */
     private void ensureShiftOpenOrBlock() {
         if (shiftGateRunning) return;
@@ -123,235 +147,82 @@ public class MainActivity extends AppCompatActivity {
         final SessionManager sm = session;
         final ShiftRepository repo = new ShiftRepository(MainActivity.this, sm);
 
-        // ✅ 0) IMPORTANT: validate session vs Room BEFORE skipping
-        validateShiftStateBeforeSkip(sm);
-
-        // ✅ 1) If session says OPEN, still DO a best-effort sync (if needed), then skip
         try {
             boolean sessionOpen = sm.isShiftOpen();
             long sid = sm.getShiftId();
-            long localId = sm.getShiftLocalId();
-
-            if (sessionOpen && (sid > 0 || localId > 0)) {
-                Log.i(TAG, "SHIFT_GATE: session says OPEN (sid=" + sid + ", localId=" + localId + ")");
+            if (sessionOpen && sid > 0) {
+                Log.i(TAG, "SHIFT_GATE: session says OPEN (sid=" + sid + ") -> skip");
                 shiftGateRunning = false;
-
-                // ✅ If local shift exists but server id missing, try sync when online
-                if (isNetworkAvailable() && sid <= 0 && localId > 0) {
-                    new Thread(() -> reconcileOfflineShiftToServer(repo, sm)).start();
-                }
                 return;
             }
-        } catch (Exception ignored) {}
-
-        // 2) Always check Room active shift first (works for offline & online).
-        new Thread(() -> {
-            try {
-                com.example.valdker.offline.repo.ShiftRepository offRepo =
-                        new com.example.valdker.offline.repo.ShiftRepository(getApplicationContext());
-
-                ShiftEntity active = offRepo.getActiveShift();
-                if (active != null) {
-                    sm.setShiftOpen(true);
-                    sm.setShiftLocalId(active.id);
-
-                    Log.i(TAG, "SHIFT_GATE: Room says active shift localId=" + active.id + " -> skip dialog");
-                    shiftGateRunning = false;
-
-                    // ✅ If online and server id missing, try reconcile to server
-                    if (isNetworkAvailable() && sm.getShiftId() <= 0) {
-                        new Thread(() -> reconcileOfflineShiftToServer(repo, sm)).start();
-                    }
-                    return;
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "SHIFT_GATE: Room active check failed: " + e.getMessage());
-            }
-
-            // 3) If OFFLINE and no local active shift -> show dialog ONCE
-            if (!isNetworkAvailable()) {
-                Log.i(TAG, "SHIFT_GATE: offline and no active shift -> show shift dialog");
-                shiftGateRunning = false;
-                safeUi(() -> showShiftDialogOnce(repo, sm));
-                return;
-            }
-
-            // 4) ONLINE: call /shifts/current/ with timeout fallback
-            safeUi(() -> {
-                Log.i(TAG, "SHIFT_GATE: checking /shifts/current/ (ONLINE) ...");
-
-                final android.os.Handler h = new android.os.Handler(android.os.Looper.getMainLooper());
-                final Runnable timeout = () -> {
-                    Log.w(TAG, "SHIFT_GATE: getCurrent timeout -> show dialog");
-                    shiftGateRunning = false;
-                    showShiftDialogOnce(repo, sm);
-                };
-
-                h.postDelayed(timeout, 3500);
-
-                repo.getCurrent(new ShiftRepository.CurrentCallback() {
-                    @Override
-                    public void onSuccess(boolean open, com.example.valdker.models.Shift shift) {
-                        h.removeCallbacks(timeout);
-
-                        Log.i(TAG, "SHIFT_GATE: getCurrent success open=" + open
-                                + " shift=" + (shift != null ? shift.id : "null"));
-
-                        if (open && shift != null) {
-                            sm.setShiftOpen(true);
-                            sm.setShiftId(shift.id);
-                            sm.setOpeningCash(
-                                    (shift.opening_cash == null || shift.opening_cash.trim().isEmpty())
-                                            ? "0.00"
-                                            : shift.opening_cash
-                            );
-                            Log.i(TAG, "SHIFT_GATE: already OPEN (ONLINE) id=" + shift.id);
-
-                            shiftGateRunning = false;
-
-                            // Mirror to offline (best effort)
-                            new Thread(() -> mirrorOpenShiftOffline(sm)).start();
-                            return;
-                        }
-
-                        shiftGateRunning = false;
-                        showShiftDialogOnce(repo, sm);
-                    }
-
-                    @Override
-                    public void onError(@NonNull String message) {
-                        h.removeCallbacks(timeout);
-                        Log.e(TAG, "SHIFT_GATE: getCurrent error: " + message);
-
-                        shiftGateRunning = false;
-                        showShiftDialogOnce(repo, sm);
-                    }
-                });
-            });
-
-        }).start();
-    }
-
-    /**
-     * ✅ CRITICAL FIX:
-     * If session says OPEN because of old localId, verify Room actually has active shift.
-     * If not -> reset session shift so dialog can show.
-     */
-    private void validateShiftStateBeforeSkip(@NonNull SessionManager sm) {
-        try {
-            boolean sessionOpen = sm.isShiftOpen();
-            long sid = sm.getShiftId();
-            long localId = sm.getShiftLocalId();
-
-            if (!sessionOpen) return;
-
-            if (sid > 0) return; // server has shift id -> ok
-
-            if (localId > 0) {
-                com.example.valdker.offline.repo.ShiftRepository offRepo =
-                        new com.example.valdker.offline.repo.ShiftRepository(getApplicationContext());
-
-                ShiftEntity active = offRepo.getActiveShift();
-
-                if (active == null) {
-                    Log.w(TAG, "SHIFT_GATE: session stale (localId=" + localId + ") but Room has no active shift -> reset");
-                    sm.clearShift();
-                } else {
-                    sm.setShiftOpen(true);
-                    sm.setShiftLocalId(active.id);
-                    Log.i(TAG, "SHIFT_GATE: Room active shift confirmed localId=" + active.id);
-                }
-            } else {
-                Log.w(TAG, "SHIFT_GATE: session says OPEN but sid/localId empty -> reset");
-                sm.clearShift();
-            }
-
-        } catch (Exception e) {
-            Log.e(TAG, "SHIFT_GATE: validateShiftStateBeforeSkip error: " + e.getMessage());
-            try { sm.clearShift(); } catch (Exception ignored) {}
+        } catch (Exception ignored) {
         }
-    }
 
-    /**
-     * ✅ Auto-sync: If user opened shift OFFLINE (Room active) but server has no shift open,
-     * then open it on server when internet is back.
-     *
-     * Conditions:
-     * - session isShiftOpen true
-     * - localId > 0
-     * - sid == 0
-     * - network available
-     */
-    private void reconcileOfflineShiftToServer(@NonNull ShiftRepository repo, @NonNull SessionManager sm) {
-        try {
-            if (!isNetworkAvailable()) return;
+        if (!isNetworkAvailable()) {
+            shiftGateRunning = false;
+            safeUi(() -> {
+                Toast.makeText(
+                        MainActivity.this,
+                        "Internet is required to check/open a shift.",
+                        Toast.LENGTH_LONG
+                ).show();
+                showShiftDialogOnce(repo, sm);
+            });
+            return;
+        }
 
-            boolean open = sm.isShiftOpen();
-            long sid = sm.getShiftId();
-            long localId = sm.getShiftLocalId();
+        safeUi(() -> {
+            Log.i(TAG, "SHIFT_GATE: checking /shifts/current/ (ONLINE ONLY) ...");
 
-            if (!open || localId <= 0 || sid > 0) return;
+            final android.os.Handler h = new android.os.Handler(android.os.Looper.getMainLooper());
+            final Runnable timeout = () -> {
+                Log.w(TAG, "SHIFT_GATE: getCurrent timeout -> show dialog");
+                shiftGateRunning = false;
+                showShiftDialogOnce(repo, sm);
+            };
 
-            Log.i(TAG, "SHIFT_SYNC: try reconcile offline->server (localId=" + localId + ") ...");
+            h.postDelayed(timeout, 3500);
 
-            // 1) Check server current first
             repo.getCurrent(new ShiftRepository.CurrentCallback() {
                 @Override
                 public void onSuccess(boolean open, com.example.valdker.models.Shift shift) {
+                    h.removeCallbacks(timeout);
+
+                    Log.i(TAG, "SHIFT_GATE: getCurrent success open=" + open
+                            + " shift=" + (shift != null ? shift.id : "null"));
+
                     if (open && shift != null) {
                         sm.setShiftOpen(true);
                         sm.setShiftId(shift.id);
                         sm.setOpeningCash(
                                 (shift.opening_cash == null || shift.opening_cash.trim().isEmpty())
-                                        ? sm.getOpeningCash()
+                                        ? "0.00"
                                         : shift.opening_cash
                         );
 
-                        Log.i(TAG, "SHIFT_SYNC: server already open, sid=" + shift.id);
+                        Log.i(TAG, "SHIFT_GATE: already OPEN (ONLINE) id=" + shift.id);
+                        shiftGateRunning = false;
                         return;
                     }
 
-                    // 2) Server not open -> open shift using stored openingCash
-                    String tmpCash = sm.getOpeningCash();
-                    if (tmpCash == null || tmpCash.trim().isEmpty()) tmpCash = "0.00";
-
-                    final String openingCash = tmpCash;
-
-                    Log.i(TAG, "SHIFT_SYNC: server not open -> opening on server with cash=" + openingCash);
-
-                    repo.openShift(openingCash, "OFFLINE_SYNC", new ShiftRepository.OpenCallback() {
-                        @Override
-                        public void onSuccess(@NonNull com.example.valdker.models.Shift shift) {
-                            sm.setShiftOpen(true);
-                            sm.setShiftId(shift.id);
-                            sm.setOpeningCash(
-                                    (shift.opening_cash == null || shift.opening_cash.trim().isEmpty())
-                                            ? openingCash
-                                            : shift.opening_cash
-                            );
-                            Log.i(TAG, "SHIFT_SYNC: opened on server OK sid=" + shift.id);
-                        }
-
-                        @Override
-                        public void onError(int statusCode, @NonNull String message) {
-                            Log.e(TAG, "SHIFT_SYNC: openShift server failed " + statusCode + " " + message);
-                        }
-                    });
+                    shiftGateRunning = false;
+                    showShiftDialogOnce(repo, sm);
                 }
 
                 @Override
                 public void onError(@NonNull String message) {
-                    Log.e(TAG, "SHIFT_SYNC: getCurrent failed: " + message);
+                    h.removeCallbacks(timeout);
+                    Log.e(TAG, "SHIFT_GATE: getCurrent error: " + message);
+
+                    shiftGateRunning = false;
+                    showShiftDialogOnce(repo, sm);
                 }
             });
-
-        } catch (Exception e) {
-            Log.e(TAG, "SHIFT_SYNC: reconcile error: " + e.getMessage());
-        }
+        });
     }
 
     /**
-     * Show shift dialog safely (only once).
+     * Shows the shift dialog safely (only once).
      */
     private void showShiftDialogOnce(@NonNull ShiftRepository repo, @NonNull SessionManager sm) {
         if (!isActivityAlive()) {
@@ -377,39 +248,9 @@ public class MainActivity extends AppCompatActivity {
         ShiftOpenDialogFragment dlg = new ShiftOpenDialogFragment();
         dlg.setCancelable(false);
 
-        dlg.setListener((openingCash, note) -> {
-
-            // Re-check: if shift became active in Room between dialog open and submit
-            new Thread(() -> {
-                try {
-                    com.example.valdker.offline.repo.ShiftRepository offRepo =
-                            new com.example.valdker.offline.repo.ShiftRepository(getApplicationContext());
-                    ShiftEntity active = offRepo.getActiveShift();
-                    if (active != null) {
-                        sm.setShiftOpen(true);
-                        sm.setShiftLocalId(active.id);
-
-                        Log.i(TAG, "SHIFT_GATE: submit skipped; Room already has active shift localId=" + active.id);
-
-                        safeUi(() -> {
-                            shiftDialogShowing = false;
-                            dlg.dismissAllowingStateLoss();
-                            Toast.makeText(MainActivity.this, "Shift already open (OFFLINE)", Toast.LENGTH_SHORT).show();
-
-                            // if online and server id missing, try reconcile
-                            if (isNetworkAvailable() && sm.getShiftId() <= 0) {
-                                new Thread(() -> reconcileOfflineShiftToServer(repo, sm)).start();
-                            }
-                        });
-                        return;
-                    }
-                } catch (Exception ignored) {}
-
-                // proceed normal open
-                safeUi(() -> doOpenShift(openingCash, note, repo, sm, dlg));
-
-            }).start();
-        });
+        dlg.setListener((openingCash, note) ->
+                safeUi(() -> doOpenShift(openingCash, note, repo, sm, dlg))
+        );
 
         dlg.show(getSupportFragmentManager(), TAG_SHIFT_DIALOG);
     }
@@ -419,6 +260,12 @@ public class MainActivity extends AppCompatActivity {
                              @NonNull ShiftRepository repo,
                              @NonNull SessionManager sm,
                              @NonNull ShiftOpenDialogFragment dlg) {
+
+        if (!isNetworkAvailable()) {
+            shiftDialogShowing = false;
+            Toast.makeText(MainActivity.this, "Internet is required to open a shift.", Toast.LENGTH_LONG).show();
+            return;
+        }
 
         repo.openShift(openingCash, note, new ShiftRepository.OpenCallback() {
 
@@ -436,9 +283,6 @@ public class MainActivity extends AppCompatActivity {
                                 : shift.opening_cash
                 );
 
-                // Mirror: open offline shift
-                new Thread(() -> mirrorOpenShiftOffline(sm)).start();
-
                 safeUi(() -> dlg.dismissAllowingStateLoss());
             }
 
@@ -446,7 +290,6 @@ public class MainActivity extends AppCompatActivity {
             public void onError(int statusCode, @NonNull String message) {
                 Log.e(TAG, "SHIFT_GATE open error: " + statusCode + " " + message);
 
-                // 409 means shift already open on server
                 if (statusCode == 409) {
                     repo.getCurrent(new ShiftRepository.CurrentCallback() {
                         @Override
@@ -463,121 +306,28 @@ public class MainActivity extends AppCompatActivity {
                                                 : shift.opening_cash
                                 );
                                 Log.i(TAG, "SHIFT_GATE: 409 but current says OPEN id=" + shift.id);
-
-                                new Thread(() -> mirrorOpenShiftOffline(sm)).start();
                             } else {
-                                fallbackOpenShiftOffline(openingCash, sm, repo, dlg);
+                                safeUi(() -> Toast.makeText(
+                                        MainActivity.this,
+                                        "Shift is already open, but failed to load shift details.",
+                                        Toast.LENGTH_LONG
+                                ).show());
                             }
                         }
 
                         @Override
                         public void onError(@NonNull String msg) {
-                            Log.e(TAG, "SHIFT_GATE: 409 recheck failed: " + msg);
-                            fallbackOpenShiftOffline(openingCash, sm, repo, dlg);
+                            shiftDialogShowing = false;
+                            safeUi(() -> Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show());
                         }
                     });
                     return;
                 }
 
-                boolean looksOffline =
-                        statusCode <= 0 ||
-                                statusCode >= 500 ||
-                                message.toLowerCase().contains("timeout") ||
-                                message.toLowerCase().contains("unknownhost") ||
-                                message.toLowerCase().contains("unable") ||
-                                message.toLowerCase().contains("network") ||
-                                message.toLowerCase().contains("failed");
-
-                if (looksOffline) {
-                    fallbackOpenShiftOffline(openingCash, sm, repo, dlg);
-                    return;
-                }
-
-                // Other errors -> keep dialog visible for retry
                 shiftDialogShowing = false;
-                Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
-            }
-
-            private void fallbackOpenShiftOffline(@NonNull String openingCash,
-                                                  @NonNull SessionManager sm,
-                                                  @NonNull ShiftRepository repo,
-                                                  @NonNull ShiftOpenDialogFragment dlg) {
-
-                new Thread(() -> {
-                    try {
-                        double cashOffline;
-                        try {
-                            cashOffline = Double.parseDouble(openingCash.trim().isEmpty() ? "0" : openingCash.trim());
-                        } catch (Exception e) {
-                            cashOffline = 0.0;
-                        }
-
-                        com.example.valdker.offline.repo.ShiftRepository offRepo =
-                                new com.example.valdker.offline.repo.ShiftRepository(getApplicationContext());
-
-                        ShiftEntity active = offRepo.getActiveShift();
-                        if (active == null) {
-                            active = offRepo.openShift(cashOffline);
-                            Log.i(TAG, "SHIFT_GATE: opened OFFLINE localId=" + active.id);
-                        } else {
-                            Log.i(TAG, "SHIFT_GATE: OFFLINE shift already active localId=" + active.id);
-                        }
-
-                        sm.setShiftOpen(true);
-                        sm.setShiftLocalId(active.id);
-                        sm.setShiftId(0); // important: server id unknown
-                        sm.setOpeningCash(String.format(Locale.US, "%.2f", cashOffline));
-
-                        safeUi(() -> {
-                            shiftDialogShowing = false;
-                            dlg.dismissAllowingStateLoss();
-                            Toast.makeText(MainActivity.this, "Shift opened OFFLINE", Toast.LENGTH_LONG).show();
-
-                            // ✅ if network returns later, auto-sync will happen via onStart/ensureShiftOpenOrBlock
-                        });
-
-                    } catch (Exception ex) {
-                        safeUi(() -> {
-                            shiftDialogShowing = false;
-                            Toast.makeText(MainActivity.this,
-                                    "Open shift offline failed: " + ex.getMessage(),
-                                    Toast.LENGTH_LONG).show();
-
-                            showShiftDialogOnce(repo, sm);
-                        });
-                    }
-                }).start();
+                safeUi(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show());
             }
         });
-    }
-
-    /**
-     * Best-effort mirror: open offline shift after ONLINE open.
-     */
-    private void mirrorOpenShiftOffline(@NonNull SessionManager sm) {
-        try {
-            double cashOffline;
-            try {
-                cashOffline = Double.parseDouble(sm.getOpeningCash());
-            } catch (Exception e) {
-                cashOffline = 0.0;
-            }
-
-            com.example.valdker.offline.repo.ShiftRepository offRepo =
-                    new com.example.valdker.offline.repo.ShiftRepository(getApplicationContext());
-
-            ShiftEntity active = offRepo.getActiveShift();
-            if (active == null) {
-                ShiftEntity s = offRepo.openShift(cashOffline);
-                sm.setShiftLocalId(s.id);
-                Log.i(TAG, "SHIFT_GATE: mirrored OFFLINE shift opened localId=" + s.id);
-            } else {
-                sm.setShiftLocalId(active.id);
-                Log.i(TAG, "SHIFT_GATE: OFFLINE shift already active localId=" + active.id);
-            }
-        } catch (Exception ex) {
-            Log.e(TAG, "SHIFT_GATE: mirror offline open failed: " + ex.getMessage());
-        }
     }
 
     private boolean isNetworkAvailable() {
@@ -634,11 +384,11 @@ public class MainActivity extends AppCompatActivity {
                     tvShopAddress.setText(address.isEmpty() ? "—" : address);
                 }
 
-                if (imgShopLogo == null) return;
+                if (imgLogo == null) return;
 
                 String logoUrl = forceHttps(shop.logoUrl);
                 if (logoUrl == null || logoUrl.trim().isEmpty()) {
-                    imgShopLogo.setImageResource(R.drawable.bg_logo_circle);
+                    imgLogo.setImageResource(R.drawable.bg_logo_circle);
                     return;
                 }
 
@@ -647,7 +397,7 @@ public class MainActivity extends AppCompatActivity {
                         .circleCrop()
                         .placeholder(R.drawable.bg_logo_circle)
                         .error(R.drawable.bg_logo_circle)
-                        .into(imgShopLogo);
+                        .into(imgLogo);
             }
 
             @Override
@@ -655,13 +405,13 @@ public class MainActivity extends AppCompatActivity {
                 TextView tvBrand = findViewById(R.id.tvBrand);
                 if (tvBrand != null) tvBrand.setText("—");
                 if (tvShopAddress != null) tvShopAddress.setText("—");
-                if (imgShopLogo != null) imgShopLogo.setImageResource(R.drawable.bg_logo_circle);
+                if (imgLogo != null) imgLogo.setImageResource(R.drawable.bg_logo_circle);
             }
 
             @Override
             public void onError(String message) {
                 if (tvShopAddress != null) tvShopAddress.setText("—");
-                if (imgShopLogo != null) imgShopLogo.setImageResource(R.drawable.bg_logo_circle);
+                if (imgLogo != null) imgLogo.setImageResource(R.drawable.bg_logo_circle);
             }
         });
     }
@@ -688,8 +438,27 @@ public class MainActivity extends AppCompatActivity {
 
         tvCartBadge = findViewById(R.id.tvCartBadge);
         btnUser = findViewById(R.id.btnUser);
+        btnBarcode = findViewById(R.id.btnBarcode);
 
-        imgShopLogo = findViewById(R.id.imgShopLogo);
+        View vSearch = findViewById(R.id.tvSearchHint);
+        if (vSearch instanceof EditText) {
+            etSearch = (EditText) vSearch;
+        }
+
+        if (etSearch != null) {
+            etSearch.setOnEditorActionListener((v, actionId, event) -> {
+                if (event != null && event.getKeyCode() == android.view.KeyEvent.KEYCODE_ENTER) {
+                    String code = v.getText() != null ? v.getText().toString().trim() : "";
+                    if (!code.isEmpty()) {
+                        sendBarcodeToProductsFragment(code);
+                    }
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        imgLogo = findViewById(R.id.imgLogo);
         tvShopAddress = findViewById(R.id.tvShopAddress);
 
         cachedUsername = safe(session.getUsername(), "admin");
@@ -700,10 +469,150 @@ public class MainActivity extends AppCompatActivity {
         ensureDefaultFragment();
         setupBackHandling();
 
+        getSupportFragmentManager().addOnBackStackChangedListener(this::hideOverlayIfNoOverlayFragments);
+
         loadShopHeader();
         refreshCartBadge();
 
         ensureShiftOpenOrBlock();
+    }
+
+    private void sendBarcodeToProductsFragment(@NonNull String barcode) {
+        String clean = safeTrim(barcode);
+        if (clean.isEmpty()) {
+            return;
+        }
+
+        pendingBarcode = clean;
+        dispatchPendingBarcodeToProductsFragment();
+    }
+
+    private void dispatchPendingBarcodeToProductsFragment() {
+        final String barcode = pendingBarcode;
+        if (barcode == null || barcode.trim().isEmpty()) {
+            barcodeDispatchRunning = false;
+            return;
+        }
+
+        if (barcodeDispatchRunning) {
+            return;
+        }
+
+        barcodeDispatchRunning = true;
+
+        final android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
+        final int[] tries = {0};
+        final int maxTry = 12;
+
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                if (!isActivityAlive()) {
+                    barcodeDispatchRunning = false;
+                    return;
+                }
+
+                Fragment f = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
+
+                if (f instanceof ProductsFragment && f.isAdded() && f.getView() != null) {
+                    try {
+                        ((ProductsFragment) f).onBarcodeScanned(barcode);
+                        pendingBarcode = null;
+                    } catch (Exception e) {
+                        Log.e(TAG, "Failed dispatch barcode: " + e.getMessage(), e);
+                        Toast.makeText(MainActivity.this, "Failed to process barcode", Toast.LENGTH_SHORT).show();
+                    } finally {
+                        barcodeDispatchRunning = false;
+                    }
+                    return;
+                }
+
+                tries[0]++;
+                if (tries[0] < maxTry) {
+                    handler.postDelayed(this, 100);
+                } else {
+                    barcodeDispatchRunning = false;
+                    Toast.makeText(MainActivity.this, "Products screen not ready.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        };
+
+        handler.post(task);
+    }
+
+    private void checkCameraPermission() {
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{android.Manifest.permission.CAMERA},
+                    CAMERA_REQUEST
+            );
+
+        } else {
+            startBarcodeScanner();
+        }
+    }
+
+    private void startBarcodeScanner() {
+        Fragment existing = getSupportFragmentManager().findFragmentByTag(TAG_BARCODE_DIALOG);
+        if (existing != null) {
+            return;
+        }
+
+        BarcodeScannerDialogFragment dlg = new BarcodeScannerDialogFragment();
+
+        dlg.setListener(barcode -> {
+            String clean = safeTrim(barcode);
+            if (clean.isEmpty()) return;
+
+            safeUi(() -> sendBarcodeToProductsFragment(clean));
+        });
+
+        dlg.setCancelable(true);
+        dlg.show(getSupportFragmentManager(), TAG_BARCODE_DIALOG);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == CAMERA_REQUEST) {
+            if (grantResults.length > 0 &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                startBarcodeScanner();
+
+            } else {
+                Toast.makeText(
+                        this,
+                        "Camera permission required to scan barcode",
+                        Toast.LENGTH_LONG
+                ).show();
+            }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        com.google.zxing.integration.android.IntentResult result =
+                IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+
+        if (result != null) {
+            if (result.getContents() != null) {
+                String barcode = result.getContents();
+                sendBarcodeToProductsFragment(barcode);
+            } else {
+                Toast.makeText(this, "Scan cancelled", Toast.LENGTH_SHORT).show();
+            }
+            return;
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
@@ -723,7 +632,6 @@ public class MainActivity extends AppCompatActivity {
         refreshCartBadge();
         loadShopHeader();
 
-        // ✅ When returning to app, re-check and also auto-sync if needed
         ensureShiftOpenOrBlock();
     }
 
@@ -733,7 +641,8 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             unregisterReceiver(logoutReceiver);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         CartManager.getInstance(this).removeListener(cartListener);
     }
@@ -760,7 +669,20 @@ public class MainActivity extends AppCompatActivity {
         View btnCart = findViewById(R.id.btnCart);
         if (btnCart != null) btnCart.setOnClickListener(v -> openCartOverlay());
 
+        if (btnBarcode != null) {
+            btnBarcode.setOnClickListener(v -> onBarcodeClick());
+        }
+
         if (btnUser != null) btnUser.setOnClickListener(this::showUserMenu);
+    }
+
+    private void onBarcodeClick() {
+        if (session != null && !session.isShiftOpen()) {
+            Toast.makeText(this, "Open shift first.", Toast.LENGTH_SHORT).show();
+            ensureShiftOpenOrBlock();
+            return;
+        }
+        checkCameraPermission();
     }
 
     private void openCartOverlay() {
@@ -794,7 +716,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // ============================================================
-    // CATEGORIES (OFFLINE-FIRST)
+    // CATEGORIES (NO ROOM / OFFLINE)
     // ============================================================
     private void setupCategories() {
         RecyclerView rv = findViewById(R.id.rvCategories);
@@ -814,26 +736,24 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        loadCategoriesOfflineFirst();
+        loadCategoriesNoRoom();
     }
 
     private void applyCategoriesToUI(@NonNull List<Category> list, @NonNull String source) {
-        int incoming = (list == null) ? 0 : list.size();
+        int incoming = list.size();
 
         if (incoming == 0 && categoriesAppliedFromOnline) {
             return;
         }
 
         categoryList.clear();
-        categoryList.add(new Category(-1, "All", allIconUrl));
+        categoryList.add(new Category(-1, "All", null));
 
-        if (list != null) {
-            for (Category c : list) {
-                if (c == null) continue;
-                if (c.id == -1) continue;
-                if (c.name == null || c.name.trim().isEmpty()) continue;
-                categoryList.add(c);
-            }
+        for (Category c : list) {
+            if (c == null) continue;
+            if (c.id == -1) continue;
+            if (c.name == null || c.name.trim().isEmpty()) continue;
+            categoryList.add(c);
         }
 
         if (categoryAdapter != null) {
@@ -843,36 +763,82 @@ public class MainActivity extends AppCompatActivity {
         Log.i(TAG, "Categories applied size=" + categoryList.size() + " src=" + source);
     }
 
-    private void loadCategoriesOfflineFirst() {
+    /**
+     * Room/offline category cache has been removed.
+     * If you want categories from API later, plug it in here.
+     */
+    private void loadCategoriesNoRoom() {
+        applyCategoriesToUI(new ArrayList<>(), "BOOT_ALL_ONLY");
 
-        CategoryCacheRepository.loadFromRoom(this, new CategoryCacheRepository.ListCallback() {
-            @Override
-            public void onSuccess(@NonNull List<Category> cached) {
-                safeUi(() -> applyCategoriesToUI(cached, "ROOM_FIRST"));
-            }
-
-            @Override
-            public void onError(@NonNull String message) {
-                Log.w(TAG, "Room categories error: " + message);
-            }
-        });
-
-        if (!isNetworkAvailable()) {
+        final String token = session != null ? session.getToken() : null;
+        if (token == null || token.trim().isEmpty()) {
+            Log.w(TAG, "loadCategoriesNoRoom: token empty -> keep only All");
             return;
         }
 
-        CategoryCacheRepository.syncOnlineAndCache(this, new CategoryCacheRepository.ListCallback() {
-            @Override
-            public void onSuccess(@NonNull List<Category> online) {
-                categoriesAppliedFromOnline = (online != null && !online.isEmpty());
-                safeUi(() -> applyCategoriesToUI(online, "ONLINE"));
-            }
+        final String url = ApiConfig.url(session, "api/categories/");
 
+        Log.i(TAG, "loadCategoriesNoRoom: fetching " + url);
+
+        JsonArrayRequest req = new JsonArrayRequest(
+                Request.Method.GET,
+                url,
+                null,
+                (JSONArray res) -> {
+                    try {
+                        List<Category> out = new ArrayList<>();
+
+                        for (int i = 0; i < res.length(); i++) {
+                            JSONObject o = res.optJSONObject(i);
+                            if (o == null) continue;
+
+                            Category c = new Category();
+                            c.id = o.optInt("id", 0);
+                            c.name = o.optString("name", "");
+                            c.iconUrl = o.optString("icon_url", "");
+
+                            if (c.id <= 0) continue;
+                            if (c.name == null || c.name.trim().isEmpty()) continue;
+
+                            out.add(c);
+                        }
+
+                        categoriesAppliedFromOnline = true;
+                        applyCategoriesToUI(out, "ONLINE_API");
+
+                        Log.i(TAG, "loadCategoriesNoRoom: success count=" + out.size());
+
+                    } catch (Exception e) {
+                        Log.e(TAG, "loadCategoriesNoRoom: parse error " + e.getMessage(), e);
+                    }
+                },
+                err -> {
+                    int code = (err.networkResponse != null) ? err.networkResponse.statusCode : -1;
+                    String body = "";
+
+                    try {
+                        if (err.networkResponse != null && err.networkResponse.data != null) {
+                            body = new String(err.networkResponse.data, StandardCharsets.UTF_8);
+                        } else if (err.getMessage() != null) {
+                            body = err.getMessage();
+                        }
+                    } catch (Exception ignored) {
+                    }
+
+                    Log.w(TAG, "loadCategoriesNoRoom: failed code=" + code + " body=" + body);
+                }
+        ) {
             @Override
-            public void onError(@NonNull String message) {
-                Log.e(TAG, "Categories sync error: " + message);
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> h = new HashMap<>();
+                h.put("Accept", "application/json");
+                h.put("Authorization", "Token " + token.trim());
+                return h;
             }
-        });
+        };
+
+        req.setTag("CATEGORIES_MAIN");
+        ApiClient.getInstance(this).add(req);
     }
 
     private void setupBackHandling() {
@@ -915,7 +881,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // ============================================================
-    // SHIFT CLOSE (ONLINE FIRST, FALLBACK OFFLINE)
+    // SHIFT CLOSE (ONLINE ONLY)
     // ============================================================
     private void closeShiftOnly() {
         if (userPopup != null && userPopup.isShowing()) userPopup.dismiss();
@@ -925,125 +891,39 @@ public class MainActivity extends AppCompatActivity {
         final int shopId = resolveShopIdSafe();
         final ShiftRepository repo = new ShiftRepository(MainActivity.this, session);
 
-        // If online, prefer closing ONLINE shift (server truth)
-        if (isNetworkAvailable()) {
-            repo.getCurrent(shopId, new ShiftRepository.CurrentCallback() {
-                @Override
-                public void onSuccess(boolean open, com.example.valdker.models.Shift shift) {
-                    if (open && shift != null) {
-                        safeUi(() -> showCloseShiftDialog(shopId, repo, false));
-                        return;
-                    }
-                    // server says no open shift -> close offline if exists
-                    checkAndCloseOfflineIfAny();
-                }
-
-                @Override
-                public void onError(@NonNull String message) {
-                    // fallback offline only for network-like errors
-                    if (isNetworkError(message)) {
-                        checkAndCloseOfflineIfAny();
-                    } else {
-                        closeShiftFlowRunning = false;
-                        safeUi(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show());
-                    }
-                }
-            });
+        if (!isNetworkAvailable()) {
+            closeShiftFlowRunning = false;
+            safeUi(() -> Toast.makeText(
+                    MainActivity.this,
+                    "Internet is required to close a shift.",
+                    Toast.LENGTH_LONG
+            ).show());
             return;
         }
 
-        // offline: close offline if exists
-        checkAndCloseOfflineIfAny();
-    }
-
-    private void checkAndCloseOfflineIfAny() {
-        new Thread(() -> {
-            try {
-                com.example.valdker.offline.repo.ShiftRepository offRepo =
-                        new com.example.valdker.offline.repo.ShiftRepository(getApplicationContext());
-
-                ShiftEntity active = offRepo.getActiveShift();
-
-                safeUi(() -> {
-                    closeShiftFlowRunning = false;
-                    if (active != null) {
-                        showCloseShiftOfflineDialog(offRepo, active);
-                    } else {
-                        Toast.makeText(MainActivity.this, "Tidak ada shift yang buka.", Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-            } catch (Exception e) {
-                safeUi(() -> {
-                    closeShiftFlowRunning = false;
-                    Toast.makeText(MainActivity.this, "Offline check error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                });
+        repo.getCurrent(shopId, new ShiftRepository.CurrentCallback() {
+            @Override
+            public void onSuccess(boolean open, com.example.valdker.models.Shift shift) {
+                closeShiftFlowRunning = false;
+                if (open && shift != null) {
+                    safeUi(() -> showCloseShiftDialog(shopId, repo, false));
+                } else {
+                    safeUi(() -> Toast.makeText(MainActivity.this,
+                            "There is no open shift.",
+                            Toast.LENGTH_SHORT).show());
+                }
             }
-        }).start();
-    }
 
-    private boolean isNetworkError(String msg) {
-        if (msg == null) return true;
-        String m = msg.toLowerCase();
-        return m.contains("timeout")
-                || m.contains("unknownhost")
-                || m.contains("unable")
-                || m.contains("failed to connect")
-                || m.contains("network")
-                || m.contains("connection")
-                || m.contains("ssl")
-                || m.contains("socket");
-    }
-
-    private void showCloseShiftOfflineDialog(
-            @NonNull com.example.valdker.offline.repo.ShiftRepository offRepo,
-            @NonNull ShiftEntity active
-    ) {
-        View v = LayoutInflater.from(MainActivity.this)
-                .inflate(R.layout.dialog_close_shift, null);
-
-        EditText etClosing = v.findViewById(R.id.etClosingCash);
-
-        new MaterialAlertDialogBuilder(MainActivity.this)
-                .setTitle("Closing Cash (OFFLINE)")
-                .setView(v)
-                .setCancelable(false)
-                .setNegativeButton("Cancel", (d, w) -> d.dismiss())
-                .setPositiveButton("Close Shift", (d, w) -> {
-
-                    double closingVal = 0.0;
-                    try {
-                        closingVal = Double.parseDouble(etClosing.getText().toString().trim());
-                    } catch (Exception ignored) {}
-
-                    final double fClosing = closingVal;
-                    final long fShiftId = active.id;
-
-                    new Thread(() -> {
-                        try {
-                            offRepo.closeShift(fShiftId, fClosing);
-
-                            session.clearShift();
-
-                            safeUi(() -> {
-                                Toast.makeText(MainActivity.this, "Shift closed OFFLINE", Toast.LENGTH_LONG).show();
-                                shiftGateRunning = false;
-                                shiftDialogShowing = false;
-                                ensureShiftOpenOrBlock();
-                            });
-
-                        } catch (Exception ex) {
-                            safeUi(() -> Toast.makeText(MainActivity.this,
-                                    "Close shift failed: " + ex.getMessage(),
-                                    Toast.LENGTH_LONG).show());
-                        }
-                    }).start();
-                })
-                .show();
+            @Override
+            public void onError(@NonNull String message) {
+                closeShiftFlowRunning = false;
+                safeUi(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show());
+            }
+        });
     }
 
     // ============================================================
-    // LOGOUT + CLOSE SHIFT ONLINE (existing)
+    // LOGOUT + CLOSE SHIFT ONLINE
     // ============================================================
     private void logout() {
         if (userPopup != null && userPopup.isShowing()) userPopup.dismiss();
@@ -1106,7 +986,7 @@ public class MainActivity extends AppCompatActivity {
                 String note = (etNote.getText() != null) ? etNote.getText().toString().trim() : "";
 
                 if (closingCash.isEmpty()) {
-                    etClosing.setError("Taka osan obrigatóriu");
+                    etClosing.setError("Closing cash is required.");
                     etClosing.requestFocus();
                     return;
                 }
@@ -1127,9 +1007,11 @@ public class MainActivity extends AppCompatActivity {
                                 doLogoutNow();
                             } else {
                                 CartManager.getInstance(MainActivity.this).clear();
-                                Toast.makeText(MainActivity.this,
-                                        "Turnu taka ona. Favor loke turnu atu hahú halo tranzasaun.",
-                                        Toast.LENGTH_LONG).show();
+                                Toast.makeText(
+                                        MainActivity.this,
+                                        "Shift closed. Please open a new shift before making transactions.",
+                                        Toast.LENGTH_LONG
+                                ).show();
 
                                 shiftGateRunning = false;
                                 shiftDialogShowing = false;
@@ -1199,8 +1081,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
 
-        if (userPopup != null && userPopup.isShowing()) userPopup.dismiss();
+        if (userPopup != null && userPopup.isShowing()) {
+            userPopup.dismiss();
+        }
 
+        ApiClient.getInstance(this).cancelAll("CATEGORIES_MAIN");
         ApiClient.getInstance(this).cancelAll("CAT_CACHE_REPO");
         ApiClient.getInstance(this).cancelAll("SHIFT");
     }

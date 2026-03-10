@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp"
+    android:background="@android:color/transparent">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardDialog"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:backgroundTint="#F9FAFB"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="0dp"
+        app:strokeColor="#E5E7EB"
+        app:strokeWidth="1dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/tvTitlePurchaseAdd"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Add Purchase"
+                android:textColor="#111827"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <ProgressBar
+                android:id="@+id/progressCreatePurchase"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:visibility="gone"
+                app:layout_constraintTop_toBottomOf="@id/tvTitlePurchaseAdd"
+                app:layout_constraintBottom_toTopOf="@id/bottomBarPurchaseAdd"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/scrollPurchaseAdd"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginTop="10dp"
+                android:clipToPadding="false"
+                android:fillViewport="true"
+                android:overScrollMode="never"
+                android:paddingBottom="12dp"
+                app:layout_constraintTop_toBottomOf="@id/tvTitlePurchaseAdd"
+                app:layout_constraintBottom_toTopOf="@id/bottomBarPurchaseAdd"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <!-- Purchase Details -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="14dp"
+                        android:backgroundTint="#F3F4F6"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="#E5E7EB"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="18dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Purchase Details"
+                                android:textColor="#111827"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="14dp"
+                                android:text="Supplier"
+                                android:textColor="#6B7280"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:backgroundTint="#FFFFFF"
+                                app:cardCornerRadius="16dp"
+                                app:cardElevation="0dp"
+                                app:strokeColor="#D1D5DB"
+                                app:strokeWidth="1dp">
+
+                                <Spinner
+                                    android:id="@+id/spSupplier"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="54dp"
+                                    android:background="@android:color/transparent"
+                                    android:paddingStart="14dp"
+                                    android:paddingEnd="14dp" />
+
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="14dp"
+                                android:hint="Invoice ID (optional)"
+                                app:boxBackgroundColor="#FFFFFF"
+                                app:boxBackgroundMode="outline"
+                                app:boxCornerRadiusBottomEnd="16dp"
+                                app:boxCornerRadiusBottomStart="16dp"
+                                app:boxCornerRadiusTopEnd="16dp"
+                                app:boxCornerRadiusTopStart="16dp"
+                                app:boxStrokeColor="#D1D5DB"
+                                app:hintTextColor="#6B7280">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etInvoice"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="text"
+                                    android:textColor="#111827"
+                                    android:textColorHint="#9CA3AF" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="12dp"
+                                android:hint="Note (optional)"
+                                app:boxBackgroundColor="#FFFFFF"
+                                app:boxBackgroundMode="outline"
+                                app:boxCornerRadiusBottomEnd="16dp"
+                                app:boxCornerRadiusBottomStart="16dp"
+                                app:boxCornerRadiusTopEnd="16dp"
+                                app:boxCornerRadiusTopStart="16dp"
+                                app:boxStrokeColor="#D1D5DB"
+                                app:hintTextColor="#6B7280">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etNote"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="top|start"
+                                    android:inputType="textMultiLine"
+                                    android:minLines="3"
+                                    android:textColor="#111827"
+                                    android:textColorHint="#9CA3AF" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="14dp"
+                                android:text="Purchase Date"
+                                android:textColor="#6B7280"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:backgroundTint="#FFFFFF"
+                                app:cardCornerRadius="16dp"
+                                app:cardElevation="0dp"
+                                app:strokeColor="#D1D5DB"
+                                app:strokeWidth="1dp">
+
+                                <TextView
+                                    android:id="@+id/tvPurchaseDate"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="54dp"
+                                    android:gravity="center_vertical"
+                                    android:paddingStart="16dp"
+                                    android:paddingEnd="16dp"
+                                    android:text="2026-03-09"
+                                    android:textColor="#111827"
+                                    android:textSize="15sp" />
+                            </com.google.android.material.card.MaterialCardView>
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Add Item -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:backgroundTint="#F3F4F6"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="0dp"
+                        app:strokeColor="#E5E7EB"
+                        app:strokeWidth="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="18dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Add Item"
+                                android:textColor="#111827"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="14dp"
+                                android:text="Product"
+                                android:textColor="#6B7280"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:backgroundTint="#FFFFFF"
+                                app:cardCornerRadius="16dp"
+                                app:cardElevation="0dp"
+                                app:strokeColor="#D1D5DB"
+                                app:strokeWidth="1dp">
+
+                                <Spinner
+                                    android:id="@+id/spProduct"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="54dp"
+                                    android:background="@android:color/transparent"
+                                    android:paddingStart="14dp"
+                                    android:paddingEnd="14dp" />
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="14dp"
+                                android:orientation="horizontal">
+
+                                <com.google.android.material.textfield.TextInputLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:hint="Qty"
+                                    app:boxBackgroundColor="#FFFFFF"
+                                    app:boxBackgroundMode="outline"
+                                    app:boxCornerRadiusBottomEnd="16dp"
+                                    app:boxCornerRadiusBottomStart="16dp"
+                                    app:boxCornerRadiusTopEnd="16dp"
+                                    app:boxCornerRadiusTopStart="16dp"
+                                    app:boxStrokeColor="#D1D5DB"
+                                    app:hintTextColor="#6B7280">
+
+                                    <com.google.android.material.textfield.TextInputEditText
+                                        android:id="@+id/etQty"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:inputType="number"
+                                        android:textColor="#111827"
+                                        android:textColorHint="#9CA3AF" />
+                                </com.google.android.material.textfield.TextInputLayout>
+
+                                <com.google.android.material.textfield.TextInputLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="10dp"
+                                    android:hint="Cost price"
+                                    app:boxBackgroundColor="#FFFFFF"
+                                    app:boxBackgroundMode="outline"
+                                    app:boxCornerRadiusBottomEnd="16dp"
+                                    app:boxCornerRadiusBottomStart="16dp"
+                                    app:boxCornerRadiusTopEnd="16dp"
+                                    app:boxCornerRadiusTopStart="16dp"
+                                    app:boxStrokeColor="#D1D5DB"
+                                    app:hintTextColor="#6B7280">
+
+                                    <com.google.android.material.textfield.TextInputEditText
+                                        android:id="@+id/etCost"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:inputType="numberDecimal"
+                                        android:textColor="#111827"
+                                        android:textColorHint="#9CA3AF" />
+                                </com.google.android.material.textfield.TextInputLayout>
+                            </LinearLayout>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="14dp"
+                                android:text="Expired Date (optional)"
+                                android:textColor="#6B7280"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+
+                            <com.google.android.material.card.MaterialCardView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:backgroundTint="#FFFFFF"
+                                app:cardCornerRadius="16dp"
+                                app:cardElevation="0dp"
+                                app:strokeColor="#D1D5DB"
+                                app:strokeWidth="1dp">
+
+                                <TextView
+                                    android:id="@+id/tvExpiredDate"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="54dp"
+                                    android:gravity="center_vertical"
+                                    android:paddingStart="16dp"
+                                    android:paddingEnd="16dp"
+                                    android:text="2026-03-09"
+                                    android:textColor="#111827"
+                                    android:textSize="15sp" />
+
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnAddItem"
+                                style="@style/Widget.MaterialComponents.Button"
+                                android:layout_width="match_parent"
+                                android:layout_height="54dp"
+                                android:layout_marginTop="16dp"
+                                android:backgroundTint="#22C55E"
+                                android:text="Add Item"
+                                android:textAllCaps="false"
+                                android:textColor="#FFFFFF"
+                                android:textSize="15sp"
+                                android:textStyle="bold"
+                                app:cornerRadius="16dp"
+                                app:iconPadding="8dp" />
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/rvDraftItems"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="14dp"
+                                android:clipToPadding="false"
+                                android:nestedScrollingEnabled="false" />
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <Space
+                        android:layout_width="match_parent"
+                        android:layout_height="12dp" />
+
+                </LinearLayout>
+
+            </androidx.core.widget.NestedScrollView>
+
+            <!-- Bottom bar -->
+            <LinearLayout
+                android:id="@+id/bottomBarPurchaseAdd"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="end|center_vertical"
+                android:orientation="horizontal"
+                android:paddingTop="10dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <TextView
+                    android:id="@+id/btnCancelPurchase"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:paddingStart="12dp"
+                    android:paddingTop="10dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="10dp"
+                    android:text="Cancel"
+                    android:textColor="#22C55E"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/btnSavePurchase"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:background="@android:color/transparent"
+                    android:paddingStart="12dp"
+                    android:paddingTop="10dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="10dp"
+                    android:text="Save"
+                    android:textColor="#22C55E"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

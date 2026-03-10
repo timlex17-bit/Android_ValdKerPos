@@ -7,13 +7,16 @@
     android:layout_height="match_parent"
     android:background="#F6F7FB">
 
-    <!-- HEADER (native) -->
+    <!-- HEADER (HP Compact) -->
     <androidx.cardview.widget.CardView
         android:id="@+id/nativeHeader"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="14dp"
-        app:cardCornerRadius="22dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="8dp"
+        app:cardCornerRadius="20dp"
         app:cardElevation="2dp"
         app:cardUseCompatPadding="true"
         app:layout_constraintTop_toTopOf="parent"
@@ -27,7 +30,7 @@
             android:padding="14dp"
             android:background="@drawable/bg_header">
 
-            <!-- Row 1: Brand + status -->
+            <!-- Row 1-->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -36,89 +39,115 @@
 
                 <!-- Shop Logo -->
                 <ImageView
-                    android:id="@+id/imgShopLogo"
-                    android:layout_width="34dp"
-                    android:layout_height="34dp"
-                    android:layout_marginEnd="10dp"
+                    android:id="@+id/imgLogo"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:layout_marginEnd="12dp"
                     android:scaleType="centerCrop"
                     android:src="@drawable/bg_logo_circle"
                     android:contentDescription="Shop logo" />
 
-                <!-- Brand (dynamic text) -->
-                <TextView
-                    android:id="@+id/tvBrand"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="BemVindo"
-                    android:textStyle="bold"
-                    android:textSize="22sp"
-                    android:textColor="#111827" />
-
-                <!-- Address (dynamic) -->
-                <TextView
-                    android:id="@+id/tvShopAddress"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:text="POS"
-                    android:textSize="13sp"
-                    android:textColor="#6B7280"
-                    android:maxLines="1"
-                    android:ellipsize="end" />
-
-                <Space
+                <!-- Brand + Address Stacked -->
+                <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:paddingEnd="8dp">
 
-                <!-- status chip -->
+                    <TextView
+                        android:id="@+id/tvBrand"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="BemVindo"
+                        android:textStyle="bold"
+                        android:textSize="17sp"
+                        android:textColor="#111827"
+                        android:maxLines="1"
+                        android:ellipsize="end"/>
+
+                    <TextView
+                        android:id="@+id/tvShopAddress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="POS"
+                        android:textSize="12sp"
+                        android:textColor="#6B7280"
+                        android:maxLines="1"
+                        android:ellipsize="end"/>
+
+                </LinearLayout>
+
+                <!-- Status Chip -->
                 <LinearLayout
                     android:id="@+id/chipStatus"
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
+                    android:layout_height="40dp"
                     android:background="@drawable/bg_chip"
                     android:gravity="center_vertical"
                     android:paddingLeft="12dp"
                     android:paddingRight="12dp">
 
-                    <View
-                        android:id="@+id/dotStatus"
-                        android:layout_width="8dp"
-                        android:layout_height="8dp"
-                        android:layout_marginEnd="8dp"
-                        android:background="@drawable/bg_status_dot" />
+<!--                    <View-->
+<!--                        android:id="@+id/dotStatus"-->
+<!--                        android:layout_width="9dp"-->
+<!--                        android:layout_height="9dp"-->
+<!--                        android:layout_marginEnd="8dp"-->
+<!--                        android:background="@drawable/bg_status_dot" />-->
 
+                    <!-- Status -->
+<!--                    <TextView-->
+<!--                        android:id="@+id/tvStatus"-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:text="Offline"-->
+<!--                        android:textStyle="bold"-->
+<!--                        android:textSize="13sp"-->
+<!--                        android:textColor="#374151" />-->
+
+                    <!-- Cart Icon -->
+                    <ImageButton
+                        android:id="@+id/btnCart"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@android:color/transparent"
+                        android:src="@drawable/ic_shopping_cart"
+                        android:contentDescription="Cart"
+                        android:scaleType="centerInside"
+                        app:tint="#374151" />
+
+                    <!-- Badge Cart -->
                     <TextView
-                        android:id="@+id/tvStatus"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Offline"
+                        android:id="@+id/tvCartBadge"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_marginStart="-10dp"
+                        android:layout_marginTop="-10dp"
+                        android:gravity="center"
+                        android:text="0"
+                        android:textSize="10sp"
                         android:textStyle="bold"
-                        android:textSize="13sp"
-                        android:textColor="#374151" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="  📶"
-                        android:textSize="13sp"
-                        android:textColor="#9CA3AF" />
+                        android:textColor="#FFFFFF"
+                        android:background="@drawable/bg_badge"
+                        android:visibility="gone" />
                 </LinearLayout>
 
             </LinearLayout>
 
-            <!-- Row 2: Search + icons -->
+            <!-- Row 2: Search + Icons -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="10dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
-                <!-- Search box fake (native look) -->
+                <!-- Search Input -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="0dp"
-                    android:layout_height="44dp"
+                    android:layout_height="42dp"
                     android:layout_weight="1"
                     app:cardCornerRadius="18dp"
                     app:cardElevation="0dp"
@@ -128,8 +157,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:gravity="center_vertical"
-                        android:paddingLeft="14dp"
-                        android:paddingRight="14dp">
+                        android:paddingLeft="12dp"
+                        android:paddingRight="12dp"
+                        android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -137,61 +167,54 @@
                             android:text="⌕"
                             android:textSize="16sp"
                             android:textColor="#9CA3AF"
-                            android:layout_marginEnd="10dp" />
+                            android:layout_marginEnd="8dp" />
 
-                        <TextView
+                        <EditText
                             android:id="@+id/tvSearchHint"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:text="Search"
-                            android:textSize="15sp"
-                            android:textColor="#9CA3AF" />
+                            android:layout_weight="1"
+                            android:hint="Search"
+                            android:textSize="14sp"
+                            android:textColor="#111827"
+                            android:textColorHint="#9CA3AF"
+                            android:background="@null"
+                            android:singleLine="true"
+                            android:imeOptions="actionSearch"
+                            android:inputType="text" />
                     </LinearLayout>
+
                 </androidx.cardview.widget.CardView>
 
-                <!-- Cart button + Badge -->
+                <!-- Cart Button + Badge -->
                 <FrameLayout
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_marginStart="10dp">
 
                     <ImageButton
-                        android:id="@+id/btnCart"
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
+                        android:id="@+id/btnBarcode"
+                        android:layout_width="42dp"
+                        android:layout_height="42dp"
                         android:background="@drawable/bg_chip"
-                        android:src="@drawable/ic_shopping_cart"
+                        android:src="@drawable/ic_barcode"
                         android:contentDescription="Cart"
                         android:scaleType="centerInside"
                         app:tint="#374151" />
 
-                    <!-- Badge -->
-                    <TextView
-                        android:id="@+id/tvCartBadge"
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:layout_gravity="top|end"
-                        android:layout_marginTop="-4dp"
-                        android:layout_marginEnd="-4dp"
-                        android:gravity="center"
-                        android:text="0"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:textColor="#FFFFFF"
-                        android:background="@drawable/bg_badge"
-                        android:visibility="gone" />
                 </FrameLayout>
 
-                <!-- User button -->
+                <!-- User Button -->
                 <ImageButton
                     android:id="@+id/btnUser"
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_marginStart="10dp"
                     android:background="@drawable/bg_chip"
                     android:src="@drawable/ic_account_circle"
                     android:contentDescription="User"
-                    android:scaleType="centerInside" />
+                    android:scaleType="centerInside"
+                    app:tint="#374151"/>
 
             </LinearLayout>
 
@@ -203,21 +226,23 @@
                 android:textStyle="bold"
                 android:textSize="12sp"
                 android:textColor="#9CA3AF"
-                android:layout_marginTop="14dp"
-                android:layout_marginBottom="8dp" />
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="6dp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvCategories"
                 android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
+                android:layout_height="56dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
                 android:clipToPadding="false"
                 android:overScrollMode="never"/>
+
         </LinearLayout>
+
     </androidx.cardview.widget.CardView>
 
-    <!-- CONTENT AREA (Fragment Container) -->
+    <!-- CONTENT AREA -->
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragmentContainer"
         android:name="com.example.valdker.ui.ProductsFragment"
@@ -228,7 +253,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Global overlay container: must cover header + content -->
+    <!-- Global Overlay Container -->
     <FrameLayout
         android:id="@+id/overlayContainer"
         android:layout_width="0dp"

@@ -110,6 +110,7 @@ public class InventoryCountFormDialog extends DialogFragment {
         View v = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_inventory_count_form, null, false);
 
+        android.widget.TextView tvTitle = v.findViewById(R.id.tvTitleInventoryCountForm);
         etTitle = v.findViewById(R.id.etTitle);
         etNote  = v.findViewById(R.id.etNote);
         rvItems = v.findViewById(R.id.rvItems);
@@ -117,6 +118,8 @@ public class InventoryCountFormDialog extends DialogFragment {
         btnSave = v.findViewById(R.id.btnSave);
         btnCancel = v.findViewById(R.id.btnCancel);
         progress = v.findViewById(R.id.progress);
+
+        tvTitle.setText("edit".equals(mode) ? "Edit Stock Count" : "New Stock Count");
 
         rvItems.setLayoutManager(new LinearLayoutManager(requireContext()));
         draftAdapter = new InventoryCountItemDraftAdapter(productsJson, drafts, position -> {
@@ -132,11 +135,9 @@ public class InventoryCountFormDialog extends DialogFragment {
         });
         rvItems.setAdapter(draftAdapter);
 
-        // Prefill for edit mode
         if ("edit".equals(mode)) {
             prefillEdit();
         } else {
-            // default 1 row
             drafts.add(new InventoryCountItemDraftAdapter.ItemDraft());
             draftAdapter.notifyItemInserted(0);
         }
@@ -154,10 +155,7 @@ public class InventoryCountFormDialog extends DialogFragment {
             else submitCreate();
         });
 
-        String title = "edit".equals(mode) ? "Edit Stock Count" : "New Stock Count";
-
         return new MaterialAlertDialogBuilder(requireContext())
-                .setTitle(title)
                 .setView(v)
                 .create();
     }
@@ -212,11 +210,11 @@ public class InventoryCountFormDialog extends DialogFragment {
             InventoryCountItemDraftAdapter.ItemDraft d = drafts.get(i);
 
             if (d.productId <= 0) {
-                Toast.makeText(requireContext(), "Pilih produk di baris " + (i + 1), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Select a product in the row " + (i + 1), Toast.LENGTH_SHORT).show();
                 return null;
             }
             if (d.countedStock < 0) {
-                Toast.makeText(requireContext(), "Qty tidak boleh negatif (baris " + (i + 1) + ")", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Qty cannot be negative (line " + (i + 1) + ")", Toast.LENGTH_SHORT).show();
                 return null;
             }
 
@@ -229,7 +227,7 @@ public class InventoryCountFormDialog extends DialogFragment {
         }
 
         if (items.length() == 0) {
-            Toast.makeText(requireContext(), "Tambah minimal 1 item", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Add at least 1 item", Toast.LENGTH_SHORT).show();
             return null;
         }
 

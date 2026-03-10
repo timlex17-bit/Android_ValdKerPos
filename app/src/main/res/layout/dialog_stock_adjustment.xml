@@ -1,97 +1,212 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#F9FAFB"
+    android:padding="16dp">
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/tvTitleStockAdjustment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:text="Add Stock Adjustment"
+        android:textColor="#111827"
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
-        <!-- Product -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Product *"
-            android:textStyle="bold" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:fillViewport="true"
+        android:overScrollMode="never"
+        android:background="@android:color/transparent">
 
-        <Spinner
-            android:id="@+id/spProduct"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="6dp" />
-
-        <!-- Old stock -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Old stock *"
-            android:textStyle="bold"
-            android:layout_marginTop="14dp" />
-
-        <EditText
-            android:id="@+id/etOldStock"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:inputType="number"
-            android:hint="Old stock"
-            android:layout_marginTop="6dp" />
-
-        <!-- New stock -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="New stock *"
-            android:textStyle="bold"
-            android:layout_marginTop="14dp" />
-
-        <EditText
-            android:id="@+id/etNewStock"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:inputType="number"
-            android:hint="New stock"
-            android:layout_marginTop="6dp" />
-
-        <!-- Reason -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Reason *"
-            android:textStyle="bold"
-            android:layout_marginTop="14dp" />
-
-        <Spinner
-            android:id="@+id/spReason"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="6dp" />
-
-        <!-- Note -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Note"
-            android:textStyle="bold"
-            android:layout_marginTop="14dp" />
-
-        <EditText
-            android:id="@+id/etNote"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minLines="3"
-            android:gravity="top"
-            android:hint="Optional note"
-            android:layout_marginTop="6dp" />
+            android:orientation="vertical">
 
-        <!-- adjusted_at & adjusted_by: otomatis -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Adjusted at &amp; Adjusted by: otomatis dari sistem"
-            android:textSize="12sp"
-            android:layout_marginTop="14dp" />
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#F3F4F6"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#E5E7EB">
 
-    </LinearLayout>
-</ScrollView>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Adjustment Details"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:textColor="#111827" />
+
+                    <!-- Product -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:text="Product *"
+                        android:textColor="#6B7280"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:backgroundTint="#FFFFFF"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="#D1D5DB">
+
+                        <Spinner
+                            android:id="@+id/spProduct"
+                            android:layout_width="match_parent"
+                            android:layout_height="54dp"
+                            android:background="@android:color/transparent"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Old stock -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:hint="Old stock *"
+                        app:boxBackgroundMode="outline"
+                        app:boxBackgroundColor="#FFFFFF"
+                        app:boxStrokeColor="#D1D5DB"
+                        app:boxCornerRadiusTopStart="16dp"
+                        app:boxCornerRadiusTopEnd="16dp"
+                        app:boxCornerRadiusBottomStart="16dp"
+                        app:boxCornerRadiusBottomEnd="16dp"
+                        app:hintTextColor="#6B7280">
+
+                        <EditText
+                            android:id="@+id/etOldStock"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:clickable="false"
+                            android:cursorVisible="false"
+                            android:focusable="false"
+                            android:focusableInTouchMode="false"
+                            android:inputType="none"
+                            android:longClickable="false"
+                            android:textColor="#111827"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- New stock -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:hint="New stock *"
+                        app:boxBackgroundMode="outline"
+                        app:boxBackgroundColor="#FFFFFF"
+                        app:boxStrokeColor="#D1D5DB"
+                        app:boxCornerRadiusTopStart="16dp"
+                        app:boxCornerRadiusTopEnd="16dp"
+                        app:boxCornerRadiusBottomStart="16dp"
+                        app:boxCornerRadiusBottomEnd="16dp"
+                        app:hintTextColor="#6B7280">
+
+                        <EditText
+                            android:id="@+id/etNewStock"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number"
+                            android:textColor="#111827"
+                            android:textColorHint="#9CA3AF"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Reason -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:text="Reason *"
+                        android:textColor="#6B7280"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:backgroundTint="#FFFFFF"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="#D1D5DB">
+
+                        <Spinner
+                            android:id="@+id/spReason"
+                            android:layout_width="match_parent"
+                            android:layout_height="54dp"
+                            android:background="@android:color/transparent"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Note -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:hint="Note"
+                        app:boxBackgroundMode="outline"
+                        app:boxBackgroundColor="#FFFFFF"
+                        app:boxStrokeColor="#D1D5DB"
+                        app:boxCornerRadiusTopStart="16dp"
+                        app:boxCornerRadiusTopEnd="16dp"
+                        app:boxCornerRadiusBottomStart="16dp"
+                        app:boxCornerRadiusBottomEnd="16dp"
+                        app:hintTextColor="#6B7280">
+
+                        <EditText
+                            android:id="@+id/etNote"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="top|start"
+                            android:minLines="3"
+                            android:textColor="#111827"
+                            android:textColorHint="#9CA3AF"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:text="Adjusted at &amp; Adjusted by: otomatis dari sistem"
+                        android:textColor="#6B7280"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="22dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

@@ -72,9 +72,16 @@ public class ProductReturnDetailActivity extends AppCompatActivity {
     }
 
     private void bind() {
-        tvTitle.setText("Return #" + data.id);
 
         String inv = data.invoiceNumber != null ? data.invoiceNumber.trim() : "";
+        if (!inv.isEmpty()) {
+            tvTitle.setText(inv);
+        } else if (data.order != null) {
+            tvTitle.setText("Order #" + data.order);
+        } else {
+            tvTitle.setText("Return #" + data.id);
+        }
+
         if (inv.isEmpty()) {
             tvInvoice.setText("Order: " + (data.order != null ? data.order : "-"));
         } else {
@@ -88,7 +95,7 @@ public class ProductReturnDetailActivity extends AppCompatActivity {
         String returnedByName = (data.returnedBy != null) ? data.returnedBy.bestName() : "-";
         tvReturnedBy.setText("Returned by: " + returnedByName);
 
-        tvReturnedAt.setText("Returned: " + (data.returnedAt != null && !data.returnedAt.trim().isEmpty() ? data.returnedAt : "-"));
+        tvReturnedAt.setText("Returned: " + formatIso(data.returnedAt));
 
         String note = data.note != null ? data.note.trim() : "";
         tvNote.setText("Note: " + (note.isEmpty() ? "-" : note));
@@ -96,6 +103,34 @@ public class ProductReturnDetailActivity extends AppCompatActivity {
         adapter.setData(data.items);
 
         tvSummary.setText("Qty: " + trimZero(data.totalQty()) + " • Total: " + usd.format(data.totalAmount()));
+    }
+
+    private String formatIso(String iso) {
+        if (iso == null || iso.trim().isEmpty()) return "-";
+
+        try {
+            java.text.SimpleDateFormat input =
+                    new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX", java.util.Locale.US);
+            java.text.SimpleDateFormat output =
+                    new java.text.SimpleDateFormat("dd MMM yyyy • HH:mm", java.util.Locale.US);
+
+            java.util.Date date = input.parse(iso);
+            return date != null ? output.format(date) : iso;
+
+        } catch (Exception e1) {
+            try {
+                java.text.SimpleDateFormat input2 =
+                        new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", java.util.Locale.US);
+                java.text.SimpleDateFormat output2 =
+                        new java.text.SimpleDateFormat("dd MMM yyyy • HH:mm", java.util.Locale.US);
+
+                java.util.Date date2 = input2.parse(iso);
+                return date2 != null ? output2.format(date2) : iso;
+
+            } catch (Exception e2) {
+                return iso;
+            }
+        }
     }
 
     private String trimZero(double v) {

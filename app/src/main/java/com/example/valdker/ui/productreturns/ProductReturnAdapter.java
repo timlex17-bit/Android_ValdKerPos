@@ -1,8 +1,11 @@
 package com.example.valdker.ui.productreturns;
 
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -24,6 +27,7 @@ public class ProductReturnAdapter extends RecyclerView.Adapter<ProductReturnAdap
 
     private final List<ProductReturn> data;
     private final Listener listener;
+    private final SparseBooleanArray expandedStates = new SparseBooleanArray();
 
     public ProductReturnAdapter(@NonNull List<ProductReturn> data, @NonNull Listener listener) {
         this.data = data;
@@ -42,10 +46,16 @@ public class ProductReturnAdapter extends RecyclerView.Adapter<ProductReturnAdap
 
         ProductReturn it = data.get(position);
 
-        h.tvTitle.setText("Return #" + it.id);
+        String inv = (it.invoiceNumber != null) ? it.invoiceNumber.trim() : "";
+        if (!inv.isEmpty()) {
+            h.tvTitle.setText(inv);
+        } else if (it.order != null) {
+            h.tvTitle.setText("Order #" + it.order);
+        } else {
+            h.tvTitle.setText("Return #" + it.id);
+        }
 
         // ✅ Invoice (fallback to Order id)
-        String inv = (it.invoiceNumber != null) ? it.invoiceNumber.trim() : "";
         if (inv.isEmpty()) {
             h.tvInvoice.setText("Order: " + (it.order != null ? it.order : "-"));
         } else {
@@ -79,6 +89,20 @@ public class ProductReturnAdapter extends RecyclerView.Adapter<ProductReturnAdap
         // ✅ Date
         h.tvDate.setText("Returned: " + formatIso(it.returnedAt));
 
+        // ✅ Expand / collapse state
+        boolean expanded = expandedStates.get(it.id, false);
+        h.layoutExpandable.setVisibility(expanded ? View.VISIBLE : View.GONE);
+        h.ivChevron.setImageResource(
+                expanded ? android.R.drawable.arrow_up_float
+                        : android.R.drawable.arrow_down_float
+        );
+
+        h.headerToggle.setOnClickListener(v -> {
+            boolean newExpanded = !expandedStates.get(it.id, false);
+            expandedStates.put(it.id, newExpanded);
+            notifyItemChanged(h.getBindingAdapterPosition());
+        });
+
         // ✅ Click -> delegate to Fragment/Activity
         h.itemView.setOnClickListener(v -> listener.onClick(it));
     }
@@ -102,6 +126,8 @@ public class ProductReturnAdapter extends RecyclerView.Adapter<ProductReturnAdap
 
     static class VH extends RecyclerView.ViewHolder {
         TextView tvTitle, tvDate, tvInvoice, tvCustomer, tvReturnedBy, tvNote, tvItems;
+        LinearLayout headerToggle, layoutExpandable;
+        ImageView ivChevron;
 
         VH(@NonNull View itemView) {
             super(itemView);
@@ -112,19 +138,35 @@ public class ProductReturnAdapter extends RecyclerView.Adapter<ProductReturnAdap
             tvReturnedBy = itemView.findViewById(R.id.tvReturnedBy);
             tvNote = itemView.findViewById(R.id.tvNote);
             tvItems = itemView.findViewById(R.id.tvItems);
+
+            headerToggle = itemView.findViewById(R.id.headerToggle);
+            layoutExpandable = itemView.findViewById(R.id.layoutExpandable);
+            ivChevron = itemView.findViewById(R.id.ivChevron);
         }
     }
 
     private String formatIso(String iso) {
+        if (iso == null || iso.trim().isEmpty()) return "-";
+
         try {
-            // Example: 2026-02-19T11:21:38Z
-            SimpleDateFormat in = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
-            in.setLenient(true);
-            Date d = in.parse(iso);
+            String clean = iso.trim();
+            clean = clean.replaceFirst("\\.\\d+(?=[+-]\\d{2}:\\d{2}$)", "");
+
+            SimpleDateFormat in;
+            if (clean.endsWith("Z")) {
+                in = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+            } else {
+                in = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US);
+            }
+
+            in.setLenient(false);
+            Date d = in.parse(clean);
+
             SimpleDateFormat out = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
             return d != null ? out.format(d) : iso;
+
         } catch (Exception e) {
-            return iso == null ? "-" : iso;
+            return iso;
         }
     }
 }

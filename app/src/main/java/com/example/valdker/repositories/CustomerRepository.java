@@ -9,10 +9,14 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
+import com.android.volley.Response;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.example.valdker.models.Customer;
 import com.example.valdker.network.ApiClient;
+import com.example.valdker.SessionManager;
+import com.example.valdker.network.ApiConfig;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -40,7 +44,8 @@ public class CustomerRepository {
         void onError(int statusCode, @NonNull String message);
     }
 
-    private static final String BASE = "https://valdker.onrender.com/api/customers/";
+    private static final String ENDPOINT_CUSTOMERS = "api/customers/";
+    private final SessionManager session;
     private final Context appContext;
 
     // Network tuning (aligned with other repositories)
@@ -50,15 +55,19 @@ public class CustomerRepository {
 
     public CustomerRepository(@NonNull Context context) {
         this.appContext = context.getApplicationContext();
+        this.session = new SessionManager(appContext);
     }
 
     // -------------------------
     // GET LIST
     // -------------------------
     public void fetchCustomers(@NonNull String token, @NonNull ListCallback cb) {
+
+        String url = ApiConfig.url(session, ENDPOINT_CUSTOMERS);
+
         JsonArrayRequest req = new JsonArrayRequest(
                 Request.Method.GET,
-                BASE,
+                url,
                 null,
                 (JSONArray res) -> {
                     try {
@@ -68,7 +77,10 @@ public class CustomerRepository {
                     }
                 },
                 (err) -> {
-                    int code = (err.networkResponse != null) ? err.networkResponse.statusCode : -1;
+                    int code = (err.networkResponse != null)
+                            ? err.networkResponse.statusCode
+                            : -1;
+
                     String msg = buildVolleyErrorMessage(err.networkResponse, err);
                     cb.onError(code, msg);
                 }
@@ -109,9 +121,11 @@ public class CustomerRepository {
             return;
         }
 
+        String url = ApiConfig.url(session, ENDPOINT_CUSTOMERS);
+
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.POST,
-                BASE,
+                url,   // ✅ bukan BASE lagi
                 body,
                 (JSONObject res) -> {
                     try {
@@ -151,14 +165,14 @@ public class CustomerRepository {
                                @Nullable String email,
                                @Nullable String address,
                                @NonNull ItemCallback cb) {
-        String url = BASE + id + "/";
+
+        String url = ApiConfig.url(session, ENDPOINT_CUSTOMERS + id + "/");
 
         JSONObject body = new JSONObject();
         try {
             body.put("name", name);
             body.put("cell", cell);
 
-            // Explicitly send nulls to clear fields
             body.put("email", email != null ? email : JSONObject.NULL);
             body.put("address", address != null ? address : JSONObject.NULL);
 
@@ -202,16 +216,24 @@ public class CustomerRepository {
     // DELETE
     // -------------------------
     public void deleteCustomer(@NonNull String token, int id, @NonNull DeleteCallback cb) {
-        String url = BASE + id + "/";
 
-        JsonObjectRequest req = new JsonObjectRequest(
+        String url = ApiConfig.url(session, ENDPOINT_CUSTOMERS + id + "/");
+
+        StringRequest req = new StringRequest(
                 Request.Method.DELETE,
                 url,
-                null,
-                (JSONObject res) -> cb.onSuccess(),
-                (err) -> {
-                    int code = (err.networkResponse != null) ? err.networkResponse.statusCode : -1;
-                    String msg = buildVolleyErrorMessage(err.networkResponse, err);
+                response -> cb.onSuccess(),
+                error -> {
+                    int code = (error.networkResponse != null)
+                            ? error.networkResponse.statusCode
+                            : -1;
+
+                    if (code == 404) { // idempotent delete
+                        cb.onSuccess();
+                        return;
+                    }
+
+                    String msg = buildVolleyErrorMessage(error.networkResponse, error);
                     cb.onError(code, msg);
                 }
         ) {
@@ -221,7 +243,7 @@ public class CustomerRepository {
             }
         };
 
-        req.setRetryPolicy(new DefaultRetryPolicy(TIMEOUT_MS, MAX_RETRIES, BACKOFF_MULT));
+        req.setRetryPolicy(new DefaultRetryPolicy(TIMEOUT_MS, 0, BACKOFF_MULT));
         req.setShouldCache(false);
 
         ApiClient.getInstance(appContext).add(req);

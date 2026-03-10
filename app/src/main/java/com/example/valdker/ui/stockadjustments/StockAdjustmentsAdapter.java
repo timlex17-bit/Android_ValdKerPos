@@ -1,5 +1,6 @@
 package com.example.valdker.ui.stockadjustments;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,7 +12,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.valdker.R;
 import com.example.valdker.models.StockAdjustment;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class StockAdjustmentsAdapter extends RecyclerView.Adapter<StockAdjustmentsAdapter.VH> {
 
@@ -39,15 +43,27 @@ public class StockAdjustmentsAdapter extends RecyclerView.Adapter<StockAdjustmen
     public void onBindViewHolder(@NonNull VH h, int position) {
         StockAdjustment it = list.get(position);
 
-        h.tvTitle.setText("Product #" + it.product);
+        String productName = safe(it.product_name);
+        String byName = safe(it.adjusted_by_name);
+
+        h.tvTitle.setText(!"-".equals(productName) ? productName : "Product #" + it.product);
         h.tvReason.setText("Reason: " + safe(it.reason));
         h.tvDate.setText(formatIso(it.adjusted_at));
 
         int d = it.diff();
         String sign = d > 0 ? "+" : "";
         h.tvDiff.setText("Diff: " + sign + d);
+
+        if (d > 0) {
+            h.tvDiff.setTextColor(Color.parseColor("#16A34A"));
+        } else if (d < 0) {
+            h.tvDiff.setTextColor(Color.parseColor("#DC2626"));
+        } else {
+            h.tvDiff.setTextColor(Color.parseColor("#374151"));
+        }
+
         h.tvFromTo.setText("Stock: " + it.old_stock + " → " + it.new_stock);
-        h.tvBy.setText("By: #" + it.adjusted_by);
+        h.tvBy.setText("By: " + (!"-".equals(byName) ? byName : "User #" + it.adjusted_by));
 
         h.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onClick(it);
@@ -61,6 +77,7 @@ public class StockAdjustmentsAdapter extends RecyclerView.Adapter<StockAdjustmen
 
     static class VH extends RecyclerView.ViewHolder {
         TextView tvTitle, tvReason, tvDate, tvDiff, tvFromTo, tvBy;
+
         VH(@NonNull View v) {
             super(v);
             tvTitle = v.findViewById(R.id.tvTitle);
@@ -77,16 +94,27 @@ public class StockAdjustmentsAdapter extends RecyclerView.Adapter<StockAdjustmen
     }
 
     private static String formatIso(String iso) {
+        if (iso == null || iso.trim().isEmpty()) return "-";
+
         try {
-            String s = iso.replace("Z", "");
-            if (s.length() >= 16) {
-                String d = s.substring(0, 10);
-                String t = s.substring(11, 16);
-                String[] p = d.split("-");
-                if (p.length == 3) return p[2] + "/" + p[1] + "/" + p[0] + " " + t;
-                return d + " " + t;
+            String clean = iso.trim();
+            clean = clean.replaceFirst("\\.\\d+(?=[+-]\\d{2}:\\d{2}$)", "");
+
+            SimpleDateFormat in;
+            if (clean.endsWith("Z")) {
+                in = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+            } else {
+                in = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US);
             }
-        } catch (Exception ignored) {}
-        return iso;
+
+            in.setLenient(false);
+            Date d = in.parse(clean);
+
+            SimpleDateFormat out = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+            return d != null ? out.format(d) : iso;
+
+        } catch (Exception e) {
+            return iso;
+        }
     }
 }

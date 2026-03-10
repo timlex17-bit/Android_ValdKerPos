@@ -18,12 +18,23 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildFeatures {
+        buildConfig true
+    }
+
     buildTypes {
+        debug {
+            buildConfigField "String", "BASE_URL", "\"https://valdker.onrender.com/\""
+        }
+
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            buildConfigField "String", "BASE_URL", "\"https://valdker.onrender.com/\""
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
@@ -36,7 +47,9 @@ dependencies {
     implementation "androidx.room:room-runtime:2.6.1"
     annotationProcessor "androidx.room:room-compiler:2.6.1"
 
-    // (Opsional tapi bagus) Room annotations
+    implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
+
+    // Room annotations
     implementation "androidx.annotation:annotation:1.7.1"
 
     implementation 'com.android.volley:volley:1.2.1'
@@ -50,7 +63,7 @@ dependencies {
     // WorkManager
     implementation "androidx.work:work-runtime:2.9.1"
 
-    // Gson (untuk payload JSON)
+    // Gson (Untuk Payload JSON)
     implementation "com.google.code.gson:gson:2.10.1"
 
     implementation 'com.github.DantSu:ESCPOS-ThermalPrinter-Android:3.3.0'
@@ -58,7 +71,7 @@ dependencies {
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
 
     implementation 'com.github.bumptech.glide:glide:4.16.0'
-    implementation libs.swiperefreshlayout
+    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
     annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
 
     implementation 'com.google.android.material:material:1.12.0'

@@ -35,13 +35,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Date * (YYYY-MM-DD)"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginTop="10dp"
+            android:focusable="false"
+            android:clickable="true"
+            android:inputType="none" />
 
         <EditText
             android:id="@+id/etTime"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Time * (HH:mm:ss)"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginTop="10dp"
+            android:focusable="false"
+            android:clickable="true"
+            android:inputType="none" />
     </LinearLayout>
+
 </ScrollView>

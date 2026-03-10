@@ -21,7 +21,9 @@ import com.example.valdker.R;
 import com.example.valdker.SessionManager;
 import com.example.valdker.models.StockAdjustment;
 import com.example.valdker.network.ApiClient;
+import com.example.valdker.network.ApiConfig;
 import com.example.valdker.repositories.StockAdjustmentRepository;
+import com.example.valdker.utils.InsetsHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONArray;
@@ -32,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 
 public class StockAdjustmentsFragment extends Fragment {
+
+    private static final String TAG = "StockAdjustmentsFragment";
 
     private SwipeRefreshLayout swipe;
     private ProgressBar progress;
@@ -62,6 +66,9 @@ public class StockAdjustmentsFragment extends Fragment {
         rv = v.findViewById(R.id.rv);
         fab = v.findViewById(R.id.fabAdd);
 
+        InsetsHelper.applyRecyclerBottomInsets(v, rv, TAG);
+        InsetsHelper.applyFabMarginInsets(fab, 16, TAG);
+
         // RecyclerView
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         adapter = new StockAdjustmentsAdapter(data, item ->
@@ -72,7 +79,6 @@ public class StockAdjustmentsFragment extends Fragment {
         // Swipe refresh
         swipe.setOnRefreshListener(() -> {
             load(); // refresh adjustments
-            // products biasanya tidak berubah sering, tapi kalau mau ikut refresh, uncomment:
             // loadProducts();
         });
 
@@ -82,7 +88,7 @@ public class StockAdjustmentsFragment extends Fragment {
         fab.setOnClickListener(view -> openAddDialog());
 
         // Initial load
-        loadProducts(); // must be called so dialog can open
+        loadProducts();
         load();
 
         return v;
@@ -90,7 +96,7 @@ public class StockAdjustmentsFragment extends Fragment {
 
     private void openAddDialog() {
         if (!productsLoaded || productsJson == null || productsJson.length() == 0) {
-            Toast.makeText(requireContext(), "Product list belum loaded", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Product list not loaded yet", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -144,7 +150,8 @@ public class StockAdjustmentsFragment extends Fragment {
     private void loadProducts() {
         if (!isAdded()) return;
 
-        String url = "https://valdker.onrender.com/api/products/";
+        SessionManager sm = new SessionManager(requireContext());
+        String url = ApiConfig.url(sm, "api/products/");
 
         JsonArrayRequest req = new JsonArrayRequest(
                 Request.Method.GET,
@@ -161,7 +168,7 @@ public class StockAdjustmentsFragment extends Fragment {
                     fab.setAlpha(productsLoaded ? 1f : 0.4f);
 
                     if (!productsLoaded) {
-                        Toast.makeText(requireContext(), "Products kosong", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Products are empty", Toast.LENGTH_SHORT).show();
                     }
                 },
                 error -> {

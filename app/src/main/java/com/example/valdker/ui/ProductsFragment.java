@@ -1,7 +1,6 @@
 package com.example.valdker.ui;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
@@ -25,16 +24,10 @@ import com.example.valdker.models.Product;
 import com.example.valdker.repositories.ProductRepository;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-// ✅ OFFLINE ROOM
-import com.example.valdker.offline.db.DbProvider;
-import com.example.valdker.offline.db.entities.ProductEntity;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProductsFragment extends Fragment {
-
-    private static final String TAG = "PRODUCTS_POS";
 
     private String currentCategoryId = "all";
 
@@ -42,14 +35,18 @@ public class ProductsFragment extends Fragment {
     private RecyclerView rv;
     private ProgressBar progress;
     private TextView tvEmpty;
-
     private FloatingActionButton fabAddProduct;
 
     private final List<Product> items = new ArrayList<>();
+    private final List<Product> allProductsCache = new ArrayList<>();
+
     private ProductAdapter adapter;
 
     private SessionManager session;
     private ProductRepository repo;
+
+    private boolean allProductsCacheLoaded = false;
+    private boolean allProductsCacheLoading = false;
 
     public ProductsFragment() {
         super(R.layout.fragment_products);
@@ -57,10 +54,6 @@ public class ProductsFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        Log.i(TAG, "onViewCreated()");
-
         session = new SessionManager(requireContext());
         repo = new ProductRepository(requireContext());
 
@@ -68,11 +61,13 @@ public class ProductsFragment extends Fragment {
         rv = view.findViewById(R.id.rvProducts);
         progress = view.findViewById(R.id.progress);
         tvEmpty = view.findViewById(R.id.tvEmpty);
-
         fabAddProduct = view.findViewById(R.id.fabAddProduct);
 
-        GridLayoutManager glm = new GridLayoutManager(requireContext(), 3);
-        rv.setLayoutManager(glm);
+        if (rv != null) {
+            int span = getResources().getInteger(R.integer.product_grid_span);
+            rv.setLayoutManager(new GridLayoutManager(requireContext(), span));
+            rv.setHasFixedSize(true);
+        }
 
         adapter = new ProductAdapter(items, new ProductAdapter.Listener() {
             @Override
@@ -84,22 +79,15 @@ public class ProductsFragment extends Fragment {
 
             @Override
             public void onClick(Product p) {
-                safeToast(p.name);
+                safeToast(p.name != null ? p.name : "Product");
             }
         });
 
-        rv.setAdapter(adapter);
+        if (rv != null) rv.setAdapter(adapter);
 
-        swipe.setOnRefreshListener(() -> loadProducts(true));
+        if (swipe != null) swipe.setOnRefreshListener(() -> loadProducts(true));
 
         applyListAndFabInsets();
-
-        debugRoomCount("onViewCreated");
-
-        // ✅ Offline-first: tampilkan cache dulu (kalau ada)
-        loadProductsFromRoom(false);
-
-        // ✅ lalu online fetch untuk update & cache
         loadProducts(false);
     }
 
@@ -115,17 +103,21 @@ public class ProductsFragment extends Fragment {
         rv.setClipToPadding(false);
 
         ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
+
             int navBottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
             int navRight = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).right;
 
-            int left = rv.getPaddingLeft();
-            int top = rv.getPaddingTop();
-            int right = rv.getPaddingRight();
-            rv.setPadding(left, top, right, baseListBottom + navBottom);
+            rv.setPadding(
+                    rv.getPaddingLeft(),
+                    rv.getPaddingTop(),
+                    rv.getPaddingRight(),
+                    baseListBottom + navBottom
+            );
 
             if (fabAddProduct != null) {
                 ViewGroup.MarginLayoutParams lp =
                         (ViewGroup.MarginLayoutParams) fabAddProduct.getLayoutParams();
+
                 lp.bottomMargin = baseFabMargin + navBottom;
                 lp.rightMargin = baseFabMargin + navRight;
                 fabAddProduct.setLayoutParams(lp);
@@ -137,67 +129,64 @@ public class ProductsFragment extends Fragment {
         ViewCompat.requestApplyInsets(root);
     }
 
-    private int dp(int value) {
-        return Math.round(value * getResources().getDisplayMetrics().density);
+    private int dp(int v) {
+        return Math.round(v * getResources().getDisplayMetrics().density);
     }
 
     public void setCategoryFilter(@Nullable String categoryId) {
-        currentCategoryId = (categoryId == null || categoryId.trim().isEmpty())
-                ? "all"
-                : categoryId.trim();
 
-        Log.i(TAG, "setCategoryFilter(): " + currentCategoryId);
+        currentCategoryId =
+                (categoryId == null || categoryId.trim().isEmpty())
+                        ? "all"
+                        : categoryId.trim();
 
-        loadProductsFromRoom(true);
         loadProducts(false);
     }
 
     private void loadProducts(boolean fromSwipe) {
+
         if (!isAdded() || getView() == null) return;
 
         String token = session.getToken();
+
         if (token == null || token.trim().isEmpty()) {
-            safeToast("Token empty. Please login again.");
-            showEmpty("Token empty");
+            safeToast("Token is missing. Please login again.");
+            showEmpty("Token is missing");
             stopRefreshing();
             return;
         }
 
-        if (!fromSwipe && swipe != null && !swipe.isRefreshing()) showLoading();
+        if (!fromSwipe && swipe != null && !swipe.isRefreshing()) {
+            showLoading();
+        }
 
-        final String cat = currentCategoryId;
+        repo.fetchProducts(token, currentCategoryId, new ProductRepository.Callback() {
 
-        repo.fetchProducts(token, cat, new ProductRepository.Callback() {
             @Override
             public void onSuccess(@NonNull List<Product> products) {
-                if (!isAdded() || getView() == null) return;
 
-                Log.i(TAG, "fetchProducts SUCCESS: cat=" + cat + " count=" + products.size());
+                if (!isAdded() || getView() == null) return;
 
                 items.clear();
                 items.addAll(products);
-                adapter.notifyDataSetChanged();
+
+                if (adapter != null) adapter.notifyDataSetChanged();
 
                 if (items.isEmpty()) showEmpty("No products");
                 else showList();
-
-                // ✅ cache (TERMASUK GAMBAR)
-                cacheProductsToRoom(products);
 
                 stopRefreshing();
             }
 
             @Override
             public void onError(int statusCode, @NonNull String message) {
+
                 if (!isAdded() || getView() == null) return;
 
-                Log.e(TAG, "fetchProducts ERROR: cat=" + cat + " " + statusCode + " / " + message);
+                if (items.isEmpty()) showEmpty("Failed to load products");
+                else showList();
 
-                debugRoomCount("onError(" + statusCode + ")");
-
-                // ✅ fallback offline
-                loadProductsFromRoom(true);
-
+                safeToast(message);
                 stopRefreshing();
             }
         });
@@ -220,10 +209,12 @@ public class ProductsFragment extends Fragment {
 
     private void showEmpty(@NonNull String msg) {
         if (progress != null) progress.setVisibility(View.GONE);
+
         if (tvEmpty != null) {
             tvEmpty.setVisibility(View.VISIBLE);
             tvEmpty.setText(msg);
         }
+
         if (rv != null) rv.setVisibility(View.GONE);
     }
 
@@ -233,172 +224,118 @@ public class ProductsFragment extends Fragment {
         if (rv != null) rv.setVisibility(View.VISIBLE);
     }
 
-    // =========================================================
-    // OFFLINE: Load from Room
-    // =========================================================
-    private void loadProductsFromRoom(boolean showToastIfUsingCache) {
+    public void onBarcodeScanned(@NonNull String barcode) {
+
         if (!isAdded()) return;
 
-        final String cat = currentCategoryId;
+        String clean = barcode.trim();
+        if (clean.isEmpty()) {
+            safeToast("Barcode empty");
+            return;
+        }
 
-        DbProvider.executor().execute(() -> {
-            try {
-                int count = DbProvider.get(requireContext()).productDao().countAll();
-                Log.i(TAG, "Room products count=" + count);
+        Product found = findProductByBarcodeInList(items, clean);
+        if (found != null) {
+            addProductToCart(found);
+            return;
+        }
 
-                List<ProductEntity> cached = DbProvider.get(requireContext()).productDao().getAllActive();
-                Log.i(TAG, "Room getAllActive size=" + (cached == null ? 0 : cached.size()));
+        found = findProductByBarcodeInList(allProductsCache, clean);
+        if (found != null) {
+            addProductToCart(found);
+            return;
+        }
 
-                // ✅ filter category by categoryId (Product model pakai categoryId)
-                if (cached != null && !cached.isEmpty()
-                        && cat != null && !"all".equalsIgnoreCase(cat)) {
-                    List<ProductEntity> filtered = new ArrayList<>();
-                    for (ProductEntity e : cached) {
-                        if (e != null && e.categoryServerId != null && e.categoryServerId.equals(cat)) {
-                            filtered.add(e);
-                        }
-                    }
-                    cached = filtered;
-                }
+        if (!allProductsCacheLoaded && !allProductsCacheLoading) {
+            loadAllProductsCacheAndAdd(clean);
+            return;
+        }
 
-                final List<Product> mapped = mapEntitiesToProducts(cached);
+        if (allProductsCacheLoading) {
+            safeToast("Searching product...");
+            return;
+        }
 
-                if (!isAdded()) return;
-                requireActivity().runOnUiThread(() -> {
-                    if (!isAdded() || getView() == null) return;
-
-                    if (mapped != null && !mapped.isEmpty()) {
-                        items.clear();
-                        items.addAll(mapped);
-                        adapter.notifyDataSetChanged();
-                        showList();
-
-                        if (showToastIfUsingCache) {
-                            safeToast("Offline mode: cached products (" + mapped.size() + ")");
-                        }
-                    } else {
-                        showEmpty("No cached products (Room kosong)");
-                    }
-                });
-
-            } catch (Exception e) {
-                Log.e(TAG, "loadProductsFromRoom error", e);
-                if (!isAdded()) return;
-                requireActivity().runOnUiThread(() -> showEmpty("Offline cache error"));
-            }
-        });
+        safeToast("Product not found: " + clean);
     }
 
-    // =========================================================
-    // OFFLINE: Cache to Room (INCLUDE IMAGE)
-    // =========================================================
-    private void cacheProductsToRoom(@NonNull List<Product> products) {
-        if (!isAdded()) return;
+    private void loadAllProductsCacheAndAdd(@NonNull String barcode) {
 
-        DbProvider.executor().execute(() -> {
-            try {
-                List<ProductEntity> entities = new ArrayList<>();
+        String token = session != null ? session.getToken() : null;
 
-                for (Product p : products) {
-                    ProductEntity e = mapProductToEntityStrict(p);
-                    if (e != null) entities.add(e);
-                }
+        if (token == null || token.trim().isEmpty()) {
+            safeToast("Token empty. Please login again.");
+            return;
+        }
 
-                if (!entities.isEmpty()) {
-                    DbProvider.get(requireContext()).productDao().upsertAll(entities);
-                    int count = DbProvider.get(requireContext()).productDao().countAll();
-                    Log.i(TAG, "Cached to Room: " + entities.size() + " | total now=" + count);
-                } else {
-                    Log.w(TAG, "cacheProductsToRoom: entities EMPTY (mapping gagal?)");
-                }
-            } catch (Exception ex) {
-                Log.e(TAG, "cacheProductsToRoom error", ex);
+        allProductsCacheLoading = true;
+
+        repo.fetchProducts(token, "all", new ProductRepository.Callback() {
+
+            @Override
+            public void onSuccess(@NonNull List<Product> products) {
+
+                if (!isAdded()) return;
+
+                allProductsCacheLoading = false;
+                allProductsCacheLoaded = true;
+
+                allProductsCache.clear();
+                allProductsCache.addAll(products);
+
+                Product found = findProductByBarcodeInList(allProductsCache, barcode);
+
+                if (found != null) addProductToCart(found);
+                else safeToast("Product not found: " + barcode);
+            }
+
+            @Override
+            public void onError(int statusCode, @NonNull String message) {
+
+                if (!isAdded()) return;
+
+                allProductsCacheLoading = false;
+                safeToast("Barcode lookup failed: " + message);
             }
         });
     }
 
     @Nullable
-    private ProductEntity mapProductToEntityStrict(@NonNull Product p) {
+    private Product findProductByBarcodeInList(@Nullable List<Product> list,
+                                               @NonNull String barcode) {
+
+        if (list == null || list.isEmpty()) return null;
+
+        for (Product p : list) {
+
+            if (p == null) continue;
+
+            String pBarcode = safeTrim(p.barcode);
+            String pSku = safeTrim(p.sku);
+
+            if (barcode.equals(pBarcode) || barcode.equals(pSku)) {
+                return p;
+            }
+        }
+
+        return null;
+    }
+
+    private void addProductToCart(@NonNull Product product) {
+
         try {
-            if (p.id == null) return null;
+            CartManager cart = CartManager.getInstance(requireContext());
+            cart.add(product, 1);
 
-            String sid = String.valueOf(p.id).trim();
-            if (sid.isEmpty() || "null".equalsIgnoreCase(sid)) return null;
+            safeToast((product.name != null ? product.name : "Product") + " added to cart");
 
-            ProductEntity e = new ProductEntity();
-            e.serverId = sid;
-
-            e.name = p.name;
-            e.barcode = p.barcode;
-            e.sku = p.sku;
-            e.price = p.price;
-            e.stock = p.stock;
-
-            // ✅ image: pilih yang ada isinya (imageUrl atau image_url)
-            String img = (p.imageUrl != null && !p.imageUrl.trim().isEmpty()) ? p.imageUrl : null;
-            if (img == null || "null".equalsIgnoreCase(img)) {
-                img = (p.image_url != null && !p.image_url.trim().isEmpty()) ? p.image_url : null;
-            }
-            e.imageUrl = img;
-
-            // ✅ category cache untuk filter offline
-            e.categoryServerId = p.categoryId;
-
-            e.isActive = true;
-            return e;
-
-        } catch (Exception ex) {
-            return null;
+        } catch (Exception ignored) {
+            safeToast("Failed to add item to cart");
         }
     }
 
-    // =========================================================
-    // Mapping Entity -> Model Product (untuk adapter existing)
-    // =========================================================
     @NonNull
-    private List<Product> mapEntitiesToProducts(@Nullable List<ProductEntity> cached) {
-        List<Product> out = new ArrayList<>();
-        if (cached == null) return out;
-
-        for (ProductEntity e : cached) {
-            if (e == null) continue;
-
-            Product p = new Product();
-
-            p.id = e.serverId;
-            p.name = e.name;
-
-            p.barcode = e.barcode;
-            p.sku = e.sku;
-            p.price = e.price;
-            p.stock = e.stock;
-
-            // ✅ image untuk ProductAdapter (dia cari imageUrl & image_url)
-            p.imageUrl = e.imageUrl;
-            p.image_url = e.imageUrl;
-
-            // ✅ category (biar konsisten)
-            p.categoryId = e.categoryServerId;
-
-            out.add(p);
-        }
-
-        return out;
-    }
-
-    // =========================================================
-    // Debug helper: print Room count
-    // =========================================================
-    private void debugRoomCount(@NonNull String from) {
-        if (!isAdded()) return;
-
-        DbProvider.executor().execute(() -> {
-            try {
-                int count = DbProvider.get(requireContext()).productDao().countAll();
-                Log.i(TAG, "DEBUG RoomCount [" + from + "] = " + count);
-            } catch (Exception e) {
-                Log.e(TAG, "DEBUG RoomCount error", e);
-            }
-        });
+    private String safeTrim(@Nullable String value) {
+        return value == null ? "" : value.trim();
     }
 }

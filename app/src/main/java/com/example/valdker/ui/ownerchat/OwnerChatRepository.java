@@ -3,6 +3,7 @@ package com.example.valdker.ui.ownerchat;
 import android.content.Context;
 
 import com.example.valdker.SessionManager;
+import com.example.valdker.network.ApiConfig;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -25,9 +26,7 @@ public class OwnerChatRepository {
 
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
-    // ✅ Render production
-    private static final String BASE_URL = "https://valdker.onrender.com";
-    private static final String ENDPOINT = "/api/owner/chat/";
+    private static final String ENDPOINT = "api/owner/chat/";
 
     private final OkHttpClient client = new OkHttpClient();
     private final SessionManager session;
@@ -45,17 +44,16 @@ public class OwnerChatRepository {
 
             String token = session.getToken();
             if (token == null || token.trim().isEmpty()) {
-                cb.onError("Token kosong. Silakan login ulang.");
+                cb.onError("Token is empty. Please log in again..");
                 return;
             }
 
-            // Pastikan format header: "Token xxxxx"
             String auth = token.startsWith("Token ") ? token : ("Token " + token);
 
             RequestBody body = RequestBody.create(obj.toString(), JSON);
 
             Request req = new Request.Builder()
-                    .url(BASE_URL + ENDPOINT)
+                    .url(ApiConfig.url(session, ENDPOINT))
                     .addHeader("Authorization", auth)
                     .addHeader("Content-Type", "application/json")
                     .post(body)

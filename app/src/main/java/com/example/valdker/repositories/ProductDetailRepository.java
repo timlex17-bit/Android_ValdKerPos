@@ -10,6 +10,7 @@ import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.valdker.SessionManager;
 import com.example.valdker.network.ApiClient;
+import com.example.valdker.network.ApiConfig;
 
 import org.json.JSONObject;
 
@@ -19,7 +20,7 @@ import java.util.Map;
 public class ProductDetailRepository {
 
     private static final String TAG = "PRODUCT_DETAIL_REPO";
-    private static final String BASE = "https://valdker.onrender.com/api/products/";
+    private static final String ENDPOINT = "api/products/";
 
     public static class ProductMini {
         public int id;
@@ -34,7 +35,9 @@ public class ProductDetailRepository {
     }
 
     public static void fetch(@NonNull Context ctx, int productId, @NonNull Callback cb) {
-        String url = BASE + productId + "/";
+
+        SessionManager sm = new SessionManager(ctx);
+        String url = ApiConfig.url(sm, ENDPOINT + productId + "/");
 
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.GET,
@@ -55,7 +58,9 @@ public class ProductDetailRepository {
                 },
                 err -> {
                     String msg = "Failed to load product detail.";
-                    if (err.networkResponse != null) msg += " (" + err.networkResponse.statusCode + ")";
+                    if (err.networkResponse != null) {
+                        msg += " (" + err.networkResponse.statusCode + ")";
+                    }
                     Log.e(TAG, msg, err);
                     cb.onError(msg);
                 }
@@ -65,7 +70,9 @@ public class ProductDetailRepository {
                 Map<String, String> h = new HashMap<>();
                 h.put("Accept", "application/json");
                 String token = new SessionManager(ctx).getToken();
-                if (token != null && !token.trim().isEmpty()) h.put("Authorization", "Token " + token);
+                if (token != null && !token.trim().isEmpty()) {
+                    h.put("Authorization", "Token " + token);
+                }
                 return h;
             }
         };

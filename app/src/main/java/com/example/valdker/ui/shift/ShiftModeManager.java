@@ -4,51 +4,61 @@ import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
-import com.example.valdker.offline.repo.ShiftRepository;
-import com.example.valdker.offline.db.entities.ShiftEntity;
-
+/**
+ * Online-only version.
+ * The offline/Room module has been removed, so all offline methods are no-ops.
+ *
+ * This class is kept for backward compatibility to avoid breaking older code paths.
+ * Calls will not crash at compile-time and will fail gracefully at runtime.
+ */
 public class ShiftModeManager {
 
     private static final String TAG = "ShiftModeManager";
 
+    @SuppressWarnings("unused")
     private final Context ctx;
 
     public ShiftModeManager(@NonNull Context ctx) {
         this.ctx = ctx.getApplicationContext();
     }
 
-    public ShiftEntity getActiveOfflineShift() {
-        return new ShiftRepository(ctx).getActiveShift();
-    }
+    // ------------------------------------------------------------------
+    // Backward-compatible "offline" API (Room removed)
+    // ------------------------------------------------------------------
 
-    public ShiftEntity openOffline(double openingCash) {
-        return new ShiftRepository(ctx).openShift(openingCash);
-    }
-
-    public ShiftEntity closeOffline(long shiftId, double closingCash) {
-        return new ShiftRepository(ctx).closeShift(shiftId, closingCash);
+    /**
+     * Offline shift is no longer supported.
+     */
+    @Nullable
+    public Object getActiveOfflineShift() {
+        Log.w(TAG, "getActiveOfflineShift(): offline module removed (return null)");
+        return null;
     }
 
     /**
-     * ✅ AUTO CLOSE OFFLINE SHIFT
-     * Dipanggil setelah ONLINE close sukses.
+     * Offline open is no longer supported.
+     */
+    @Nullable
+    public Object openOffline(double openingCash) {
+        Log.w(TAG, "openOffline(): offline module removed (return null)");
+        return null;
+    }
+
+    /**
+     * Offline close is no longer supported.
+     */
+    @Nullable
+    public Object closeOffline(long shiftId, double closingCash) {
+        Log.w(TAG, "closeOffline(): offline module removed (return null)");
+        return null;
+    }
+
+    /**
+     * No-op: offline auto close is no longer supported.
      */
     public void closeOfflineShiftIfAny(double closingCash) {
-        try {
-            ShiftRepository repo = new ShiftRepository(ctx);
-            ShiftEntity active = repo.getActiveShift();
-
-            if (active == null) return;
-
-            if (!active.closed) {
-                repo.closeShift(active.id, closingCash);
-
-                Log.i(TAG, "Offline shift auto-closed. id=" + active.id);
-            }
-
-        } catch (Exception e) {
-            Log.w(TAG, "closeOfflineShiftIfAny failed: " + e.getMessage());
-        }
+        Log.w(TAG, "closeOfflineShiftIfAny(): offline module removed (no-op)");
     }
 }

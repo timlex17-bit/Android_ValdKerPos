@@ -27,6 +27,7 @@ public class DashboardItem {
     public static final int ID_INVENTORY_COUNTS  = 12;
     public static final int ID_STOCK_ADJUSTMENTS = 13;
     public static final int ID_STOCK_MOVEMENTS   = 14;
+    public static final int ID_PURCHASES = 15;
 
     public final int id;
     @NonNull public final String title;

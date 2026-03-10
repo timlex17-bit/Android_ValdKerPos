@@ -12,57 +12,50 @@ import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.valdker.SessionManager;
 import com.example.valdker.models.Shop;
 import com.example.valdker.network.ApiClient;
+import com.example.valdker.network.ApiConfig;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Map;
 
 public class ShopRepository {
 
     private static final String TAG = "ShopRepository";
+    private static final String SHOPS_URL = "api/shops/";
 
-    // ✅ LIST shops
-    private static final String SHOPS_URL = "https://valdker.onrender.com/api/shops/";
-    // ✅ DETAIL shop (update)
-    private static String shopDetailUrl(int id) {
-        return "https://valdker.onrender.com/api/shops/" + id + "/";
+    private static String shopDetailUrl(@NonNull Context ctx, int id) {
+        return ApiConfig.url(new SessionManager(ctx), "api/shops/" + id + "/");
     }
 
-    // ------------------------------------------------------------
-    // Callback for GET
-    // ------------------------------------------------------------
     public interface Callback {
         void onSuccess(@NonNull Shop shop);
         void onEmpty();
         void onError(@NonNull String message);
     }
 
-    // ------------------------------------------------------------
-    // ✅ Callback for UPDATE (THIS IS WHAT YOU ARE MISSING)
-    // ------------------------------------------------------------
     public interface UpdateCallback {
         void onSuccess(@NonNull Shop updatedShop);
         void onError(int statusCode, @NonNull String message);
     }
 
-    // ------------------------------------------------------------
-    // GET first shop
-    // ------------------------------------------------------------
     public static void fetchFirstShop(
             @NonNull Context ctx,
             @Nullable String token,
             @NonNull Callback cb
     ) {
+        String url = ApiConfig.url(new SessionManager(ctx), SHOPS_URL);
+
         JsonArrayRequest req = new JsonArrayRequest(
                 Request.Method.GET,
-                SHOPS_URL,
+                url,
                 null,
                 (JSONArray res) -> {
                     if (res == null || res.length() == 0) {
@@ -79,7 +72,19 @@ public class ShopRepository {
                     cb.onSuccess(parseShop(o));
                 },
                 err -> {
-                    String msg = (err.getMessage() != null) ? err.getMessage() : "Network error";
+                    int code = (err.networkResponse != null) ? err.networkResponse.statusCode : -1;
+                    String body = "";
+
+                    try {
+                        if (err.networkResponse != null && err.networkResponse.data != null) {
+                            body = new String(err.networkResponse.data, StandardCharsets.UTF_8);
+                        }
+                    } catch (Exception ignored) {
+                    }
+
+                    String msg = (code != -1)
+                            ? ("HTTP " + code + " " + body)
+                            : ("Network: " + err);
                     cb.onError(msg);
                 }
         ) {
@@ -98,11 +103,6 @@ public class ShopRepository {
         ApiClient.getInstance(ctx).add(req);
     }
 
-    // ------------------------------------------------------------
-    // UPDATE shop multipart
-    // fields: name, address, phone, email
-    // files: logo, all_category_icon
-    // ------------------------------------------------------------
     public static void updateShopMultipart(
             @NonNull Context ctx,
             int shopId,
@@ -112,14 +112,10 @@ public class ShopRepository {
             @Nullable Uri allIconUri,
             @NonNull UpdateCallback cb
     ) {
-
-        String url = shopDetailUrl(shopId);
-
-        // ✅ backend biasanya terima PATCH untuk partial update
-        int method = Request.Method.PATCH; // ganti ke Request.Method.PUT kalau backend butuh PUT
+        String url = shopDetailUrl(ctx, shopId);
 
         MultipartRequest req = new MultipartRequest(
-                method,
+                Request.Method.PATCH,
                 url,
                 token,
                 fields,
@@ -128,22 +124,18 @@ public class ShopRepository {
                 ctx,
                 response -> {
                     try {
-                        // response JSON object shop
                         cb.onSuccess(parseShop(response));
                     } catch (Exception e) {
                         cb.onError(500, "Parse error: " + e.getMessage());
                     }
                 },
-                (status, message) -> cb.onError(status, message)
+                cb::onError
         );
 
         req.setShouldCache(false);
         ApiClient.getInstance(ctx).add(req);
     }
 
-    // ------------------------------------------------------------
-    // Parse helper
-    // ------------------------------------------------------------
     private static Shop parseShop(@NonNull JSONObject o) {
         Shop s = new Shop();
         s.id = o.optInt("id");
@@ -156,9 +148,6 @@ public class ShopRepository {
         return s;
     }
 
-    // ============================================================
-    // MultipartRequest (single file class inside repository)
-    // ============================================================
     private static class MultipartRequest extends Request<JSONObject> {
 
         interface Listener {
@@ -171,16 +160,13 @@ public class ShopRepository {
 
         private final Listener listener;
         private final ErrorListener errorListener;
-
         private final String boundary = "----ValdKerBoundary" + System.currentTimeMillis();
         private final String mimeType = "multipart/form-data; boundary=" + boundary;
 
         private final String token;
         private final Map<String, String> fields;
-
         private final Uri logoUri;
         private final Uri allIconUri;
-
         private final Context ctx;
 
         MultipartRequest(
@@ -195,8 +181,20 @@ public class ShopRepository {
                 @NonNull ErrorListener errorListener
         ) {
             super(method, url, error -> {
-                int code = (error != null && error.networkResponse != null) ? error.networkResponse.statusCode : -1;
-                String msg = (error != null && error.getMessage() != null) ? error.getMessage() : "Network error";
+                int code = (error != null && error.networkResponse != null)
+                        ? error.networkResponse.statusCode
+                        : -1;
+
+                String msg = "Network error";
+                try {
+                    if (error != null && error.networkResponse != null && error.networkResponse.data != null) {
+                        msg = new String(error.networkResponse.data, StandardCharsets.UTF_8);
+                    } else if (error != null && error.getMessage() != null) {
+                        msg = error.getMessage();
+                    }
+                } catch (Exception ignored) {
+                }
+
                 errorListener.onError(code, msg);
             });
 
@@ -227,21 +225,21 @@ public class ShopRepository {
             try {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
-                // fields
                 for (Map.Entry<String, String> e : fields.entrySet()) {
                     writeFormField(bos, e.getKey(), e.getValue() == null ? "" : e.getValue());
                 }
 
-                // files (names must match backend fields)
                 if (logoUri != null) {
-                    writeFileField(bos, "logo", logoUri, "shop_logo.jpg");
-                }
-                if (allIconUri != null) {
-                    writeFileField(bos, "all_category_icon", allIconUri, "all_icon.png");
+                    String logoName = getFileName(ctx, logoUri, "shop_logo.jpg");
+                    writeFileField(bos, "logo", logoUri, logoName);
                 }
 
-                // end
-                bos.write(("--" + boundary + "--\r\n").getBytes());
+                if (allIconUri != null) {
+                    String iconName = getFileName(ctx, allIconUri, "all_icon.png");
+                    writeFileField(bos, "all_category_icon", allIconUri, iconName);
+                }
+
+                bos.write(("--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
                 return bos.toByteArray();
 
             } catch (Exception e) {
@@ -250,10 +248,28 @@ public class ShopRepository {
             }
         }
 
+        private static String getFileName(@NonNull Context ctx, @NonNull Uri uri, @NonNull String fallback) {
+            android.database.Cursor cursor = null;
+            try {
+                cursor = ctx.getContentResolver().query(uri, null, null, null, null);
+                if (cursor != null && cursor.moveToFirst()) {
+                    int index = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME);
+                    if (index >= 0) {
+                        String name = cursor.getString(index);
+                        if (name != null && !name.trim().isEmpty()) return name;
+                    }
+                }
+            } catch (Exception ignored) {
+            } finally {
+                if (cursor != null) cursor.close();
+            }
+            return fallback;
+        }
+
         @Override
         protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
             try {
-                String json = new String(response.data);
+                String json = new String(response.data, StandardCharsets.UTF_8);
                 JSONObject obj = new JSONObject(json);
                 return Response.success(obj, null);
             } catch (Exception e) {
@@ -267,36 +283,44 @@ public class ShopRepository {
         }
 
         private void writeFormField(ByteArrayOutputStream bos, String name, String value) throws Exception {
-            bos.write(("--" + boundary + "\r\n").getBytes());
-            bos.write(("Content-Disposition: form-data; name=\"" + name + "\"\r\n").getBytes());
-            bos.write(("Content-Type: text/plain; charset=UTF-8\r\n\r\n").getBytes());
-            bos.write((value + "\r\n").getBytes());
+            bos.write(("--" + boundary + "\r\n").getBytes(StandardCharsets.UTF_8));
+            bos.write(("Content-Disposition: form-data; name=\"" + name + "\"\r\n").getBytes(StandardCharsets.UTF_8));
+            bos.write(("Content-Type: text/plain; charset=UTF-8\r\n\r\n").getBytes(StandardCharsets.UTF_8));
+            bos.write((value + "\r\n").getBytes(StandardCharsets.UTF_8));
         }
 
         private void writeFileField(ByteArrayOutputStream bos, String fieldName, Uri uri, String fileName) throws Exception {
             byte[] fileBytes = readAllBytes(uri);
-            if (fileBytes == null) return;
+            if (fileBytes == null || fileBytes.length == 0) {
+                return;
+            }
 
             String contentType = ctx.getContentResolver().getType(uri);
-            if (contentType == null) contentType = "application/octet-stream";
+            if (contentType == null || contentType.trim().isEmpty()) {
+                contentType = "application/octet-stream";
+            }
 
-            bos.write(("--" + boundary + "\r\n").getBytes());
-            bos.write(("Content-Disposition: form-data; name=\"" + fieldName + "\"; filename=\"" + fileName + "\"\r\n").getBytes());
-            bos.write(("Content-Type: " + contentType + "\r\n\r\n").getBytes());
+            bos.write(("--" + boundary + "\r\n").getBytes(StandardCharsets.UTF_8));
+            bos.write(("Content-Disposition: form-data; name=\"" + fieldName + "\"; filename=\"" + fileName + "\"\r\n")
+                    .getBytes(StandardCharsets.UTF_8));
+            bos.write(("Content-Type: " + contentType + "\r\n\r\n").getBytes(StandardCharsets.UTF_8));
             bos.write(fileBytes);
-            bos.write("\r\n".getBytes());
+            bos.write("\r\n".getBytes(StandardCharsets.UTF_8));
         }
 
         private byte[] readAllBytes(Uri uri) {
-            try (InputStream is = ctx.getContentResolver().openInputStream(uri)) {
+            try (InputStream is = ctx.getContentResolver().openInputStream(uri);
+                 ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
+
                 if (is == null) return null;
-                ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
                 byte[] data = new byte[8192];
                 int n;
                 while ((n = is.read(data)) != -1) {
                     buffer.write(data, 0, n);
                 }
                 return buffer.toByteArray();
+
             } catch (Exception e) {
                 Log.e(TAG, "readAllBytes error: " + e.getMessage(), e);
                 return null;

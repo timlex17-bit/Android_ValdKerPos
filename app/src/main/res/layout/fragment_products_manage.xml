@@ -45,7 +45,6 @@
             android:layout_margin="16dp"
             android:contentDescription="Add product"
             app:srcCompat="@android:drawable/ic_input_add"/>
-
     </FrameLayout>
 
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

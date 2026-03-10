@@ -145,7 +145,10 @@ public class SuppliersFragment extends Fragment {
 
                 Log.e(TAG, "fetchSuppliers ERROR " + code + " / " + message);
                 toast("Fetch failed: " + code);
-                showEmpty("Error " + code);
+
+                if (!items.isEmpty()) showList();
+                else showEmpty("Error " + code);
+
                 stopRefreshing();
             }
         });
@@ -165,15 +168,30 @@ public class SuppliersFragment extends Fragment {
             @Override
             public void onSuccess() {
                 if (!isAdded()) return;
+
                 toast("Deleted");
-                load(false);
+
+                int pos = -1;
+                for (int i = 0; i < items.size(); i++) {
+                    if (items.get(i).id == s.id) { pos = i; break; }
+                }
+                if (pos >= 0) {
+                    items.remove(pos);
+                    if (adapter != null) adapter.notifyItemRemoved(pos);
+                } else {
+                    if (adapter != null) adapter.notifyDataSetChanged();
+                }
+
+                if (items.isEmpty()) showEmpty("No suppliers");
+                else showList();
             }
 
             @Override
             public void onError(int code, @NonNull String message) {
                 if (!isAdded()) return;
                 toast("Delete failed: " + code);
-                showEmpty("Error " + code);
+                if (!items.isEmpty()) showList();
+                else showEmpty("Error " + code);
             }
         });
     }

@@ -2,13 +2,16 @@ package com.example.valdker.ui.suppliers;
 
 import android.app.Dialog;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
 import com.example.valdker.R;
@@ -65,6 +68,7 @@ public class SupplierFormDialog extends DialogFragment {
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         View v = requireActivity().getLayoutInflater().inflate(R.layout.dialog_supplier_form, null);
 
+        TextView tvTitle = v.findViewById(R.id.tvTitleSupplierForm);
         EditText etName = v.findViewById(R.id.etSupplierName);
         EditText etContact = v.findViewById(R.id.etSupplierContact);
         EditText etCell = v.findViewById(R.id.etSupplierCell);
@@ -73,87 +77,159 @@ public class SupplierFormDialog extends DialogFragment {
         ProgressBar progress = v.findViewById(R.id.progressSupplierForm);
 
         Bundle args = getArguments();
-        String mode = args != null ? args.getString(ARG_MODE, MODE_ADD) : MODE_ADD;
+        final String mode = args != null ? args.getString(ARG_MODE, MODE_ADD) : MODE_ADD;
+        final boolean isEdit = MODE_EDIT.equals(mode);
 
-        if (MODE_EDIT.equals(mode) && args != null) {
-            etName.setText(args.getString(ARG_NAME, ""));
-            etContact.setText(args.getString(ARG_CONTACT, ""));
-            etCell.setText(args.getString(ARG_CELL, ""));
-            etEmail.setText(args.getString(ARG_EMAIL, ""));
-            etAddress.setText(args.getString(ARG_ADDRESS, ""));
+        tvTitle.setText(isEdit ? "Edit Supplier" : "Add Supplier");
+
+        if (isEdit && args != null) {
+            etName.setText(valueOrEmpty(args.getString(ARG_NAME)));
+            etContact.setText(valueOrEmpty(args.getString(ARG_CONTACT)));
+            etCell.setText(valueOrEmpty(args.getString(ARG_CELL)));
+            etEmail.setText(valueOrEmpty(args.getString(ARG_EMAIL)));
+            etAddress.setText(valueOrEmpty(args.getString(ARG_ADDRESS)));
         }
 
-        MaterialAlertDialogBuilder b = new MaterialAlertDialogBuilder(requireContext())
-                .setTitle(MODE_EDIT.equals(mode) ? "Edit Supplier" : "Add Supplier")
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext())
                 .setView(v)
                 .setNegativeButton("Cancel", (d, w) -> dismiss())
                 .setPositiveButton("Save", null);
 
-        androidx.appcompat.app.AlertDialog dialog = b.create();
+        AlertDialog dialog = builder.create();
         dialog.setOnShowListener(dlg -> {
-            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE)
-                    .setOnClickListener(btn -> {
+            final View positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            final View negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
 
-                        String name = etName.getText().toString().trim();
-                        String contact = etContact.getText().toString().trim();
-                        String cell = etCell.getText().toString().trim();
-                        String email = etEmail.getText().toString().trim();
-                        String address = etAddress.getText().toString().trim();
+            if (positiveButton != null) {
+                positiveButton.setAlpha(1f);
+            }
 
-                        if (name.isEmpty()) { toast("Name required"); return; }
-                        if (contact.isEmpty()) { toast("Contact person required"); return; }
-                        if (cell.isEmpty()) { toast("Cell required"); return; }
+            if (negativeButton != null) {
+                negativeButton.setAlpha(1f);
+            }
 
-                        if (email.isEmpty()) email = null;
-                        if (address.isEmpty()) address = null;
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(0xFF22C55E);
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(0xFF22C55E);
 
-                        SessionManager session = new SessionManager(requireContext());
-                        String token = session.getToken();
-                        if (token == null || token.trim().isEmpty()) {
-                            toast("Token empty");
-                            return;
-                        }
+            View buttonBar = (View) dialog.getButton(AlertDialog.BUTTON_POSITIVE).getParent();
+            buttonBar.setBackgroundColor(0xFFF9FAFB);
 
-                        SupplierRepository repo = new SupplierRepository(requireContext());
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(btn -> {
+                String name = getTrimmed(etName);
+                String contact = getTrimmed(etContact);
+                String cell = getTrimmed(etCell);
+                String email = emptyToNull(getTrimmed(etEmail));
+                String address = emptyToNull(getTrimmed(etAddress));
 
-                        progress.setVisibility(View.VISIBLE);
-                        dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+                if (TextUtils.isEmpty(name)) {
+                    etName.setError("Name required");
+                    etName.requestFocus();
+                    return;
+                }
 
-                        if (MODE_EDIT.equals(mode) && args != null) {
-                            int id = args.getInt(ARG_ID, 0);
-                            repo.updateSupplier(token, id, name, contact, cell, email, address, new SupplierRepository.ItemCallback() {
-                                @Override public void onSuccess(@NonNull Supplier saved) {
-                                    progress.setVisibility(View.GONE);
-                                    if (cb != null) cb.onDone(saved);
-                                    dismiss();
-                                }
-                                @Override public void onError(int code, @NonNull String message) {
-                                    progress.setVisibility(View.GONE);
-                                    dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setEnabled(true);
-                                    toast("Update failed: " + code);
-                                }
-                            });
-                        } else {
-                            repo.createSupplier(token, name, contact, cell, email, address, new SupplierRepository.ItemCallback() {
-                                @Override public void onSuccess(@NonNull Supplier saved) {
-                                    progress.setVisibility(View.GONE);
-                                    if (cb != null) cb.onDone(saved);
-                                    dismiss();
-                                }
-                                @Override public void onError(int code, @NonNull String message) {
-                                    progress.setVisibility(View.GONE);
-                                    dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setEnabled(true);
-                                    toast("Create failed: " + code);
-                                }
-                            });
-                        }
-                    });
+                if (TextUtils.isEmpty(contact)) {
+                    etContact.setError("Contact person required");
+                    etContact.requestFocus();
+                    return;
+                }
+
+                if (TextUtils.isEmpty(cell)) {
+                    etCell.setError("Cell required");
+                    etCell.requestFocus();
+                    return;
+                }
+
+                SessionManager session = new SessionManager(requireContext());
+                String token = session.getToken();
+                if (TextUtils.isEmpty(token)) {
+                    toast("Session expired. Please login again.");
+                    return;
+                }
+
+                etName.setError(null);
+                etContact.setError(null);
+                etCell.setError(null);
+
+                setSavingState(progress, positiveButton, true);
+
+                SupplierRepository repo = new SupplierRepository(requireContext());
+
+                SupplierRepository.ItemCallback callback = new SupplierRepository.ItemCallback() {
+                    @Override
+                    public void onSuccess(@NonNull Supplier saved) {
+                        if (!isAdded()) return;
+                        setSavingState(progress, positiveButton, false);
+                        if (cb != null) cb.onDone(saved);
+                        dismissAllowingStateLoss();
+                    }
+
+                    @Override
+                    public void onError(int code, @NonNull String message) {
+                        if (!isAdded()) return;
+                        setSavingState(progress, positiveButton, false);
+                        toast(buildErrorMessage(isEdit, code, message));
+                    }
+                };
+
+                if (isEdit && args != null) {
+                    int id = args.getInt(ARG_ID, 0);
+                    if (id <= 0) {
+                        setSavingState(progress, positiveButton, false);
+                        toast("Invalid supplier ID");
+                        return;
+                    }
+
+                    repo.updateSupplier(token, id, name, contact, cell, email, address, callback);
+                } else {
+                    repo.createSupplier(token, name, contact, cell, email, address, callback);
+                }
+            });
         });
 
         return dialog;
     }
 
+    private void setSavingState(@NonNull ProgressBar progress, @Nullable View positiveButton, boolean saving) {
+        progress.setVisibility(saving ? View.VISIBLE : View.GONE);
+        if (positiveButton != null) {
+            positiveButton.setEnabled(!saving);
+            positiveButton.setAlpha(saving ? 0.6f : 1f);
+        }
+    }
+
+    @NonNull
+    private String getTrimmed(@Nullable EditText editText) {
+        if (editText == null || editText.getText() == null) return "";
+        return editText.getText().toString().trim();
+    }
+
+    @Nullable
+    private String emptyToNull(@Nullable String value) {
+        return TextUtils.isEmpty(value) ? null : value;
+    }
+
+    @NonNull
+    private String valueOrEmpty(@Nullable String value) {
+        return value == null ? "" : value;
+    }
+
+    @NonNull
+    private String buildErrorMessage(boolean isEdit, int statusCode, @Nullable String message) {
+        String action = isEdit ? "Update" : "Create";
+
+        if (!TextUtils.isEmpty(message)) {
+            return action + " failed: " + message;
+        }
+
+        if (statusCode > 0) {
+            return action + " failed (" + statusCode + ")";
+        }
+
+        return action + " failed";
+    }
+
     private void toast(@NonNull String msg) {
+        if (!isAdded()) return;
         Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
     }
 }

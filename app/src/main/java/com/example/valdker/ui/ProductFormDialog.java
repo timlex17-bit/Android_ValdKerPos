@@ -2,6 +2,7 @@ package com.example.valdker.ui;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -16,8 +17,10 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
+import com.example.valdker.BarcodeScannerDialogFragment;
 import com.example.valdker.R;
 import com.example.valdker.SessionManager;
 import com.example.valdker.models.CategoryLite;
@@ -30,6 +33,8 @@ import com.example.valdker.repositories.SupplierRepository;
 import com.example.valdker.repositories.UnitRepository;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,11 +47,14 @@ public class ProductFormDialog extends DialogFragment {
 
     private DoneCallback cb;
 
-    // edit mode
+    private TextInputLayout tilProdSku, tilProdCode;
+    private TextInputEditText etProdSku, etProdCode;
+
+    // Edit mode
     private boolean isEdit = false;
     private Product editing;
 
-    // image
+    // Image
     private Uri selectedImageUri;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
 
@@ -74,10 +82,7 @@ public class ProductFormDialog extends DialogFragment {
                 .inflate(R.layout.dialog_product_form, null);
 
         EditText etName = v.findViewById(R.id.etProdName);
-
-        // ✅ NEW: SKU field (make sure dialog_product_form.xml has etProdSku)
         EditText etSku = v.findViewById(R.id.etProdSku);
-
         EditText etCode = v.findViewById(R.id.etProdCode);
         Spinner spCategory = v.findViewById(R.id.spProdCategory);
 
@@ -87,6 +92,11 @@ public class ProductFormDialog extends DialogFragment {
         EditText etSell = v.findViewById(R.id.etProdSell);
         EditText etWeight = v.findViewById(R.id.etProdWeight);
 
+        tilProdSku = v.findViewById(R.id.tilProdSku);
+        tilProdCode = v.findViewById(R.id.tilProdCode);
+        etProdSku = v.findViewById(R.id.etProdSku);
+        etProdCode = v.findViewById(R.id.etProdCode);
+
         Spinner spUnit = v.findViewById(R.id.spProdUnit);
         Spinner spSupplier = v.findViewById(R.id.spProdSupplier);
 
@@ -94,7 +104,9 @@ public class ProductFormDialog extends DialogFragment {
         ImageView imgPreview = v.findViewById(R.id.imgPreview);
         ProgressBar progress = v.findViewById(R.id.progressProdForm);
 
-        // ✅ register image picker BEFORE return dialog
+        tilProdSku.setEndIconOnClickListener(v1 -> openScannerForField(true));
+        tilProdCode.setEndIconOnClickListener(v12 -> openScannerForField(false));
+
         imagePickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 res -> {
@@ -116,7 +128,7 @@ public class ProductFormDialog extends DialogFragment {
             imagePickerLauncher.launch(Intent.createChooser(i, "Select Image"));
         });
 
-        // spinner data
+        // Spinner data
         List<CategoryLite> categories = new ArrayList<>();
         List<UnitLite> units = new ArrayList<>();
         List<SupplierLite> suppliers = new ArrayList<>();
@@ -145,20 +157,27 @@ public class ProductFormDialog extends DialogFragment {
         // Prefill when edit
         if (isEdit && editing != null) {
             etName.setText(editing.name);
-
-            // ✅ NEW: prefill sku
             if (etSku != null) etSku.setText(editing.sku != null ? editing.sku : "");
-
             etCode.setText(editing.barcode);
             etStock.setText(String.valueOf(editing.stock));
-
-            // ✅ now these fields exist because ProductRepository parses them
             etBuy.setText(editing.buyPrice != null ? editing.buyPrice : "");
             etSell.setText(editing.sellPrice != null ? editing.sellPrice : "");
             etWeight.setText(editing.weight != null ? editing.weight : "");
+
+            // Stock must be view-only in edit mode (backend locks it)
+            etStock.setEnabled(false);
+            etStock.setFocusable(false);
+            etStock.setClickable(false);
+            etStock.setLongClickable(false);
+        } else {
+            // Stock is allowed in add mode (if backend accepts initial stock)
+            etStock.setEnabled(true);
+            etStock.setFocusable(true);
+            etStock.setClickable(true);
+            etStock.setLongClickable(true);
         }
 
-        // load dropdown data
+        // Load dropdown data
         SessionManager session = new SessionManager(requireContext());
         String token = session.getToken();
 
@@ -181,7 +200,7 @@ public class ProductFormDialog extends DialogFragment {
                     unitAdapter.notifyDataSetChanged();
                     supAdapter.notifyDataSetChanged();
 
-                    // ✅ Auto select for Edit
+                    // Auto select for Edit
                     if (isEdit && editing != null) {
                         selectCategory(spCategory, categories, editing.categoryId);
                         selectUnit(spUnit, units, editing.unitId);
@@ -238,137 +257,240 @@ public class ProductFormDialog extends DialogFragment {
 
         String title = isEdit ? "Edit Product" : "Add Product";
 
+        android.widget.TextView tvTitle = v.findViewById(R.id.tvTitleProductForm);
+        if (tvTitle != null) {
+            tvTitle.setText(title);
+        }
+
         MaterialAlertDialogBuilder b = new MaterialAlertDialogBuilder(requireContext())
-                .setTitle(title)
                 .setView(v)
                 .setNegativeButton("Cancel", (d, w) -> dismiss())
                 .setPositiveButton("Save", null);
 
         androidx.appcompat.app.AlertDialog dialog = b.create();
 
-        dialog.setOnShowListener(dlg -> dialog
-                .getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE)
-                .setOnClickListener(btn -> {
+        dialog.setOnShowListener(dlg -> {
+            View positiveBtn = dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE);
+            View negativeBtn = dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEGATIVE);
 
-                    String name = etName.getText().toString().trim();
+            if (positiveBtn != null) {
+                ((android.widget.TextView) positiveBtn).setTextColor(0xFF22C55E);
+            }
 
-                    // ✅ NEW: sku (optional)
-                    String sku = "";
-                    if (etSku != null && etSku.getText() != null) {
-                        sku = etSku.getText().toString().trim();
-                    }
+            if (negativeBtn != null) {
+                ((android.widget.TextView) negativeBtn).setTextColor(0xFF22C55E);
+            }
 
-                    String code = etCode.getText().toString().trim();
-                    String desc = etDesc.getText().toString().trim();
+            if (positiveBtn != null && positiveBtn.getParent() instanceof View) {
+                View buttonBar = (View) positiveBtn.getParent();
+                buttonBar.setBackgroundColor(0xFFF9FAFB);
+            }
 
-                    String stockStr = etStock.getText().toString().trim();
-                    String buy = etBuy.getText().toString().trim();
-                    String sell = etSell.getText().toString().trim();
-                    String weight = etWeight.getText().toString().trim();
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE)
+                    .setOnClickListener(btn -> {
 
-                    if (name.isEmpty()) { toast("Name required"); return; }
+                        String name = etName.getText().toString().trim();
 
-                    // SKU optional -> no required validation
+                        String sku = "";
+                        if (etSku != null && etSku.getText() != null) {
+                            sku = etSku.getText().toString().trim();
+                        }
 
-                    if (code.isEmpty()) { toast("Code required"); return; }
-                    if (spCategory.getSelectedItem() == null) { toast("Category required"); return; }
-                    if (stockStr.isEmpty()) { toast("Stock required"); return; }
-                    if (buy.isEmpty()) { toast("Buy price required"); return; }
-                    if (sell.isEmpty()) { toast("Sell price required"); return; }
-                    if (weight.isEmpty()) { toast("Weight required"); return; }
-                    if (spUnit.getSelectedItem() == null) { toast("Unit required"); return; }
-                    if (spSupplier.getSelectedItem() == null) { toast("Supplier required"); return; }
+                        String code = etCode.getText().toString().trim();
+                        String desc = etDesc.getText().toString().trim();
 
-                    int stock;
-                    try {
-                        stock = Integer.parseInt(stockStr);
-                    } catch (Exception e) {
-                        toast("Stock must be number");
-                        return;
-                    }
+                        String stockStr = etStock.getText().toString().trim();
+                        String buy = etBuy.getText().toString().trim();
+                        String sell = etSell.getText().toString().trim();
+                        String weight = etWeight.getText().toString().trim();
 
-                    CategoryLite cat = (CategoryLite) spCategory.getSelectedItem();
-                    UnitLite unit = (UnitLite) spUnit.getSelectedItem();
-                    SupplierLite sup = (SupplierLite) spSupplier.getSelectedItem();
+                        if (name.isEmpty()) { toast("Name required"); return; }
+                        if (code.isEmpty()) { toast("Code required"); return; }
+                        if (spCategory.getSelectedItem() == null) { toast("Category required"); return; }
 
-                    SessionManager session2 = new SessionManager(requireContext());
-                    String token2 = session2.getToken();
+                        if (!isEdit && stockStr.isEmpty()) { toast("Stock required"); return; }
 
-                    if (token2 == null || token2.trim().isEmpty()) {
-                        toast("Token empty");
-                        return;
-                    }
+                        if (buy.isEmpty()) { toast("Buy price required"); return; }
+                        if (sell.isEmpty()) { toast("Sell price required"); return; }
+                        if (weight.isEmpty()) { toast("Weight required"); return; }
+                        if (spUnit.getSelectedItem() == null) { toast("Unit required"); return; }
+                        if (spSupplier.getSelectedItem() == null) { toast("Supplier required"); return; }
 
-                    progress.setVisibility(View.VISIBLE);
-                    dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+                        int stock = 0;
+                        if (!isEdit) {
+                            try {
+                                stock = Integer.parseInt(stockStr);
+                            } catch (Exception e) {
+                                toast("Stock must be number");
+                                return;
+                            }
+                        } else {
+                            try {
+                                stock = Integer.parseInt(stockStr.isEmpty() ? "0" : stockStr);
+                            } catch (Exception ignored) {
+                                stock = 0;
+                            }
+                        }
 
-                    ProductRepository repo = new ProductRepository(requireContext());
+                        CategoryLite cat = (CategoryLite) spCategory.getSelectedItem();
+                        UnitLite unit = (UnitLite) spUnit.getSelectedItem();
+                        SupplierLite sup = (SupplierLite) spSupplier.getSelectedItem();
 
-                    if (isEdit && editing != null) {
-                        repo.updateProduct(
-                                token2,
-                                editing.id,
-                                name,
-                                sku,      // ✅ NEW
-                                code,
-                                cat.id,
-                                desc,
-                                stock,
-                                buy,
-                                sell,
-                                weight,
-                                unit.id,
-                                sup.id,
-                                new ProductRepository.ItemCallback() {
-                                    @Override
-                                    public void onSuccess(@NonNull Product saved) {
-                                        progress.setVisibility(View.GONE);
-                                        if (cb != null) cb.onDone(saved);
-                                        dismiss();
+                        SessionManager session2 = new SessionManager(requireContext());
+                        String token2 = session2.getToken();
+
+                        if (token2 == null || token2.trim().isEmpty()) {
+                            toast("Token empty");
+                            return;
+                        }
+
+                        progress.setVisibility(View.VISIBLE);
+                        dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+
+                        ProductRepository repo = new ProductRepository(requireContext());
+
+                        if (isEdit && editing != null) {
+
+                            int productId;
+
+                            try {
+                                productId = Integer.parseInt(editing.id);
+                            } catch (Exception e) {
+                                progress.setVisibility(View.GONE);
+                                dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+                                toast("Invalid product ID");
+                                return;
+                            }
+
+                            repo.updateProduct(
+                                    token2,
+                                    productId,
+                                    name,
+                                    sku,
+                                    code,
+                                    cat.id,
+                                    desc,
+                                    stock,
+                                    buy,
+                                    sell,
+                                    weight,
+                                    unit.id,
+                                    sup.id,
+                                    selectedImageUri,
+                                    new ProductRepository.ItemCallback() {
+                                        @Override
+                                        public void onSuccess(@NonNull Product saved) {
+                                            progress.setVisibility(View.GONE);
+                                            if (cb != null) cb.onDone(saved);
+                                            dismiss();
+                                        }
+
+                                        @Override
+                                        public void onError(int statusCode, @NonNull String message) {
+                                            progress.setVisibility(View.GONE);
+                                            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+                                            toast("Update failed: " + statusCode + " - " + message);
+                                        }
                                     }
+                            );
+                        } else {
+                            repo.createProduct(
+                                    token2,
+                                    name,
+                                    sku,
+                                    code,
+                                    cat.id,
+                                    desc,
+                                    stock,
+                                    buy,
+                                    sell,
+                                    weight,
+                                    unit.id,
+                                    sup.id,
+                                    selectedImageUri,
+                                    new ProductRepository.ItemCallback() {
+                                        @Override
+                                        public void onSuccess(@NonNull Product saved) {
+                                            progress.setVisibility(View.GONE);
+                                            if (cb != null) cb.onDone(saved);
+                                            dismiss();
+                                        }
 
-                                    @Override
-                                    public void onError(int statusCode, @NonNull String message) {
-                                        progress.setVisibility(View.GONE);
-                                        dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setEnabled(true);
-                                        toast("Update failed: " + statusCode);
+                                        @Override
+                                        public void onError(int statusCode, @NonNull String message) {
+                                            progress.setVisibility(View.GONE);
+                                            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+                                            toast("Create failed: " + statusCode + " - " + message);
+                                        }
                                     }
-                                }
-                        );
-                    } else {
-                        repo.createProduct(
-                                token2,
-                                name,
-                                sku,     // ✅ NEW
-                                code,
-                                cat.id,
-                                desc,
-                                stock,
-                                buy,
-                                sell,
-                                weight,
-                                unit.id,
-                                sup.id,
-                                new ProductRepository.ItemCallback() {
-                                    @Override
-                                    public void onSuccess(@NonNull Product saved) {
-                                        progress.setVisibility(View.GONE);
-                                        if (cb != null) cb.onDone(saved);
-                                        dismiss();
-                                    }
-
-                                    @Override
-                                    public void onError(int statusCode, @NonNull String message) {
-                                        progress.setVisibility(View.GONE);
-                                        dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setEnabled(true);
-                                        toast("Create failed: " + statusCode);
-                                    }
-                                }
-                        );
-                    }
-                }));
+                            );
+                        }
+                    });
+                });
 
         return dialog;
+    }
+
+    private static final int CAMERA_REQUEST = 2101;
+    private boolean pendingScanForSku = false;
+
+    private void openScannerForField(boolean forSku) {
+        pendingScanForSku = forSku;
+
+        if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{android.Manifest.permission.CAMERA}, CAMERA_REQUEST);
+            return;
+        }
+
+        openBarcodeScannerDialog();
+    }
+
+    private void openBarcodeScannerDialog() {
+        BarcodeScannerDialogFragment dlg = new BarcodeScannerDialogFragment();
+
+        dlg.setListener(barcode -> {
+            if (!isAdded()) return;
+
+            requireActivity().runOnUiThread(() -> {
+                if (barcode == null) return;
+
+                String value = barcode.trim();
+                if (value.isEmpty()) return;
+
+                if (pendingScanForSku) {
+                    etProdSku.setText(value);
+                    etProdSku.setSelection(value.length());
+                } else {
+                    etProdCode.setText(value);
+                    etProdCode.setSelection(value.length());
+                }
+
+                if (dlg.isAdded()) {
+                    dlg.dismissAllowingStateLoss();
+                }
+            });
+        });
+
+        dlg.setCancelable(true);
+        dlg.show(getParentFragmentManager(), "BARCODE_DIALOG_PRODUCT");
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == CAMERA_REQUEST) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openBarcodeScannerDialog();
+            } else {
+                Toast.makeText(requireContext(),
+                        "Camera permission required to scan barcode",
+                        Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     private void selectCategory(@NonNull Spinner sp, @NonNull List<CategoryLite> list, @Nullable String categoryIdStr) {

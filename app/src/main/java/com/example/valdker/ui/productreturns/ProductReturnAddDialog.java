@@ -1,31 +1,34 @@
 package com.example.valdker.ui.productreturns;
 
 import android.app.Dialog;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.valdker.R;
-import com.example.valdker.models.OrderLite;
 import com.example.valdker.models.OrderItemLite;
+import com.example.valdker.models.OrderLite;
 import com.example.valdker.models.ProductReturn;
 import com.example.valdker.repositories.OrderDetailRepository;
 import com.example.valdker.repositories.ProductDetailRepository;
 import com.example.valdker.repositories.ProductReturnRepository;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 public class ProductReturnAddDialog extends DialogFragment {
@@ -35,26 +38,30 @@ public class ProductReturnAddDialog extends DialogFragment {
     }
 
     private Spinner spOrder, spOrderItem;
-    private TextView tvCustomerAuto, tvItemsPreview;
+    private TextView tvCustomerAuto;
     private EditText etNote, etQty, etUnitPrice;
     private Button btnAddItem;
 
-    private final List<OrderLite> orders;
+    private RecyclerView rvPreview;
+    private TextView tvPreviewEmpty;
+    private PreviewAdapter previewAdapter;
+
+    private final java.util.List<OrderLite> orders;
     private final DoneCallback callback;
 
-    // loaded from order detail
-    private final List<OrderItemLite> invoiceItems = new ArrayList<>();
+    // Loaded from order detail
+    private final java.util.List<OrderItemLite> invoiceItems = new ArrayList<>();
     private ArrayAdapter<OrderItemLite> invoiceItemsAdapter;
 
-    // items that will be returned (POST)
-    private final List<ProductReturnRepository.CreateItem> returnItems = new ArrayList<>();
+    // Items that will be returned (POST)
+    private final java.util.List<ProductReturnRepository.CreateItem> returnItems = new ArrayList<>();
 
-    // current order info
-    private Integer currentCustomerId = null; // may be null
+    // Current order info
+    private Integer currentCustomerId = null;
     private String currentCustomerName = null;
 
     public ProductReturnAddDialog(
-            @NonNull List<OrderLite> orders,
+            @NonNull java.util.List<OrderLite> orders,
             @NonNull DoneCallback callback
     ) {
         this.orders = orders;
@@ -64,13 +71,14 @@ public class ProductReturnAddDialog extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        View v = requireActivity().getLayoutInflater().inflate(R.layout.dialog_product_return_add, null);
+
+        View v = requireActivity().getLayoutInflater()
+                .inflate(R.layout.dialog_product_return_add, null);
 
         spOrder = v.findViewById(R.id.spOrder);
         spOrderItem = v.findViewById(R.id.spOrderItem);
 
         tvCustomerAuto = v.findViewById(R.id.tvCustomerAuto);
-        tvItemsPreview = v.findViewById(R.id.tvItemsPreview);
 
         etNote = v.findViewById(R.id.etNote);
         etQty = v.findViewById(R.id.etQty);
@@ -78,38 +86,94 @@ public class ProductReturnAddDialog extends DialogFragment {
 
         btnAddItem = v.findViewById(R.id.btnAddItem);
 
-        // Order spinner
-        spOrder.setAdapter(new ArrayAdapter<>(requireContext(),
-                android.R.layout.simple_spinner_dropdown_item, orders));
+        rvPreview = v.findViewById(R.id.rvPreview);
+        tvPreviewEmpty = v.findViewById(R.id.tvPreviewEmpty);
 
-        // Invoice items adapter (start empty)
-        invoiceItemsAdapter = new ArrayAdapter<>(requireContext(),
-                android.R.layout.simple_spinner_dropdown_item, invoiceItems);
+        // Unit price must be read-only (extra safety besides XML settings)
+        etUnitPrice.setEnabled(false);
+        etUnitPrice.setFocusable(false);
+        etUnitPrice.setClickable(false);
+
+        // Preview list setup
+        previewAdapter = new PreviewAdapter();
+        rvPreview.setLayoutManager(new LinearLayoutManager(requireContext()));
+        rvPreview.setAdapter(previewAdapter);
+
+        // Order spinner
+        spOrder.setAdapter(new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_dropdown_item,
+                orders
+        ));
+
+        // Invoice items spinner (starts empty)
+        invoiceItemsAdapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_dropdown_item,
+                invoiceItems
+        );
         spOrderItem.setAdapter(invoiceItemsAdapter);
 
-        // when order selected -> fetch detail and populate customer+items
+        // When order selected -> fetch detail and populate customer + invoice items
         spOrder.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
-            @Override public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
                 if (position < 0 || position >= orders.size()) return;
                 OrderLite o = orders.get(position);
                 loadOrderDetail(o.id);
             }
-            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) { }
         });
 
-        // default: if there is at least one order, load detail
+        // When invoice item selected -> auto update unit price
+        spOrderItem.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                updateUnitPriceFromSelectedItem();
+            }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {
+                etUnitPrice.setText("");
+            }
+        });
+
+        btnAddItem.setOnClickListener(view -> addReturnItem());
+
+        // Default behavior
         if (!orders.isEmpty()) {
             loadOrderDetail(orders.get(0).id);
         }
 
-        btnAddItem.setOnClickListener(view -> addReturnItem());
+        TextView tvTitle = v.findViewById(R.id.tvTitleProductReturnAdd);
+        if (tvTitle != null) {
+            tvTitle.setText("Add Product Return");
+        }
 
-        return new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Add Product Return")
+        androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
                 .setView(v)
                 .setNegativeButton("Cancel", (d, w) -> dismiss())
                 .setPositiveButton("Save", null)
                 .create();
+
+        dialog.setOnShowListener(dlg -> {
+            View positiveBtn = dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE);
+            View negativeBtn = dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEGATIVE);
+
+            if (positiveBtn instanceof TextView) {
+                ((TextView) positiveBtn).setTextColor(0xFF22C55E);
+            }
+            if (negativeBtn instanceof TextView) {
+                ((TextView) negativeBtn).setTextColor(0xFF22C55E);
+            }
+            if (positiveBtn != null && positiveBtn.getParent() instanceof View) {
+                ((View) positiveBtn.getParent()).setBackgroundColor(0xFFF9FAFB);
+            }
+        });
+
+        return dialog;
     }
 
     @Override
@@ -124,12 +188,15 @@ public class ProductReturnAddDialog extends DialogFragment {
 
     private void loadOrderDetail(int orderId) {
         tvCustomerAuto.setText("Customer: Loading...");
+        etUnitPrice.setText("");
+        etQty.setText("");
+
         invoiceItems.clear();
         if (invoiceItemsAdapter != null) invoiceItemsAdapter.notifyDataSetChanged();
 
-        // reset return items when changing invoice (safer)
+        // Reset return items when changing invoice (prevents mixing invoices)
         returnItems.clear();
-        renderPreview();
+        syncPreviewUI();
 
         OrderDetailRepository.fetch(requireContext(), orderId, new OrderDetailRepository.Callback() {
             @Override
@@ -145,123 +212,293 @@ public class ProductReturnAddDialog extends DialogFragment {
                 tvCustomerAuto.setText("Customer: " + custLabel);
 
                 invoiceItems.clear();
-                invoiceItems.addAll(detail.items);
+                if (detail.items != null) invoiceItems.addAll(detail.items);
                 invoiceItemsAdapter.notifyDataSetChanged();
 
-                // auto fill price from first item if exists
                 if (!invoiceItems.isEmpty()) {
-                    OrderItemLite it = invoiceItems.get(0);
-                    etUnitPrice.setText(it.price != null ? it.price : "");
+                    spOrderItem.setSelection(0);
+                    updateUnitPriceFromSelectedItem();
+                } else {
+                    etUnitPrice.setText("");
+                    Toast.makeText(requireContext(), "This invoice has no items.", Toast.LENGTH_SHORT).show();
                 }
 
-                // Optional: enrich product names by fetching product detail for each item
+                // Optional: enrich labels with product name/code/sku
                 enrichItemNames();
             }
 
             @Override
             public void onError(@NonNull String message) {
                 if (!isAdded()) return;
+                currentCustomerId = null;
+                currentCustomerName = null;
                 tvCustomerAuto.setText("Customer: -");
+                etUnitPrice.setText("");
                 Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
             }
         });
     }
 
-    // Fetch product detail for each productId so spinner shows product name/code
+    private void updateUnitPriceFromSelectedItem() {
+        Object sel = spOrderItem.getSelectedItem();
+        if (!(sel instanceof OrderItemLite)) {
+            etUnitPrice.setText("");
+            return;
+        }
+        OrderItemLite it = (OrderItemLite) sel;
+        String price = (it.price != null) ? it.price.trim() : "";
+        etUnitPrice.setText(price);
+    }
+
     private void enrichItemNames() {
         for (int i = 0; i < invoiceItems.size(); i++) {
             OrderItemLite it = invoiceItems.get(i);
             final int idx = i;
+
+            if (it == null || it.productId <= 0) continue;
+
             ProductDetailRepository.fetch(requireContext(), it.productId, new ProductDetailRepository.Callback() {
-                @Override public void onSuccess(@NonNull ProductDetailRepository.ProductMini p) {
+                @Override
+                public void onSuccess(@NonNull ProductDetailRepository.ProductMini p) {
                     if (!isAdded()) return;
+                    if (idx < 0 || idx >= invoiceItems.size()) return;
+
                     OrderItemLite target = invoiceItems.get(idx);
                     target.productName = p.name;
                     target.productCode = p.code;
                     target.productSku = p.sku;
+
                     invoiceItemsAdapter.notifyDataSetChanged();
+                    previewAdapter.notifyDataSetChanged();
                 }
-                @Override public void onError(@NonNull String message) {
-                    // ignore per-item error, still usable
+
+                @Override
+                public void onError(@NonNull String message) {
+                    // Ignore per-item error; spinner and preview are still usable
                 }
             });
         }
     }
 
     private void addReturnItem() {
-        if (spOrderItem.getSelectedItem() == null) {
-            Toast.makeText(requireContext(), "Invoice item kosong", Toast.LENGTH_SHORT).show();
+        Object sel = spOrderItem.getSelectedItem();
+        if (!(sel instanceof OrderItemLite)) {
+            Toast.makeText(requireContext(), "Invoice item is empty.", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        OrderItemLite invIt = (OrderItemLite) sel;
 
         String qtyStr = etQty.getText().toString().trim();
-        String priceStr = etUnitPrice.getText().toString().trim();
-
-        if (TextUtils.isEmpty(qtyStr) || TextUtils.isEmpty(priceStr)) {
-            Toast.makeText(requireContext(), "Qty & Unit Price wajib", Toast.LENGTH_SHORT).show();
+        if (TextUtils.isEmpty(qtyStr)) {
+            Toast.makeText(requireContext(), "Qty is required.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        int qty;
+        int addQty;
         try {
-            qty = Integer.parseInt(qtyStr);
+            addQty = Integer.parseInt(qtyStr);
         } catch (Exception e) {
-            Toast.makeText(requireContext(), "Qty tidak valid", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Invalid qty.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (qty <= 0) {
-            Toast.makeText(requireContext(), "Qty harus > 0", Toast.LENGTH_SHORT).show();
+        if (addQty <= 0) {
+            Toast.makeText(requireContext(), "Qty must be greater than 0.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        OrderItemLite invIt = (OrderItemLite) spOrderItem.getSelectedItem();
-
-        // validate qty return <= qty purchased
-        if (invIt.quantity > 0 && qty > invIt.quantity) {
-            Toast.makeText(requireContext(),
-                    "Qty return tidak boleh lebih dari qty invoice (" + invIt.quantity + ")",
-                    Toast.LENGTH_LONG).show();
+        // Unit price must come from invoice item, never from user input
+        String priceStr = (invIt.price != null) ? invIt.price.trim() : "";
+        if (priceStr.isEmpty()) {
+            Toast.makeText(requireContext(), "Invoice price is missing.", Toast.LENGTH_LONG).show();
             return;
         }
 
-        // add create item for API
-        returnItems.add(new ProductReturnRepository.CreateItem(invIt.productId, qty, priceStr));
+        // Normalize numeric string (handles comma decimal separators)
+        String normalized = priceStr.replace(",", ".");
+        if (!isValidNonNegativeDecimal(normalized)) {
+            Toast.makeText(requireContext(), "Invalid invoice price: " + priceStr, Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        // Merge behavior: if product already exists in return list, increase qty (not duplicates)
+        int existingIndex = findReturnItemIndex(invIt.productId);
+        int newQty = addQty;
+
+        if (existingIndex >= 0) {
+            ProductReturnRepository.CreateItem existing = returnItems.get(existingIndex);
+            newQty = existing.quantity + addQty;
+        }
+
+        // Validate newQty <= invoice qty
+        int maxQty = invIt.quantity;
+        if (maxQty > 0 && newQty > maxQty) {
+            Toast.makeText(
+                    requireContext(),
+                    "Return qty cannot exceed invoice qty (" + maxQty + ").",
+                    Toast.LENGTH_LONG
+            ).show();
+            return;
+        }
+
+        if (existingIndex >= 0) {
+            // Replace existing item with new immutable instance
+            returnItems.set(
+                    existingIndex,
+                    new ProductReturnRepository.CreateItem(
+                            invIt.productId,
+                            newQty,
+                            normalized
+                    )
+            );
+        } else {
+            // Add a new line
+            returnItems.add(
+                    new ProductReturnRepository.CreateItem(
+                            invIt.productId,
+                            newQty,
+                            normalized
+                    )
+            );
+        }
 
         etQty.setText("");
-        renderPreview();
+        updateUnitPriceFromSelectedItem();
+        syncPreviewUI();
     }
 
-    private void renderPreview() {
-        if (returnItems.isEmpty()) {
-            tvItemsPreview.setText("No items yet");
-            return;
-        }
-        StringBuilder sb = new StringBuilder();
+    private int findReturnItemIndex(int productId) {
         for (int i = 0; i < returnItems.size(); i++) {
-            ProductReturnRepository.CreateItem it = returnItems.get(i);
-            sb.append(String.format(Locale.US, "%d) product=%d, qty=%d, price=%s\n",
-                    i + 1, it.productId, it.quantity, it.unitPrice));
+            if (returnItems.get(i).productId == productId) return i;
         }
-        tvItemsPreview.setText(sb.toString().trim());
+        return -1;
+    }
+
+    private boolean isValidNonNegativeDecimal(@NonNull String s) {
+        try {
+            BigDecimal bd = new BigDecimal(s);
+            return bd.compareTo(BigDecimal.ZERO) >= 0;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private void syncPreviewUI() {
+        previewAdapter.notifyDataSetChanged();
+        tvPreviewEmpty.setVisibility(returnItems.isEmpty() ? View.VISIBLE : View.GONE);
+    }
+
+    private OrderItemLite findInvoiceItemByProductId(int productId) {
+        for (OrderItemLite it : invoiceItems) {
+            if (it != null && it.productId == productId) return it;
+        }
+        return null;
+    }
+
+    private String bestProductLabel(int productId) {
+        OrderItemLite inv = findInvoiceItemByProductId(productId);
+        if (inv == null) return "Product #" + productId;
+
+        String n = (inv.productName != null && !inv.productName.trim().isEmpty())
+                ? inv.productName.trim()
+                : "";
+
+        if (n.isEmpty() && inv.productCode != null && !inv.productCode.trim().isEmpty()) {
+            n = inv.productCode.trim();
+        }
+        if (n.isEmpty() && inv.productSku != null && !inv.productSku.trim().isEmpty()) {
+            n = inv.productSku.trim();
+        }
+        if (n.isEmpty()) n = "Product #" + productId;
+
+        return n;
+    }
+
+    private void showEditQtyDialog(int position) {
+        if (position < 0 || position >= returnItems.size()) return;
+
+        ProductReturnRepository.CreateItem it = returnItems.get(position);
+        OrderItemLite inv = findInvoiceItemByProductId(it.productId);
+        int maxQty = (inv != null) ? inv.quantity : 0;
+
+        EditText input = new EditText(requireContext());
+        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        input.setText(String.valueOf(it.quantity));
+
+        String msg = (maxQty > 0)
+                ? ("Enter new qty (max " + maxQty + ")")
+                : "Enter new qty";
+
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Edit Qty")
+                .setMessage(msg)
+                .setView(input)
+                .setNegativeButton("Cancel", (d, w) -> { })
+                .setPositiveButton("Update", (d, w) -> {
+                    String s = input.getText().toString().trim();
+                    if (TextUtils.isEmpty(s)) {
+                        Toast.makeText(requireContext(), "Qty is required.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    int newQty;
+                    try {
+                        newQty = Integer.parseInt(s);
+                    } catch (Exception e) {
+                        Toast.makeText(requireContext(), "Invalid qty.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    if (newQty <= 0) {
+                        Toast.makeText(requireContext(), "Qty must be greater than 0.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    if (maxQty > 0 && newQty > maxQty) {
+                        Toast.makeText(
+                                requireContext(),
+                                "Return qty cannot exceed invoice qty (" + maxQty + ").",
+                                Toast.LENGTH_LONG
+                        ).show();
+                        return;
+                    }
+
+                    // Replace immutable item instance with a new one
+                    returnItems.set(
+                            position,
+                            new ProductReturnRepository.CreateItem(
+                                    it.productId,
+                                    newQty,
+                                    it.unitPrice
+                            )
+                    );
+
+                    syncPreviewUI();
+                })
+                .show();
+    }
+
+    private void removePreviewItem(int position) {
+        if (position < 0 || position >= returnItems.size()) return;
+        returnItems.remove(position);
+        syncPreviewUI();
     }
 
     private void submit() {
         if (spOrder.getSelectedItem() == null) {
-            Toast.makeText(requireContext(), "Invoice wajib", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Invoice is required.", Toast.LENGTH_SHORT).show();
             return;
         }
         if (returnItems.isEmpty()) {
-            Toast.makeText(requireContext(), "Minimal 1 item return", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Add at least 1 return item.", Toast.LENGTH_SHORT).show();
             return;
         }
 
         OrderLite order = (OrderLite) spOrder.getSelectedItem();
         String note = etNote.getText().toString().trim();
 
-        // customerId bisa null -> API kamu sebelumnya butuh customerId int.
-        // Jadi: kalau customer null, kirim 0 / omit? (tergantung backend)
-        // Untuk aman: kita kirim 0 jika null.
+        // If customerId is null, send 0 (adjust if backend expects omit instead)
         int customerId = (currentCustomerId != null) ? currentCustomerId : 0;
 
         ProductReturnRepository.create(
@@ -275,7 +512,7 @@ public class ProductReturnAddDialog extends DialogFragment {
                     @Override
                     public void onSuccess(@NonNull ProductReturn created) {
                         if (!isAdded()) return;
-                        Toast.makeText(requireContext(), "Return created", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Return created.", Toast.LENGTH_SHORT).show();
                         dismiss();
                         if (callback != null) callback.onCreated();
                     }
@@ -287,5 +524,57 @@ public class ProductReturnAddDialog extends DialogFragment {
                     }
                 }
         );
+    }
+
+    // Preview adapter (dialog-only) to avoid affecting other modules
+    private class PreviewAdapter extends RecyclerView.Adapter<PreviewAdapter.VH> {
+
+        @NonNull
+        @Override
+        public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View row = requireActivity().getLayoutInflater()
+                    .inflate(R.layout.item_return_preview_row, parent, false);
+            return new VH(row);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull VH h, int position) {
+            ProductReturnRepository.CreateItem it = returnItems.get(position);
+
+            String label = bestProductLabel(it.productId);
+            h.tvLine1.setText(label);
+
+            OrderItemLite inv = findInvoiceItemByProductId(it.productId);
+            int maxQty = (inv != null) ? inv.quantity : 0;
+
+            String line2;
+            if (maxQty > 0) {
+                line2 = "Qty: " + it.quantity + " • Unit: " + it.unitPrice + " • Max: " + maxQty;
+            } else {
+                line2 = "Qty: " + it.quantity + " • Unit: " + it.unitPrice;
+            }
+            h.tvLine2.setText(line2);
+
+            h.btnEditQty.setOnClickListener(v -> showEditQtyDialog(h.getAdapterPosition()));
+            h.btnRemove.setOnClickListener(v -> removePreviewItem(h.getAdapterPosition()));
+        }
+
+        @Override
+        public int getItemCount() {
+            return returnItems.size();
+        }
+
+        class VH extends RecyclerView.ViewHolder {
+            TextView tvLine1, tvLine2;
+            Button btnEditQty, btnRemove;
+
+            VH(@NonNull View itemView) {
+                super(itemView);
+                tvLine1 = itemView.findViewById(R.id.tvLine1);
+                tvLine2 = itemView.findViewById(R.id.tvLine2);
+                btnEditQty = itemView.findViewById(R.id.btnEditQty);
+                btnRemove = itemView.findViewById(R.id.btnRemove);
+            }
+        }
     }
 }

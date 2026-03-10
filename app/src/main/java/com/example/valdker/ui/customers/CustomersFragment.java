@@ -145,7 +145,14 @@ public class CustomersFragment extends Fragment {
 
                 Log.e(TAG, "fetchCustomers ERROR " + statusCode + " / " + message);
                 toast("Fetch failed: " + statusCode);
-                showEmpty("Error " + statusCode);
+
+                // ✅ Kalau masih ada data lama, tetap tampilkan list
+                if (!items.isEmpty()) {
+                    showList();
+                } else {
+                    showEmpty("Error " + statusCode);
+                }
+
                 stopRefreshing();
             }
         });
@@ -166,14 +173,25 @@ public class CustomersFragment extends Fragment {
             public void onSuccess() {
                 if (!isAdded()) return;
                 toast("Deleted");
-                load(false);
+
+                for (int i = 0; i < items.size(); i++) {
+                    if (items.get(i).id == c.id) {
+                        items.remove(i);
+                        adapter.notifyItemRemoved(i);
+                        break;
+                    }
+                }
+
+                if (items.isEmpty()) showEmpty("No customers");
+                else showList();
             }
 
             @Override
             public void onError(int statusCode, @NonNull String message) {
                 if (!isAdded()) return;
                 toast("Delete failed: " + statusCode);
-                showEmpty("Error " + statusCode);
+                if (!items.isEmpty()) showList();
+                else showEmpty("No customers");
             }
         });
     }

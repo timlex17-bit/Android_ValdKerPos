@@ -12,9 +12,11 @@ import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.valdker.SessionManager;
 import com.example.valdker.models.Category;
 import com.example.valdker.models.CategoryLite;
 import com.example.valdker.network.ApiClient;
+import com.example.valdker.network.ApiConfig;
 
 import org.json.JSONObject;
 
@@ -28,9 +30,8 @@ public class CategoryRepository {
 
     private static final String TAG = "CategoryRepo";
 
-    private static final String BASE_URL = "https://valdker.onrender.com";
-    private static final String API_CATEGORIES = BASE_URL + "/api/categories/";
-    private static final String API_SHOP = BASE_URL + "/api/shop/";
+    private static final String API_CATEGORIES_PATH = "api/categories/";
+    private static final String API_SHOP_PATH = "api/shop/";
 
     // Network tuning (aligned with ProductRepository defaults)
     private static final int TIMEOUT_MS = 20000;
@@ -43,7 +44,7 @@ public class CategoryRepository {
     }
 
     /**
-     * Fetch categories and inject an "All" item (id = -1) at the beginning.
+     * Fetches categories and injects an "All" item (id = -1) at the beginning.
      * The "All" icon is fetched from /api/shop/ (field: all_category_icon_url).
      * If the shop icon is unavailable, iconUrl will be null (UI may show a placeholder).
      */
@@ -58,10 +59,7 @@ public class CategoryRepository {
                 public void onSuccess(@NonNull List<Category> categories) {
                     List<Category> out = new ArrayList<>();
 
-                    // Add "All" as the first item
                     out.add(new Category(-1, "All", allIconUrl));
-
-                    // Append API categories
                     out.addAll(categories);
 
                     cb.onSuccess(out);
@@ -76,16 +74,20 @@ public class CategoryRepository {
     }
 
     /**
-     * Fetch categories only from /api/categories/
+     * Fetches categories only from /api/categories/
      */
     public static void fetchCategoriesOnly(
             @NonNull Context context,
             @Nullable String tokenOrNull,
             @NonNull Callback cb
     ) {
+        SessionManager session = new SessionManager(context.getApplicationContext());
+        String apiCategoriesUrl = ApiConfig.url(session, API_CATEGORIES_PATH);
+        String baseUrl = session.getBaseUrl();
+
         JsonArrayRequest req = new JsonArrayRequest(
                 Request.Method.GET,
-                API_CATEGORIES,
+                apiCategoriesUrl,
                 null,
                 response -> {
                     try {
@@ -95,19 +97,20 @@ public class CategoryRepository {
                             JSONObject o = response.optJSONObject(i);
                             if (o == null) continue;
 
-                            int id = o.optInt("id");
-                            String name = o.optString("name", "");
+                            int id = o.optInt("id", 0);
+                            String name = o.optString("name", "").trim();
 
                             String iconUrl = o.isNull("icon_url")
                                     ? null
                                     : o.optString("icon_url", null);
 
-                            // Ensure absolute URL if backend returns a relative path
                             if (iconUrl != null && iconUrl.startsWith("/")) {
-                                iconUrl = BASE_URL + iconUrl;
+                                iconUrl = joinBaseAndRelative(baseUrl, iconUrl);
                             }
 
-                            list.add(new Category(id, name, iconUrl));
+                            if (id > 0 && !name.isEmpty()) {
+                                list.add(new Category(id, name, iconUrl));
+                            }
                         }
 
                         cb.onSuccess(list);
@@ -143,7 +146,7 @@ public class CategoryRepository {
     }
 
     /**
-     * Fetch the "All" category icon from /api/shop/
+     * Fetches the "All" category icon from /api/shop/
      * Expected JSON: { "all_category_icon_url": "https://..." }
      */
     private static void fetchAllIconUrl(
@@ -151,20 +154,24 @@ public class CategoryRepository {
             @Nullable String tokenOrNull,
             @NonNull AllIconCallback cb
     ) {
+        SessionManager session = new SessionManager(context.getApplicationContext());
+        String apiShopUrl = ApiConfig.url(session, API_SHOP_PATH);
+        String baseUrl = session.getBaseUrl();
+
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.GET,
-                API_SHOP,
+                apiShopUrl,
                 null,
                 res -> {
                     String url = null;
+
                     try {
                         url = res.isNull("all_category_icon_url")
                                 ? null
                                 : res.optString("all_category_icon_url", null);
 
-                        // Ensure absolute URL if backend returns a relative path
                         if (url != null && url.startsWith("/")) {
-                            url = BASE_URL + url;
+                            url = joinBaseAndRelative(baseUrl, url);
                         }
                     } catch (Exception ignored) {
                     }
@@ -172,7 +179,6 @@ public class CategoryRepository {
                     cb.onDone(url);
                 },
                 err -> {
-                    // If it fails, do not block category loading — fallback to null
                     String msg = buildVolleyErrorMessage(err.networkResponse);
                     Log.w(TAG, "Shop icon fetch failed (fallback null): " + msg);
                     cb.onDone(null);
@@ -191,8 +197,7 @@ public class CategoryRepository {
     }
 
     // ==========================================================
-    // NEW: fetchLite() for Spinner usage (e.g., ProductFormDialog)
-    // Does not modify existing methods.
+    // Lite fetch for Spinner usage (e.g., ProductFormDialog)
     // ==========================================================
 
     public interface LiteCallback {
@@ -209,13 +214,17 @@ public class CategoryRepository {
             @Nullable String tokenOrNull,
             @NonNull LiteCallback cb
     ) {
+        SessionManager session = new SessionManager(context.getApplicationContext());
+        String apiCategoriesUrl = ApiConfig.url(session, API_CATEGORIES_PATH);
+
         JsonArrayRequest req = new JsonArrayRequest(
                 Request.Method.GET,
-                API_CATEGORIES,
+                apiCategoriesUrl,
                 null,
                 res -> {
                     try {
                         List<CategoryLite> out = new ArrayList<>();
+
                         for (int i = 0; i < res.length(); i++) {
                             JSONObject o = res.optJSONObject(i);
                             if (o == null) continue;
@@ -223,11 +232,13 @@ public class CategoryRepository {
                             int id = o.optInt("id", 0);
                             String name = o.optString("name", "").trim();
 
-                            if (id != 0 && !name.isEmpty()) {
+                            if (id > 0 && !name.isEmpty()) {
                                 out.add(new CategoryLite(id, name));
                             }
                         }
+
                         cb.onSuccess(out);
+
                     } catch (Exception e) {
                         cb.onError(0, "Parse error: " + e.getMessage());
                     }
@@ -257,14 +268,17 @@ public class CategoryRepository {
     private static Map<String, String> buildHeaders(@Nullable String tokenOrNull) {
         Map<String, String> h = new HashMap<>();
         h.put("Accept", "application/json");
+
         if (tokenOrNull != null && !tokenOrNull.trim().isEmpty()) {
             h.put("Authorization", "Token " + tokenOrNull.trim());
         }
+
         return h;
     }
 
     private static String buildVolleyErrorMessage(@Nullable NetworkResponse nr) {
         if (nr == null) return "Network error";
+
         try {
             if (nr.data != null) {
                 String body = new String(nr.data, StandardCharsets.UTF_8).trim();
@@ -273,6 +287,15 @@ public class CategoryRepository {
             }
         } catch (Exception ignored) {
         }
+
         return "HTTP " + nr.statusCode;
+    }
+
+    private static String joinBaseAndRelative(@NonNull String baseUrlWithSlash, @NonNull String relativeStartsWithSlash) {
+        String base = baseUrlWithSlash;
+        if (base.endsWith("/") && relativeStartsWithSlash.startsWith("/")) {
+            return base.substring(0, base.length() - 1) + relativeStartsWithSlash;
+        }
+        return base + relativeStartsWithSlash;
     }
 }

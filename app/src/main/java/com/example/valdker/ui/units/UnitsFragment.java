@@ -27,6 +27,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.example.valdker.R;
 import com.example.valdker.SessionManager;
 import com.example.valdker.network.ApiClient;
+import com.example.valdker.network.ApiConfig;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -42,7 +43,7 @@ import java.util.Map;
 public class UnitsFragment extends Fragment {
 
     private static final String TAG = "UNITS";
-    private static final String BASE_URL = "https://valdker.onrender.com/api/units/";
+    private static final String ENDPOINT_UNITS = "api/units/";
     private static final Object REQ_TAG = "UnitsFragmentRequests";
 
     private SessionManager session;
@@ -95,10 +96,11 @@ public class UnitsFragment extends Fragment {
         setLoading(true);
 
         final String token = session.getToken();
+        final String url = ApiConfig.url(session, ENDPOINT_UNITS);
 
         JsonArrayRequest req = new JsonArrayRequest(
                 Request.Method.GET,
-                BASE_URL,
+                url,
                 null,
                 (JSONArray res) -> {
                     items.clear();
@@ -168,13 +170,14 @@ public class UnitsFragment extends Fragment {
         setLoading(true);
 
         final String token = session.getToken();
+        final String url = ApiConfig.url(session, ENDPOINT_UNITS);
 
         JSONObject body = new JSONObject();
         try { body.put("name", name); } catch (Exception ignored) {}
 
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.POST,
-                BASE_URL,
+                url,
                 body,
                 res -> {
                     setLoading(false);
@@ -201,7 +204,7 @@ public class UnitsFragment extends Fragment {
         setLoading(true);
 
         final String token = session.getToken();
-        final String url = BASE_URL + id + "/";
+        final String url = ApiConfig.url(session, ENDPOINT_UNITS) + id + "/";
 
         JSONObject body = new JSONObject();
         try { body.put("name", name); } catch (Exception ignored) {}
@@ -244,7 +247,7 @@ public class UnitsFragment extends Fragment {
         setLoading(true);
 
         final String token = session.getToken();
-        final String url = BASE_URL + id + "/";
+        final String url = ApiConfig.url(session, ENDPOINT_UNITS) + id + "/";
 
         StringRequest req = new StringRequest(
                 Request.Method.DELETE,

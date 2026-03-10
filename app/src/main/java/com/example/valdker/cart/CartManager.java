@@ -2,6 +2,8 @@ package com.example.valdker.cart;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -33,7 +35,7 @@ public class CartManager {
 
     private static CartManager instance;
 
-    private final Map<String, CartItem> map = new LinkedHashMap<>();
+    private final Map<Integer, CartItem> map = new LinkedHashMap<>();
     private final SharedPreferences sp;
 
     public interface Listener {
@@ -41,6 +43,10 @@ public class CartManager {
     }
 
     private final List<Listener> listeners = new ArrayList<>();
+
+    // Dispatch notifications on main thread + debounce to avoid UI jank
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private boolean notifyScheduled = false;
 
     private CartManager(Context context) {
         sp = context.getApplicationContext().getSharedPreferences(PREF, Context.MODE_PRIVATE);
@@ -55,9 +61,9 @@ public class CartManager {
     public synchronized void add(@NonNull Product p, int qty) {
         if (qty <= 0) qty = 1;
 
-        String id = safe(extractAnyString(p, "id", "productId", "uuid"));
-        if (id.isEmpty()) {
-            Log.w(TAG, "add(): product id is empty. Cart will not update. Check Product model fields.");
+        int id = (int) extractAnyDouble(p, "id", "productId");
+        if (id <= 0) {
+            Log.w(TAG, "add(): product id invalid.");
             return;
         }
 
@@ -69,7 +75,7 @@ public class CartManager {
         CartItem item = map.get(id);
         if (item == null) {
             item = new CartItem(id, name, price, imageUrl, qty);
-            item.orderType = ""; // ✅ UNSET by default
+            item.orderType = ""; // UNSET by default
             map.put(id, item);
         } else {
             item.qty += qty;
@@ -78,52 +84,37 @@ public class CartManager {
             if (price > 0) item.price = price;
             if (!imageUrl.isEmpty()) item.imageUrl = imageUrl;
 
-            // keep existing type, only normalize if already set
             item.orderType = normalizeTypeOrEmpty(item.orderType);
         }
 
         saveToPrefs();
-        notifyChanged();
+        notifyChangedDebounced();
     }
 
-    public synchronized void setQty(@NonNull String productId, int qty) {
-        String id = safe(productId);
-        if (id.isEmpty()) return;
-
-        CartItem item = map.get(id);
+    public synchronized void setQty(int productId, int qty) {
+        CartItem item = map.get(productId);
         if (item == null) return;
 
         if (qty <= 0) {
-            map.remove(id);
+            map.remove(productId);
         } else {
             item.qty = qty;
         }
 
         saveToPrefs();
-        notifyChanged();
+        notifyChangedDebounced();
     }
 
-    /**
-     * orderType can be:
-     * - TYPE_DINE_IN / TYPE_TAKE_OUT / TYPE_DELIVERY
-     * - "" (UNSET)
-     */
-    public synchronized void setOrderType(@NonNull String productId, @NonNull String orderType) {
-        String id = safe(productId);
-        if (id.isEmpty()) return;
-
-        CartItem item = map.get(id);
+    public synchronized void setOrderType(int productId, @NonNull String orderType) {
+        CartItem item = map.get(productId);
         if (item == null) return;
 
         item.orderType = normalizeTypeOrEmpty(orderType);
 
         saveToPrefs();
-        notifyChanged();
+        notifyChangedDebounced();
     }
 
-    /**
-     * Set type for all items; allow "" to UNSET all.
-     */
     public synchronized void setAllOrderType(@NonNull String orderType) {
         String t = normalizeTypeOrEmpty(orderType);
 
@@ -132,17 +123,9 @@ public class CartManager {
         }
 
         saveToPrefs();
-        notifyChanged();
+        notifyChangedDebounced();
     }
 
-    /**
-     * FINAL RULE:
-     * - if mixed types -> GENERAL
-     * - if all same -> that type
-     * - if empty or all UNSET -> GENERAL
-     *
-     * IMPORTANT: UNSET ("") is ignored (NOT treated as TAKE_OUT)
-     */
     public synchronized String resolveOrderTypeForBackend() {
         if (map.isEmpty()) return "GENERAL";
 
@@ -152,7 +135,7 @@ public class CartManager {
 
         for (CartItem it : map.values()) {
             String raw = (it.orderType == null) ? "" : it.orderType.trim().toUpperCase(Locale.US);
-            if (raw.isEmpty()) continue; // ✅ UNSET -> ignore
+            if (raw.isEmpty()) continue; // UNSET ignored
 
             if (TYPE_TAKE_OUT.equals(raw)) hasTakeOut = true;
             else if (TYPE_DINE_IN.equals(raw)) hasDineIn = true;
@@ -169,19 +152,16 @@ public class CartManager {
         return "GENERAL";
     }
 
-    public synchronized void remove(@NonNull String productId) {
-        String id = safe(productId);
-        if (id.isEmpty()) return;
-
-        map.remove(id);
+    public synchronized void remove(int productId) {
+        map.remove(productId);
         saveToPrefs();
-        notifyChanged();
+        notifyChangedDebounced();
     }
 
     public synchronized void clear() {
         map.clear();
         sp.edit().remove(KEY_CART_JSON).apply();
-        notifyChanged();
+        notifyChangedDebounced();
     }
 
     @NonNull
@@ -203,7 +183,7 @@ public class CartManager {
 
     public synchronized void reload() {
         loadFromPrefs();
-        notifyChanged();
+        notifyChangedDebounced();
     }
 
     public synchronized void addListener(@NonNull Listener l) {
@@ -214,16 +194,29 @@ public class CartManager {
         listeners.remove(l);
     }
 
-    private void notifyChanged() {
-        List<Listener> copy;
-        synchronized (this) {
-            copy = new ArrayList<>(listeners);
-        }
-        for (Listener l : copy) {
-            try {
-                l.onCartChanged();
-            } catch (Exception ignored) {}
-        }
+    /**
+     * Debounced notify:
+     * - Always dispatch on main thread
+     * - Coalesce multiple updates in the same frame
+     */
+    private void notifyChangedDebounced() {
+        if (notifyScheduled) return;
+        notifyScheduled = true;
+
+        mainHandler.post(() -> {
+            List<Listener> copy;
+            synchronized (CartManager.this) {
+                notifyScheduled = false;
+                copy = new ArrayList<>(listeners);
+            }
+
+            for (Listener l : copy) {
+                try {
+                    l.onCartChanged();
+                } catch (Exception ignored) {
+                }
+            }
+        });
     }
 
     private void saveToPrefs() {
@@ -231,15 +224,12 @@ public class CartManager {
             JSONArray arr = new JSONArray();
             for (CartItem i : map.values()) {
                 JSONObject o = new JSONObject();
-                o.put("productId", safe(i.productId));
+                o.put("productId", i.productId);
                 o.put("name", safe(i.name));
                 o.put("price", i.price);
                 o.put("imageUrl", safe(i.imageUrl));
                 o.put("qty", i.qty);
-
-                // ✅ persist EXACT value (can be "")
                 o.put("orderType", normalizeTypeOrEmpty(i.orderType));
-
                 arr.put(o);
             }
             sp.edit().putString(KEY_CART_JSON, arr.toString()).apply();
@@ -260,8 +250,8 @@ public class CartManager {
                 JSONObject o = arr.optJSONObject(i);
                 if (o == null) continue;
 
-                String id = safe(o.optString("productId", ""));
-                if (id.isEmpty()) continue;
+                int id = o.optInt("productId", 0);
+                if (id <= 0) continue;
 
                 CartItem item = new CartItem(
                         id,
@@ -271,7 +261,6 @@ public class CartManager {
                         o.optInt("qty", 0)
                 );
 
-                // ✅ restore UNSET allowed
                 item.orderType = normalizeTypeOrEmpty(o.optString("orderType", ""));
 
                 if (item.qty > 0) map.put(id, item);
@@ -318,24 +307,20 @@ public class CartManager {
                 f.setAccessible(true);
                 Object v = f.get(obj);
                 if (v != null) return v;
-            } catch (Throwable ignored) {}
+            } catch (Throwable ignored) {
+            }
 
             try {
                 Field f = c.getDeclaredField(key);
                 f.setAccessible(true);
                 Object v = f.get(obj);
                 if (v != null) return v;
-            } catch (Throwable ignored) {}
+            } catch (Throwable ignored) {
+            }
         }
         return null;
     }
 
-    /**
-     * Normalize with UNSET support:
-     * - null/empty -> ""
-     * - valid -> valid constant
-     * - invalid -> ""
-     */
     private String normalizeTypeOrEmpty(@Nullable String t) {
         if (t == null) return "";
         String v = t.trim().toUpperCase(Locale.US);

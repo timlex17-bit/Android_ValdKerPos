@@ -1,19 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
     android:padding="16dp"
-    android:background="#F6F7FB">
+    android:background="#F9FAFB">
+
+    <TextView
+        android:id="@+id/tvTitleSupplierForm"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Add Supplier"
+        android:textColor="#111827"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
+        android:id="@+id/cardSupplierDetails"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:backgroundTint="#F3F4F6"
         app:cardCornerRadius="20dp"
         app:cardElevation="0dp"
+        app:strokeColor="#E5E7EB"
         app:strokeWidth="1dp"
-        app:strokeColor="#E5E7EB">
+        app:layout_constraintTop_toBottomOf="@id/tvTitleSupplierForm"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -24,114 +43,135 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Supplier"
-                android:textStyle="bold"
-                android:textSize="14sp"
-                android:textColor="#111827" />
+                android:text="Supplier Details"
+                android:textColor="#111827"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
-            <!-- Name -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
+                android:hint="Name *"
                 app:boxBackgroundMode="outline"
+                app:boxBackgroundColor="#FFFFFF"
+                app:boxStrokeColor="#D1D5DB"
                 app:boxCornerRadiusTopStart="16dp"
                 app:boxCornerRadiusTopEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
-                app:boxCornerRadiusBottomEnd="16dp">
+                app:boxCornerRadiusBottomEnd="16dp"
+                app:hintTextColor="#6B7280">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etSupplierName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Name *"
-                    android:inputType="textPersonName" />
+                    android:inputType="textPersonName"
+                    android:textColor="#111827"
+                    android:textColorHint="#9CA3AF" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Contact person -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="12dp"
+                android:hint="Contact person *"
                 app:boxBackgroundMode="outline"
+                app:boxBackgroundColor="#FFFFFF"
+                app:boxStrokeColor="#D1D5DB"
                 app:boxCornerRadiusTopStart="16dp"
                 app:boxCornerRadiusTopEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
-                app:boxCornerRadiusBottomEnd="16dp">
+                app:boxCornerRadiusBottomEnd="16dp"
+                app:hintTextColor="#6B7280">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etSupplierContact"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Contact person *"
-                    android:inputType="text" />
+                    android:inputType="text"
+                    android:textColor="#111827"
+                    android:textColorHint="#9CA3AF" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Cell -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="12dp"
+                android:hint="Cell *"
                 app:boxBackgroundMode="outline"
+                app:boxBackgroundColor="#FFFFFF"
+                app:boxStrokeColor="#D1D5DB"
                 app:boxCornerRadiusTopStart="16dp"
                 app:boxCornerRadiusTopEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
-                app:boxCornerRadiusBottomEnd="16dp">
+                app:boxCornerRadiusBottomEnd="16dp"
+                app:hintTextColor="#6B7280">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etSupplierCell"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Cell *"
-                    android:inputType="phone" />
+                    android:inputType="phone"
+                    android:textColor="#111827"
+                    android:textColorHint="#9CA3AF" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Email -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="12dp"
+                android:hint="Email"
                 app:boxBackgroundMode="outline"
+                app:boxBackgroundColor="#FFFFFF"
+                app:boxStrokeColor="#D1D5DB"
                 app:boxCornerRadiusTopStart="16dp"
                 app:boxCornerRadiusTopEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
-                app:boxCornerRadiusBottomEnd="16dp">
+                app:boxCornerRadiusBottomEnd="16dp"
+                app:hintTextColor="#6B7280">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etSupplierEmail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Email"
-                    android:inputType="textEmailAddress" />
+                    android:inputType="textEmailAddress"
+                    android:textColor="#111827"
+                    android:textColorHint="#9CA3AF" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Address -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="12dp"
+                android:hint="Address"
                 app:boxBackgroundMode="outline"
+                app:boxBackgroundColor="#FFFFFF"
+                app:boxStrokeColor="#D1D5DB"
                 app:boxCornerRadiusTopStart="16dp"
                 app:boxCornerRadiusTopEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
-                app:boxCornerRadiusBottomEnd="16dp">
+                app:boxCornerRadiusBottomEnd="16dp"
+                app:hintTextColor="#6B7280">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etSupplierAddress"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Address"
-                    android:inputType="textPostalAddress" />
+                    android:inputType="textPostalAddress"
+                    android:textColor="#111827"
+                    android:textColorHint="#9CA3AF" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <ProgressBar
                 android:id="@+id/progressSupplierForm"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp"
                 android:visibility="gone" />
 
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

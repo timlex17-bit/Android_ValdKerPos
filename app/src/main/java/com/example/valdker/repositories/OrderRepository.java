@@ -1,6 +1,7 @@
 package com.example.valdker.repositories;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -10,9 +11,12 @@ import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.valdker.SessionManager;
 import com.example.valdker.models.Order;
 import com.example.valdker.models.OrderItem;
 import com.example.valdker.network.ApiClient;
+import com.example.valdker.network.ApiConfig;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -30,7 +34,14 @@ public class OrderRepository {
         void onError(int statusCode, @NonNull String message);
     }
 
-    private static final String URL = "https://valdker.onrender.com/api/orders/";
+    public interface CreateCallback {
+        void onSuccess(@NonNull JSONObject response);
+        void onError(int statusCode, @NonNull String message);
+    }
+
+    private static final String TAG = "ORDER_REPO";
+    private static final String ENDPOINT = "api/orders/";
+
     private final Context appContext;
 
     // Network tuning (aligned with other repositories)
@@ -42,10 +53,62 @@ public class OrderRepository {
         this.appContext = context.getApplicationContext();
     }
 
+    public void createOrder(@Nullable String token,
+                            @NonNull JSONObject payload,
+                            @NonNull CreateCallback cb) {
+
+        String url = ApiConfig.url(new SessionManager(appContext), ENDPOINT);
+
+        Log.i(TAG, "createOrder() POST -> " + url);
+        Log.i(TAG, "createOrder() token=" + maskToken(token));
+        Log.i(TAG, "createOrder() payload=" + payload.toString());
+
+        JsonObjectRequest req = new JsonObjectRequest(
+                Request.Method.POST,
+                url,
+                payload,
+                (JSONObject res) -> {
+                    Log.i(TAG, "createOrder SUCCESS response=" + res.toString());
+                    cb.onSuccess(res);
+                },
+                (err) -> {
+                    int code = (err.networkResponse != null) ? err.networkResponse.statusCode : -1;
+                    String msg = buildVolleyErrorMessage(err.networkResponse, err);
+
+                    Log.e(TAG, "createOrder ERROR code=" + code + " msg=" + msg);
+
+                    if (err.networkResponse != null && err.networkResponse.data != null) {
+                        try {
+                            String body = new String(err.networkResponse.data, StandardCharsets.UTF_8);
+                            Log.e(TAG, "createOrder ERROR_BODY=" + body);
+                        } catch (Exception ignored) {
+                        }
+                    } else {
+                        Log.e(TAG, "createOrder ERROR_BODY=<null networkResponse>");
+                    }
+
+                    cb.onError(code, msg);
+                }
+        ) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                return buildHeaders(token);
+            }
+        };
+
+        req.setRetryPolicy(new DefaultRetryPolicy(TIMEOUT_MS, MAX_RETRIES, BACKOFF_MULT));
+        req.setShouldCache(false);
+
+        ApiClient.getInstance(appContext).add(req);
+    }
+
     public void fetchOrders(@Nullable String token, @NonNull Callback cb) {
+
+        String url = ApiConfig.url(new SessionManager(appContext), ENDPOINT);
+
         JsonArrayRequest req = new JsonArrayRequest(
                 Request.Method.GET,
-                URL,
+                url,
                 null,
                 (JSONArray res) -> {
                     try {
@@ -76,12 +139,15 @@ public class OrderRepository {
     private Map<String, String> buildHeaders(@Nullable String token) {
         Map<String, String> h = new HashMap<>();
         h.put("Accept", "application/json");
+
         if (token != null && !token.trim().isEmpty()) {
             h.put("Authorization", "Token " + token.trim());
         }
+
         return h;
     }
 
+    @NonNull
     private List<Order> parseOrders(@Nullable JSONArray arr) {
         List<Order> out = new ArrayList<>();
         if (arr == null) return out;
@@ -92,7 +158,6 @@ public class OrderRepository {
 
             int id = o.optInt("id", 0);
 
-            // Nullable Integer customer
             Integer customerId = null;
             if (!o.isNull("customer")) customerId = o.optInt("customer");
 
@@ -154,11 +219,13 @@ public class OrderRepository {
         }
     }
 
+    @NonNull
     private static String buildVolleyErrorMessage(@Nullable NetworkResponse nr, @Nullable Throwable err) {
         if (nr == null) {
             String m = (err != null) ? err.getMessage() : null;
             return (m != null && !m.trim().isEmpty()) ? m : "Network error";
         }
+
         try {
             if (nr.data != null) {
                 String body = new String(nr.data, StandardCharsets.UTF_8).trim();
@@ -167,6 +234,16 @@ public class OrderRepository {
             }
         } catch (Exception ignored) {
         }
+
         return "HTTP " + nr.statusCode;
+    }
+
+    @NonNull
+    private static String maskToken(@Nullable String token) {
+        if (token == null) return "NULL";
+        String t = token.trim();
+        if (t.isEmpty()) return "EMPTY";
+        int n = Math.min(8, t.length());
+        return t.substring(0, n) + "...";
     }
 }

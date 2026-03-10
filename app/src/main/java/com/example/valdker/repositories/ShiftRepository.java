@@ -1,6 +1,7 @@
 package com.example.valdker.repositories;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -11,6 +12,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.valdker.SessionManager;
 import com.example.valdker.models.Shift;
 import com.example.valdker.network.ApiClient;
+import com.example.valdker.network.ApiConfig;
 
 import org.json.JSONObject;
 
@@ -44,7 +46,7 @@ public class ShiftRepository {
     }
 
     private String baseUrl() {
-        return "https://valdker.onrender.com/api/";
+        return ApiConfig.url(session, "api/");
     }
 
     private Map<String, String> authHeaders() {
@@ -65,13 +67,15 @@ public class ShiftRepository {
                 return body;
             }
         } catch (Exception ignored) {}
+        if (err instanceof com.android.volley.TimeoutError) return "Request timeout. Check internet.";
+        if (err instanceof com.android.volley.NoConnectionError) return "No internet connection.";
         return (err.getMessage() != null) ? err.getMessage() : "unknown";
     }
 
     private String withShop(String url, @Nullable Integer shopId) {
         if (shopId == null || shopId <= 0) return url;
-        if (url.contains("?")) return url + "&shop_id=" + shopId;
-        return url + "?shop_id=" + shopId;
+        if (url.contains("?")) return url + "&shop=" + shopId;
+        return url + "?shop=" + shopId;
     }
 
     // ============================================================
@@ -91,11 +95,11 @@ public class ShiftRepository {
                 null,
                 res -> {
                     boolean open = res.optBoolean("open", false);
-                    JSONObject shiftObj = res.optJSONObject("shift");
+                    JSONObject shiftObj = extractShiftObject(res);
                     Shift shift = (shiftObj != null) ? Shift.fromJson(shiftObj) : null;
                     cb.onSuccess(open, shift);
                 },
-                err -> cb.onError("Gagal cek shift: " + parseVolleyErrorMessage(err))
+                err -> cb.onError("Failed check shift: " + parseVolleyErrorMessage(err))
         ) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
@@ -104,6 +108,13 @@ public class ShiftRepository {
         };
 
         req.setTag("SHIFT");
+
+        req.setRetryPolicy(new com.android.volley.DefaultRetryPolicy(
+                6000,
+                1,
+                1.0f
+        ));
+
         ApiClient.getInstance(ctx).add(req);
     }
 
@@ -111,7 +122,23 @@ public class ShiftRepository {
     // OPEN
     // ============================================================
     public void openShift(@NonNull String openingCash, @NonNull String note, @NonNull OpenCallback cb) {
-        openShift(null, openingCash, note, cb);
+        Integer sid = session != null ? session.getShopId() : 0;
+        if (sid != null && sid <= 0) sid = 1;
+        openShift(sid, openingCash, note, cb);
+    }
+
+    @Nullable
+    private JSONObject extractShiftObject(@NonNull JSONObject res) {
+        JSONObject shiftObj = res.optJSONObject("shift");
+        if (shiftObj != null) return shiftObj;
+
+        if (res.has("id")) return res;
+
+        shiftObj = res.optJSONObject("data");
+        if (shiftObj != null) return shiftObj;
+
+        shiftObj = res.optJSONObject("result");
+        return shiftObj;
     }
 
     public void openShift(@Nullable Integer shopId, @NonNull String openingCash, @NonNull String note, @NonNull OpenCallback cb) {
@@ -119,19 +146,23 @@ public class ShiftRepository {
 
         JSONObject body = new JSONObject();
         try {
+            if (shopId != null && shopId > 0) body.put("shop", shopId);
             body.put("opening_cash", openingCash);
             body.put("note", note);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.POST,
                 url,
                 body,
                 res -> {
-                    JSONObject shiftObj = res.optJSONObject("shift");
+                    JSONObject shiftObj = extractShiftObject(res);
                     Shift shift = (shiftObj != null) ? Shift.fromJson(shiftObj) : null;
+
                     if (shift == null || shift.id <= 0) {
-                        cb.onError(0, "Open shift gagal: shift invalid.");
+                        Log.w("SHIFT", "Open shift unexpected: " + res);
+                        cb.onError(0, "Open shift failed: response doesn't match.");
                         return;
                     }
 
@@ -149,13 +180,14 @@ public class ShiftRepository {
                     int code = (err.networkResponse != null) ? err.networkResponse.statusCode : 0;
                     String msg = parseVolleyErrorMessage(err);
 
-                    // ✅ kalau 409 shift sudah OPEN — coba ambil shift dari body
                     if (code == 409 && err.networkResponse != null && err.networkResponse.data != null) {
                         try {
                             String bodyStr = new String(err.networkResponse.data, StandardCharsets.UTF_8);
                             JSONObject obj = new JSONObject(bodyStr);
-                            JSONObject shiftObj = obj.optJSONObject("shift");
+
+                            JSONObject shiftObj = extractShiftObject(obj);
                             Shift shift = (shiftObj != null) ? Shift.fromJson(shiftObj) : null;
+
                             if (shift != null && shift.id > 0) {
                                 session.setShiftOpen(true);
                                 session.setShiftId(shift.id);
@@ -164,10 +196,15 @@ public class ShiftRepository {
                                                 ? "0.00"
                                                 : shift.opening_cash
                                 );
-                                cb.onSuccess(shift); // treat as success
+                                cb.onSuccess(shift);
                                 return;
                             }
-                        } catch (Exception ignored) {}
+
+                            Log.w("SHIFT", "409 but shift not parseable: " + obj);
+
+                        } catch (Exception e) {
+                            Log.e("SHIFT", "409 parse error: " + e.getMessage(), e);
+                        }
                     }
 
                     cb.onError(code, msg);
@@ -180,6 +217,12 @@ public class ShiftRepository {
         };
 
         req.setTag("SHIFT");
+        req.setRetryPolicy(new com.android.volley.DefaultRetryPolicy(
+                8000,
+                0,
+                1.0f
+        ));
+
         ApiClient.getInstance(ctx).add(req);
     }
 
@@ -197,14 +240,15 @@ public class ShiftRepository {
         try {
             body.put("closing_cash", closingCash);
             body.put("note", note);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.POST,
                 url,
                 body,
                 res -> cb.onSuccess(),
-                err -> cb.onError("Gagal tutup shift: " + parseVolleyErrorMessage(err))
+                err -> cb.onError("Failed to close shift: " + parseVolleyErrorMessage(err))
         ) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
@@ -213,6 +257,13 @@ public class ShiftRepository {
         };
 
         req.setTag("SHIFT");
+
+        req.setRetryPolicy(new com.android.volley.DefaultRetryPolicy(
+                8000,
+                0,
+                1.0f
+        ));
+
         ApiClient.getInstance(ctx).add(req);
     }
 }

@@ -3,15 +3,12 @@ package com.example.valdker.ui;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -23,6 +20,7 @@ import com.example.valdker.adapters.ProductManageAdapter;
 import com.example.valdker.models.Product;
 import com.example.valdker.repositories.ProductRepository;
 import com.example.valdker.ui.customers.ConfirmDeleteDialog;
+import com.example.valdker.utils.InsetsHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -37,8 +35,6 @@ public class ProductsManageFragment extends Fragment {
     private ProgressBar progress;
     private TextView tvEmpty;
     private FloatingActionButton fabAdd;
-
-    // ✅ NEW: root container to receive window insets
     private View rootManage;
 
     private final List<Product> items = new ArrayList<>();
@@ -46,6 +42,8 @@ public class ProductsManageFragment extends Fragment {
 
     private SessionManager session;
     private ProductRepository repo;
+
+    private boolean insetsApplied = false;
 
     public ProductsManageFragment() {
         super(R.layout.fragment_products_manage);
@@ -63,17 +61,30 @@ public class ProductsManageFragment extends Fragment {
         progress = view.findViewById(R.id.progressManage);
         tvEmpty = view.findViewById(R.id.tvEmptyManage);
         fabAdd = view.findViewById(R.id.fabAddProduct);
-
-        // ✅ NEW
         rootManage = view.findViewById(R.id.rootManage);
 
-        GridLayoutManager glm = new GridLayoutManager(requireContext(), 2); // tablet manage: 2 kolom rapi
-        rv.setLayoutManager(glm);
+        setupRecycler();
+        setupAdapter();
+        setupActions();
+        applyInsetsOnce();
 
+        loadProducts(false);
+    }
+
+    private void setupRecycler() {
+        if (rv == null) return;
+
+        rv.setLayoutManager(new GridLayoutManager(requireContext(), 2));
+        rv.setHasFixedSize(true);
+        rv.setClipToPadding(false);
+    }
+
+    private void setupAdapter() {
         adapter = new ProductManageAdapter(items, new ProductManageAdapter.Listener() {
             @Override
             public void onEdit(@NonNull Product p) {
-                ProductFormDialog.newEdit(p, saved -> loadProducts(false))
+                ProductFormDialog
+                        .newEdit(p, saved -> loadProducts(false))
                         .show(getParentFragmentManager(), "edit_product");
             }
 
@@ -82,75 +93,58 @@ public class ProductsManageFragment extends Fragment {
                 ConfirmDeleteDialog.show(
                         requireContext(),
                         "Delete product",
-                        "Delete \"" + p.name + "\" ?",
+                        "Delete \"" + (p.name != null ? p.name : "this product") + "\"?",
                         () -> doDelete(p)
                 );
             }
         });
 
-        rv.setAdapter(adapter);
-
-        swipe.setOnRefreshListener(() -> loadProducts(true));
-
-        fabAdd.setOnClickListener(v -> {
-            ProductFormDialog.newAdd(saved -> loadProducts(false))
-                    .show(getParentFragmentManager(), "add_product");
-        });
-
-        // ✅ FIX: keep FAB above system navigation bar (edge-to-edge safe)
-        applyFabInsets();
-
-        loadProducts(false);
+        if (rv != null) rv.setAdapter(adapter);
     }
 
-    // ✅ NEW: apply bottom/right insets to FAB using rootManage (more reliable)
-    private void applyFabInsets() {
-        if (rootManage == null || fabAdd == null) return;
+    private void setupActions() {
+        if (swipe != null) swipe.setOnRefreshListener(() -> loadProducts(true));
 
-        final int base = dp(16);
-
-        ViewCompat.setOnApplyWindowInsetsListener(rootManage, (v, insets) -> {
-            int bottomInset = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
-            int rightInset = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).right;
-
-            ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) fabAdd.getLayoutParams();
-            lp.bottomMargin = base + bottomInset;
-            lp.rightMargin = base + rightInset;
-            fabAdd.setLayoutParams(lp);
-
-            return insets;
-        });
-
-        ViewCompat.requestApplyInsets(rootManage);
+        if (fabAdd != null) {
+            fabAdd.setOnClickListener(v -> ProductFormDialog
+                    .newAdd(saved -> loadProducts(false))
+                    .show(getParentFragmentManager(), "add_product"));
+        }
     }
 
-    private int dp(int value) {
-        return Math.round(value * getResources().getDisplayMetrics().density);
+    private void applyInsetsOnce() {
+        if (insetsApplied) return;
+        if (rootManage == null || rv == null || fabAdd == null) return;
+        insetsApplied = true;
+
+        InsetsHelper.applyFabMarginInsets(fabAdd, 16, TAG);
+        InsetsHelper.applyRecyclerBottomInsetsWithFab(rootManage, rv, fabAdd, 32, TAG);
     }
 
     private void loadProducts(boolean fromSwipe) {
-        if (!isAdded() || getView() == null) return;
+        if (!isAdded()) return;
 
         String token = session.getToken();
         if (token == null || token.trim().isEmpty()) {
-            toast("Token empty. Please login again.");
-            showEmpty("Token empty");
+            toast("Token is missing. Please login again.");
+            showEmpty("Token is missing");
             stopRefreshing();
             return;
         }
 
-        if (!fromSwipe && !swipe.isRefreshing()) showLoading();
+        if (!fromSwipe && swipe != null && !swipe.isRefreshing()) showLoading();
 
         repo.fetchProducts(token, "all", new ProductRepository.Callback() {
             @Override
             public void onSuccess(@NonNull List<Product> products) {
-                if (!isAdded() || getView() == null) return;
+                if (!isAdded()) return;
 
                 Log.i(TAG, "fetchProducts SUCCESS: " + products.size());
 
                 items.clear();
                 items.addAll(products);
-                adapter.notifyDataSetChanged();
+
+                if (adapter != null) adapter.notifyDataSetChanged();
 
                 if (items.isEmpty()) showEmpty("No products");
                 else showList();
@@ -160,9 +154,14 @@ public class ProductsManageFragment extends Fragment {
 
             @Override
             public void onError(int statusCode, @NonNull String message) {
-                if (!isAdded() || getView() == null) return;
+                if (!isAdded()) return;
+
                 Log.e(TAG, "fetchProducts ERROR: " + statusCode + " / " + message);
-                showEmpty("Error " + statusCode);
+
+                if (items.isEmpty()) showEmpty("Failed to load products");
+                else showList();
+
+                toast(message);
                 stopRefreshing();
             }
         });
@@ -171,7 +170,7 @@ public class ProductsManageFragment extends Fragment {
     private void doDelete(@NonNull Product p) {
         String token = session.getToken();
         if (token == null || token.trim().isEmpty()) {
-            toast("Token empty");
+            toast("Token is missing.");
             return;
         }
 
@@ -180,13 +179,53 @@ public class ProductsManageFragment extends Fragment {
         repo.deleteProduct(token, p.id, new ProductRepository.DeleteCallback() {
             @Override
             public void onSuccess() {
-                toast("Deleted: " + p.name);
-                loadProducts(false);
+                if (!isAdded()) return;
+
+                toast("Deleted: " + (p.name != null ? p.name : "Product"));
+
+                // ✅ remove dari list lokal
+                int pos = -1;
+                for (int i = 0; i < items.size(); i++) {
+                    if (items.get(i).id != null && items.get(i).id.equals(p.id)) {
+                        pos = i; break;
+                    }
+                }
+                if (pos >= 0) {
+                    items.remove(pos);
+                    if (adapter != null) adapter.notifyItemRemoved(pos);
+                } else {
+                    if (adapter != null) adapter.notifyDataSetChanged();
+                }
+
+                if (items.isEmpty()) showEmpty("No products");
+                else showList();
             }
 
             @Override
             public void onError(int statusCode, @NonNull String message) {
-                toast("Delete failed: " + statusCode);
+                if (!isAdded()) return;
+
+                if (statusCode == 404) {
+                    toast("Already deleted");
+                    int pos = -1;
+                    for (int i = 0; i < items.size(); i++) {
+                        if (items.get(i).id != null && items.get(i).id.equals(p.id)) {
+                            pos = i; break;
+                        }
+                    }
+                    if (pos >= 0) {
+                        items.remove(pos);
+                        if (adapter != null) adapter.notifyItemRemoved(pos);
+                    } else if (adapter != null) {
+                        adapter.notifyDataSetChanged();
+                    }
+
+                    if (items.isEmpty()) showEmpty("No products");
+                    else showList();
+                    return;
+                }
+
+                toast("Delete failed: " + message);
                 showList();
             }
         });
@@ -220,5 +259,19 @@ public class ProductsManageFragment extends Fragment {
         if (progress != null) progress.setVisibility(View.GONE);
         if (tvEmpty != null) tvEmpty.setVisibility(View.GONE);
         if (rv != null) rv.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        swipe = null;
+        rv = null;
+        progress = null;
+        tvEmpty = null;
+        fabAdd = null;
+        rootManage = null;
+
+        insetsApplied = false;
     }
 }

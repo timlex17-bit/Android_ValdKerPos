@@ -15,6 +15,7 @@ import com.example.valdker.SessionManager;
 import com.example.valdker.models.InventoryCount;
 import com.example.valdker.models.InventoryCountItem;
 import com.example.valdker.network.ApiClient;
+import com.example.valdker.network.ApiConfig;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -49,7 +50,7 @@ public class InventoryCountRepository {
         void onError(@NonNull String message);
     }
 
-    private static final String URL = "https://valdker.onrender.com/api/inventorycounts/";
+    private static final String ENDPOINT = "api/inventorycounts/";
 
     // Network tuning (aligned with other repositories)
     private static final int TIMEOUT_MS = 20000;
@@ -60,9 +61,12 @@ public class InventoryCountRepository {
                               @NonNull JSONObject payload,
                               @NonNull CreateCallback cb) {
 
+        SessionManager sm = new SessionManager(ctx.getApplicationContext());
+        String url = ApiConfig.url(sm, ENDPOINT);
+
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.POST,
-                URL,
+                url,
                 payload,
                 response -> {
                     try {
@@ -86,11 +90,12 @@ public class InventoryCountRepository {
     }
 
     public static void update(@NonNull Context ctx,
-          int id,
-          @NonNull JSONObject payload,
-          @NonNull UpdateCallback cb) {
+                              int id,
+                              @NonNull JSONObject payload,
+                              @NonNull UpdateCallback cb) {
 
-        String url = URL + id + "/";
+        SessionManager sm = new SessionManager(ctx.getApplicationContext());
+        String url = ApiConfig.url(sm, ENDPOINT + id + "/");
 
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.PUT,
@@ -118,10 +123,11 @@ public class InventoryCountRepository {
     }
 
     public static void delete(@NonNull Context ctx,
-          int id,
-          @NonNull DeleteCallback cb) {
+                              int id,
+                              @NonNull DeleteCallback cb) {
 
-        String url = URL + id + "/";
+        SessionManager sm = new SessionManager(ctx.getApplicationContext());
+        String url = ApiConfig.url(sm, ENDPOINT + id + "/");
 
         StringRequest req = new StringRequest(
                 Request.Method.DELETE,
@@ -142,9 +148,12 @@ public class InventoryCountRepository {
 
     public static void fetch(@NonNull Context ctx, @NonNull Callback cb) {
 
+        SessionManager sm = new SessionManager(ctx.getApplicationContext());
+        String url = ApiConfig.url(sm, ENDPOINT);
+
         JsonArrayRequest req = new JsonArrayRequest(
                 Request.Method.GET,
-                URL,
+                url,
                 null,
                 response -> {
                     try {
@@ -190,7 +199,15 @@ public class InventoryCountRepository {
         ic.title = response.optString("title");
         ic.note = response.optString("note");
         ic.counted_at = response.optString("counted_at");
-        ic.counted_by = response.optInt("counted_by");
+        ic.status = response.optString("status", "DRAFT");
+        JSONObject userObj = response.optJSONObject("counted_by");
+        if (userObj != null) {
+            InventoryCount.UserLite u = new InventoryCount.UserLite();
+            u.id = userObj.optInt("id");
+            u.username = userObj.optString("username");
+            u.display_name = userObj.optString("display_name");
+            ic.counted_by = u;
+        }
 
         JSONArray items = response.optJSONArray("items");
         if (items != null) {

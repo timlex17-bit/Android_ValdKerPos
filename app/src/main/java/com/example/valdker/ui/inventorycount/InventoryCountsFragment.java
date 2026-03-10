@@ -22,6 +22,7 @@ import com.example.valdker.R;
 import com.example.valdker.SessionManager;
 import com.example.valdker.models.InventoryCount;
 import com.example.valdker.network.ApiClient;
+import com.example.valdker.network.ApiConfig;
 import com.example.valdker.repositories.InventoryCountRepository;
 import com.example.valdker.utils.InsetsHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -174,7 +175,8 @@ public class InventoryCountsFragment extends Fragment {
     private void loadProducts(boolean openDialogAfterLoad, @Nullable InventoryCount editItem) {
         if (!isAdded()) return;
 
-        String url = "https://valdker.onrender.com/api/products/";
+        SessionManager sm = new SessionManager(requireContext());
+        String url = ApiConfig.url(sm, "api/products/");
 
         JsonArrayRequest req = new JsonArrayRequest(
                 Request.Method.GET,
@@ -186,7 +188,7 @@ public class InventoryCountsFragment extends Fragment {
                     productsJson = response;
 
                     if (productsJson == null || productsJson.length() == 0) {
-                        Toast.makeText(requireContext(), "Products kosong", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "Products are empty", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
@@ -229,7 +231,6 @@ public class InventoryCountsFragment extends Fragment {
     private void deleteItem(@NonNull InventoryCount item) {
         if (!isAdded()) return;
 
-        // Simple confirm (production kamu sudah pakai custom modal? kalau ya, pakai itu)
         new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Delete")
                 .setMessage("Delete \"" + item.title + "\"?")

@@ -7,8 +7,15 @@ public class InventoryCount {
     public int id;
     public String title;
     public String note;
-    public String counted_at;   // ISO string
-    public int counted_by;      // user id
+    public String status;
+    public String counted_at;
+    public UserLite counted_by;
+
+    public static class UserLite {
+        public int id;
+        public String username;
+        public String display_name;
+    }
 
     public List<InventoryCountItem> items = new ArrayList<>();
 

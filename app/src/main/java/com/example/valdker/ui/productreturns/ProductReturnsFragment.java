@@ -23,12 +23,15 @@ import com.example.valdker.models.ProductLite;
 import com.example.valdker.models.ProductReturn;
 import com.example.valdker.repositories.LiteRepository;
 import com.example.valdker.repositories.ProductReturnRepository;
+import com.example.valdker.utils.InsetsHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProductReturnsFragment extends Fragment {
+
+    private static final String TAG = "ProductReturnsFragment";
 
     private SwipeRefreshLayout swipe;
     private ProgressBar progress;
@@ -46,7 +49,10 @@ public class ProductReturnsFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+
         View v = inflater.inflate(R.layout.fragment_product_returns, container, false);
 
         fabAdd = v.findViewById(R.id.fabAdd);
@@ -56,6 +62,9 @@ public class ProductReturnsFragment extends Fragment {
         progress = v.findViewById(R.id.progress);
         tvEmpty = v.findViewById(R.id.tvEmpty);
         rv = v.findViewById(R.id.rv);
+
+        InsetsHelper.applyRecyclerBottomInsets(v, rv, TAG);
+        InsetsHelper.applyFabMarginInsets(fabAdd, 16, TAG);
 
         adapter = new ProductReturnAdapter(data, item -> {
             Intent i = new Intent(requireContext(), ProductReturnDetailActivity.class);
@@ -68,8 +77,8 @@ public class ProductReturnsFragment extends Fragment {
 
         swipe.setOnRefreshListener(this::load);
 
-        load();            // ✅ load product returns list
-        preloadLiteData(); // ✅ load orders/customers/products for spinner
+        load();
+        preloadLiteData();
 
         return v;
     }
@@ -94,7 +103,6 @@ public class ProductReturnsFragment extends Fragment {
         load(); // refresh after create
     }
 
-    // ✅ METHOD INI HARUS DI LUAR onCreateView()
     private void preloadLiteData() {
 
         LiteRepository.fetchOrdersLite(requireContext(), new LiteRepository.LiteCallback<OrderLite>() {

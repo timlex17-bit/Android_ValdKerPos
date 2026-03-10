@@ -7,6 +7,7 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.example.valdker.SessionManager;
 import com.example.valdker.models.StockMovement;
 import com.example.valdker.network.ApiClient;
+import com.example.valdker.network.ApiConfig;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -21,12 +22,15 @@ public class StockMovementRepository {
         void onError(String message);
     }
 
-    private static final String URL = "https://valdker.onrender.com/api/stockmovements/";
+    private static final String ENDPOINT_STOCK_MOVEMENTS = "api/stockmovements/";
 
     public static void fetch(Context ctx, Callback cb) {
+        SessionManager session = new SessionManager(ctx);
+        String url = ApiConfig.url(session, ENDPOINT_STOCK_MOVEMENTS);
+
         JsonArrayRequest req = new JsonArrayRequest(
                 Request.Method.GET,
-                URL,
+                url,
                 null,
                 res -> {
                     try {

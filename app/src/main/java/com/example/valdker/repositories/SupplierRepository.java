@@ -6,16 +6,21 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.example.valdker.models.Supplier;
 import com.example.valdker.models.SupplierLite;
 import com.example.valdker.network.ApiClient;
+import com.example.valdker.SessionManager;
+import com.example.valdker.network.ApiConfig;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,11 +28,13 @@ import java.util.Map;
 
 public class SupplierRepository {
 
-    private static final String BASE = "https://valdker.onrender.com/api/suppliers/";
+    private static final String ENDPOINT_SUPPLIERS = "api/suppliers/";
     private final Context appContext;
+    private final SessionManager session;
 
     public SupplierRepository(@NonNull Context context) {
         this.appContext = context.getApplicationContext();
+        this.session = new SessionManager(appContext);
     }
 
     // ------------------- CALLBACKS -------------------
@@ -54,9 +61,10 @@ public class SupplierRepository {
 
     // ------------------- FETCH -------------------
     public void fetchSuppliers(@NonNull String token, @NonNull ListCallback cb) {
+        String url = ApiConfig.url(session, ENDPOINT_SUPPLIERS);
         JsonArrayRequest req = new JsonArrayRequest(
                 Request.Method.GET,
-                BASE,
+                url,
                 null,
                 (JSONArray res) -> {
                     try {
@@ -119,9 +127,10 @@ public class SupplierRepository {
             return;
         }
 
+        String url = ApiConfig.url(session, ENDPOINT_SUPPLIERS);
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.POST,
-                BASE,
+                url,
                 body,
                 res -> cb.onSuccess(parseOne(res)),
                 err -> {
@@ -150,7 +159,7 @@ public class SupplierRepository {
                                @Nullable String address,
                                @NonNull ItemCallback cb) {
 
-        String url = BASE + id + "/";
+        String url = ApiConfig.url(session, ENDPOINT_SUPPLIERS + id + "/");
 
         JSONObject body = new JSONObject();
         try {
@@ -188,15 +197,22 @@ public class SupplierRepository {
     // ------------------- DELETE -------------------
     public void deleteSupplier(@NonNull String token, int id, @NonNull DeleteCallback cb) {
 
-        String url = BASE + id + "/";
+        String url = ApiConfig.url(session, ENDPOINT_SUPPLIERS + id + "/");
 
-        JsonObjectRequest req = new JsonObjectRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.DELETE,
                 url,
-                null,
-                res -> cb.onSuccess(),
-                err -> {
-                    int code = (err.networkResponse != null) ? err.networkResponse.statusCode : -1;
+                response -> cb.onSuccess(),
+                error -> {
+                    int code = (error.networkResponse != null)
+                            ? error.networkResponse.statusCode
+                            : -1;
+
+                    if (code == 404) {
+                        cb.onSuccess();
+                        return;
+                    }
+
                     cb.onError(code, "Delete failed");
                 }
         ) {
@@ -205,6 +221,9 @@ public class SupplierRepository {
                 return auth(token);
             }
         };
+
+        req.setRetryPolicy(new DefaultRetryPolicy(20000, 0, 1.2f));
+        req.setShouldCache(false);
 
         ApiClient.getInstance(appContext).add(req);
     }

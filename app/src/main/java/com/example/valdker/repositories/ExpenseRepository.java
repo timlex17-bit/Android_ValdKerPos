@@ -8,10 +8,15 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.example.valdker.SessionManager;
 import com.example.valdker.models.Expense;
 import com.example.valdker.network.ApiClient;
+import com.example.valdker.network.ApiConfig;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -39,8 +44,7 @@ public class ExpenseRepository {
         void onError(int statusCode, @NonNull String message);
     }
 
-    private static final String BASE_URL = "https://valdker.onrender.com/api";
-    private static final String EXPENSES_URL = BASE_URL + "/expenses/";
+    private static final String ENDPOINT_EXPENSES = "api/expenses/";
 
     // Network tuning (aligned with other repositories)
     private static final int TIMEOUT_MS = 20000;
@@ -48,15 +52,19 @@ public class ExpenseRepository {
     private static final float BACKOFF_MULT = 1.2f;
 
     private final Context context;
+    private final SessionManager session;
 
     public ExpenseRepository(@NonNull Context ctx) {
         this.context = ctx.getApplicationContext();
+        this.session = new SessionManager(this.context);
     }
 
     public void fetchExpenses(@NonNull String token, @NonNull ListCallback cb) {
+        final String expensesUrl = ApiConfig.url(session, ENDPOINT_EXPENSES);
+
         JsonArrayRequest req = new JsonArrayRequest(
                 Request.Method.GET,
-                EXPENSES_URL,
+                expensesUrl,
                 null,
                 (JSONArray res) -> {
                     try {
@@ -92,6 +100,8 @@ public class ExpenseRepository {
     }
 
     public void createExpense(@NonNull String token, @NonNull Expense payload, @NonNull ItemCallback cb) {
+        final String expensesUrl = ApiConfig.url(session, ENDPOINT_EXPENSES);
+
         JSONObject body = new JSONObject();
         try {
             body.put("name", payload.name);
@@ -106,7 +116,7 @@ public class ExpenseRepository {
 
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.POST,
-                EXPENSES_URL,
+                expensesUrl,
                 body,
                 res -> {
                     Expense e = parseExpense(res);
@@ -136,7 +146,7 @@ public class ExpenseRepository {
     }
 
     public void updateExpense(@NonNull String token, int id, @NonNull Expense payload, @NonNull ItemCallback cb) {
-        String url = EXPENSES_URL + id + "/";
+        final String url = ApiConfig.url(session, ENDPOINT_EXPENSES + id + "/");
 
         JSONObject body = new JSONObject();
         try {
@@ -182,29 +192,35 @@ public class ExpenseRepository {
     }
 
     public void deleteExpense(@NonNull String token, int id, @NonNull SimpleCallback cb) {
-        String url = EXPENSES_URL + id + "/";
+        final String url = ApiConfig.url(session, ENDPOINT_EXPENSES + id + "/");
 
-        JsonObjectRequest req = new JsonObjectRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.DELETE,
                 url,
-                null,
-                res -> cb.onSuccess(),
+                response -> cb.onSuccess(),
                 err -> {
-                    int status = (err.networkResponse != null) ? err.networkResponse.statusCode : -1;
-
-                    // DRF DELETE may return 204 No Content; Volley can still route to error callback.
-                    if (status == 204) {
+                    if (err != null && err.networkResponse != null && err.networkResponse.statusCode == 204) {
                         cb.onSuccess();
                         return;
                     }
 
-                    String msg = buildVolleyErrorMessage(err.networkResponse, err);
+                    int status = (err != null && err.networkResponse != null) ? err.networkResponse.statusCode : -1;
+
+                    String msg = buildVolleyErrorMessage((err != null) ? err.networkResponse : null, err);
                     cb.onError(status, msg);
                 }
         ) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 return authHeaders(token, false);
+            }
+
+            @Override
+            protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                if (response != null && (response.statusCode == 200 || response.statusCode == 202 || response.statusCode == 204)) {
+                    return Response.success("", HttpHeaderParser.parseCacheHeaders(response));
+                }
+                return super.parseNetworkResponse(response);
             }
         };
 

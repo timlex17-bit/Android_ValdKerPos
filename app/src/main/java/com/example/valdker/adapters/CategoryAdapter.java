@@ -6,11 +6,13 @@ import android.graphics.PorterDuff;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -32,17 +34,15 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.VH> {
 
     private Listener listener;
 
-    public void setListener(Listener l) {
+    public void setListener(@Nullable Listener l) {
         this.listener = l;
     }
 
-    public void setData(List<Category> list) {
+    public void setData(@Nullable List<Category> list) {
         data.clear();
         if (list != null) data.addAll(list);
 
-        // ✅ Default-select the first item if data is available
         selectedPos = data.isEmpty() ? RecyclerView.NO_POSITION : 0;
-
         notifyDataSetChanged();
     }
 
@@ -58,49 +58,80 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.VH> {
     public void onBindViewHolder(@NonNull VH h, int position) {
         Category c = data.get(position);
 
-        // TEXT
         String name = (c.name == null) ? "-" : c.name.trim();
         if (name.isEmpty()) name = "-";
         h.tvName.setText(name);
 
-        // ICON
-        if (c.iconUrl != null && !c.iconUrl.trim().isEmpty()) {
+        boolean isAll = c.id == -1;
+
+        // reset recycle state
+        Glide.with(h.imgIcon.getContext()).clear(h.imgIcon);
+        h.imgIcon.setImageDrawable(null);
+        h.imgIcon.clearColorFilter();
+        h.imgIcon.setVisibility(View.GONE);
+
+        h.iconWrapper.setVisibility(View.GONE);
+        h.iconWrapper.setBackgroundTintList(null);
+        h.iconWrapper.setBackgroundResource(R.drawable.bg_category_icon);
+
+        String url = normalizeUrl(c.iconUrl);
+        boolean hasRemoteIcon = !isAll && !url.isEmpty();
+
+        if (hasRemoteIcon) {
+            h.iconWrapper.setVisibility(View.VISIBLE);
+            h.imgIcon.setVisibility(View.VISIBLE);
+
             Glide.with(h.imgIcon.getContext())
-                    .load(c.iconUrl)
-                    .placeholder(R.drawable.ic_category_placeholder)
-                    .error(R.drawable.ic_category_placeholder)
+                    .load(url)
+                    .fitCenter()
+                    .placeholder(R.drawable.ic_categories)
+                    .error(R.drawable.ic_categories)
                     .into(h.imgIcon);
-        } else {
-            h.imgIcon.setImageResource(R.drawable.ic_category_placeholder);
         }
 
-        // SELECTED STYLE
         boolean isSelected = (position == selectedPos);
-        applySelectedStyle(h, isSelected);
+        applySelectedStyle(h, isSelected, hasRemoteIcon);
     }
 
-    private void applySelectedStyle(@NonNull VH h, boolean isSelected) {
+    private void applySelectedStyle(@NonNull VH h, boolean isSelected, boolean hasRemoteIcon) {
         if (isSelected) {
             h.cardCategory.setCardBackgroundColor(Color.parseColor("#F97316"));
             h.tvName.setTextColor(Color.WHITE);
 
-            h.iconWrapper.setBackgroundTintList(
-                    ColorStateList.valueOf(Color.parseColor("#FB923C"))
-            );
+            if (h.iconWrapper.getVisibility() == View.VISIBLE) {
+                h.iconWrapper.setBackgroundTintList(
+                        ColorStateList.valueOf(Color.parseColor("#FB923C"))
+                );
 
-            // ✅ Force icon color to white for selected state
-            h.imgIcon.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+                if (!hasRemoteIcon) {
+                    h.imgIcon.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+                } else {
+                    h.imgIcon.clearColorFilter();
+                }
+            }
 
         } else {
             h.cardCategory.setCardBackgroundColor(Color.WHITE);
             h.tvName.setTextColor(Color.parseColor("#111827"));
 
-            h.iconWrapper.setBackgroundTintList(null);
-            h.iconWrapper.setBackgroundResource(R.drawable.bg_category_icon);
-
-            // ✅ Restore original icon color (remove filter)
-            h.imgIcon.clearColorFilter();
+            if (h.iconWrapper.getVisibility() == View.VISIBLE) {
+                h.iconWrapper.setBackgroundTintList(null);
+                h.iconWrapper.setBackgroundResource(R.drawable.bg_category_icon);
+                h.imgIcon.clearColorFilter();
+            }
         }
+    }
+
+    @NonNull
+    private String normalizeUrl(@Nullable String raw) {
+        if (raw == null) return "";
+
+        String url = raw.trim();
+        if (url.isEmpty()) return "";
+        if ("null".equalsIgnoreCase(url)) return "";
+        if ("/null".equalsIgnoreCase(url)) return "";
+
+        return url;
     }
 
     @Override
@@ -109,30 +140,29 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.VH> {
     }
 
     class VH extends RecyclerView.ViewHolder implements View.OnClickListener {
-        MaterialCardView cardCategory;
-        LinearLayout iconWrapper;
-        ImageView imgIcon;
-        TextView tvName;
+        final MaterialCardView cardCategory;
+        final LinearLayout iconWrapper;
+        final ImageView imgIcon;
+        final TextView tvName;
 
         VH(@NonNull View itemView) {
             super(itemView);
             cardCategory = itemView.findViewById(R.id.cardCategory);
             iconWrapper = itemView.findViewById(R.id.iconWrapper);
             imgIcon = itemView.findViewById(R.id.imgIcon);
-            tvName  = itemView.findViewById(R.id.tvName);
+            tvName = itemView.findViewById(R.id.tvName);
 
             itemView.setOnClickListener(this);
         }
 
         @Override
         public void onClick(View v) {
-            int pos = getBindingAdapterPosition(); // ✅ Always get the latest adapter position
+            int pos = getBindingAdapterPosition();
             if (pos == RecyclerView.NO_POSITION) return;
 
             int old = selectedPos;
             selectedPos = pos;
 
-            // ✅ Update only the previously selected and the newly selected items
             if (old != RecyclerView.NO_POSITION) notifyItemChanged(old);
             notifyItemChanged(selectedPos);
 

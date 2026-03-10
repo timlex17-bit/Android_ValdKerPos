@@ -7,9 +7,11 @@ import androidx.annotation.NonNull;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.valdker.SessionManager;
 import com.example.valdker.models.DailyProfitReport;
 import com.example.valdker.models.DailyProfitRow;
 import com.example.valdker.network.ApiClient;
+import com.example.valdker.network.ApiConfig;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -25,7 +27,7 @@ public class ReportRepository {
         void onError(int statusCode, @NonNull String message);
     }
 
-    private static final String BASE_URL = "https://valdker.onrender.com/api";
+    private static final String BASE_URL = "api";
     private final Context context;
 
     public ReportRepository(@NonNull Context ctx) {
@@ -33,7 +35,7 @@ public class ReportRepository {
     }
 
     public void fetchDailyProfit(@NonNull String token, @NonNull String start, @NonNull String end, @NonNull Callback cb) {
-        String url = BASE_URL + "/reports/daily-profit/?start=" + start + "&end=" + end;
+        String url = ApiConfig.url(new SessionManager(context), BASE_URL) + "/reports/daily-profit/?start=" + start + "&end=" + end;
 
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.GET,

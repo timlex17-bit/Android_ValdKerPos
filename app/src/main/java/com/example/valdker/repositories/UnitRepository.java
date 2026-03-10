@@ -7,8 +7,10 @@ import androidx.annotation.NonNull;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.example.valdker.SessionManager;
 import com.example.valdker.models.UnitLite;
 import com.example.valdker.network.ApiClient;
+import com.example.valdker.network.ApiConfig;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -20,8 +22,9 @@ import java.util.Map;
 
 public class UnitRepository {
 
-    private static final String URL = "https://valdker.onrender.com/api/units/";
+    private static final String ENDPOINT_UNITS = "api/units/";
     private final Context appContext;
+    private final SessionManager session;
 
     public interface Callback {
         void onSuccess(@NonNull List<UnitLite> list);
@@ -30,12 +33,16 @@ public class UnitRepository {
 
     public UnitRepository(@NonNull Context context) {
         this.appContext = context.getApplicationContext();
+        this.session = new SessionManager(appContext);
     }
 
     public void fetchUnits(@NonNull String token, @NonNull Callback cb) {
+
+        String url = ApiConfig.url(session, ENDPOINT_UNITS);
+
         JsonArrayRequest req = new JsonArrayRequest(
                 Request.Method.GET,
-                URL,
+                url,
                 null,
                 (JSONArray res) -> {
                     try {
@@ -44,8 +51,10 @@ public class UnitRepository {
                             for (int i = 0; i < res.length(); i++) {
                                 JSONObject o = res.optJSONObject(i);
                                 if (o == null) continue;
+
                                 int id = o.optInt("id", 0);
                                 String name = o.optString("name", "");
+
                                 if (id != 0 && !name.trim().isEmpty()) {
                                     out.add(new UnitLite(id, name.trim()));
                                 }

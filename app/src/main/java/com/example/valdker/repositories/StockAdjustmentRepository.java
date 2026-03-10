@@ -9,6 +9,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.valdker.SessionManager;
 import com.example.valdker.models.StockAdjustment;
 import com.example.valdker.network.ApiClient;
+import com.example.valdker.network.ApiConfig;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -36,16 +37,18 @@ public class StockAdjustmentRepository {
         void onError(String message);
     }
 
-    private static final String BASE_URL = "https://valdker.onrender.com";
-    private static final String URL = BASE_URL + "/api/stockadjustments/";
+    private static final String ENDPOINT_STOCK_ADJUSTMENTS = "api/stockadjustments/";
 
     // =========================
     // GET LIST
     // =========================
     public static void fetch(Context ctx, ListCallback cb) {
+        SessionManager session = new SessionManager(ctx);
+        String url = ApiConfig.url(session, ENDPOINT_STOCK_ADJUSTMENTS);
+
         JsonArrayRequest req = new JsonArrayRequest(
                 Request.Method.GET,
-                URL,
+                url,
                 null,
                 res -> {
                     try {
@@ -72,9 +75,12 @@ public class StockAdjustmentRepository {
     // adjusted_at & adjusted_by otomatis dari backend
     // =========================
     public static void create(Context ctx, JSONObject payload, ObjectCallback cb) {
+        SessionManager session = new SessionManager(ctx);
+        String url = ApiConfig.url(session, ENDPOINT_STOCK_ADJUSTMENTS);
+
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.POST,
-                URL,
+                url,
                 payload,
                 res -> {
                     try {
@@ -99,7 +105,8 @@ public class StockAdjustmentRepository {
     // PATCH UPDATE
     // =========================
     public static void update(Context ctx, int id, JSONObject payload, ObjectCallback cb) {
-        String detailUrl = URL + id + "/";
+        SessionManager session = new SessionManager(ctx);
+        String detailUrl = ApiConfig.url(session, ENDPOINT_STOCK_ADJUSTMENTS) + id + "/";
 
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.PATCH,
@@ -128,7 +135,8 @@ public class StockAdjustmentRepository {
     // DELETE
     // =========================
     public static void delete(Context ctx, int id, SimpleCallback cb) {
-        String detailUrl = URL + id + "/";
+        SessionManager session = new SessionManager(ctx);
+        String detailUrl = ApiConfig.url(session, ENDPOINT_STOCK_ADJUSTMENTS) + id + "/";
 
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.DELETE,
@@ -179,7 +187,6 @@ public class StockAdjustmentRepository {
                 if (err.networkResponse.data != null) {
                     String body = new String(err.networkResponse.data, StandardCharsets.UTF_8);
                     if (body != null && !body.trim().isEmpty()) {
-                        // DRF biasanya balikin {"field":["error"]} atau {"detail":"..."}
                         msg += ": " + body;
                     }
                 }
@@ -213,7 +220,9 @@ public class StockAdjustmentRepository {
         s.note = o.optString("note");
         s.adjusted_at = o.optString("adjusted_at");
         s.product = o.optInt("product");
+        s.product_name = o.optString("product_name", "");
         s.adjusted_by = o.optInt("adjusted_by");
+        s.adjusted_by_name = o.optString("adjusted_by_name", "");
         return s;
     }
 }

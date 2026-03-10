@@ -11,6 +11,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.valdker.SessionManager;
 import com.example.valdker.models.OrderItemLite;
 import com.example.valdker.network.ApiClient;
+import com.example.valdker.network.ApiConfig;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -23,7 +24,7 @@ import java.util.Map;
 public class OrderDetailRepository {
 
     private static final String TAG = "ORDER_DETAIL_REPO";
-    private static final String BASE = "https://valdker.onrender.com/api/orders/";
+    private static final String ENDPOINT = "api/orders/";
 
     public static class OrderDetail {
         public int id;
@@ -39,7 +40,9 @@ public class OrderDetailRepository {
     }
 
     public static void fetch(@NonNull Context ctx, int orderId, @NonNull Callback cb) {
-        String url = BASE + orderId + "/";
+
+        SessionManager sm = new SessionManager(ctx);
+        String url = ApiConfig.url(sm, ENDPOINT + orderId + "/");
 
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.GET,
@@ -85,7 +88,9 @@ public class OrderDetailRepository {
                 Map<String, String> h = new HashMap<>();
                 h.put("Accept", "application/json");
                 String token = new SessionManager(ctx).getToken();
-                if (token != null && !token.trim().isEmpty()) h.put("Authorization", "Token " + token);
+                if (token != null && !token.trim().isEmpty()) {
+                    h.put("Authorization", "Token " + token);
+                }
                 return h;
             }
         };

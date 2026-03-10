@@ -11,6 +11,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
+
+import java.util.Calendar;
+import java.util.Locale;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -105,15 +111,76 @@ public class ExpensesFragment extends Fragment {
             etTime.setText(editing.time);
         }
 
-        new AlertDialog.Builder(requireContext())
-                .setTitle(isEdit ? "Edit Expense" : "Add Expense")
-                .setView(form)
-                .setNegativeButton("Cancel", (d, w) -> d.dismiss())
-                .setPositiveButton(isEdit ? "Save" : "Create", (d, w) -> {
-                    // will override later to prevent auto dismiss on validation
-                })
-                .create();
+        // =====================
+        // ✅ DATE & TIME PICKER
+        // =====================
+        Calendar cal = Calendar.getInstance();
 
+        if (isEdit) {
+            if (!TextUtils.isEmpty(editing.date)) {
+                try {
+                    String[] p = editing.date.split("-");
+                    cal.set(Calendar.YEAR, Integer.parseInt(p[0]));
+                    cal.set(Calendar.MONTH, Integer.parseInt(p[1]) - 1);
+                    cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(p[2]));
+                } catch (Exception ignore) {}
+            }
+            if (!TextUtils.isEmpty(editing.time)) {
+                try {
+                    String[] t = editing.time.split(":");
+                    cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(t[0]));
+                    cal.set(Calendar.MINUTE, Integer.parseInt(t[1]));
+                } catch (Exception ignore) {}
+            }
+        }
+
+        etDate.setOnClickListener(v -> {
+            int y = cal.get(Calendar.YEAR);
+            int m = cal.get(Calendar.MONTH);
+            int d = cal.get(Calendar.DAY_OF_MONTH);
+
+            DatePickerDialog dp = new DatePickerDialog(requireContext(), (view, year, month, dayOfMonth) -> {
+                cal.set(Calendar.YEAR, year);
+                cal.set(Calendar.MONTH, month);
+                cal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
+                String formatted = String.format(Locale.US, "%04d-%02d-%02d", year, month + 1, dayOfMonth);
+                etDate.setText(formatted);
+            }, y, m, d);
+
+            dp.show();
+        });
+
+        etTime.setOnClickListener(v -> {
+            int hour = cal.get(Calendar.HOUR_OF_DAY);
+            int minute = cal.get(Calendar.MINUTE);
+
+            TimePickerDialog tp = new TimePickerDialog(requireContext(), (view, h, min) -> {
+                cal.set(Calendar.HOUR_OF_DAY, h);
+                cal.set(Calendar.MINUTE, min);
+
+                // HH:mm:ss (seconds default 00)
+                String formatted = String.format(Locale.US, "%02d:%02d:00", h, min);
+                etTime.setText(formatted);
+            }, hour, minute, true);
+
+            tp.show();
+        });
+
+        if (!isEdit) {
+            etDate.setText(String.format(Locale.US, "%04d-%02d-%02d",
+                    cal.get(Calendar.YEAR),
+                    cal.get(Calendar.MONTH) + 1,
+                    cal.get(Calendar.DAY_OF_MONTH)));
+
+            etTime.setText(String.format(Locale.US, "%02d:%02d:00",
+                    cal.get(Calendar.HOUR_OF_DAY),
+                    cal.get(Calendar.MINUTE)));
+        }
+
+        // =====================
+        // DIALOG
+        // =====================
         AlertDialog dialog = new AlertDialog.Builder(requireContext())
                 .setTitle(isEdit ? "Edit Expense" : "Add Expense")
                 .setView(form)

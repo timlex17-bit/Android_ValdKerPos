@@ -54,7 +54,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.VH> {
     @Override
     public long getItemId(int position) {
         CartItem it = items.get(position);
-        return (it != null && it.productId != null) ? it.productId.hashCode() : position;
+        return (it != null) ? it.productId : position;
     }
 
     @NonNull
