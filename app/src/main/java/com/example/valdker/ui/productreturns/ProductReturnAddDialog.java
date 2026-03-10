@@ -149,7 +149,7 @@ public class ProductReturnAddDialog extends DialogFragment {
 
         TextView tvTitle = v.findViewById(R.id.tvTitleProductReturnAdd);
         if (tvTitle != null) {
-            tvTitle.setText("Add Product Return");
+            tvTitle.setText("Product Return");
         }
 
         androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())

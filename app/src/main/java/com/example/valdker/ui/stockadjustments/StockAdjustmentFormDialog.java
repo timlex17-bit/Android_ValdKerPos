@@ -79,7 +79,7 @@ public class StockAdjustmentFormDialog extends DialogFragment {
 
         if (editObj != null) bindEditData();
 
-        String title = (editId == null) ? "Add Stock Adjustment" : "Edit Stock Adjustment";
+        String title = (editId == null) ? "Stock Adjustment" : "Edit Stock Adjustment";
 
         android.widget.TextView tvTitle = v.findViewById(R.id.tvTitleStockAdjustment);
         if (tvTitle != null) {
