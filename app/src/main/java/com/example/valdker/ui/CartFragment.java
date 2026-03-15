@@ -16,6 +16,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.valdker.repositories.CheckoutConfigRepository;
+import com.example.valdker.ui.checkout.BankAccountItem;
+import com.example.valdker.ui.checkout.PaymentMethodItem;
 
 import com.example.valdker.R;
 import com.example.valdker.SessionManager;
@@ -169,6 +172,15 @@ public class CartFragment extends Fragment {
             return;
         }
 
+        final Context appCtx = requireContext().getApplicationContext();
+        final SessionManager sm = new SessionManager(appCtx);
+        final String token = sm.getToken();
+
+        if (token == null || token.trim().isEmpty()) {
+            Toast.makeText(requireContext(), "Token is missing. Please login again.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         boolean needTable = false;
         boolean needDelivery = false;
 
@@ -178,32 +190,91 @@ public class CartFragment extends Fragment {
             if (CartManager.TYPE_DELIVERY.equals(t)) needDelivery = true;
         }
 
-        double subtotal = cart.getTotalAmount();
+        final double subtotal = cart.getTotalAmount();
+        final boolean finalNeedTable = needTable;
+        final boolean finalNeedDelivery = needDelivery;
 
-        NativeCheckoutDialogFragment dialog =
-                NativeCheckoutDialogFragment.newInstance(subtotal, needTable, needDelivery);
+        CheckoutConfigRepository repo = new CheckoutConfigRepository(appCtx);
 
-        dialog.setListener((paymentMethod, cashReceived, changeAmount, tableNumber, deliveryAddress, deliveryFee) -> {
-            submitCheckout(paymentMethod, cashReceived, changeAmount, tableNumber, deliveryAddress, deliveryFee);
+        repo.fetchPaymentMethods(token, new CheckoutConfigRepository.PaymentMethodsCallback() {
+            @Override
+            public void onSuccess(@NonNull List<PaymentMethodItem> paymentItems) {
+
+                repo.fetchBankAccounts(token, new CheckoutConfigRepository.BankAccountsCallback() {
+                    @Override
+                    public void onSuccess(@NonNull List<BankAccountItem> bankItems) {
+                        if (!isAdded()) return;
+
+                        NativeCheckoutDialogFragment dialog =
+                                NativeCheckoutDialogFragment.newInstance(
+                                        subtotal,
+                                        finalNeedTable,
+                                        finalNeedDelivery
+                                );
+
+                        List<NativeCheckoutDialogFragment.PaymentMethodOption> methodOptions = new ArrayList<>();
+                        for (PaymentMethodItem item : paymentItems) {
+                            methodOptions.add(
+                                    new NativeCheckoutDialogFragment.PaymentMethodOption(
+                                            item.id,
+                                            item.code != null ? item.code : "",
+                                            item.name != null ? item.name : "",
+                                            item.requires_bank_account
+                                    )
+                            );
+                        }
+
+                        List<NativeCheckoutDialogFragment.BankAccountOption> bankOptions = new ArrayList<>();
+                        for (BankAccountItem item : bankItems) {
+                            String label = (item.bank_name != null ? item.bank_name : "") +
+                                    " - " +
+                                    (item.name != null ? item.name : "");
+                            bankOptions.add(
+                                    new NativeCheckoutDialogFragment.BankAccountOption(
+                                            item.id,
+                                            label
+                                    )
+                            );
+                        }
+
+                        dialog.setPaymentOptions(methodOptions);
+                        dialog.setBankOptions(bankOptions);
+                        dialog.setBankListener(new NativeCheckoutDialogFragment.BankListener() {
+                            @Override
+                            public void onConfirmBank(@NonNull NativeCheckoutDialogFragment.BankCheckoutResult result) {
+                                CartFragment.this.submitCheckout(result);
+                            }
+                        });
+
+                        dialog.show(requireActivity().getSupportFragmentManager(), TAG_NATIVE_CHECKOUT);
+                    }
+
+                    @Override
+                    public void onError(int statusCode, @NonNull String message) {
+                        if (!isAdded()) return;
+                        Toast.makeText(requireContext(),
+                                "Failed to load bank accounts: " + message,
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onError(int statusCode, @NonNull String message) {
+                if (!isAdded()) return;
+                Toast.makeText(requireContext(),
+                        "Failed to load payment methods: " + message,
+                        Toast.LENGTH_LONG).show();
+            }
         });
-
-        dialog.show(requireActivity().getSupportFragmentManager(), TAG_NATIVE_CHECKOUT);
     }
 
-    private void submitCheckout(@NonNull String paymentMethod,
-                                double cashReceived,
-                                double changeAmount,
-                                @NonNull String tableNumber,
-                                @NonNull String deliveryAddress,
-                                double deliveryFee) {
-
+    private void submitCheckout(@NonNull NativeCheckoutDialogFragment.BankCheckoutResult result) {
         if (!isAdded()) return;
 
         if (btnContinuePayment != null) btnContinuePayment.setEnabled(false);
 
-        // ✅ capture application context for printing even after fragment closes
         final Context appCtx = requireContext().getApplicationContext();
-
         final SessionManager sm = new SessionManager(appCtx);
         final String token = sm.getToken();
 
@@ -213,7 +284,6 @@ public class CartFragment extends Fragment {
             return;
         }
 
-        // Snapshot cart BEFORE network call (needed for printing)
         final List<CartItem> snapshot = new ArrayList<>(cart.getItems());
         if (snapshot.isEmpty()) {
             Toast.makeText(requireContext(), "Cart is empty", Toast.LENGTH_SHORT).show();
@@ -230,76 +300,95 @@ public class CartFragment extends Fragment {
             if (CartManager.TYPE_DELIVERY.equals(t)) hasDelivery = true;
         }
 
-        if (hasDineIn && (tableNumber == null || tableNumber.trim().isEmpty())) {
+        final String tableFinal = result.tableNumber != null ? result.tableNumber.trim() : "";
+        final String addrFinal = result.deliveryAddress != null ? result.deliveryAddress.trim() : "";
+
+        if (hasDineIn && tableFinal.isEmpty()) {
             Toast.makeText(requireContext(), "Table number is required for dine-in.", Toast.LENGTH_LONG).show();
             if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
             return;
         }
 
-        if (hasDelivery && (deliveryAddress == null || deliveryAddress.trim().isEmpty())) {
+        if (hasDelivery && addrFinal.isEmpty()) {
             Toast.makeText(requireContext(), "Delivery address is required for delivery.", Toast.LENGTH_LONG).show();
             if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
             return;
         }
 
         final double subtotal = calcSubtotal(snapshot);
-        final double feeSafe = Math.max(0, deliveryFee);
+        final double feeSafe = Math.max(0, result.deliveryFee);
         final double total = subtotal + (hasDelivery ? feeSafe : 0);
 
         final boolean hasDeliveryFinal = hasDelivery;
-        final boolean hasDineInFinal = hasDineIn;
-
         final double deliveryFeeFinal = hasDeliveryFinal ? feeSafe : 0;
         final double subtotalFinal = subtotal;
         final double totalFinal = total;
 
-        final String tableFinal = (tableNumber != null) ? tableNumber.trim() : "";
-        final String addrFinal = (deliveryAddress != null) ? deliveryAddress.trim() : "";
-        final String paymentFinal = paymentMethod;
-
-        // ✅ invoice used for payload + print
-        final String invoiceFinal = "INV-" + System.currentTimeMillis();
+        final String paymentCodeFinal = result.paymentMethodCode != null
+                ? result.paymentMethodCode.trim().toUpperCase(Locale.US)
+                : "CASH";
 
         final JSONObject payload = new JSONObject();
         final JSONArray itemsArr = new JSONArray();
+        final JSONArray paymentsArr = new JSONArray();
 
         try {
-            payload.put("invoice_number", invoiceFinal);
-            payload.put("payment_method", paymentFinal);
-
+            payload.put("customer", JSONObject.NULL);
+            payload.put("payment_method", paymentCodeFinal);
             payload.put("subtotal", String.format(Locale.US, "%.2f", subtotalFinal));
             payload.put("discount", "0.00");
             payload.put("tax", "0.00");
             payload.put("total", String.format(Locale.US, "%.2f", totalFinal));
-
+            payload.put("notes", "Checkout from Android");
             payload.put("is_paid", true);
 
-            payload.put("paid_amount", String.format(Locale.US, "%.2f", totalFinal));
-            payload.put("cash_received", String.format(Locale.US, "%.2f", cashReceived));
-            payload.put("change_amount", String.format(Locale.US, "%.2f", changeAmount));
-
-            if (hasDineInFinal) {
-                payload.put("table_number", tableFinal);
-            }
-
+            String overallType = "TAKE_OUT";
             if (hasDeliveryFinal) {
-                payload.put("delivery_address", addrFinal);
-                payload.put("delivery_fee", String.format(Locale.US, "%.2f", deliveryFeeFinal));
+                overallType = "DELIVERY";
+            } else if (hasDineIn) {
+                overallType = "DINE_IN";
             }
+            payload.put("default_order_type", overallType);
+
+            payload.put("table_number", tableFinal);
+            payload.put("delivery_address", addrFinal);
+            payload.put("delivery_fee", String.format(Locale.US, "%.2f", deliveryFeeFinal));
 
             for (CartItem it : snapshot) {
                 JSONObject one = new JSONObject();
                 one.put("product", it.productId);
                 one.put("quantity", it.qty);
+                one.put("price", String.format(Locale.US, "%.2f", it.price));
 
                 String ot = normalizeType(it.orderType);
-                if (!ot.isEmpty()) one.put("order_type", ot);
+                if (!ot.isEmpty()) {
+                    one.put("order_type", ot);
+                } else {
+                    one.put("order_type", "TAKE_OUT");
+                }
 
-                one.put("price", String.format(Locale.US, "%.2f", it.price));
                 itemsArr.put(one);
             }
 
+            JSONObject paymentObj = new JSONObject();
+            if (result.paymentMethodId != null) {
+                paymentObj.put("payment_method_id", result.paymentMethodId);
+            }
+            if (result.bankAccountId != null) {
+                paymentObj.put("bank_account_id", result.bankAccountId);
+            } else {
+                paymentObj.put("bank_account_id", JSONObject.NULL);
+            }
+            paymentObj.put("amount", String.format(Locale.US, "%.2f", totalFinal));
+            paymentObj.put("reference_number", result.referenceNumber != null ? result.referenceNumber : "");
+            paymentObj.put("note", result.paymentNote != null ? result.paymentNote : "");
+
+            paymentsArr.put(paymentObj);
+
             payload.put("items", itemsArr);
+            payload.put("payments", paymentsArr);
+
+            Log.d(TAG, "Checkout payload = " + payload.toString());
 
         } catch (Exception e) {
             Toast.makeText(requireContext(), "Failed to build payload: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -311,16 +400,20 @@ public class CartFragment extends Fragment {
         repo.createOrder(token, payload, new OrderRepository.CreateCallback() {
             @Override
             public void onSuccess(@NonNull JSONObject response) {
+                mainHandler.post(() ->
+                        Toast.makeText(requireContext(), "Checkout success", Toast.LENGTH_SHORT).show()
+                );
 
-                // toast on UI thread
-                mainHandler.post(() -> Toast.makeText(requireContext(), "Checkout success", Toast.LENGTH_SHORT).show());
+                String invoiceFromApi = response.optString("invoice_number", "");
+                String invoiceFinal = (invoiceFromApi != null && !invoiceFromApi.trim().isEmpty())
+                        ? invoiceFromApi.trim()
+                        : "INV-" + System.currentTimeMillis();
 
-                // ✅ IMPORTANT: call print using appCtx (NOT fragment lifecycle)
                 tryAutoPrintReceipt(
                         appCtx,
                         token,
                         snapshot,
-                        paymentFinal,
+                        paymentCodeFinal,
                         subtotalFinal,
                         deliveryFeeFinal,
                         totalFinal,

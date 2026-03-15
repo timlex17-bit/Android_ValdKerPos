@@ -36,7 +36,15 @@ public class SessionManager {
     private static final String KEY_OPENING_CASH = "opening_cash";
     private static final String KEY_SHIFT_LOCAL_ID = "shift_local_id";
 
+    private static final String KEY_SHOP_CODE = "shop_code";
     private static final String KEY_SHOP_ID = "shop_id";
+    private static final String KEY_FULL_NAME = "full_name";
+    private static final String KEY_SHOP_NAME = "shop_name";
+    private static final String KEY_IS_SUPERUSER = "is_superuser";
+    private static final String KEY_IS_PLATFORM_ADMIN = "is_platform_admin";
+    private static final String KEY_IS_SHOP_OWNER = "is_shop_owner";
+    private static final String KEY_IS_SHOP_MANAGER = "is_shop_manager";
+    private static final String KEY_IS_SHOP_CASHIER = "is_shop_cashier";
 
     private static final String KEY_TOKEN = "token";
     private static final String KEY_USERNAME = "username";
@@ -48,6 +56,53 @@ public class SessionManager {
     public SessionManager(@NonNull Context context) {
         Context appContext = context.getApplicationContext();
         this.prefs = appContext.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+    }
+
+    public void saveUserProfile(
+            @Nullable String token,
+            @Nullable String username,
+            @Nullable String fullName,
+            @Nullable String role,
+            int shopId,
+            @Nullable String shopCode,
+            @Nullable String shopName,
+            boolean isSuperuser,
+            boolean isPlatformAdmin,
+            boolean isShopOwner,
+            boolean isShopManager,
+            boolean isShopCashier,
+            @Nullable JSONArray permissions
+    ) {
+        if (token == null) token = "";
+        if (username == null) username = "";
+        if (fullName == null) fullName = "";
+        if (role == null) role = "";
+        if (shopCode == null) shopCode = "";
+        if (shopName == null) shopName = "";
+
+        Set<String> permSet = new HashSet<>();
+        if (permissions != null) {
+            for (int i = 0; i < permissions.length(); i++) {
+                String p = permissions.optString(i, "").trim();
+                if (!p.isEmpty()) permSet.add(p);
+            }
+        }
+
+        prefs.edit()
+                .putString(KEY_TOKEN, token.trim())
+                .putString(KEY_USERNAME, username.trim())
+                .putString(KEY_FULL_NAME, fullName.trim())
+                .putString(KEY_ROLE, role.trim())
+                .putInt(KEY_SHOP_ID, shopId)
+                .putString(KEY_SHOP_CODE, shopCode != null ? shopCode.trim() : "")
+                .putString(KEY_SHOP_NAME, shopName.trim())
+                .putBoolean(KEY_IS_SUPERUSER, isSuperuser)
+                .putBoolean(KEY_IS_PLATFORM_ADMIN, isPlatformAdmin)
+                .putBoolean(KEY_IS_SHOP_OWNER, isShopOwner)
+                .putBoolean(KEY_IS_SHOP_MANAGER, isShopManager)
+                .putBoolean(KEY_IS_SHOP_CASHIER, isShopCashier)
+                .putStringSet(KEY_PERMS, permSet)
+                .apply();
     }
 
     // -------------------------------
@@ -100,6 +155,12 @@ public class SessionManager {
     public String getOpeningCash() {
         String v = prefs.getString(KEY_OPENING_CASH, "0.00");
         return v != null ? v : "0.00";
+    }
+
+    @NonNull
+    public String getShopCode() {
+        String v = prefs.getString(KEY_SHOP_CODE, "");
+        return v != null ? v : "";
     }
 
     public void clearShift() {
@@ -166,8 +227,53 @@ public class SessionManager {
         return v != null ? v : "";
     }
 
-    public boolean isAdmin() {
-        return "admin".equals(getRole().trim().toLowerCase());
+    public boolean isPlatformSuperuser() {
+        return prefs.getBoolean(KEY_IS_SUPERUSER, false);
+    }
+
+    public boolean isPlatformAdmin() {
+        return prefs.getBoolean(KEY_IS_PLATFORM_ADMIN, false);
+    }
+
+    public boolean isShopOwner() {
+        return prefs.getBoolean(KEY_IS_SHOP_OWNER, false);
+    }
+
+    public boolean isShopManager() {
+        return prefs.getBoolean(KEY_IS_SHOP_MANAGER, false);
+    }
+
+    public boolean isShopCashier() {
+        return prefs.getBoolean(KEY_IS_SHOP_CASHIER, false);
+    }
+
+    @NonNull
+    public String getFullName() {
+        String v = prefs.getString(KEY_FULL_NAME, "");
+        return v != null ? v : "";
+    }
+
+    @NonNull
+    public String getShopName() {
+        String v = prefs.getString(KEY_SHOP_NAME, "");
+        return v != null ? v : "";
+    }
+
+    public boolean isOwner() {
+        return isPlatformSuperuser() || isPlatformAdmin() || isShopOwner();
+    }
+
+    public boolean canManageSettings() {
+        return hasPermission("settings.manage") || isOwner();
+    }
+
+    public boolean canViewReports() {
+        if (hasPermission("pos.view_reports") || hasPermission("reports.view")) {
+            return true;
+        }
+
+        String role = getRole().trim().toLowerCase();
+        return "owner".equals(role) || "manager".equals(role);
     }
 
     @NonNull
@@ -205,10 +311,19 @@ public class SessionManager {
         editor.remove(KEY_TOKEN);
         editor.remove(KEY_USERNAME);
         editor.remove(KEY_ROLE);
+        editor.remove(KEY_PERMS);
+        editor.remove(KEY_SHOP_CODE);
+        editor.remove(KEY_SHOP_ID);
+        editor.remove(KEY_FULL_NAME);
+        editor.remove(KEY_SHOP_NAME);
+        editor.remove(KEY_IS_SUPERUSER);
+        editor.remove(KEY_IS_PLATFORM_ADMIN);
+        editor.remove(KEY_IS_SHOP_OWNER);
+        editor.remove(KEY_IS_SHOP_MANAGER);
+        editor.remove(KEY_IS_SHOP_CASHIER);
 
         editor.apply();
     }
-
     public void setBaseUrl(@NonNull String url) {
         String u = url.trim();
         while (u.endsWith("/")) u = u.substring(0, u.length() - 1);

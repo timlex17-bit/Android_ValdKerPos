@@ -29,10 +29,10 @@ import java.util.Map;
 public class ShopRepository {
 
     private static final String TAG = "ShopRepository";
-    private static final String SHOPS_URL = "api/shops/";
+    private static final String MY_SHOP_URL = "api/shop/me/";
 
-    private static String shopDetailUrl(@NonNull Context ctx, int id) {
-        return ApiConfig.url(new SessionManager(ctx), "api/shops/" + id + "/");
+    private static String myShopUrl(@NonNull Context ctx) {
+        return ApiConfig.url(new SessionManager(ctx), MY_SHOP_URL);
     }
 
     public interface Callback {
@@ -51,25 +51,19 @@ public class ShopRepository {
             @Nullable String token,
             @NonNull Callback cb
     ) {
-        String url = ApiConfig.url(new SessionManager(ctx), SHOPS_URL);
+        String url = myShopUrl(ctx);
 
-        JsonArrayRequest req = new JsonArrayRequest(
+        com.android.volley.toolbox.JsonObjectRequest req = new com.android.volley.toolbox.JsonObjectRequest(
                 Request.Method.GET,
                 url,
                 null,
-                (JSONArray res) -> {
-                    if (res == null || res.length() == 0) {
-                        cb.onEmpty();
-                        return;
-                    }
-
-                    JSONObject o = res.optJSONObject(0);
-                    if (o == null) {
+                (JSONObject res) -> {
+                    if (res == null) {
                         cb.onError("Invalid response");
                         return;
                     }
 
-                    cb.onSuccess(parseShop(o));
+                    cb.onSuccess(parseShop(res));
                 },
                 err -> {
                     int code = (err.networkResponse != null) ? err.networkResponse.statusCode : -1;
@@ -112,7 +106,7 @@ public class ShopRepository {
             @Nullable Uri allIconUri,
             @NonNull UpdateCallback cb
     ) {
-        String url = shopDetailUrl(ctx, shopId);
+        String url = myShopUrl(ctx);
 
         MultipartRequest req = new MultipartRequest(
                 Request.Method.PATCH,

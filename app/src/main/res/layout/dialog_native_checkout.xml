@@ -12,89 +12,109 @@
         android:orientation="vertical"
         android:padding="20dp">
 
-        <!-- TOTAL -->
         <TextView
             android:id="@+id/tvTotalAmount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:text="$0.00"
             android:gravity="center"
-            android:paddingBottom="16dp"/>
+            android:paddingBottom="16dp"
+            android:text="$0.00"
+            android:textSize="22sp"
+            android:textStyle="bold" />
 
-        <!-- PAYMENT METHOD -->
         <TextView
+            android:id="@+id/tvPaymentMethodLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Payment Method"
-            android:textStyle="bold"/>
+            android:textStyle="bold" />
 
-        <RadioGroup
-            android:id="@+id/radioPayment"
+        <Spinner
+            android:id="@+id/spPaymentMethod"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" />
 
-            <RadioButton
-                android:id="@+id/radioCash"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Cash"/>
-
-            <RadioButton
-                android:id="@+id/radioQris"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="QRIS"/>
-
-            <RadioButton
-                android:id="@+id/radioTransfer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Transfer"/>
-        </RadioGroup>
-
-        <!-- CASH INPUT -->
         <EditText
             android:id="@+id/etCashReceived"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
             android:hint="Cash Received"
             android:inputType="numberDecimal"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/tvChange"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:paddingTop="4dp"
             android:text="Change: $0.00"
-            android:visibility="gone"
-            android:paddingTop="8dp"/>
+            android:visibility="gone" />
 
-        <!-- TABLE -->
+        <TextView
+            android:id="@+id/tvBankLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Bank Account"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <Spinner
+            android:id="@+id/spBankAccount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:visibility="gone" />
+
+        <EditText
+            android:id="@+id/etReferenceNumber"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Reference Number"
+            android:inputType="text"
+            android:visibility="gone" />
+
+        <EditText
+            android:id="@+id/etPaymentNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="top|start"
+            android:hint="Payment Note"
+            android:inputType="textMultiLine"
+            android:minLines="2"
+            android:visibility="gone" />
+
         <EditText
             android:id="@+id/etTable"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
             android:hint="Table Number"
             android:inputType="number"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
-        <!-- DELIVERY -->
         <EditText
             android:id="@+id/etDeliveryAddress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
             android:hint="Delivery Address"
-            android:visibility="gone"/>
+            android:inputType="textPostalAddress"
+            android:visibility="gone" />
 
         <EditText
             android:id="@+id/etDeliveryFee"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
             android:hint="Delivery Fee"
             android:inputType="numberDecimal"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
     </LinearLayout>
 </ScrollView>

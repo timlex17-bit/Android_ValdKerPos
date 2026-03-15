@@ -122,7 +122,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
             logd("Shop updated broadcast received. Refreshing header.");
 //            loadShopHeader();
 
-            if (session != null && session.isAdmin()) {
+            if (session != null && session.canViewReports()) {
                 loadTodayNetIncome();
             }
         }
@@ -140,8 +140,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
             return;
         }
 
-        String role = safeLower(session.getRole());
-        if ("cashier".equals(role)) {
+        if (isCashier()) {
             logw("Cashier detected. Redirecting to POS.");
             openPosAndFinish();
             return;
@@ -264,7 +263,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
     private void setupBottomNav() {
         if (bottomNav == null) return;
 
-        if (!isOwnerHp()) {
+        if (!isOwnerDevice()) {
             bottomNav.setOnItemSelectedListener(null);
             return;
         }
@@ -307,6 +306,8 @@ public class HomeDashboardActivity extends AppCompatActivity {
 
         if (isOwner()) {
             bottomNav.getMenu().findItem(R.id.nav_pos).setVisible(false);
+        } else {
+            bottomNav.getMenu().findItem(R.id.nav_pos).setVisible(true);
         }
     }
 
@@ -317,11 +318,11 @@ public class HomeDashboardActivity extends AppCompatActivity {
 
     private void applyRoleDeviceUI() {
         if (bottomNav == null) return;
-        bottomNav.setVisibility(isOwnerHp() ? View.VISIBLE : View.GONE);
+        bottomNav.setVisibility(isOwnerDevice() ? View.VISIBLE : View.GONE);
     }
 
     private void enforceNavigationSecurity() {
-        if (isOwnerHp()) return;
+        if (isOwnerDevice()) return;
 
         if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
             clearBackStackInclusive();
@@ -614,11 +615,14 @@ public class HomeDashboardActivity extends AppCompatActivity {
     private void handleMenuClick(@NonNull DashboardItem item) {
         logd("Menu clicked: " + item.title + " (id=" + item.id + ")");
 
-        if (!session.isAdmin()) {
-            if (item.id == DashboardItem.ID_REPORTS || item.id == DashboardItem.ID_SETTINGS) {
-                Toast.makeText(this, "Admin only", Toast.LENGTH_SHORT).show();
-                return;
-            }
+        if (item.id == DashboardItem.ID_REPORTS && !session.canViewReports()) {
+            Toast.makeText(this, "Access denied", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (item.id == DashboardItem.ID_SETTINGS && !session.canManageSettings()) {
+            Toast.makeText(this, "Access denied", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         switch (item.id) {
@@ -816,12 +820,18 @@ public class HomeDashboardActivity extends AppCompatActivity {
     }
 
     private boolean isOwner() {
-        String role = safeLower(session.getRole());
-        return "owner".equals(role) || "admin".equals(role);
+        return session.isShopOwner()
+                || session.isPlatformAdmin()
+                || session.isPlatformSuperuser();
     }
 
-    private boolean isOwnerHp() {
-        return isOwner() && !DeviceUtil.isTablet(this);
+    private boolean isCashier() {
+        String role = safeLower(session.getRole());
+        return "cashier".equals(role) || session.isShopCashier();
+    }
+
+    private boolean isOwnerDevice() {
+        return isOwner();
     }
 
     private String safeLower(@Nullable String s) {
@@ -831,6 +841,8 @@ public class HomeDashboardActivity extends AppCompatActivity {
 
     private List<DashboardItem> buildMenu() {
         boolean owner = isOwner();
+        boolean manager = isManager();
+
         List<DashboardItem> out = new ArrayList<>();
 
         if (owner) {
@@ -838,33 +850,44 @@ public class HomeDashboardActivity extends AppCompatActivity {
             out.add(new DashboardItem(DashboardItem.ID_STOCK_MOVEMENTS, "MOVIMENTU STOK", "Movimentu stok", R.drawable.ic_stockmovement));
             out.add(new DashboardItem(DashboardItem.ID_INVENTORY_COUNTS, "KONTÁJEN STOK", "Stock opname", R.drawable.ic_report));
             out.add(new DashboardItem(DashboardItem.ID_SETTINGS, "KONFIGURASAUN", "Atu regula aplikasaun", R.drawable.ic_settings));
-
             out.add(new DashboardItem(DashboardItem.ID_ORDERS, "ORDEM", "Haree istória tranzasaun", R.drawable.ic_receipt));
             out.add(new DashboardItem(DashboardItem.ID_EXPENSE, "DESPEZA", "Rejistu gastu negósiu", R.drawable.ic_expense));
+            out.add(new DashboardItem(DashboardItem.ID_CUSTOMERS, "KLIENTE", "Jere no haree dadus kliente", R.drawable.ic_people));
+            out.add(new DashboardItem(DashboardItem.ID_SUPPLIERS, "FORNESEDÓR", "Lista no jere fornesedór", R.drawable.ic_store));
+            out.add(new DashboardItem(DashboardItem.ID_PURCHASES, "KOMPRA", "Rejistu sosa husi fornesedór", R.drawable.ic_purchase));
+            out.add(new DashboardItem(DashboardItem.ID_PRODUCTS, "PRODUTU", "Stok, presu no detallu produtu", R.drawable.ic_box));
+            out.add(new DashboardItem(DashboardItem.ID_CATEGORIES, "KATEGORIA", "Jere kategoria produtu", R.drawable.ic_categories));
+            out.add(new DashboardItem(DashboardItem.ID_UNITS, "UNIDADE", "Jere unidade produtu", R.drawable.ic_units));
+            out.add(new DashboardItem(DashboardItem.ID_PRODUCT_RETURNS, "DEVOLUSAUN", "Return produtu", R.drawable.ic_return));
+            out.add(new DashboardItem(DashboardItem.ID_STOCK_ADJUSTMENTS, "AJUSTA STOK", "Ajusta stok manual", R.drawable.ic_report));
             return out;
         }
 
-        out.add(new DashboardItem(DashboardItem.ID_CUSTOMERS, "KLIENTE", "Jere no haree dadus kliente", R.drawable.ic_people));
-        out.add(new DashboardItem(DashboardItem.ID_SUPPLIERS, "FORNESEDÓR", "Lista no jere fornesdór", R.drawable.ic_store));
-        out.add(new DashboardItem(DashboardItem.ID_PURCHASES, "KOMPRA", "Rejistu sosa husi fornesdór", R.drawable.ic_purchase));
-        out.add(new DashboardItem(DashboardItem.ID_PRODUCTS, "PRODUTU", "Stok, presu no detallu produtu", R.drawable.ic_box));
-        out.add(new DashboardItem(DashboardItem.ID_CATEGORIES, "KATEGORIA", "Jere kategoria produtu", R.drawable.ic_categories));
-        out.add(new DashboardItem(DashboardItem.ID_UNITS, "UNIDADE", "Jere unidade produtu", R.drawable.ic_units));
-        out.add(new DashboardItem(DashboardItem.ID_POS, "POS", "Tranzasaun fa'an agora", R.drawable.ic_pos));
-        out.add(new DashboardItem(DashboardItem.ID_EXPENSE, "DESPEZA", "Rejistu gastu negósiu", R.drawable.ic_expense));
-        out.add(new DashboardItem(DashboardItem.ID_ORDERS, "ORDEM", "Haree istória tranzasaun", R.drawable.ic_receipt));
-        out.add(new DashboardItem(DashboardItem.ID_SETTINGS, "KONFIGURASAUN", "Atu regula aplikasaun", R.drawable.ic_settings));
+        if (manager) {
+            out.add(new DashboardItem(DashboardItem.ID_CUSTOMERS, "KLIENTE", "Jere no haree dadus kliente", R.drawable.ic_people));
+            out.add(new DashboardItem(DashboardItem.ID_SUPPLIERS, "FORNESEDÓR", "Lista no jere fornesedór", R.drawable.ic_store));
+            out.add(new DashboardItem(DashboardItem.ID_PURCHASES, "KOMPRA", "Rejistu sosa husi fornesedór", R.drawable.ic_purchase));
+            out.add(new DashboardItem(DashboardItem.ID_PRODUCTS, "PRODUTU", "Stok, presu no detallu produtu", R.drawable.ic_box));
+            out.add(new DashboardItem(DashboardItem.ID_CATEGORIES, "KATEGORIA", "Jere kategoria produtu", R.drawable.ic_categories));
+            out.add(new DashboardItem(DashboardItem.ID_UNITS, "UNIDADE", "Jere unidade produtu", R.drawable.ic_units));
+            out.add(new DashboardItem(DashboardItem.ID_POS, "POS", "Tranzasaun fa'an agora", R.drawable.ic_pos));
+            out.add(new DashboardItem(DashboardItem.ID_EXPENSE, "DESPEZA", "Rejistu gastu negósiu", R.drawable.ic_expense));
+            out.add(new DashboardItem(DashboardItem.ID_ORDERS, "ORDEM", "Haree istória tranzasaun", R.drawable.ic_receipt));
+            out.add(new DashboardItem(DashboardItem.ID_PRODUCT_RETURNS, "DEVOLUSAUN", "Return produtu", R.drawable.ic_return));
+            out.add(new DashboardItem(DashboardItem.ID_INVENTORY_COUNTS, "KONTÁJEN STOK", "Stock opname", R.drawable.ic_report));
+            out.add(new DashboardItem(DashboardItem.ID_STOCK_ADJUSTMENTS, "AJUSTA STOK", "Ajusta stok manual", R.drawable.ic_report));
+            out.add(new DashboardItem(DashboardItem.ID_STOCK_MOVEMENTS, "MOVIMENTU STOK", "Movimentu stok", R.drawable.ic_stockmovement));
 
-        if (session.isAdmin()) {
-            out.add(new DashboardItem(DashboardItem.ID_REPORTS, "RELATÓRIU", "Analiza rendimentu negósiu", R.drawable.ic_report));
-            out.add(new DashboardItem(DashboardItem.ID_SETTINGS, "KONFIGURASAUN", "Atu regula aplikasaun", R.drawable.ic_settings));
+            if (session.canViewReports()) {
+                out.add(new DashboardItem(DashboardItem.ID_REPORTS, "RELATÓRIU", "Analiza rendimentu negósiu", R.drawable.ic_report));
+            }
+
+            return out;
         }
 
-        out.add(new DashboardItem(DashboardItem.ID_PRODUCT_RETURNS, "DEVOLUSAUN", "Return produtu", R.drawable.ic_return));
-        out.add(new DashboardItem(DashboardItem.ID_INVENTORY_COUNTS, "KONTÁJEN STOK", "Stock opname", R.drawable.ic_report));
-        out.add(new DashboardItem(DashboardItem.ID_STOCK_ADJUSTMENTS, "AJUSTA STOK", "Ajusta stok manual", R.drawable.ic_report));
-        out.add(new DashboardItem(DashboardItem.ID_STOCK_MOVEMENTS, "MOVIMENTU STOK", "Movimentu stok", R.drawable.ic_stockmovement));
-
+        out.add(new DashboardItem(DashboardItem.ID_POS, "POS", "Tranzasaun fa'an agora", R.drawable.ic_pos));
+        out.add(new DashboardItem(DashboardItem.ID_ORDERS, "ORDEM", "Haree istória tranzasaun", R.drawable.ic_receipt));
+        out.add(new DashboardItem(DashboardItem.ID_CUSTOMERS, "KLIENTE", "Jere no haree dadus kliente", R.drawable.ic_people));
         return out;
     }
 

@@ -2,6 +2,8 @@ package com.example.valdker;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.InputType;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
@@ -20,25 +22,25 @@ import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.valdker.network.ApiClient;
 import com.example.valdker.network.ApiConfig;
-import com.example.valdker.SessionManager;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = "LOGIN";
-
     private static final String ENDPOINT_LOGIN = "api/auth/login/";
 
     private static final int TIMEOUT_MS = 20000;
     private static final int MAX_RETRIES = 0;
     private static final float BACKOFF_MULT = 1.0f;
 
+    private EditText etShopCode;
     private EditText etUsername;
     private EditText etPassword;
     private TextView btnTogglePwd;
@@ -46,7 +48,6 @@ public class LoginActivity extends AppCompatActivity {
     private Button btnDemo;
 
     private boolean pwdVisible = false;
-
     private SessionManager sm;
 
     @Override
@@ -56,45 +57,77 @@ public class LoginActivity extends AppCompatActivity {
 
         sm = new SessionManager(this);
 
+        bindViews();
+        setupInputs();
+        setupExistingSessionRedirect();
+        setupActions();
+    }
+
+    private void bindViews() {
+        etShopCode = findViewById(R.id.etShopCode);
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
         btnTogglePwd = findViewById(R.id.btnTogglePwd);
         btnLogin = findViewById(R.id.btnLogin);
         btnDemo = findViewById(R.id.btnDemo);
+    }
 
+    private void setupInputs() {
+        if (etShopCode != null) {
+            etShopCode.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+            etShopCode.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
+        }
+    }
+
+    private void setupExistingSessionRedirect() {
         String token = sm.getToken();
         if (token != null && !token.trim().isEmpty()) {
-            String role = sm.getRole() == null ? "" : sm.getRole().trim().toLowerCase();
-
-            if ("cashier".equals(role)) {
-                goToPOS();
-            } else {
-                goToDashboard();
-            }
-            return;
+            redirectBySavedSession();
         } else {
             sm.clearAuth();
         }
+    }
 
+    private void setupActions() {
         if (btnDemo != null) {
             btnDemo.setOnClickListener(v -> {
-                if (etUsername != null) etUsername.setText("admin");
-                if (etPassword != null) etPassword.setText("admin");
+                if (etShopCode != null) etShopCode.setText("WFOUR");
+                if (etUsername != null) etUsername.setText("Rivaldo");
+                if (etPassword != null) etPassword.setText("admin123");
             });
         }
 
-        if (btnTogglePwd != null) btnTogglePwd.setOnClickListener(v -> togglePassword());
-        if (btnLogin != null) btnLogin.setOnClickListener(v -> doLogin());
+        if (btnTogglePwd != null) {
+            btnTogglePwd.setOnClickListener(v -> togglePassword());
+        }
+
+        if (btnLogin != null) {
+            btnLogin.setOnClickListener(v -> doLogin());
+        }
+    }
+
+    private void redirectBySavedSession() {
+        if (isCashierUser()) {
+            goToPOS();
+        } else {
+            goToDashboard();
+        }
+    }
+
+    private boolean isCashierUser() {
+        String role = safeLower(sm.getRole());
+        return "cashier".equals(role) || sm.isShopCashier();
     }
 
     private void doLogin() {
-        if (etUsername == null || etPassword == null) return;
+        if (etShopCode == null || etUsername == null || etPassword == null) return;
 
-        String username = etUsername.getText() != null ? etUsername.getText().toString().trim() : "";
+        String shopCode = getText(etShopCode).toUpperCase(Locale.US);
+        String username = getText(etUsername);
         String password = etPassword.getText() != null ? etPassword.getText().toString() : "";
 
-        if (username.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Username and password are required.", Toast.LENGTH_SHORT).show();
+        if (shopCode.isEmpty() || username.isEmpty() || password.isEmpty()) {
+            Toast.makeText(this, "Shop code, username, and password are required.", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -102,12 +135,13 @@ public class LoginActivity extends AppCompatActivity {
 
         try {
             JSONObject body = new JSONObject();
+            body.put("shop_code", shopCode);
             body.put("username", username);
             body.put("password", password);
 
             String loginUrl = ApiConfig.url(sm, ENDPOINT_LOGIN);
-            Log.i(TAG, "POST " + loginUrl + " username=" + username);
-            Log.w("BASE_URL", "LoginActivity baseUrl=" + sm.getBaseUrl());
+            Log.i(TAG, "POST " + loginUrl + " shop_code=" + shopCode + " username=" + username);
+            Log.i(TAG, "Base URL = " + sm.getBaseUrl());
 
             JsonObjectRequest req = new JsonObjectRequest(
                     Request.Method.POST,
@@ -120,7 +154,7 @@ public class LoginActivity extends AppCompatActivity {
                     error -> {
                         setLoading(false);
 
-                        int code = (error.networkResponse != null) ? error.networkResponse.statusCode : -1;
+                        int code = error.networkResponse != null ? error.networkResponse.statusCode : -1;
                         String serverBody = extractErrorBody(error.networkResponse);
 
                         Log.e(TAG, "Login failed HTTP " + code + " body=" + serverBody, error);
@@ -129,20 +163,33 @@ public class LoginActivity extends AppCompatActivity {
                             sm.clearAuth();
                         }
 
-                        Toast.makeText(this, "Login failed (HTTP " + code + ")", Toast.LENGTH_LONG).show();
+                        String msg;
+                        if (code == 400) {
+                            msg = "Shop code, username, and password must be filled.";
+                        } else if (code == 401) {
+                            msg = "Shop code, username, or password is invalid.";
+                        } else if (code == 403) {
+                            msg = "User is inactive or not allowed to access this shop.";
+                        } else if (code == -1) {
+                            msg = "Cannot connect to server. Check base URL or network.";
+                        } else {
+                            msg = "Login failed (HTTP " + code + ")";
+                        }
+
+                        Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
                     }
             ) {
                 @Override
                 public Map<String, String> getHeaders() {
                     Map<String, String> h = new HashMap<>();
                     h.put("Accept", "application/json");
+                    h.put("Content-Type", "application/json");
                     return h;
                 }
             };
 
             req.setRetryPolicy(new DefaultRetryPolicy(TIMEOUT_MS, MAX_RETRIES, BACKOFF_MULT));
             req.setShouldCache(false);
-
             ApiClient.getInstance(this).add(req);
 
         } catch (Exception e) {
@@ -158,28 +205,74 @@ public class LoginActivity extends AppCompatActivity {
             JSONObject user = response.optJSONObject("user");
             JSONArray perms = response.optJSONArray("permissions");
 
-            String u = (user != null)
+            String username = user != null
                     ? user.optString("username", fallbackUsername)
                     : fallbackUsername;
 
-            String role = (user != null)
+            String fullName = user != null
+                    ? user.optString("full_name", "")
+                    : "";
+
+            String role = user != null
                     ? user.optString("role", "cashier")
                     : "cashier";
 
-            role = role == null ? "cashier" : role.trim().toLowerCase();
+            int shopId = user != null
+                    ? user.optInt("shop_id", 0)
+                    : 0;
 
-            Log.i(TAG, "Login success tokenLen=" + (newToken != null ? newToken.length() : 0));
-            Log.i(TAG, "Login success user=" + u + " role=" + role + " perms=" + (perms != null ? perms.length() : 0));
+            String shopCode = user != null
+                    ? user.optString("shop_code", "")
+                    : "";
+
+            String shopName = user != null
+                    ? user.optString("shop_name", "")
+                    : "";
+
+            boolean isSuperuser = user != null && user.optBoolean("is_superuser", false);
+            boolean isPlatformAdmin = user != null && user.optBoolean("is_platform_admin", false);
+            boolean isShopOwner = user != null && user.optBoolean("is_shop_owner", false);
+            boolean isShopManager = user != null && user.optBoolean("is_shop_manager", false);
+            boolean isShopCashier = user != null && user.optBoolean("is_shop_cashier", false);
+
+            role = safeLower(role);
+
+            Log.i(TAG, "Login success:"
+                    + " username=" + username
+                    + " role=" + role
+                    + " shopId=" + shopId
+                    + " shopCode=" + shopCode
+                    + " shopName=" + shopName
+                    + " isSuperuser=" + isSuperuser
+                    + " isPlatformAdmin=" + isPlatformAdmin
+                    + " isShopOwner=" + isShopOwner
+                    + " isShopManager=" + isShopManager
+                    + " isShopCashier=" + isShopCashier
+                    + " permsCount=" + (perms != null ? perms.length() : 0));
 
             if (newToken == null || newToken.trim().isEmpty()) {
-                Toast.makeText(this, "Token is missing from the server response.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Token is missing from server response.", Toast.LENGTH_LONG).show();
                 return;
             }
 
             sm.clearAuth();
-            sm.saveSession(newToken, u, role, perms);
+            sm.saveUserProfile(
+                    newToken,
+                    username,
+                    fullName,
+                    role,
+                    shopId,
+                    shopCode,
+                    shopName,
+                    isSuperuser,
+                    isPlatformAdmin,
+                    isShopOwner,
+                    isShopManager,
+                    isShopCashier,
+                    perms
+            );
 
-            if ("cashier".equals(role)) {
+            if ("cashier".equals(role) || isShopCashier) {
                 goToPOS();
             } else {
                 goToDashboard();
@@ -206,9 +299,18 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void setLoading(boolean loading) {
-        if (btnLogin == null) return;
-        btnLogin.setEnabled(!loading);
-        btnLogin.setText(loading ? "Loading..." : "Login");
+        if (btnLogin != null) {
+            btnLogin.setEnabled(!loading);
+            btnLogin.setText(loading ? "Loading..." : "Login");
+        }
+
+        if (btnDemo != null) {
+            btnDemo.setEnabled(!loading);
+        }
+
+        if (etShopCode != null) etShopCode.setEnabled(!loading);
+        if (etUsername != null) etUsername.setEnabled(!loading);
+        if (etPassword != null) etPassword.setEnabled(!loading);
     }
 
     private void togglePassword() {
@@ -227,6 +329,18 @@ public class LoginActivity extends AppCompatActivity {
         if (etPassword.getText() != null) {
             etPassword.setSelection(etPassword.getText().length());
         }
+    }
+
+    @NonNull
+    private String getText(@Nullable EditText editText) {
+        if (editText == null || editText.getText() == null) return "";
+        return editText.getText().toString().trim();
+    }
+
+    @NonNull
+    private String safeLower(@Nullable String s) {
+        if (s == null) return "";
+        return s.trim().toLowerCase(Locale.US);
     }
 
     @NonNull
