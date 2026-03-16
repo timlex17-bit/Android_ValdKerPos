@@ -25,7 +25,6 @@ public class OwnerChatRepository {
     }
 
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
-
     private static final String ENDPOINT = "api/owner/chat/";
 
     private final OkHttpClient client = new OkHttpClient();
@@ -44,11 +43,14 @@ public class OwnerChatRepository {
 
             String token = session.getToken();
             if (token == null || token.trim().isEmpty()) {
-                cb.onError("Token is empty. Please log in again..");
+                cb.onError("Token kosong. Silakan login ulang.");
                 return;
             }
 
             String auth = token.startsWith("Token ") ? token : ("Token " + token);
+
+            String shopCode = session.getShopCode(); // ✅ pastikan sudah ada di SessionManager
+            if (shopCode == null) shopCode = "";
 
             RequestBody body = RequestBody.create(obj.toString(), JSON);
 
@@ -56,11 +58,12 @@ public class OwnerChatRepository {
                     .url(ApiConfig.url(session, ENDPOINT))
                     .addHeader("Authorization", auth)
                     .addHeader("Content-Type", "application/json")
+                    .addHeader("Accept", "application/json")
+                    .addHeader("X-Shop-Code", shopCode)
                     .post(body)
                     .build();
 
             client.newCall(req).enqueue(new okhttp3.Callback() {
-
                 @Override
                 public void onFailure(Call call, IOException e) {
                     cb.onError(e.getMessage() != null ? e.getMessage() : "Network error");
@@ -68,7 +71,6 @@ public class OwnerChatRepository {
 
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
-
                     String raw = response.body() != null ? response.body().string() : "";
 
                     if (!response.isSuccessful()) {

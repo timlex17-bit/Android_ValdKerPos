@@ -78,6 +78,7 @@
         <activity android:name=".ui.inventorycount.InventoryCountDetailActivity" />
         <activity android:name=".ui.stockadjustments.StockAdjustmentDetailActivity" />
         <activity android:name=".ui.stockmovements.StockMovementDetailActivity" />
+        <activity android:name=".ui.BankAccountActivity" />
 
     </application>
 

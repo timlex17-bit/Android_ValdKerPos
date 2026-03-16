@@ -4,10 +4,13 @@ public class Product {
     public String id;
     public String name;
 
-    // ✅ NEW: SKU
-    public String sku;
+    // ✅ multi-tenant
+    public int shopId;
 
-    // ✅ keep existing field (used by POS add-to-cart)
+    // optional alias if some code references snake_case
+    public int shop_id;
+
+    public String sku;
     public double price;
 
     public String imageUrl;
@@ -15,11 +18,9 @@ public class Product {
 
     public String image_url;
 
-    // Category (you already have)
     public String categoryId;
     public String categoryName;
 
-    // ✅ you use "code" on backend, but on android you call it barcode
     public String barcode;
 
     public String buyPrice;
@@ -34,10 +35,20 @@ public class Product {
 
     public Product() {}
 
-    public Product(String id, String name, String sku, double price, String imageUrl,
-                   int stock, String categoryId, String categoryName, String barcode) {
+    public Product(String id,
+                   String name,
+                   int shopId,
+                   String sku,
+                   double price,
+                   String imageUrl,
+                   int stock,
+                   String categoryId,
+                   String categoryName,
+                   String barcode) {
         this.id = id;
         this.name = name;
+        this.shopId = shopId;
+        this.shop_id = shopId;
         this.sku = sku;
         this.price = price;
         this.imageUrl = imageUrl;

@@ -21,13 +21,12 @@ public class DashboardItem {
     // Extra modules (use high values to avoid conflicts with legacy ids)
     public static final int ID_CATEGORIES = 9001;
     public static final int ID_UNITS      = 9002;
-
-    // ✅ NEW (Coming Soon modules)
     public static final int ID_PRODUCT_RETURNS   = 11;
     public static final int ID_INVENTORY_COUNTS  = 12;
     public static final int ID_STOCK_ADJUSTMENTS = 13;
     public static final int ID_STOCK_MOVEMENTS   = 14;
-    public static final int ID_PURCHASES = 15;
+    public static final int ID_BANK_ACCOUNTS = 15;
+    public static final int ID_PURCHASES = 16;
 
     public final int id;
     @NonNull public final String title;

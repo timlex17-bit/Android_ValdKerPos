@@ -53,6 +53,13 @@ public class CartManager {
         loadFromPrefs();
     }
 
+    private int extractShopId(@NonNull Product p) {
+        return (int) extractAnyDouble(p,
+                "shopId",
+                "shop_id"
+        );
+    }
+
     public static synchronized CartManager getInstance(Context context) {
         if (instance == null) instance = new CartManager(context);
         return instance;
@@ -67,6 +74,16 @@ public class CartManager {
             return;
         }
 
+        int shopId = extractShopId(p);
+
+        Log.d(TAG, "add(): productId=" + id
+                + ", name=" + safe(extractAnyString(p, "name", "title", "product_name"))
+                + ", extractedShopId=" + shopId);
+
+        if (shopId <= 0) {
+            Log.w(TAG, "add(): shop id missing on product. Cart item may become invalid in multi-tenant mode.");
+        }
+
         String name = safe(extractAnyString(p, "name", "title", "product_name"));
         double price = extractAnyDouble(p, "price", "selling_price", "sell_price", "sale_price", "unit_price",
                 "price_usd", "usd_price", "amount");
@@ -74,8 +91,8 @@ public class CartManager {
 
         CartItem item = map.get(id);
         if (item == null) {
-            item = new CartItem(id, name, price, imageUrl, qty);
-            item.orderType = ""; // UNSET by default
+            item = new CartItem(id, shopId, name, price, imageUrl, qty);
+            item.orderType = "";
             map.put(id, item);
         } else {
             item.qty += qty;
@@ -83,6 +100,7 @@ public class CartManager {
             if (!name.isEmpty()) item.name = name;
             if (price > 0) item.price = price;
             if (!imageUrl.isEmpty()) item.imageUrl = imageUrl;
+            if (shopId > 0) item.shopId = shopId;
 
             item.orderType = normalizeTypeOrEmpty(item.orderType);
         }
@@ -190,6 +208,39 @@ public class CartManager {
         if (!listeners.contains(l)) listeners.add(l);
     }
 
+    public synchronized boolean belongsToShop(int activeShopId) {
+        if (activeShopId <= 0) return false;
+
+        for (CartItem item : map.values()) {
+            if (item.shopId <= 0) {
+                return false;
+            }
+
+            if (item.shopId != activeShopId) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public synchronized boolean clearIfDifferentShop(int activeShopId) {
+        if (activeShopId <= 0) return false;
+
+        boolean hasMismatch = false;
+        for (CartItem item : map.values()) {
+            if (item.shopId <= 0 || item.shopId != activeShopId) {
+                hasMismatch = true;
+                break;
+            }
+        }
+
+        if (hasMismatch) {
+            clear();
+            return true;
+        }
+        return false;
+    }
+
     public synchronized void removeListener(@NonNull Listener l) {
         listeners.remove(l);
     }
@@ -225,6 +276,7 @@ public class CartManager {
             for (CartItem i : map.values()) {
                 JSONObject o = new JSONObject();
                 o.put("productId", i.productId);
+                o.put("shopId", i.shopId);
                 o.put("name", safe(i.name));
                 o.put("price", i.price);
                 o.put("imageUrl", safe(i.imageUrl));
@@ -253,8 +305,11 @@ public class CartManager {
                 int id = o.optInt("productId", 0);
                 if (id <= 0) continue;
 
+                int shopId = o.optInt("shopId", 0);
+
                 CartItem item = new CartItem(
                         id,
+                        shopId,
                         o.optString("name", ""),
                         o.optDouble("price", 0.0),
                         o.optString("imageUrl", ""),

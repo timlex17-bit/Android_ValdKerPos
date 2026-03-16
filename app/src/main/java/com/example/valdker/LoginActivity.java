@@ -22,6 +22,7 @@ import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.valdker.network.ApiClient;
 import com.example.valdker.network.ApiConfig;
+import com.example.valdker.cart.CartManager;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -271,6 +272,12 @@ public class LoginActivity extends AppCompatActivity {
                     isShopCashier,
                     perms
             );
+
+            CartManager cartManager = CartManager.getInstance(getApplicationContext());
+            boolean cleared = cartManager.clearIfDifferentShop(shopId);
+            if (cleared) {
+                Log.w(TAG, "Cart dibersihkan karena shop login berubah.");
+            }
 
             if ("cashier".equals(role) || isShopCashier) {
                 goToPOS();

@@ -44,6 +44,7 @@ import com.example.valdker.ui.inventorycount.InventoryCountsFragment;
 import com.example.valdker.ui.orders.OrdersFragment;
 import com.example.valdker.ui.ownerchat.OwnerChatActivity;
 import com.example.valdker.ui.reports.ReportsFragment;
+import com.example.valdker.ui.BankAccountActivity;
 import com.example.valdker.utils.DeviceUtil;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
@@ -76,6 +77,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
     private static final String BS_INVENTORY_COUNTS = "inventory_counts";
     private static final String BS_STOCK_ADJUSTMENTS = "stock_adjustments";
     private static final String BS_STOCK_MOVEMENTS = "stock_movements";
+    private static final String BS_BANK_ACCOUNTS = "bank_accounts";
 
     private static final String ENDPOINT_NET_INCOME_TODAY =
             "api/reports/net-income-today/";
@@ -663,6 +665,10 @@ public class HomeDashboardActivity extends AppCompatActivity {
                 openFragmentSafe(new com.example.valdker.ui.settings.SettingsFragment(), BS_SETTINGS);
                 break;
 
+            case DashboardItem.ID_BANK_ACCOUNTS:
+                startActivity(new Intent(this, BankAccountActivity.class));
+                break;
+
             case DashboardItem.ID_EXPENSE:
                 openFragmentSafe(new ExpensesFragment(), BS_EXPENSES);
                 break;
@@ -850,6 +856,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
             out.add(new DashboardItem(DashboardItem.ID_STOCK_MOVEMENTS, "MOVIMENTU STOK", "Movimentu stok", R.drawable.ic_stockmovement));
             out.add(new DashboardItem(DashboardItem.ID_INVENTORY_COUNTS, "KONTÁJEN STOK", "Stock opname", R.drawable.ic_report));
             out.add(new DashboardItem(DashboardItem.ID_SETTINGS, "KONFIGURASAUN", "Atu regula aplikasaun", R.drawable.ic_settings));
+            out.add(new DashboardItem(DashboardItem.ID_BANK_ACCOUNTS, "BANKU", "Jere konta bank loja", R.drawable.ic_bank));
             out.add(new DashboardItem(DashboardItem.ID_ORDERS, "ORDEM", "Haree istória tranzasaun", R.drawable.ic_receipt));
             out.add(new DashboardItem(DashboardItem.ID_EXPENSE, "DESPEZA", "Rejistu gastu negósiu", R.drawable.ic_expense));
             out.add(new DashboardItem(DashboardItem.ID_CUSTOMERS, "KLIENTE", "Jere no haree dadus kliente", R.drawable.ic_people));

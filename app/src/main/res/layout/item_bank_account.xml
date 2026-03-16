@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardRoot"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="10dp"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="3dp"
+    app:cardBackgroundColor="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvBankTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="BNCTL - Main Account"
+                    android:textColor="#0F172A"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:paddingStart="10dp"
+                    android:paddingTop="4dp"
+                    android:paddingEnd="10dp"
+                    android:paddingBottom="4dp"
+                    android:text="ACTIVE"
+                    android:textColor="@android:color/white"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/btnEdit"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/bg_circle_light"
+                android:padding="8dp"
+                android:src="@android:drawable/ic_menu_edit"
+                android:tint="#2563EB" />
+
+            <ImageButton
+                android:id="@+id/btnDelete"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:background="@drawable/bg_circle_light"
+                android:padding="8dp"
+                android:src="@android:drawable/ic_menu_delete"
+                android:tint="#DC2626" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvAccountNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="No. Rekening: 123456"
+            android:textColor="#334155"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tvAccountHolder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Atas Nama: Wfour Mart"
+            android:textColor="#334155"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tvAccountType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Tipe: BANK"
+            android:textColor="#334155"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tvOpeningBalance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Opening: $0.00"
+            android:textColor="#475569"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/tvCurrentBalance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Saldo Sekarang: $30.00"
+            android:textColor="#059669"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvNote"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Catatan: -"
+            android:textColor="#64748B"
+            android:textSize="13sp" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

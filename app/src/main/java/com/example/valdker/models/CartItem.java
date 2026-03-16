@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 public class CartItem {
 
     public int productId;
+    public int shopId;
 
     public String name;
     public double price;
@@ -18,12 +19,14 @@ public class CartItem {
     }
 
     public CartItem(int productId,
+                    int shopId,
                     @NonNull String name,
                     double price,
                     String imageUrl,
                     int qty) {
 
         this.productId = productId;
+        this.shopId = shopId;
         this.name = name;
         this.price = price;
         this.imageUrl = imageUrl;
@@ -32,6 +35,7 @@ public class CartItem {
     }
 
     public CartItem(int productId,
+                    int shopId,
                     @NonNull String name,
                     double price,
                     String imageUrl,
@@ -39,6 +43,7 @@ public class CartItem {
                     @NonNull String orderType) {
 
         this.productId = productId;
+        this.shopId = shopId;
         this.name = name;
         this.price = price;
         this.imageUrl = imageUrl;

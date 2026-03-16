@@ -464,7 +464,6 @@ public class ProductRepository {
     private static Product parseProduct(@NonNull JSONObject o) {
         String id = asString(o, "id", "uuid");
         String name = asString(o, "name", "title", "product_name");
-
         String sku = asString(o, "sku");
 
         double price = asDouble(
@@ -477,8 +476,10 @@ public class ProductRepository {
 
         String barcode = asString(o, "code", "barcode");
         int stock = asInt(o, "stock", "qty", "quantity", "current_stock");
-
         String imageUrl = asString(o, "image_url", "image", "photo", "thumbnail", "icon_url");
+
+        // ✅ important
+        int shopId = asInt(o, "shop_id", "shop");
 
         String categoryIdOut = "";
         String categoryName = "";
@@ -491,21 +492,24 @@ public class ProductRepository {
         } else if (cat != null) {
             categoryIdOut = String.valueOf(cat).trim();
         }
-        if (categoryIdOut.isEmpty()) categoryIdOut = asString(o, "category_id");
 
-        Product p = new Product(
-                id,
-                name,
-                sku,
-                price,
-                imageUrl,
-                stock,
-                categoryIdOut,
-                categoryName,
-                barcode
-        );
+        if (categoryIdOut.isEmpty()) {
+            categoryIdOut = asString(o, "category_id");
+        }
 
+        Product p = new Product();
+        p.id = id;
+        p.name = name;
+        p.shopId = shopId;
+        p.shop_id = shopId;
         p.sku = sku;
+        p.price = price;
+        p.imageUrl = imageUrl;
+        p.image_url = imageUrl;
+        p.stock = stock;
+        p.categoryId = categoryIdOut;
+        p.categoryName = categoryName;
+        p.barcode = barcode;
 
         try {
             p.buyPrice = asString(o, "buy_price", "buyPrice");
@@ -529,6 +533,10 @@ public class ProductRepository {
             }
 
         } catch (Exception ignored) {}
+
+        Log.d(TAG, "parseProduct(): id=" + p.id
+                + ", name=" + p.name
+                + ", shopId=" + p.shopId);
 
         return p;
     }

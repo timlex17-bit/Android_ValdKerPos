@@ -284,6 +284,18 @@ public class CartFragment extends Fragment {
             return;
         }
 
+        CartManager cartManager = CartManager.getInstance(requireContext());
+        int activeShopId = sm.getShopId();
+
+        if (!cartManager.belongsToShop(activeShopId)) {
+            Toast.makeText(requireContext(),
+                    "Cart tidak cocok dengan toko aktif. Cart akan dibersihkan, silakan pilih produk lagi.",
+                    Toast.LENGTH_LONG).show();
+            cartManager.clear();
+            if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
+            return;
+        }
+
         final List<CartItem> snapshot = new ArrayList<>(cart.getItems());
         if (snapshot.isEmpty()) {
             Toast.makeText(requireContext(), "Cart is empty", Toast.LENGTH_SHORT).show();
