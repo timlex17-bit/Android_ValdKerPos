@@ -1,20 +1,19 @@
 package com.example.valdker.ui.expenses;
 
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
-
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 import androidx.annotation.NonNull;
@@ -27,10 +26,12 @@ import com.example.valdker.R;
 import com.example.valdker.SessionManager;
 import com.example.valdker.models.Expense;
 import com.example.valdker.repositories.ExpenseRepository;
-
-import java.util.List;
+import com.example.valdker.utils.InsetsHelper;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class ExpensesFragment extends Fragment {
+
+    private static final long FAB_CLICK_DELAY_MS = 700L;
 
     private SessionManager session;
     private ExpenseRepository repo;
@@ -38,9 +39,12 @@ public class ExpensesFragment extends Fragment {
     private RecyclerView rv;
     private ProgressBar progress;
     private TextView tvEmpty;
-    private TextView btnAdd;
+    private FloatingActionButton fabAdd;
 
     private ExpenseAdapter adapter;
+
+    private long lastFabClickTime = 0L;
+    private boolean isFormShowing = false;
 
     public ExpensesFragment() {
         super(R.layout.fragment_expenses);
@@ -48,51 +52,108 @@ public class ExpensesFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
         session = new SessionManager(requireContext());
         repo = new ExpenseRepository(requireContext());
 
         rv = view.findViewById(R.id.rvExpenses);
         progress = view.findViewById(R.id.progress);
         tvEmpty = view.findViewById(R.id.tvEmpty);
-        btnAdd = view.findViewById(R.id.btnAdd);
+        fabAdd = view.findViewById(R.id.fabAddExpense);
 
-        rv.setLayoutManager(new LinearLayoutManager(requireContext()));
+        InsetsHelper.applyRecyclerBottomInsets(view, rv, "EXPENSES");
+
+        if (rv != null) {
+            rv.setLayoutManager(new LinearLayoutManager(requireContext()));
+            rv.setHasFixedSize(true);
+        }
+
         adapter = new ExpenseAdapter(new ExpenseAdapter.Listener() {
-            @Override public void onEdit(@NonNull Expense e) { openForm(e); }
-            @Override public void onDelete(@NonNull Expense e) { confirmDelete(e); }
-        });
-        rv.setAdapter(adapter);
+            @Override
+            public void onEdit(@NonNull Expense e) {
+                openForm(e);
+            }
 
-        btnAdd.setOnClickListener(v -> openForm(null));
+            @Override
+            public void onDelete(@NonNull Expense e) {
+                confirmDelete(e);
+            }
+        });
+
+        if (rv != null) {
+            rv.setAdapter(adapter);
+        }
+
+        if (fabAdd != null) {
+            fabAdd.setOnClickListener(v -> openAddExpenseSafely());
+        }
 
         load();
     }
 
+    private void openAddExpenseSafely() {
+        if (!isAdded()) return;
+        if (isFormShowing) return;
+
+        long now = System.currentTimeMillis();
+        if (now - lastFabClickTime < FAB_CLICK_DELAY_MS) {
+            return;
+        }
+        lastFabClickTime = now;
+
+        if (fabAdd != null) {
+            fabAdd.setEnabled(false);
+            fabAdd.postDelayed(() -> {
+                if (fabAdd != null && isAdded() && !isFormShowing) {
+                    fabAdd.setEnabled(true);
+                }
+            }, FAB_CLICK_DELAY_MS);
+        }
+
+        openForm(null);
+    }
+
     private void load() {
+        if (!isAdded()) return;
+
         String token = session.getToken();
         if (TextUtils.isEmpty(token)) {
             Toast.makeText(requireContext(), "No token. Please login again.", Toast.LENGTH_SHORT).show();
+            setEmpty(true);
             return;
         }
 
         showLoading(true);
+
         repo.fetchExpenses(token, new ExpenseRepository.ListCallback() {
             @Override
             public void onSuccess(@NonNull List<Expense> list) {
+                if (!isAdded()) return;
+
                 showLoading(false);
                 adapter.submit(list);
-                tvEmpty.setVisibility(list.isEmpty() ? View.VISIBLE : View.GONE);
+                setEmpty(list.isEmpty());
             }
 
             @Override
             public void onError(int statusCode, @NonNull String message) {
+                if (!isAdded()) return;
+
                 showLoading(false);
                 Toast.makeText(requireContext(), "Load failed: " + statusCode, Toast.LENGTH_SHORT).show();
+                setEmpty(adapter == null || adapter.getItemCount() == 0);
             }
         });
     }
 
     private void openForm(@Nullable Expense editing) {
+        if (!isAdded()) return;
+        if (isFormShowing) return;
+
+        isFormShowing = true;
+        if (fabAdd != null) fabAdd.setEnabled(false);
+
         View form = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_expense_form, null, false);
 
         EditText etName = form.findViewById(R.id.etName);
@@ -111,9 +172,6 @@ public class ExpensesFragment extends Fragment {
             etTime.setText(editing.time);
         }
 
-        // =====================
-        // ✅ DATE & TIME PICKER
-        // =====================
         Calendar cal = Calendar.getInstance();
 
         if (isEdit) {
@@ -123,14 +181,17 @@ public class ExpensesFragment extends Fragment {
                     cal.set(Calendar.YEAR, Integer.parseInt(p[0]));
                     cal.set(Calendar.MONTH, Integer.parseInt(p[1]) - 1);
                     cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(p[2]));
-                } catch (Exception ignore) {}
+                } catch (Exception ignore) {
+                }
             }
+
             if (!TextUtils.isEmpty(editing.time)) {
                 try {
                     String[] t = editing.time.split(":");
                     cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(t[0]));
                     cal.set(Calendar.MINUTE, Integer.parseInt(t[1]));
-                } catch (Exception ignore) {}
+                } catch (Exception ignore) {
+                }
             }
         }
 
@@ -159,7 +220,6 @@ public class ExpensesFragment extends Fragment {
                 cal.set(Calendar.HOUR_OF_DAY, h);
                 cal.set(Calendar.MINUTE, min);
 
-                // HH:mm:ss (seconds default 00)
                 String formatted = String.format(Locale.US, "%02d:%02d:00", h, min);
                 etTime.setText(formatted);
             }, hour, minute, true);
@@ -178,74 +238,102 @@ public class ExpensesFragment extends Fragment {
                     cal.get(Calendar.MINUTE)));
         }
 
-        // =====================
-        // DIALOG
-        // =====================
         AlertDialog dialog = new AlertDialog.Builder(requireContext())
                 .setTitle(isEdit ? "Edit Expense" : "Add Expense")
                 .setView(form)
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton("Cancel", (d, w) -> d.dismiss())
                 .setPositiveButton(isEdit ? "Save" : "Create", null)
-                .show();
+                .create();
 
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
-            String name = etName.getText().toString().trim();
-            String note = etNote.getText().toString().trim();
-            String amount = etAmount.getText().toString().trim();
-            String date = etDate.getText().toString().trim();
-            String time = etTime.getText().toString().trim();
+        dialog.setOnDismissListener(d -> {
+            isFormShowing = false;
 
-            if (TextUtils.isEmpty(name) || TextUtils.isEmpty(amount) || TextUtils.isEmpty(date) || TextUtils.isEmpty(time)) {
-                Toast.makeText(requireContext(), "Name, Amount, Date, Time are required.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            Expense payload = new Expense();
-            payload.name = name;
-            payload.note = note;
-            payload.amount = amount;
-            payload.date = date;
-            payload.time = time;
-
-            String token = session.getToken();
-
-            showLoading(true);
-
-            if (!isEdit) {
-                repo.createExpense(token, payload, new ExpenseRepository.ItemCallback() {
-                    @Override
-                    public void onSuccess(@NonNull Expense expense) {
-                        showLoading(false);
-                        dialog.dismiss();
-                        load();
+            if (fabAdd != null && isAdded()) {
+                fabAdd.postDelayed(() -> {
+                    if (fabAdd != null && isAdded() && !isFormShowing) {
+                        fabAdd.setEnabled(true);
                     }
-
-                    @Override
-                    public void onError(int statusCode, @NonNull String message) {
-                        showLoading(false);
-                        Toast.makeText(requireContext(), "Create failed: " + statusCode, Toast.LENGTH_SHORT).show();
-                    }
-                });
-            } else {
-                repo.updateExpense(token, editing.id, payload, new ExpenseRepository.ItemCallback() {
-                    @Override
-                    public void onSuccess(@NonNull Expense expense) {
-                        showLoading(false);
-                        dialog.dismiss();
-                        load();
-                    }
-
-                    @Override
-                    public void onError(int statusCode, @NonNull String message) {
-                        showLoading(false);
-                        Toast.makeText(requireContext(), "Update failed: " + statusCode, Toast.LENGTH_SHORT).show();
-                    }
-                });
+                }, 180L);
             }
         });
+
+        dialog.setOnShowListener(d -> {
+            View positiveBtn = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            if (positiveBtn == null) return;
+
+            positiveBtn.setOnClickListener(v -> {
+                String name = etName.getText().toString().trim();
+                String note = etNote.getText().toString().trim();
+                String amount = etAmount.getText().toString().trim();
+                String date = etDate.getText().toString().trim();
+                String time = etTime.getText().toString().trim();
+
+                if (TextUtils.isEmpty(name) || TextUtils.isEmpty(amount) || TextUtils.isEmpty(date) || TextUtils.isEmpty(time)) {
+                    Toast.makeText(requireContext(), "Name, Amount, Date, Time are required.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                Expense payload = new Expense();
+                payload.name = name;
+                payload.note = note;
+                payload.amount = amount;
+                payload.date = date;
+                payload.time = time;
+
+                String token = session.getToken();
+                showLoading(true);
+                positiveBtn.setEnabled(false);
+
+                if (!isEdit) {
+                    repo.createExpense(token, payload, new ExpenseRepository.ItemCallback() {
+                        @Override
+                        public void onSuccess(@NonNull Expense expense) {
+                            if (!isAdded()) return;
+
+                            showLoading(false);
+                            dialog.dismiss();
+                            load();
+                        }
+
+                        @Override
+                        public void onError(int statusCode, @NonNull String message) {
+                            if (!isAdded()) return;
+
+                            showLoading(false);
+                            positiveBtn.setEnabled(true);
+                            Toast.makeText(requireContext(), "Create failed: " + statusCode, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } else {
+                    repo.updateExpense(token, editing.id, payload, new ExpenseRepository.ItemCallback() {
+                        @Override
+                        public void onSuccess(@NonNull Expense expense) {
+                            if (!isAdded()) return;
+
+                            showLoading(false);
+                            dialog.dismiss();
+                            load();
+                        }
+
+                        @Override
+                        public void onError(int statusCode, @NonNull String message) {
+                            if (!isAdded()) return;
+
+                            showLoading(false);
+                            positiveBtn.setEnabled(true);
+                            Toast.makeText(requireContext(), "Update failed: " + statusCode, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            });
+        });
+
+        dialog.show();
     }
 
     private void confirmDelete(@NonNull Expense e) {
+        if (!isAdded()) return;
+
         new AlertDialog.Builder(requireContext())
                 .setTitle("Delete Expense")
                 .setMessage("Delete \"" + e.name + "\"?")
@@ -255,17 +343,24 @@ public class ExpensesFragment extends Fragment {
     }
 
     private void doDelete(@NonNull Expense e) {
+        if (!isAdded()) return;
+
         String token = session.getToken();
         showLoading(true);
+
         repo.deleteExpense(token, e.id, new ExpenseRepository.SimpleCallback() {
             @Override
             public void onSuccess() {
+                if (!isAdded()) return;
+
                 showLoading(false);
                 load();
             }
 
             @Override
             public void onError(int statusCode, @NonNull String message) {
+                if (!isAdded()) return;
+
                 showLoading(false);
                 Toast.makeText(requireContext(), "Delete failed: " + statusCode, Toast.LENGTH_SHORT).show();
             }
@@ -275,6 +370,15 @@ public class ExpensesFragment extends Fragment {
     private void showLoading(boolean on) {
         if (progress != null) progress.setVisibility(on ? View.VISIBLE : View.GONE);
         if (rv != null) rv.setEnabled(!on);
-        if (btnAdd != null) btnAdd.setEnabled(!on);
+        if (fabAdd != null) fabAdd.setEnabled(!on && !isFormShowing);
+    }
+
+    private void setEmpty(boolean empty) {
+        if (tvEmpty != null) {
+            tvEmpty.setVisibility(empty ? View.VISIBLE : View.GONE);
+        }
+        if (rv != null) {
+            rv.setVisibility(empty ? View.GONE : View.VISIBLE);
+        }
     }
 }

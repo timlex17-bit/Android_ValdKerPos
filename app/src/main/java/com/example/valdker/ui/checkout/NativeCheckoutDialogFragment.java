@@ -29,9 +29,6 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
 
     private static final String TAG = "NATIVE_CHECKOUT";
 
-    /**
-     * Listener lama - DIPERTAHANKAN supaya flow lama tidak rusak.
-     */
     public interface Listener {
         void onConfirm(@NonNull String paymentMethod,
                        double cashReceived,
@@ -41,18 +38,10 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                        double deliveryFee);
     }
 
-    /**
-     * Listener baru - OPSIONAL untuk integrasi bank / backend payments[].
-     * Kalau parent sudah siap, pakai listener ini.
-     * Kalau belum, listener lama tetap dipakai.
-     */
     public interface BankListener {
         void onConfirmBank(@NonNull BankCheckoutResult result);
     }
 
-    /**
-     * Result object untuk backend baru.
-     */
     public static class BankCheckoutResult {
         @NonNull public String paymentMethodCode;
         @Nullable public Integer paymentMethodId;
@@ -99,13 +88,9 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         }
     }
 
-    /**
-     * Item payment method untuk spinner.
-     * Bisa nanti diisi dari API, tapi default lokal juga tetap ada.
-     */
     public static class PaymentMethodOption {
         public final int id;
-        @NonNull public final String code; // CASH / QRIS / TRANSFER
+        @NonNull public final String code;
         @NonNull public final String label;
         public final boolean requiresBankAccount;
 
@@ -126,10 +111,6 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         }
     }
 
-    /**
-     * Item bank account untuk spinner.
-     * Bisa nanti diisi dari API.
-     */
     public static class BankAccountOption {
         public final int id;
         @NonNull public final String label;
@@ -159,49 +140,28 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         b.putBoolean(ARG_NEED_TABLE, needTable);
         b.putBoolean(ARG_NEED_DELIVERY, needDelivery);
         f.setArguments(b);
-
-        Log.i(TAG, "newInstance(subtotal=" + total +
-                ", needTable=" + needTable +
-                ", needDelivery=" + needDelivery + ")");
         return f;
     }
 
     private Listener listener;
     private BankListener bankListener;
 
-    /**
-     * Flow lama tetap ada.
-     */
     public void setListener(@Nullable Listener l) {
         this.listener = l;
-        Log.i(TAG, "setListener(): " + (l != null ? "OK" : "NULL"));
     }
 
-    /**
-     * Flow baru untuk bank/backend payments[].
-     */
     public void setBankListener(@Nullable BankListener l) {
         this.bankListener = l;
-        Log.i(TAG, "setBankListener(): " + (l != null ? "OK" : "NULL"));
     }
 
-    /**
-     * Kalau parent belum inject dari API, dialog tetap punya default method.
-     */
     private final List<PaymentMethodOption> paymentOptions = new ArrayList<>();
     private final List<BankAccountOption> bankOptions = new ArrayList<>();
 
-    /**
-     * Optional: parent bisa inject payment methods hasil API.
-     */
     public void setPaymentOptions(@Nullable List<PaymentMethodOption> items) {
         paymentOptions.clear();
         if (items != null) paymentOptions.addAll(items);
     }
 
-    /**
-     * Optional: parent bisa inject bank accounts hasil API.
-     */
     public void setBankOptions(@Nullable List<BankAccountOption> items) {
         bankOptions.clear();
         if (items != null) bankOptions.addAll(items);
@@ -241,18 +201,6 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         if (etTable != null) etTable.setVisibility(needTable ? View.VISIBLE : View.GONE);
         if (etAddr != null) etAddr.setVisibility(needDelivery ? View.VISIBLE : View.GONE);
         if (etFee != null) etFee.setVisibility(needDelivery ? View.VISIBLE : View.GONE);
-
-        // Default payment options kalau parent belum inject dari API
-        if (paymentOptions.isEmpty()) {
-            paymentOptions.add(new PaymentMethodOption(1, "CASH", "Cash", false));
-            paymentOptions.add(new PaymentMethodOption(2, "QRIS", "QRIS", true));
-            paymentOptions.add(new PaymentMethodOption(3, "TRANSFER", "Transfer", true));
-        }
-
-        // Default bank option kalau parent belum inject dari API
-        if (bankOptions.isEmpty()) {
-            bankOptions.add(new BankAccountOption(1, "BNCTL - Main Account"));
-        }
 
         ArrayAdapter<PaymentMethodOption> paymentAdapter = new ArrayAdapter<>(
                 requireContext(),
@@ -309,8 +257,6 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         spPaymentMethod.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view1, int position, long id) {
-                PaymentMethodOption method = getSelectedPaymentMethod(spPaymentMethod);
-                Log.i(TAG, "Payment method changed -> " + (method != null ? method.code : "null"));
                 applyPaymentUi.run();
             }
 
@@ -342,7 +288,7 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         applyPaymentUi.run();
 
         androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Checkouts")
+                .setTitle("Checkout")
                 .setView(view)
                 .setNegativeButton("Cancel", (d, w) -> d.dismiss())
                 .setPositiveButton("Confirm", null)
@@ -355,7 +301,7 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                 BankAccountOption selectedBank = getSelectedBankAccount(spBankAccount);
 
                 if (selectedMethod == null) {
-                    Log.w(TAG, "No payment method selected.");
+                    Log.w(TAG, "Payment method is required.");
                     return;
                 }
 
@@ -374,7 +320,6 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                 String referenceNumber = etReferenceNumber != null ? safe(etReferenceNumber.getText()) : "";
                 String paymentNote = etPaymentNote != null ? safe(etPaymentNote.getText()) : "";
 
-                // Validation lama tetap dipertahankan
                 if (needTable && table.isEmpty()) {
                     if (etTable != null) {
                         etTable.setError("Table number is required.");
@@ -391,7 +336,6 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                     return;
                 }
 
-                // Validation cash tetap ada
                 if ("CASH".equalsIgnoreCase(selectedMethod.code)) {
                     if (cashReceived <= 0) {
                         if (etCash != null) {
@@ -402,10 +346,9 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                     }
                 }
 
-                // Validation baru untuk bank
                 if (selectedMethod.requiresBankAccount) {
                     if (selectedBank == null) {
-                        Log.w(TAG, "Bank account required but null.");
+                        Log.w(TAG, "Bank account is required.");
                         return;
                     }
                     if (referenceNumber.isEmpty()) {
@@ -417,7 +360,6 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                     }
                 }
 
-                // 1) Flow lama tetap dipanggil
                 if (listener != null) {
                     listener.onConfirm(
                             selectedMethod.code,
@@ -427,11 +369,8 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                             addr,
                             deliveryFee
                     );
-                } else {
-                    Log.w(TAG, "Listener lama is NULL.");
                 }
 
-                // 2) Flow baru untuk bank/backend
                 if (bankListener != null) {
                     BankCheckoutResult result = new BankCheckoutResult(
                             selectedMethod.code,
@@ -449,8 +388,6 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                             addr
                     );
                     bankListener.onConfirmBank(result);
-                } else {
-                    Log.i(TAG, "BankListener is NULL, old flow only.");
                 }
 
                 dialog.dismiss();

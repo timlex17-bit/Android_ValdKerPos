@@ -16,16 +16,16 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.example.valdker.repositories.CheckoutConfigRepository;
-import com.example.valdker.ui.checkout.BankAccountItem;
-import com.example.valdker.ui.checkout.PaymentMethodItem;
 
 import com.example.valdker.R;
 import com.example.valdker.SessionManager;
 import com.example.valdker.cart.CartManager;
 import com.example.valdker.models.CartItem;
+import com.example.valdker.repositories.CheckoutConfigRepository;
 import com.example.valdker.repositories.OrderRepository;
+import com.example.valdker.ui.checkout.BankAccountItem;
 import com.example.valdker.ui.checkout.NativeCheckoutDialogFragment;
+import com.example.valdker.ui.checkout.PaymentMethodItem;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -39,6 +39,13 @@ public class CartFragment extends Fragment {
 
     private static final String TAG = "CART_FRAGMENT";
     private static final String TAG_NATIVE_CHECKOUT = "NATIVE_CHECKOUT";
+
+    private static final String ARG_BUSINESS_TYPE = "business_type";
+    private static final String ARG_ENABLE_DINE_IN = "enable_dine_in";
+    private static final String ARG_ENABLE_TAKEAWAY = "enable_takeaway";
+    private static final String ARG_ENABLE_DELIVERY = "enable_delivery";
+    private static final String ARG_ENABLE_TABLE_NUMBER = "enable_table_number";
+    private static final String ARG_ENABLE_SPLIT_PAYMENT = "enable_split_payment";
 
     private RecyclerView rv;
     private TextView tvEmpty;
@@ -55,10 +62,43 @@ public class CartFragment extends Fragment {
 
     private boolean cancelInProgress = false;
 
+    private String businessType = "";
+    private boolean enableDineIn = false;
+    private boolean enableTakeaway = false;
+    private boolean enableDelivery = false;
+    private boolean enableTableNumber = false;
+    private boolean enableSplitPayment = false;
+
     private final CartManager.Listener cartListener = this::render;
 
     public CartFragment() {
         super(R.layout.fragment_cart);
+    }
+
+    public static CartFragment newInstance(
+            String businessType,
+            boolean enableDineIn,
+            boolean enableTakeaway,
+            boolean enableDelivery,
+            boolean enableTableNumber,
+            boolean enableSplitPayment
+    ) {
+        CartFragment f = new CartFragment();
+        Bundle b = new Bundle();
+        b.putString(ARG_BUSINESS_TYPE, businessType);
+        b.putBoolean(ARG_ENABLE_DINE_IN, enableDineIn);
+        b.putBoolean(ARG_ENABLE_TAKEAWAY, enableTakeaway);
+        b.putBoolean(ARG_ENABLE_DELIVERY, enableDelivery);
+        b.putBoolean(ARG_ENABLE_TABLE_NUMBER, enableTableNumber);
+        b.putBoolean(ARG_ENABLE_SPLIT_PAYMENT, enableSplitPayment);
+        f.setArguments(b);
+        return f;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        readArgs();
     }
 
     @Override
@@ -66,6 +106,8 @@ public class CartFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         cart = CartManager.getInstance(requireContext());
+
+        fallbackConfigFromSession();
 
         rv = view.findViewById(R.id.rvCart);
         tvEmpty = view.findViewById(R.id.tvCartEmpty);
@@ -77,30 +119,40 @@ public class CartFragment extends Fragment {
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(requireContext()));
             rv.setHasFixedSize(true);
-            rv.setItemAnimator(null); // reduce jank
+            rv.setItemAnimator(null);
         }
 
-        adapter = new CartAdapter(new CartAdapter.Listener() {
-            @Override
-            public void onIncrease(@NonNull CartItem item) {
-                cart.setQty(item.productId, item.qty + 1);
-            }
+        adapter = new CartAdapter(
+                new CartAdapter.Listener() {
+                    @Override
+                    public void onIncrease(@NonNull CartItem item) {
+                        cart.setQty(item.productId, item.qty + 1);
+                    }
 
-            @Override
-            public void onDecrease(@NonNull CartItem item) {
-                cart.setQty(item.productId, item.qty - 1);
-            }
+                    @Override
+                    public void onDecrease(@NonNull CartItem item) {
+                        cart.setQty(item.productId, item.qty - 1);
+                    }
 
-            @Override
-            public void onRemove(@NonNull CartItem item) {
-                cart.remove(item.productId);
-            }
+                    @Override
+                    public void onRemove(@NonNull CartItem item) {
+                        cart.remove(item.productId);
+                    }
 
-            @Override
-            public void onTypeChanged(@NonNull CartItem item, @NonNull String orderType) {
-                cart.setOrderType(item.productId, orderType);
-            }
-        });
+                    @Override
+                    public void onTypeChanged(@NonNull CartItem item, @NonNull String orderType) {
+                        if (!isOrderTypeAllowed(orderType)) {
+                            Toast.makeText(requireContext(), "Order type not allowed for this shop.", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        cart.setOrderType(item.productId, orderType);
+                    }
+                },
+                businessType,
+                enableDineIn,
+                enableTakeaway,
+                enableDelivery
+        );
 
         if (rv != null) rv.setAdapter(adapter);
 
@@ -120,6 +172,7 @@ public class CartFragment extends Fragment {
             });
         }
 
+        normalizeCartItemsForBusinessType();
         render();
     }
 
@@ -128,7 +181,8 @@ public class CartFragment extends Fragment {
         super.onStart();
         try {
             cart.addListener(cartListener);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         render();
     }
 
@@ -137,12 +191,96 @@ public class CartFragment extends Fragment {
         super.onStop();
         try {
             cart.removeListener(cartListener);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
-    // =========================================================
-    // Cancel Order (reduce lag)
-    // =========================================================
+    private void readArgs() {
+        Bundle args = getArguments();
+        if (args == null) return;
+
+        businessType = safeLower(args.getString(ARG_BUSINESS_TYPE, "retail"));
+        enableDineIn = args.getBoolean(ARG_ENABLE_DINE_IN, false);
+        enableTakeaway = args.getBoolean(ARG_ENABLE_TAKEAWAY, false);
+        enableDelivery = args.getBoolean(ARG_ENABLE_DELIVERY, false);
+        enableTableNumber = args.getBoolean(ARG_ENABLE_TABLE_NUMBER, false);
+        enableSplitPayment = args.getBoolean(ARG_ENABLE_SPLIT_PAYMENT, false);
+    }
+
+    private void fallbackConfigFromSession() {
+        Context appCtx = requireContext().getApplicationContext();
+        SessionManager sm = new SessionManager(appCtx);
+
+        String sessionBusinessType = safeLower(sm.getBusinessType());
+
+        if (businessType == null || businessType.trim().isEmpty()) {
+            businessType = sessionBusinessType;
+        }
+
+        if (!"restaurant".equals(businessType)
+                && !"retail".equals(businessType)
+                && !"workshop".equals(businessType)) {
+            businessType = sessionBusinessType;
+        }
+
+        if ("restaurant".equals(businessType)) {
+            enableDineIn = sm.enableDineIn();
+            enableTakeaway = sm.enableTakeaway();
+            enableDelivery = sm.enableDelivery();
+            enableTableNumber = sm.enableTableNumber();
+            enableSplitPayment = sm.enableSplitPayment();
+        } else {
+            enableDineIn = false;
+            enableTakeaway = false;
+            enableDelivery = false;
+            enableTableNumber = false;
+            enableSplitPayment = sm.enableSplitPayment();
+        }
+
+        Log.d(TAG, "businessType=" + businessType
+                + ", enableDineIn=" + enableDineIn
+                + ", enableTakeaway=" + enableTakeaway
+                + ", enableDelivery=" + enableDelivery);
+    }
+
+    private void normalizeCartItemsForBusinessType() {
+        List<CartItem> items = cart.getItems();
+        if (items == null || items.isEmpty()) return;
+
+        for (CartItem item : items) {
+            String normalized = normalizeType(item.orderType);
+
+            if (!isOrderTypeAllowed(normalized)) {
+                cart.setOrderType(item.productId, getDefaultOrderType());
+            } else if (normalized.isEmpty()) {
+                cart.setOrderType(item.productId, getDefaultOrderType());
+            }
+        }
+    }
+
+    @NonNull
+    private String getDefaultOrderType() {
+        if ("restaurant".equals(businessType)) {
+            if (enableTakeaway) return CartManager.TYPE_TAKE_OUT;
+            if (enableDineIn) return CartManager.TYPE_DINE_IN;
+            if (enableDelivery) return CartManager.TYPE_DELIVERY;
+            return CartManager.TYPE_TAKE_OUT;
+        }
+        return CartManager.TYPE_GENERAL;
+    }
+
+    private boolean isOrderTypeAllowed(@Nullable String type) {
+        String t = normalizeType(type);
+
+        if ("restaurant".equals(businessType)) {
+            if (CartManager.TYPE_DINE_IN.equals(t)) return enableDineIn;
+            if (CartManager.TYPE_TAKE_OUT.equals(t)) return enableTakeaway;
+            if (CartManager.TYPE_DELIVERY.equals(t)) return enableDelivery;
+            return false;
+        }
+
+        return CartManager.TYPE_GENERAL.equals(t) || t.isEmpty();
+    }
 
     private void cancelOrderSafely() {
         if (!isAdded()) return;
@@ -158,10 +296,6 @@ public class CartFragment extends Fragment {
 
         mainHandler.post(this::closeOverlaySafely);
     }
-
-    // =========================================================
-    // Checkout
-    // =========================================================
 
     private void openNativeCheckout() {
         if (!isAdded()) return;
@@ -186,8 +320,8 @@ public class CartFragment extends Fragment {
 
         for (CartItem it : cartItems) {
             String t = normalizeType(it.orderType);
-            if (CartManager.TYPE_DINE_IN.equals(t)) needTable = true;
-            if (CartManager.TYPE_DELIVERY.equals(t)) needDelivery = true;
+            if (CartManager.TYPE_DINE_IN.equals(t) && enableTableNumber) needTable = true;
+            if (CartManager.TYPE_DELIVERY.equals(t) && enableDelivery) needDelivery = true;
         }
 
         final double subtotal = cart.getTotalAmount();
@@ -315,13 +449,13 @@ public class CartFragment extends Fragment {
         final String tableFinal = result.tableNumber != null ? result.tableNumber.trim() : "";
         final String addrFinal = result.deliveryAddress != null ? result.deliveryAddress.trim() : "";
 
-        if (hasDineIn && tableFinal.isEmpty()) {
+        if (hasDineIn && enableTableNumber && tableFinal.isEmpty()) {
             Toast.makeText(requireContext(), "Table number is required for dine-in.", Toast.LENGTH_LONG).show();
             if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
             return;
         }
 
-        if (hasDelivery && addrFinal.isEmpty()) {
+        if (hasDelivery && enableDelivery && addrFinal.isEmpty()) {
             Toast.makeText(requireContext(), "Delivery address is required for delivery.", Toast.LENGTH_LONG).show();
             if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
             return;
@@ -354,32 +488,67 @@ public class CartFragment extends Fragment {
             payload.put("notes", "Checkout from Android");
             payload.put("is_paid", true);
 
-            String overallType = "TAKE_OUT";
-            if (hasDeliveryFinal) {
-                overallType = "DELIVERY";
-            } else if (hasDineIn) {
-                overallType = "DINE_IN";
+            String overallType;
+            if (isRestaurantBusiness()) {
+                overallType = getDefaultOrderType();
+                if (hasDeliveryFinal) {
+                    overallType = CartManager.TYPE_DELIVERY;
+                } else if (hasDineIn) {
+                    overallType = CartManager.TYPE_DINE_IN;
+                }
+            } else {
+                overallType = CartManager.TYPE_GENERAL;
             }
-            payload.put("default_order_type", overallType);
 
+            payload.put("default_order_type", overallType);
             payload.put("table_number", tableFinal);
             payload.put("delivery_address", addrFinal);
             payload.put("delivery_fee", String.format(Locale.US, "%.2f", deliveryFeeFinal));
 
-            for (CartItem it : snapshot) {
-                JSONObject one = new JSONObject();
-                one.put("product", it.productId);
-                one.put("quantity", it.qty);
-                one.put("price", String.format(Locale.US, "%.2f", it.price));
+            Log.d(TAG, "snapshot size = " + snapshot.size());
 
-                String ot = normalizeType(it.orderType);
-                if (!ot.isEmpty()) {
-                    one.put("order_type", ot);
-                } else {
-                    one.put("order_type", "TAKE_OUT");
+            for (int i = 0; i < snapshot.size(); i++) {
+                CartItem it = snapshot.get(i);
+
+                if (it == null) {
+                    Log.w(TAG, "Cart item at index " + i + " is null, skipped.");
+                    continue;
                 }
 
+                Log.d(TAG, "Cart item[" + i + "] productId=" + it.productId
+                        + ", qty=" + it.qty
+                        + ", price=" + it.price
+                        + ", orderType=" + it.orderType
+                        + ", name=" + it.name);
+
+                JSONObject one = new JSONObject();
+
+                one.put("product", it.productId);
+                one.put("quantity", Math.max(1, it.qty));
+                one.put("price", String.format(Locale.US, "%.2f", Math.max(0, it.price)));
+
+                String ot;
+                if ("restaurant".equalsIgnoreCase(businessType)) {
+                    ot = normalizeType(it.orderType);
+                    if (!isOrderTypeAllowed(ot) || ot.isEmpty()) {
+                        ot = getDefaultOrderType();
+                    }
+                } else {
+                    ot = CartManager.TYPE_GENERAL;
+                }
+
+                one.put("order_type", ot);
+
                 itemsArr.put(one);
+
+                Log.d(TAG, "itemsArr length after put = " + itemsArr.length());
+            }
+
+            if (itemsArr.length() == 0) {
+                Toast.makeText(requireContext(), "Checkout gagal: items kosong.", Toast.LENGTH_LONG).show();
+                Log.e(TAG, "Checkout aborted because itemsArr is empty. snapshot size=" + snapshot.size());
+                if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
+                return;
             }
 
             JSONObject paymentObj = new JSONObject();
@@ -397,6 +566,7 @@ public class CartFragment extends Fragment {
 
             paymentsArr.put(paymentObj);
 
+            Log.d(TAG, "FINAL itemsArr = " + itemsArr.toString());
             payload.put("items", itemsArr);
             payload.put("payments", paymentsArr);
 
@@ -454,9 +624,9 @@ public class CartFragment extends Fragment {
         });
     }
 
-    // =========================================================
-    // Auto Print Receipt (works even after fragment closed)
-    // =========================================================
+    private boolean isRestaurantBusiness() {
+        return "restaurant".equalsIgnoreCase(businessType);
+    }
 
     private void tryAutoPrintReceipt(@NonNull Context appCtx,
                                      @NonNull String token,
@@ -492,7 +662,6 @@ public class CartFragment extends Fragment {
             return;
         }
 
-        // If shop fetch fails, still print with fallback quickly.
         String fallbackReceipt = buildReceiptFull(
                 appCtx,
                 "VALDKER POS",
@@ -508,7 +677,6 @@ public class CartFragment extends Fragment {
                 invoiceNumber
         );
 
-        // Try fetch shop data, then print (or fallback)
         com.example.valdker.repositories.ShopRepository.fetchFirstShop(
                 appCtx,
                 token,
@@ -579,13 +747,13 @@ public class CartFragment extends Fragment {
                                     @NonNull String deliveryAddress,
                                     @NonNull String invoiceNumber) {
 
-        // Cashier (best-effort)
         String cashier = "";
         try {
             SessionManager sm = new SessionManager(appCtx);
             String u = sm.getUsername();
             cashier = (u != null) ? u.trim() : "";
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         java.text.SimpleDateFormat dfDate = new java.text.SimpleDateFormat("dd/MM/yy", Locale.US);
         java.text.SimpleDateFormat dfTime = new java.text.SimpleDateFormat("HH:mm", Locale.US);
@@ -661,10 +829,6 @@ public class CartFragment extends Fragment {
         return total;
     }
 
-    // =========================================================
-    // Render
-    // =========================================================
-
     private void render() {
         if (!isAdded() || getView() == null) return;
 
@@ -690,12 +854,19 @@ public class CartFragment extends Fragment {
         return t.trim().toUpperCase(Locale.US);
     }
 
+    @NonNull
+    private String safeLower(@Nullable String t) {
+        if (t == null) return "";
+        return t.trim().toLowerCase(Locale.US);
+    }
+
     private void closeOverlaySafely() {
         if (!isAdded()) return;
 
         try {
             requireActivity().getSupportFragmentManager().popBackStack();
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         View overlay = requireActivity().findViewById(R.id.overlayContainer);
         if (overlay != null) overlay.setVisibility(View.GONE);

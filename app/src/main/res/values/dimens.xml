@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="workspace_screen_padding">12dp</dimen>
+    <dimen name="workspace_section_gap">10dp</dimen>
+    <dimen name="workspace_card_padding">14dp</dimen>
+    <dimen name="workspace_card_radius">20dp</dimen>
+
+    <dimen name="workspace_title_size">20sp</dimen>
+    <dimen name="workspace_subtitle_size">12sp</dimen>
+    <dimen name="workspace_chip_text_size">11sp</dimen>
+
+    <dimen name="workspace_label_size">11sp</dimen>
+    <dimen name="workspace_value_large_size">17sp</dimen>
+    <dimen name="workspace_value_medium_size">15sp</dimen>
+
+    <dimen name="workspace_summary_title_size">17sp</dimen>
+    <dimen name="workspace_summary_text_size">14sp</dimen>
+    <dimen name="workspace_total_label_size">16sp</dimen>
+    <dimen name="workspace_total_value_size">20sp</dimen>
+
+    <dimen name="workspace_button_small_text_size">12sp</dimen>
+    <dimen name="workspace_action_text_size">13sp</dimen>
+    <dimen name="workspace_checkout_text_size">15sp</dimen>
+</resources>

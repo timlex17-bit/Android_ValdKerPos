@@ -29,6 +29,8 @@ import java.util.List;
 public class ProductsManageFragment extends Fragment {
 
     private static final String TAG = "PRODUCTS_MANAGE";
+    private static final String TAG_ADD_PRODUCT = "add_product";
+    private static final long FAB_CLICK_DELAY_MS = 700L;
 
     private SwipeRefreshLayout swipe;
     private RecyclerView rv;
@@ -43,7 +45,7 @@ public class ProductsManageFragment extends Fragment {
     private SessionManager session;
     private ProductRepository repo;
 
-    private boolean insetsApplied = false;
+    private long lastFabClickTime = 0L;
 
     public ProductsManageFragment() {
         super(R.layout.fragment_products_manage);
@@ -66,14 +68,13 @@ public class ProductsManageFragment extends Fragment {
         setupRecycler();
         setupAdapter();
         setupActions();
-        applyInsetsOnce();
+        applyInsets();
 
         loadProducts(false);
     }
 
     private void setupRecycler() {
         if (rv == null) return;
-
         rv.setLayoutManager(new GridLayoutManager(requireContext(), 2));
         rv.setHasFixedSize(true);
         rv.setClipToPadding(false);
@@ -103,22 +104,46 @@ public class ProductsManageFragment extends Fragment {
     }
 
     private void setupActions() {
-        if (swipe != null) swipe.setOnRefreshListener(() -> loadProducts(true));
+        if (swipe != null) {
+            swipe.setOnRefreshListener(() -> loadProducts(true));
+        }
 
         if (fabAdd != null) {
-            fabAdd.setOnClickListener(v -> ProductFormDialog
-                    .newAdd(saved -> loadProducts(false))
-                    .show(getParentFragmentManager(), "add_product"));
+            fabAdd.setOnClickListener(v -> openAddProductDialogSafely());
         }
     }
 
-    private void applyInsetsOnce() {
-        if (insetsApplied) return;
-        if (rootManage == null || rv == null || fabAdd == null) return;
-        insetsApplied = true;
+    private void applyInsets() {
+        if (rootManage == null || rv == null) return;
 
-        InsetsHelper.applyFabMarginInsets(fabAdd, 16, TAG);
-        InsetsHelper.applyRecyclerBottomInsetsWithFab(rootManage, rv, fabAdd, 32, TAG);
+        InsetsHelper.applyRecyclerBottomInsets(rootManage, rv, TAG);
+        // Jangan pakai ini dulu, karena bikin posisi FAB tidak konsisten
+        // InsetsHelper.applyFabMarginInsets(fabAdd, 16, TAG);
+        // InsetsHelper.applyRecyclerBottomInsetsWithFab(rootManage, rv, fabAdd, 32, TAG);
+    }
+
+    private void openAddProductDialogSafely() {
+        if (!isAdded()) return;
+
+        long now = System.currentTimeMillis();
+        if (now - lastFabClickTime < FAB_CLICK_DELAY_MS) {
+            return;
+        }
+        lastFabClickTime = now;
+
+        if (getParentFragmentManager().findFragmentByTag(TAG_ADD_PRODUCT) != null) {
+            return;
+        }
+
+        if (fabAdd != null) {
+            fabAdd.setEnabled(false);
+            fabAdd.postDelayed(() -> {
+                if (fabAdd != null) fabAdd.setEnabled(true);
+            }, FAB_CLICK_DELAY_MS);
+        }
+
+        ProductFormDialog dialog = ProductFormDialog.newAdd(saved -> loadProducts(false));
+        dialog.show(getParentFragmentManager(), TAG_ADD_PRODUCT);
     }
 
     private void loadProducts(boolean fromSwipe) {
@@ -132,7 +157,9 @@ public class ProductsManageFragment extends Fragment {
             return;
         }
 
-        if (!fromSwipe && swipe != null && !swipe.isRefreshing()) showLoading();
+        if (!fromSwipe && swipe != null && !swipe.isRefreshing()) {
+            showLoading();
+        }
 
         repo.fetchProducts(token, "all", new ProductRepository.Callback() {
             @Override
@@ -183,13 +210,14 @@ public class ProductsManageFragment extends Fragment {
 
                 toast("Deleted: " + (p.name != null ? p.name : "Product"));
 
-                // ✅ remove dari list lokal
                 int pos = -1;
                 for (int i = 0; i < items.size(); i++) {
                     if (items.get(i).id != null && items.get(i).id.equals(p.id)) {
-                        pos = i; break;
+                        pos = i;
+                        break;
                     }
                 }
+
                 if (pos >= 0) {
                     items.remove(pos);
                     if (adapter != null) adapter.notifyItemRemoved(pos);
@@ -207,12 +235,15 @@ public class ProductsManageFragment extends Fragment {
 
                 if (statusCode == 404) {
                     toast("Already deleted");
+
                     int pos = -1;
                     for (int i = 0; i < items.size(); i++) {
                         if (items.get(i).id != null && items.get(i).id.equals(p.id)) {
-                            pos = i; break;
+                            pos = i;
+                            break;
                         }
                     }
+
                     if (pos >= 0) {
                         items.remove(pos);
                         if (adapter != null) adapter.notifyItemRemoved(pos);
@@ -264,14 +295,11 @@ public class ProductsManageFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-
         swipe = null;
         rv = null;
         progress = null;
         tvEmpty = null;
         fabAdd = null;
         rootManage = null;
-
-        insetsApplied = false;
     }
 }

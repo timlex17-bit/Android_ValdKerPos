@@ -206,6 +206,24 @@ public class LoginActivity extends AppCompatActivity {
             JSONObject user = response.optJSONObject("user");
             JSONArray perms = response.optJSONArray("permissions");
 
+            JSONObject shop = response.optJSONObject("shop");
+
+            String businessType = "retail";
+            JSONObject features = new JSONObject();
+
+            if (shop != null) {
+                businessType = shop.optString("business_type", "retail");
+
+                JSONObject f = shop.optJSONObject("features");
+                if (f != null) {
+                    features = f;
+                }
+            }
+
+            Log.i(TAG, "Shop config:"
+                    + " businessType=" + businessType
+                    + " features=" + features.toString());
+
             String username = user != null
                     ? user.optString("username", fallbackUsername)
                     : fallbackUsername;
@@ -229,6 +247,23 @@ public class LoginActivity extends AppCompatActivity {
             String shopName = user != null
                     ? user.optString("shop_name", "")
                     : "";
+
+            String shopAddress = shop != null
+                    ? shop.optString("address", "")
+                    : "";
+
+            Log.i(TAG, "FULL SHOP JSON = " + (shop != null ? shop.toString() : "null"));
+            Log.i(TAG, "SHOP ADDRESS FROM API = " + shopAddress);
+
+            String shopLogo = "";
+
+            if (shop != null) {
+                shopLogo = shop.optString("logo_url", "");
+
+                if (shopLogo == null || shopLogo.trim().isEmpty()) {
+                    shopLogo = shop.optString("logo", "");
+                }
+            }
 
             boolean isSuperuser = user != null && user.optBoolean("is_superuser", false);
             boolean isPlatformAdmin = user != null && user.optBoolean("is_platform_admin", false);
@@ -265,11 +300,15 @@ public class LoginActivity extends AppCompatActivity {
                     shopId,
                     shopCode,
                     shopName,
+                    shopAddress,
+                    shopLogo,
                     isSuperuser,
                     isPlatformAdmin,
                     isShopOwner,
                     isShopManager,
                     isShopCashier,
+                    businessType,
+                    features,
                     perms
             );
 

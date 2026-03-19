@@ -8,9 +8,11 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -43,6 +45,7 @@ import com.example.valdker.repositories.ShiftRepository;
 import com.example.valdker.repositories.ShopRepository;
 import com.example.valdker.ui.ProductsFragment;
 import com.example.valdker.ui.shift.ShiftOpenDialogFragment;
+import com.example.valdker.workshop.WorkshopPOSFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.zxing.integration.android.IntentIntegrator;
 
@@ -56,7 +59,8 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("deprecation")
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+        implements WorkshopPOSFragment.WorkshopHostActions {
 
     private static final String TAG = "MAIN_NATIVE";
     private static final String TAG_SHIFT_DIALOG = "SHIFT_OPEN_DIALOG";
@@ -67,6 +71,16 @@ public class MainActivity extends AppCompatActivity {
     private volatile boolean barcodeDispatchRunning = false;
     @Nullable
     private String pendingBarcode = null;
+
+    private String businessType = "retail";
+    private boolean useGridPosLayout = false;
+    private boolean showProductImagesInPos = false;
+    private boolean enableBarcodeScan = true;
+    private boolean enableDineIn = false;
+    private boolean enableTakeaway = false;
+    private boolean enableDelivery = false;
+    private boolean enableTableNumber = false;
+    private boolean enableSplitPayment = false;
 
     // -----------------------------
     // SHIFT GATE FLAGS
@@ -116,6 +130,32 @@ public class MainActivity extends AppCompatActivity {
     @NonNull
     private String safeTrim(@Nullable String value) {
         return value == null ? "" : value.trim();
+    }
+
+    private String safe(@Nullable String v, @NonNull String fallback) {
+        if (v == null) return fallback;
+        String s = v.trim();
+        return s.isEmpty() ? fallback : s;
+    }
+
+    private int dp(int v) {
+        return Math.round(v * getResources().getDisplayMetrics().density);
+    }
+
+    // =============================
+    // BUSINESS TYPE HELPERS
+    // =============================
+    private boolean isWorkshopBusiness() {
+        return "workshop".equalsIgnoreCase(safeTrim(businessType));
+    }
+
+    private boolean isRestaurantBusiness() {
+        return "restaurant".equalsIgnoreCase(safeTrim(businessType));
+    }
+
+    private boolean isRetailBusiness() {
+        String bt = safeTrim(businessType).toLowerCase();
+        return bt.isEmpty() || "retail".equals(bt);
     }
 
     // =============================
@@ -352,6 +392,31 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void loadBusinessConfig() {
+        businessType = session.getBusinessType();
+        businessType = safeTrim(businessType).isEmpty() ? "retail" : safeTrim(businessType);
+
+        useGridPosLayout = session.useGridPosLayout();
+        showProductImagesInPos = session.showProductImagesInPos();
+        enableBarcodeScan = session.enableBarcodeScan();
+        enableDineIn = session.enableDineIn();
+        enableTakeaway = session.enableTakeaway();
+        enableDelivery = session.enableDelivery();
+        enableTableNumber = session.enableTableNumber();
+        enableSplitPayment = session.enableSplitPayment();
+
+        Log.i(TAG, "BUSINESS_CONFIG"
+                + " type=" + businessType
+                + " useGrid=" + useGridPosLayout
+                + " showImages=" + showProductImagesInPos
+                + " barcode=" + enableBarcodeScan
+                + " dineIn=" + enableDineIn
+                + " takeaway=" + enableTakeaway
+                + " delivery=" + enableDelivery
+                + " tableNumber=" + enableTableNumber
+                + " splitPayment=" + enableSplitPayment);
+    }
+
     // ------------------------------------------------------------
     // SHOP HEADER
     // ------------------------------------------------------------
@@ -434,6 +499,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        loadBusinessConfig();
         setContentView(R.layout.activity_main);
 
         tvCartBadge = findViewById(R.id.tvCartBadge);
@@ -445,27 +511,20 @@ public class MainActivity extends AppCompatActivity {
             etSearch = (EditText) vSearch;
         }
 
-        if (etSearch != null) {
-            etSearch.setOnEditorActionListener((v, actionId, event) -> {
-                if (event != null && event.getKeyCode() == android.view.KeyEvent.KEYCODE_ENTER) {
-                    String code = v.getText() != null ? v.getText().toString().trim() : "";
-                    if (!code.isEmpty()) {
-                        sendBarcodeToProductsFragment(code);
-                    }
-                    return true;
-                }
-                return false;
-            });
-        }
-
         imgLogo = findViewById(R.id.imgLogo);
         tvShopAddress = findViewById(R.id.tvShopAddress);
 
         cachedUsername = safe(session.getUsername(), "admin");
         cachedRole = safe(session.getRole(), "cashier");
 
+        applyBusinessTypeUi();
+        setupSearchBox();
         setupNativeButtons();
-        setupCategories();
+
+        if (!isWorkshopBusiness()) {
+            setupCategories();
+        }
+
         ensureDefaultFragment();
         setupBackHandling();
 
@@ -475,6 +534,72 @@ public class MainActivity extends AppCompatActivity {
         refreshCartBadge();
 
         ensureShiftOpenOrBlock();
+    }
+
+    private void applyBusinessTypeUi() {
+        View nativeHeader = findViewById(R.id.nativeHeader);
+        View btnBarcodeView = findViewById(R.id.btnBarcode);
+        View btnCartView = findViewById(R.id.btnCart);
+        View rvCategories = findViewById(R.id.rvCategories);
+        View searchView = findViewById(R.id.tvSearchHint);
+
+        androidx.constraintlayout.widget.ConstraintLayout.LayoutParams lp =
+                (androidx.constraintlayout.widget.ConstraintLayout.LayoutParams)
+                        findViewById(R.id.fragmentContainer).getLayoutParams();
+
+        if (isWorkshopBusiness()) {
+            if (nativeHeader != null) nativeHeader.setVisibility(View.GONE);
+            if (btnBarcodeView != null) btnBarcodeView.setVisibility(View.GONE);
+            if (btnCartView != null) btnCartView.setVisibility(View.GONE);
+            if (rvCategories != null) rvCategories.setVisibility(View.GONE);
+            if (searchView != null) searchView.setVisibility(View.GONE);
+
+            lp.topToTop = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID;
+            lp.topToBottom = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET;
+            findViewById(R.id.fragmentContainer).setLayoutParams(lp);
+            return;
+        }
+
+        if (nativeHeader != null) nativeHeader.setVisibility(View.VISIBLE);
+        if (btnBarcodeView != null) btnBarcodeView.setVisibility(enableBarcodeScan ? View.VISIBLE : View.GONE);
+        if (btnCartView != null) btnCartView.setVisibility(View.VISIBLE);
+        if (rvCategories != null) rvCategories.setVisibility(View.VISIBLE);
+        if (searchView != null) searchView.setVisibility(View.VISIBLE);
+
+        lp.topToTop = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET;
+        lp.topToBottom = R.id.nativeHeader;
+        findViewById(R.id.fragmentContainer).setLayoutParams(lp);
+    }
+
+    private void setupSearchBox() {
+        if (etSearch == null) return;
+
+        etSearch.setOnEditorActionListener((v, actionId, event) -> {
+            boolean isEnterKey = event != null
+                    && event.getAction() == KeyEvent.ACTION_DOWN
+                    && event.getKeyCode() == KeyEvent.KEYCODE_ENTER;
+
+            boolean isSearchAction = actionId == EditorInfo.IME_ACTION_SEARCH
+                    || actionId == EditorInfo.IME_ACTION_DONE;
+
+            if (!isEnterKey && !isSearchAction) {
+                return false;
+            }
+
+            String keyword = v.getText() != null ? v.getText().toString().trim() : "";
+            if (keyword.isEmpty()) return true;
+
+            Fragment f = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
+            if (f instanceof ProductsFragment) {
+                if ("retail".equalsIgnoreCase(businessType) || "workshop".equalsIgnoreCase(businessType)) {
+                    ((ProductsFragment) f).onManualSearch(keyword);
+                } else {
+                    sendBarcodeToProductsFragment(keyword);
+                }
+            }
+
+            return true;
+        });
     }
 
     private void sendBarcodeToProductsFragment(@NonNull String barcode) {
@@ -648,14 +773,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void ensureDefaultFragment() {
-        if (getSupportFragmentManager().findFragmentById(R.id.fragmentContainer) == null) {
-            openMainFragment(new ProductsFragment(), "pos");
+        Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
+
+        if (isWorkshopBusiness()) {
+            if (!(current instanceof WorkshopPOSFragment)) {
+                openMainFragment(WorkshopPOSFragment.newInstance(), "workshop_pos");
+            }
+            return;
+        }
+
+        if (!(current instanceof ProductsFragment)) {
+            ProductsFragment fragment = ProductsFragment.newInstance(
+                    businessType,
+                    useGridPosLayout,
+                    showProductImagesInPos
+            );
+            openMainFragment(fragment, "pos");
         }
     }
 
     private void openMainFragment(@NonNull Fragment fragment, @NonNull String tag) {
+        if (!isActivityAlive()) return;
+
         Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
-        if (current != null && current.getClass() == fragment.getClass()) {
+        if (current != null && current.getClass().equals(fragment.getClass())) {
             return;
         }
 
@@ -667,25 +808,45 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupNativeButtons() {
         View btnCart = findViewById(R.id.btnCart);
-        if (btnCart != null) btnCart.setOnClickListener(v -> openCartOverlay());
+        if (btnCart != null) {
+            btnCart.setOnClickListener(v -> openCartOverlay());
+        }
 
         if (btnBarcode != null) {
             btnBarcode.setOnClickListener(v -> onBarcodeClick());
         }
 
-        if (btnUser != null) btnUser.setOnClickListener(this::showUserMenu);
+        if (btnUser != null) {
+            btnUser.setOnClickListener(this::showUserMenu);
+        }
     }
 
     private void onBarcodeClick() {
+        if (!enableBarcodeScan) {
+            Toast.makeText(this, "Barcode scan is disabled for this business type.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (isWorkshopBusiness()) {
+            Toast.makeText(this, "Barcode shortcut is hidden for Workshop POS.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         if (session != null && !session.isShiftOpen()) {
             Toast.makeText(this, "Open shift first.", Toast.LENGTH_SHORT).show();
             ensureShiftOpenOrBlock();
             return;
         }
+
         checkCameraPermission();
     }
 
     private void openCartOverlay() {
+        if (isWorkshopBusiness()) {
+            Toast.makeText(this, "Workshop workspace is already the main POS screen.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         View overlay = findViewById(R.id.overlayContainer);
         if (overlay != null) {
             overlay.setVisibility(View.VISIBLE);
@@ -694,8 +855,10 @@ public class MainActivity extends AppCompatActivity {
             overlay.invalidate();
         }
 
+        Fragment overlayFragment = new com.example.valdker.ui.CartFragment();
+
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.overlayContainer, new com.example.valdker.ui.CartFragment())
+                .replace(R.id.overlayContainer, overlayFragment)
                 .addToBackStack("cart_overlay")
                 .commit();
     }
@@ -867,17 +1030,63 @@ public class MainActivity extends AppCompatActivity {
         ((TextView) content.findViewById(R.id.tvUserName)).setText(cachedUsername);
         ((TextView) content.findViewById(R.id.tvUserRole)).setText(cachedRole);
 
-        content.findViewById(R.id.btnLogout).setOnClickListener(v -> logout());
-
+        View btnChangePassword = content.findViewById(R.id.btnChangePassword);
+        View btnPrivacy = content.findViewById(R.id.btnPrivacy);
         View btnCloseShift = content.findViewById(R.id.btnCloseShift);
+        View btnLogout = content.findViewById(R.id.btnLogout);
+
+        if (btnChangePassword != null) {
+            btnChangePassword.setOnClickListener(v -> {
+                if (userPopup != null && userPopup.isShowing()) userPopup.dismiss();
+                openChangePasswordFromUserMenu();
+            });
+        }
+
+        if (btnPrivacy != null) {
+            btnPrivacy.setOnClickListener(v -> {
+                if (userPopup != null && userPopup.isShowing()) userPopup.dismiss();
+                openPrivacyPolicyFromUserMenu();
+            });
+        }
+
         if (btnCloseShift != null) {
-            btnCloseShift.setOnClickListener(v -> closeShiftOnly());
+            btnCloseShift.setOnClickListener(v -> {
+                if (userPopup != null && userPopup.isShowing()) userPopup.dismiss();
+                requestCloseShiftFromUserMenu();
+            });
+        }
+
+        if (btnLogout != null) {
+            btnLogout.setOnClickListener(v -> {
+                if (userPopup != null && userPopup.isShowing()) userPopup.dismiss();
+                requestLogoutFromUserMenu();
+            });
         }
 
         userPopup = new PopupWindow(content, dp(260), ViewGroup.LayoutParams.WRAP_CONTENT, true);
         userPopup.setOutsideTouchable(true);
         userPopup.setBackgroundDrawable(new ColorDrawable(0));
         userPopup.showAsDropDown(anchor, -dp(200), dp(10));
+    }
+
+    @Override
+    public void openChangePasswordFromUserMenu() {
+        Toast.makeText(this, "Change Password clicked", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void openPrivacyPolicyFromUserMenu() {
+        Toast.makeText(this, "Privacy Policy clicked", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void requestCloseShiftFromUserMenu() {
+        closeShiftOnly();
+    }
+
+    @Override
+    public void requestLogoutFromUserMenu() {
+        logout();
     }
 
     // ============================================================
@@ -1062,19 +1271,6 @@ public class MainActivity extends AppCompatActivity {
         if (tvCartBadge == null) return;
         tvCartBadge.setVisibility(count > 0 ? View.VISIBLE : View.GONE);
         tvCartBadge.setText(String.valueOf(count));
-    }
-
-    // ============================================================
-    // UI HELPERS
-    // ============================================================
-    private int dp(int v) {
-        return Math.round(v * getResources().getDisplayMetrics().density);
-    }
-
-    private String safe(String v, String fallback) {
-        if (v == null) return fallback;
-        String s = v.trim();
-        return s.isEmpty() ? fallback : s;
     }
 
     @Override

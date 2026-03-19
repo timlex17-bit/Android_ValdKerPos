@@ -33,11 +33,13 @@ import com.example.valdker.repositories.SupplierRepository;
 import com.example.valdker.repositories.UnitRepository;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class ProductFormDialog extends DialogFragment {
 
@@ -45,16 +47,19 @@ public class ProductFormDialog extends DialogFragment {
         void onDone(@NonNull Product saved);
     }
 
+    private static final String ITEM_TYPE_PRODUCT = "product";
+    private static final String ITEM_TYPE_MENU = "menu";
+    private static final String ITEM_TYPE_SERVICE = "service";
+    private static final String ITEM_TYPE_SPAREPART = "sparepart";
+
     private DoneCallback cb;
 
     private TextInputLayout tilProdSku, tilProdCode;
     private TextInputEditText etProdSku, etProdCode;
 
-    // Edit mode
     private boolean isEdit = false;
     private Product editing;
 
-    // Image
     private Uri selectedImageUri;
     private ActivityResultLauncher<Intent> imagePickerLauncher;
 
@@ -92,17 +97,29 @@ public class ProductFormDialog extends DialogFragment {
         EditText etSell = v.findViewById(R.id.etProdSell);
         EditText etWeight = v.findViewById(R.id.etProdWeight);
 
+        Spinner spUnit = v.findViewById(R.id.spProdUnit);
+        Spinner spSupplier = v.findViewById(R.id.spProdSupplier);
+        Spinner spItemType = v.findViewById(R.id.spProdItemType);
+
+        View itemTypeBlock = v.findViewById(R.id.blockItemType);
+        MaterialSwitch swProdActive = v.findViewById(R.id.swProdActive);
+
         tilProdSku = v.findViewById(R.id.tilProdSku);
         tilProdCode = v.findViewById(R.id.tilProdCode);
         etProdSku = v.findViewById(R.id.etProdSku);
         etProdCode = v.findViewById(R.id.etProdCode);
 
-        Spinner spUnit = v.findViewById(R.id.spProdUnit);
-        Spinner spSupplier = v.findViewById(R.id.spProdSupplier);
-
         MaterialButton btnSelectImage = v.findViewById(R.id.btnSelectImage);
         ImageView imgPreview = v.findViewById(R.id.imgPreview);
         ProgressBar progress = v.findViewById(R.id.progressProdForm);
+
+        SessionManager session = new SessionManager(requireContext());
+        String businessType = safeLower(session.getBusinessType());
+        boolean showItemType = ITEM_TYPE_VISIBLE_FOR_BUSINESS(businessType);
+
+        if (itemTypeBlock != null) {
+            itemTypeBlock.setVisibility(showItemType ? View.VISIBLE : View.GONE);
+        }
 
         tilProdSku.setEndIconOnClickListener(v1 -> openScannerForField(true));
         tilProdCode.setEndIconOnClickListener(v12 -> openScannerForField(false));
@@ -128,10 +145,10 @@ public class ProductFormDialog extends DialogFragment {
             imagePickerLauncher.launch(Intent.createChooser(i, "Select Image"));
         });
 
-        // Spinner data
         List<CategoryLite> categories = new ArrayList<>();
         List<UnitLite> units = new ArrayList<>();
         List<SupplierLite> suppliers = new ArrayList<>();
+        List<String> itemTypes = buildItemTypeOptions(businessType);
 
         ArrayAdapter<CategoryLite> catAdapter = new ArrayAdapter<>(
                 requireContext(),
@@ -154,31 +171,64 @@ public class ProductFormDialog extends DialogFragment {
         );
         spSupplier.setAdapter(supAdapter);
 
-        // Prefill when edit
+        ArrayAdapter<String> itemTypeAdapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_dropdown_item,
+                itemTypes
+        );
+        spItemType.setAdapter(itemTypeAdapter);
+
+        String defaultItemType = getDefaultItemTypeForBusiness(businessType);
+
+        if (swProdActive != null) {
+            swProdActive.setChecked(true);
+        }
+
         if (isEdit && editing != null) {
             etName.setText(editing.name);
             if (etSku != null) etSku.setText(editing.sku != null ? editing.sku : "");
-            etCode.setText(editing.barcode);
+            etCode.setText(editing.barcode != null ? editing.barcode : "");
             etStock.setText(String.valueOf(editing.stock));
             etBuy.setText(editing.buyPrice != null ? editing.buyPrice : "");
             etSell.setText(editing.sellPrice != null ? editing.sellPrice : "");
             etWeight.setText(editing.weight != null ? editing.weight : "");
+            etDesc.setText(editing.description != null ? editing.description : "");
 
-            // Stock must be view-only in edit mode (backend locks it)
             etStock.setEnabled(false);
             etStock.setFocusable(false);
             etStock.setClickable(false);
             etStock.setLongClickable(false);
+
+            if (swProdActive != null) {
+                boolean active = true;
+                try {
+                    active = editing.isActive;
+                } catch (Exception ignored) {
+                }
+                swProdActive.setChecked(active);
+            }
+
+            if (showItemType) {
+                String editItemType = defaultItemType;
+                try {
+                    if (editing.itemType != null && !editing.itemType.trim().isEmpty()) {
+                        editItemType = editing.itemType.trim().toLowerCase(Locale.US);
+                    }
+                } catch (Exception ignored) {
+                }
+                selectStringSpinner(spItemType, itemTypes, editItemType);
+            }
         } else {
-            // Stock is allowed in add mode (if backend accepts initial stock)
             etStock.setEnabled(true);
             etStock.setFocusable(true);
             etStock.setClickable(true);
             etStock.setLongClickable(true);
+
+            if (showItemType) {
+                selectStringSpinner(spItemType, itemTypes, defaultItemType);
+            }
         }
 
-        // Load dropdown data
-        SessionManager session = new SessionManager(requireContext());
         String token = session.getToken();
 
         if (token == null || token.trim().isEmpty()) {
@@ -200,7 +250,6 @@ public class ProductFormDialog extends DialogFragment {
                     unitAdapter.notifyDataSetChanged();
                     supAdapter.notifyDataSetChanged();
 
-                    // Auto select for Edit
                     if (isEdit && editing != null) {
                         selectCategory(spCategory, categories, editing.categoryId);
                         selectUnit(spUnit, units, editing.unitId);
@@ -262,22 +311,21 @@ public class ProductFormDialog extends DialogFragment {
             tvTitle.setText(title);
         }
 
-        MaterialAlertDialogBuilder b = new MaterialAlertDialogBuilder(requireContext())
+        androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
                 .setView(v)
                 .setNegativeButton("Cancel", (d, w) -> dismiss())
-                .setPositiveButton("Save", null);
-
-        androidx.appcompat.app.AlertDialog dialog = b.create();
+                .setPositiveButton("Save", null)
+                .create();
 
         dialog.setOnShowListener(dlg -> {
             View positiveBtn = dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE);
             View negativeBtn = dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEGATIVE);
 
-            if (positiveBtn != null) {
+            if (positiveBtn instanceof android.widget.TextView) {
                 ((android.widget.TextView) positiveBtn).setTextColor(0xFF22C55E);
             }
 
-            if (negativeBtn != null) {
+            if (negativeBtn instanceof android.widget.TextView) {
                 ((android.widget.TextView) negativeBtn).setTextColor(0xFF22C55E);
             }
 
@@ -289,27 +337,20 @@ public class ProductFormDialog extends DialogFragment {
             dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE)
                     .setOnClickListener(btn -> {
 
-                        String name = etName.getText().toString().trim();
+                        String name = getText(etName);
+                        String sku = getText(etSku);
+                        String code = getText(etCode);
+                        String desc = getText(etDesc);
 
-                        String sku = "";
-                        if (etSku != null && etSku.getText() != null) {
-                            sku = etSku.getText().toString().trim();
-                        }
-
-                        String code = etCode.getText().toString().trim();
-                        String desc = etDesc.getText().toString().trim();
-
-                        String stockStr = etStock.getText().toString().trim();
-                        String buy = etBuy.getText().toString().trim();
-                        String sell = etSell.getText().toString().trim();
-                        String weight = etWeight.getText().toString().trim();
+                        String stockStr = getText(etStock);
+                        String buy = getText(etBuy);
+                        String sell = getText(etSell);
+                        String weight = getText(etWeight);
 
                         if (name.isEmpty()) { toast("Name required"); return; }
                         if (code.isEmpty()) { toast("Code required"); return; }
                         if (spCategory.getSelectedItem() == null) { toast("Category required"); return; }
-
                         if (!isEdit && stockStr.isEmpty()) { toast("Stock required"); return; }
-
                         if (buy.isEmpty()) { toast("Buy price required"); return; }
                         if (sell.isEmpty()) { toast("Sell price required"); return; }
                         if (weight.isEmpty()) { toast("Weight required"); return; }
@@ -336,6 +377,13 @@ public class ProductFormDialog extends DialogFragment {
                         UnitLite unit = (UnitLite) spUnit.getSelectedItem();
                         SupplierLite sup = (SupplierLite) spSupplier.getSelectedItem();
 
+                        String itemType = getDefaultItemTypeForBusiness(businessType);
+                        if (showItemType && spItemType.getSelectedItem() != null) {
+                            itemType = safeLower(String.valueOf(spItemType.getSelectedItem()));
+                        }
+
+                        boolean isActive = swProdActive != null && swProdActive.isChecked();
+
                         SessionManager session2 = new SessionManager(requireContext());
                         String token2 = session2.getToken();
 
@@ -350,7 +398,6 @@ public class ProductFormDialog extends DialogFragment {
                         ProductRepository repo = new ProductRepository(requireContext());
 
                         if (isEdit && editing != null) {
-
                             int productId;
 
                             try {
@@ -376,6 +423,8 @@ public class ProductFormDialog extends DialogFragment {
                                     weight,
                                     unit.id,
                                     sup.id,
+                                    itemType,
+                                    isActive,
                                     selectedImageUri,
                                     new ProductRepository.ItemCallback() {
                                         @Override
@@ -407,6 +456,8 @@ public class ProductFormDialog extends DialogFragment {
                                     weight,
                                     unit.id,
                                     sup.id,
+                                    itemType,
+                                    isActive,
                                     selectedImageUri,
                                     new ProductRepository.ItemCallback() {
                                         @Override
@@ -426,7 +477,7 @@ public class ProductFormDialog extends DialogFragment {
                             );
                         }
                     });
-                });
+        });
 
         return dialog;
     }
@@ -493,6 +544,43 @@ public class ProductFormDialog extends DialogFragment {
         }
     }
 
+    private static boolean ITEM_TYPE_VISIBLE_FOR_BUSINESS(@Nullable String businessType) {
+        String bt = safeLower(businessType);
+        return "retail".equals(bt) || "workshop".equals(bt);
+    }
+
+    @NonNull
+    private static List<String> buildItemTypeOptions(@Nullable String businessType) {
+        List<String> list = new ArrayList<>();
+        String bt = safeLower(businessType);
+
+        if ("workshop".equals(bt)) {
+            list.add(ITEM_TYPE_PRODUCT);
+            list.add(ITEM_TYPE_SERVICE);
+            list.add(ITEM_TYPE_SPAREPART);
+            return list;
+        }
+
+        if ("retail".equals(bt)) {
+            list.add(ITEM_TYPE_PRODUCT);
+            list.add(ITEM_TYPE_SPAREPART);
+            list.add(ITEM_TYPE_SERVICE);
+            return list;
+        }
+
+        list.add(getDefaultItemTypeForBusiness(bt));
+        return list;
+    }
+
+    @NonNull
+    private static String getDefaultItemTypeForBusiness(@Nullable String businessType) {
+        String bt = safeLower(businessType);
+
+        if ("restaurant".equals(bt)) return ITEM_TYPE_MENU;
+        if ("workshop".equals(bt)) return ITEM_TYPE_SERVICE;
+        return ITEM_TYPE_PRODUCT;
+    }
+
     private void selectCategory(@NonNull Spinner sp, @NonNull List<CategoryLite> list, @Nullable String categoryIdStr) {
         if (categoryIdStr == null) return;
         for (int i = 0; i < list.size(); i++) {
@@ -521,6 +609,29 @@ public class ProductFormDialog extends DialogFragment {
                 return;
             }
         }
+    }
+
+    private void selectStringSpinner(@NonNull Spinner sp, @NonNull List<String> list, @Nullable String value) {
+        if (value == null) return;
+        String target = safeLower(value);
+        for (int i = 0; i < list.size(); i++) {
+            if (safeLower(list.get(i)).equals(target)) {
+                sp.setSelection(i);
+                return;
+            }
+        }
+    }
+
+    @NonNull
+    private static String getText(@Nullable EditText et) {
+        if (et == null || et.getText() == null) return "";
+        return et.getText().toString().trim();
+    }
+
+    @NonNull
+    private static String safeLower(@Nullable String value) {
+        if (value == null) return "";
+        return value.trim().toLowerCase(Locale.US);
     }
 
     private void toast(@NonNull String msg) {

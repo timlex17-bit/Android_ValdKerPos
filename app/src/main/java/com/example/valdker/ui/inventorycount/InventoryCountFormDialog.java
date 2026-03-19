@@ -1,6 +1,7 @@
 package com.example.valdker.ui.inventorycount;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -46,7 +47,8 @@ public class InventoryCountFormDialog extends DialogFragment {
         return f;
     }
 
-    public static InventoryCountFormDialog newEditInstance(@NonNull String productsJsonString, @NonNull InventoryCount ic) {
+    public static InventoryCountFormDialog newEditInstance(@NonNull String productsJsonString,
+                                                           @NonNull InventoryCount ic) {
         InventoryCountFormDialog f = new InventoryCountFormDialog();
         Bundle b = new Bundle();
         b.putString(ARG_PRODUCTS_JSON, productsJsonString);
@@ -55,7 +57,6 @@ public class InventoryCountFormDialog extends DialogFragment {
         b.putString(ARG_EDIT_TITLE, ic.title != null ? ic.title : "");
         b.putString(ARG_EDIT_NOTE, ic.note != null ? ic.note : "");
 
-        // items -> json (product, counted_stock)
         JSONArray items = new JSONArray();
         try {
             if (ic.items != null) {
@@ -66,7 +67,8 @@ public class InventoryCountFormDialog extends DialogFragment {
                     items.put(o);
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         b.putString(ARG_EDIT_ITEMS, items.toString());
         f.setArguments(b);
@@ -74,9 +76,7 @@ public class InventoryCountFormDialog extends DialogFragment {
     }
 
     private Runnable onSavedListener;
-    public void setOnSavedListener(@Nullable Runnable cb) {
-        this.onSavedListener = cb;
-    }
+    private DialogInterface.OnDismissListener onDismissListener;
 
     private EditText etTitle;
     private EditText etNote;
@@ -92,11 +92,27 @@ public class InventoryCountFormDialog extends DialogFragment {
 
     private String mode = "add";
     private int editId = 0;
+    private boolean isSubmitting = false;
+
+    public void setOnSavedListener(@Nullable Runnable cb) {
+        this.onSavedListener = cb;
+    }
+
+    public void setOnDismissListener(@Nullable DialogInterface.OnDismissListener listener) {
+        this.onDismissListener = listener;
+    }
+
+    @Override
+    public void onDismiss(@NonNull DialogInterface dialog) {
+        super.onDismiss(dialog);
+        if (onDismissListener != null) {
+            onDismissListener.onDismiss(dialog);
+        }
+    }
 
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-
         String rawProducts = "[]";
         if (getArguments() != null) {
             rawProducts = getArguments().getString(ARG_PRODUCTS_JSON, "[]");
@@ -104,15 +120,18 @@ public class InventoryCountFormDialog extends DialogFragment {
             editId = getArguments().getInt(ARG_EDIT_ID, 0);
         }
 
-        try { productsJson = new JSONArray(rawProducts); }
-        catch (Exception e) { productsJson = new JSONArray(); }
+        try {
+            productsJson = new JSONArray(rawProducts);
+        } catch (Exception e) {
+            productsJson = new JSONArray();
+        }
 
         View v = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_inventory_count_form, null, false);
 
         android.widget.TextView tvTitle = v.findViewById(R.id.tvTitleInventoryCountForm);
         etTitle = v.findViewById(R.id.etTitle);
-        etNote  = v.findViewById(R.id.etNote);
+        etNote = v.findViewById(R.id.etNote);
         rvItems = v.findViewById(R.id.rvItems);
         btnAddRow = v.findViewById(R.id.btnAddRow);
         btnSave = v.findViewById(R.id.btnSave);
@@ -125,6 +144,7 @@ public class InventoryCountFormDialog extends DialogFragment {
         draftAdapter = new InventoryCountItemDraftAdapter(productsJson, drafts, position -> {
             int pos = position;
             if (pos < 0 || pos >= drafts.size()) return;
+
             drafts.remove(pos);
             draftAdapter.notifyItemRemoved(pos);
 
@@ -138,26 +158,38 @@ public class InventoryCountFormDialog extends DialogFragment {
         if ("edit".equals(mode)) {
             prefillEdit();
         } else {
+            drafts.clear();
             drafts.add(new InventoryCountItemDraftAdapter.ItemDraft());
             draftAdapter.notifyItemInserted(0);
         }
 
         btnAddRow.setOnClickListener(x -> {
+            if (isSubmitting) return;
             drafts.add(new InventoryCountItemDraftAdapter.ItemDraft());
             draftAdapter.notifyItemInserted(drafts.size() - 1);
             rvItems.smoothScrollToPosition(drafts.size() - 1);
         });
 
-        btnCancel.setOnClickListener(x -> dismissAllowingStateLoss());
-
-        btnSave.setOnClickListener(x -> {
-            if ("edit".equals(mode)) submitUpdate();
-            else submitCreate();
+        btnCancel.setOnClickListener(x -> {
+            if (isSubmitting) return;
+            dismissAllowingStateLoss();
         });
 
-        return new MaterialAlertDialogBuilder(requireContext())
+        btnSave.setOnClickListener(x -> {
+            if (isSubmitting) return;
+            if ("edit".equals(mode)) {
+                submitUpdate();
+            } else {
+                submitCreate();
+            }
+        });
+
+        Dialog dialog = new MaterialAlertDialogBuilder(requireContext())
                 .setView(v)
                 .create();
+
+        dialog.setCanceledOnTouchOutside(!isSubmitting);
+        return dialog;
     }
 
     private void prefillEdit() {
@@ -168,8 +200,11 @@ public class InventoryCountFormDialog extends DialogFragment {
 
         String rawItems = getArguments().getString(ARG_EDIT_ITEMS, "[]");
         JSONArray arr;
-        try { arr = new JSONArray(rawItems); }
-        catch (Exception e) { arr = new JSONArray(); }
+        try {
+            arr = new JSONArray(rawItems);
+        } catch (Exception e) {
+            arr = new JSONArray();
+        }
 
         drafts.clear();
 
@@ -180,23 +215,37 @@ public class InventoryCountFormDialog extends DialogFragment {
                 d.productId = o.optInt("product", 0);
                 d.countedStock = o.optInt("counted_stock", 0);
                 drafts.add(d);
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
 
-        if (drafts.isEmpty()) drafts.add(new InventoryCountItemDraftAdapter.ItemDraft());
+        if (drafts.isEmpty()) {
+            drafts.add(new InventoryCountItemDraftAdapter.ItemDraft());
+        }
         draftAdapter.notifyDataSetChanged();
     }
 
     private void setLoading(boolean loading) {
-        progress.setVisibility(loading ? View.VISIBLE : View.GONE);
-        btnSave.setEnabled(!loading);
-        btnAddRow.setEnabled(!loading);
-        btnCancel.setEnabled(!loading);
+        isSubmitting = loading;
+
+        if (progress != null) {
+            progress.setVisibility(loading ? View.VISIBLE : View.GONE);
+        }
+        if (btnSave != null) btnSave.setEnabled(!loading);
+        if (btnAddRow != null) btnAddRow.setEnabled(!loading);
+        if (btnCancel != null) btnCancel.setEnabled(!loading);
+
+        Dialog dialog = getDialog();
+        if (dialog != null) {
+            dialog.setCanceledOnTouchOutside(!loading);
+            dialog.setCancelable(!loading);
+        }
+        setCancelable(!loading);
     }
 
     private JSONObject buildPayloadOrNull() {
         String title = etTitle.getText() != null ? etTitle.getText().toString().trim() : "";
-        String note  = etNote.getText()  != null ? etNote.getText().toString().trim()  : "";
+        String note = etNote.getText() != null ? etNote.getText().toString().trim() : "";
 
         if (TextUtils.isEmpty(title)) {
             etTitle.setError("Required");
@@ -210,11 +259,16 @@ public class InventoryCountFormDialog extends DialogFragment {
             InventoryCountItemDraftAdapter.ItemDraft d = drafts.get(i);
 
             if (d.productId <= 0) {
-                Toast.makeText(requireContext(), "Select a product in the row " + (i + 1), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(),
+                        "Select a product in row " + (i + 1),
+                        Toast.LENGTH_SHORT).show();
                 return null;
             }
+
             if (d.countedStock < 0) {
-                Toast.makeText(requireContext(), "Qty cannot be negative (line " + (i + 1) + ")", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(),
+                        "Qty cannot be negative (line " + (i + 1) + ")",
+                        Toast.LENGTH_SHORT).show();
                 return null;
             }
 
@@ -223,7 +277,8 @@ public class InventoryCountFormDialog extends DialogFragment {
                 it.put("product", d.productId);
                 it.put("counted_stock", d.countedStock);
                 items.put(it);
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
 
         if (items.length() == 0) {
@@ -237,7 +292,9 @@ public class InventoryCountFormDialog extends DialogFragment {
             payload.put("note", note);
             payload.put("items", items);
         } catch (Exception e) {
-            Toast.makeText(requireContext(), "Payload error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(),
+                    "Payload error: " + e.getMessage(),
+                    Toast.LENGTH_LONG).show();
             return null;
         }
 
@@ -245,6 +302,8 @@ public class InventoryCountFormDialog extends DialogFragment {
     }
 
     private void submitCreate() {
+        if (isSubmitting) return;
+
         JSONObject payload = buildPayloadOrNull();
         if (payload == null) return;
 
@@ -270,6 +329,8 @@ public class InventoryCountFormDialog extends DialogFragment {
     }
 
     private void submitUpdate() {
+        if (isSubmitting) return;
+
         if (editId <= 0) {
             Toast.makeText(requireContext(), "Invalid item", Toast.LENGTH_SHORT).show();
             return;

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Vehicle Information"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:textColor="#111827" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Vehicle Type"
+        android:textSize="13sp"
+        android:textColor="#6B7280" />
+
+    <Spinner
+        android:id="@+id/spVehicleType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:text="Vehicle Name"
+        android:textSize="13sp"
+        android:textColor="#6B7280" />
+
+    <EditText
+        android:id="@+id/etVehicle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:hint="Example: Toyota Hilux"
+        android:inputType="textCapWords"
+        android:maxLines="1" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:text="Plate Number"
+        android:textSize="13sp"
+        android:textColor="#6B7280" />
+
+    <EditText
+        android:id="@+id/etPlate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:hint="Example: TL-12-345"
+        android:inputType="textCapCharacters"
+        android:maxLines="1" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:text="Odometer (optional)"
+        android:textSize="13sp"
+        android:textColor="#6B7280" />
+
+    <EditText
+        android:id="@+id/etOdometer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:hint="Example: 125000"
+        android:inputType="number"
+        android:maxLines="1" />
+
+</LinearLayout>

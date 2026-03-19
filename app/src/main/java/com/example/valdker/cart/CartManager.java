@@ -32,6 +32,10 @@ public class CartManager {
     public static final String TYPE_DINE_IN = "DINE_IN";
     public static final String TYPE_TAKE_OUT = "TAKE_OUT";
     public static final String TYPE_DELIVERY = "DELIVERY";
+    public static final String TYPE_GENERAL = "GENERAL";
+    public static final String ITEM_TYPE_PRODUCT = "product";
+    public static final String ITEM_TYPE_SERVICE = "service";
+    public static final String ITEM_TYPE_SPAREPART = "sparepart";
 
     private static CartManager instance;
 
@@ -88,11 +92,13 @@ public class CartManager {
         double price = extractAnyDouble(p, "price", "selling_price", "sell_price", "sale_price", "unit_price",
                 "price_usd", "usd_price", "amount");
         String imageUrl = safe(extractAnyString(p, "imageUrl", "image_url", "image", "photo", "thumbnail", "icon_url"));
+        String itemType = extractItemType(p);
 
         CartItem item = map.get(id);
         if (item == null) {
             item = new CartItem(id, shopId, name, price, imageUrl, qty);
             item.orderType = "";
+            item.itemType = itemType;
             map.put(id, item);
         } else {
             item.qty += qty;
@@ -101,6 +107,7 @@ public class CartManager {
             if (price > 0) item.price = price;
             if (!imageUrl.isEmpty()) item.imageUrl = imageUrl;
             if (shopId > 0) item.shopId = shopId;
+            if (!itemType.isEmpty()) item.itemType = itemType;
 
             item.orderType = normalizeTypeOrEmpty(item.orderType);
         }
@@ -282,12 +289,43 @@ public class CartManager {
                 o.put("imageUrl", safe(i.imageUrl));
                 o.put("qty", i.qty);
                 o.put("orderType", normalizeTypeOrEmpty(i.orderType));
+                o.put("itemType", safe(i.itemType));
                 arr.put(o);
             }
             sp.edit().putString(KEY_CART_JSON, arr.toString()).apply();
         } catch (Exception e) {
             Log.e(TAG, "saveToPrefs(): failed to save cart JSON", e);
         }
+    }
+
+    public synchronized void add(@NonNull CartItem item) {
+        if (item.productId <= 0) {
+            Log.w(TAG, "add(CartItem): productId invalid.");
+            return;
+        }
+
+        if (item.qty <= 0) {
+            item.qty = 1;
+        }
+
+        item.itemType = CartItem.normalizeItemType(item.itemType);
+
+        CartItem existing = map.get(item.productId);
+        if (existing == null) {
+            map.put(item.productId, item);
+        } else {
+            existing.qty += item.qty;
+
+            if (!safe(item.name).isEmpty()) existing.name = item.name;
+            if (item.price > 0) existing.price = item.price;
+            if (!safe(item.imageUrl).isEmpty()) existing.imageUrl = item.imageUrl;
+            if (item.shopId > 0) existing.shopId = item.shopId;
+            if (!safe(item.orderType).isEmpty()) existing.orderType = normalizeTypeOrEmpty(item.orderType);
+            if (!safe(item.itemType).isEmpty()) existing.itemType = CartItem.normalizeItemType(item.itemType);
+        }
+
+        saveToPrefs();
+        notifyChangedDebounced();
     }
 
     private void loadFromPrefs() {
@@ -317,6 +355,7 @@ public class CartManager {
                 );
 
                 item.orderType = normalizeTypeOrEmpty(o.optString("orderType", ""));
+                item.itemType = normalizeItemType(o.optString("itemType", ""));
 
                 if (item.qty > 0) map.put(id, item);
             }
@@ -325,6 +364,29 @@ public class CartManager {
             sp.edit().remove(KEY_CART_JSON).apply();
             map.clear();
         }
+    }
+
+    @NonNull
+    private String normalizeItemType(@Nullable String t) {
+        if (t == null) return ITEM_TYPE_PRODUCT;
+
+        String v = t.trim().toLowerCase(Locale.US);
+        if (ITEM_TYPE_SERVICE.equals(v)) return ITEM_TYPE_SERVICE;
+        if (ITEM_TYPE_SPAREPART.equals(v)) return ITEM_TYPE_SPAREPART;
+        return ITEM_TYPE_PRODUCT;
+    }
+
+    @NonNull
+    private String extractItemType(@NonNull Product p) {
+        String raw = safe(extractAnyString(p,
+                "itemType",
+                "item_type",
+                "type"
+        )).toLowerCase(Locale.US);
+
+        if (ITEM_TYPE_SERVICE.equals(raw)) return ITEM_TYPE_SERVICE;
+        if (ITEM_TYPE_SPAREPART.equals(raw)) return ITEM_TYPE_SPAREPART;
+        return ITEM_TYPE_PRODUCT;
     }
 
     private String extractAnyString(@NonNull Object obj, @NonNull String... keys) {

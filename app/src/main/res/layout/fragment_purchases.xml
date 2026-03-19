@@ -5,31 +5,30 @@
     android:id="@+id/rootPurchases"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
+    android:background="#F6F7FB">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvPurchases"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="16dp"
+        android:padding="12dp"
+        android:paddingBottom="100dp"
         android:clipToPadding="false" />
 
     <TextView
         android:id="@+id/tvEmptyPurchases"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No purchases yet."
-        android:alpha="0.7"
         android:layout_gravity="center"
+        android:text="No purchases yet."
+        android:textColor="#6B7280"
+        android:textSize="16sp"
         android:visibility="gone" />
 
     <ProgressBar
         android:id="@+id/progressPurchases"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:visibility="gone" />
 
@@ -38,7 +37,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
-        app:srcCompat="@android:drawable/ic_input_add" />
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="90dp"
+        android:contentDescription="Add purchase"
+        app:backgroundTint="#22C55E"
+        app:srcCompat="@android:drawable/ic_input_add"
+        app:tint="@android:color/white" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

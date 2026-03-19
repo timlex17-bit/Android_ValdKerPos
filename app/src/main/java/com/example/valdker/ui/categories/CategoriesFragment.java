@@ -44,7 +44,7 @@ import com.example.valdker.models.Category;
 import com.example.valdker.network.ApiClient;
 import com.example.valdker.network.ApiConfig;
 import com.example.valdker.utils.InsetsHelper;
-import com.google.android.material.button.MaterialButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 
 import org.json.JSONArray;
@@ -64,6 +64,7 @@ public class CategoriesFragment extends Fragment {
     private static final String ENDPOINT_CATEGORIES = "api/categories/";
     private static final Object FETCH_TAG = "CategoriesFetchRequests";
     private static final Object MUTATION_TAG = "CategoriesMutationRequests";
+    private static final long FAB_CLICK_DELAY_MS = 700L;
 
     private static final int MAX_RAW_FILE_BYTES = 10 * 1024 * 1024;
     private static final int MAX_UPLOAD_DIMENSION = 1024;
@@ -76,7 +77,7 @@ public class CategoriesFragment extends Fragment {
     private RecyclerView rv;
     private ProgressBar progress;
     private TextView tvEmpty;
-    private MaterialButton btnAdd;
+    private FloatingActionButton fabAdd;
 
     private final List<Category> items = new ArrayList<>();
     private CategoryAdapter adapter;
@@ -85,6 +86,9 @@ public class CategoriesFragment extends Fragment {
     private PendingIconState currentFormState;
 
     private ActivityResultLauncher<String> pickIconLauncher;
+
+    private long lastFabClickTime = 0L;
+    private boolean isFormShowing = false;
 
     public CategoriesFragment() {
         super(R.layout.fragment_manage_categories);
@@ -174,7 +178,7 @@ public class CategoriesFragment extends Fragment {
         rv = view.findViewById(R.id.rvList);
         progress = view.findViewById(R.id.progress);
         tvEmpty = view.findViewById(R.id.tvEmpty);
-        btnAdd = view.findViewById(R.id.btnAdd);
+        fabAdd = view.findViewById(R.id.fabAddCategory);
 
         InsetsHelper.applyRecyclerBottomInsets(view, rv, TAG);
 
@@ -197,11 +201,33 @@ public class CategoriesFragment extends Fragment {
 
         if (rv != null) rv.setAdapter(adapter);
 
-        if (btnAdd != null) {
-            btnAdd.setOnClickListener(v -> openForm(null));
+        if (fabAdd != null) {
+            fabAdd.setOnClickListener(v -> openAddCategorySafely());
         }
 
         fetch();
+    }
+
+    private void openAddCategorySafely() {
+        if (!isAdded()) return;
+        if (isFormShowing) return;
+
+        long now = System.currentTimeMillis();
+        if (now - lastFabClickTime < FAB_CLICK_DELAY_MS) {
+            return;
+        }
+        lastFabClickTime = now;
+
+        if (fabAdd != null) {
+            fabAdd.setEnabled(false);
+            fabAdd.postDelayed(() -> {
+                if (fabAdd != null && isAdded() && !isFormShowing) {
+                    fabAdd.setEnabled(true);
+                }
+            }, FAB_CLICK_DELAY_MS);
+        }
+
+        openForm(null);
     }
 
     @Override
@@ -279,6 +305,10 @@ public class CategoriesFragment extends Fragment {
 
     private void openForm(@Nullable Category edit) {
         if (!isAdded()) return;
+        if (isFormShowing) return;
+
+        isFormShowing = true;
+        if (fabAdd != null) fabAdd.setEnabled(false);
 
         final Context formContext = requireContext();
         final Context appContext = formContext.getApplicationContext();
@@ -291,7 +321,7 @@ public class CategoriesFragment extends Fragment {
                 .inflate(R.layout.dialog_category_form, null, false);
 
         TextInputEditText etName = content.findViewById(R.id.etCategoryName);
-        MaterialButton btnPick = content.findViewById(R.id.btnPickIcon);
+        View btnPick = content.findViewById(R.id.btnPickIcon);
         ImageView imgPreview = content.findViewById(R.id.imgIconPreview);
         state.preview = imgPreview;
 
@@ -335,10 +365,20 @@ public class CategoriesFragment extends Fragment {
                 .create();
 
         dialog.setOnDismissListener(d -> {
+            isFormShowing = false;
+
             if (currentFormState == state) {
                 currentFormState = null;
             }
             clearFormIconState(state, false);
+
+            if (fabAdd != null && isAdded()) {
+                fabAdd.postDelayed(() -> {
+                    if (fabAdd != null && isAdded() && !isFormShowing) {
+                        fabAdd.setEnabled(true);
+                    }
+                }, 180L);
+            }
         });
 
         dialog.setOnShowListener(d -> {
@@ -563,7 +603,7 @@ public class CategoriesFragment extends Fragment {
 
     private void setLoading(boolean loading) {
         if (progress != null) progress.setVisibility(loading ? View.VISIBLE : View.GONE);
-        if (btnAdd != null) btnAdd.setEnabled(!loading);
+        if (fabAdd != null) fabAdd.setEnabled(!loading && !isFormShowing);
     }
 
     private void setEmpty(boolean empty) {

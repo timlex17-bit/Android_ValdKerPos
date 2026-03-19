@@ -12,22 +12,23 @@ import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
+import com.example.valdker.SessionManager;
 import com.example.valdker.models.Product;
 import com.example.valdker.network.ApiClient;
-import com.example.valdker.SessionManager;
 import com.example.valdker.network.ApiConfig;
 import com.example.valdker.network.VolleyMultipartRequest;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 public class ProductRepository {
@@ -72,10 +73,8 @@ public class ProductRepository {
                 Request.Method.GET,
                 url,
                 null,
-                (JSONArray res) -> {
-
-                    List<Product> out =
-                            new ArrayList<>(res != null ? res.length() : 0);
+                res -> {
+                    List<Product> out = new ArrayList<>(res != null ? res.length() : 0);
 
                     if (res == null) {
                         cb.onSuccess(out);
@@ -87,7 +86,6 @@ public class ProductRepository {
                         if (o == null) continue;
 
                         if (i == 0) Log.d(TAG, "First product JSON: " + o);
-
                         out.add(parseProduct(o));
                     }
 
@@ -122,7 +120,6 @@ public class ProductRepository {
 
         req.setRetryPolicy(new DefaultRetryPolicy(TIMEOUT_MS, MAX_RETRIES, BACKOFF_MULT));
         req.setShouldCache(false);
-
         ApiClient.getInstance(appContext).add(req);
     }
 
@@ -142,10 +139,13 @@ public class ProductRepository {
                               @NonNull String weight,
                               int unitId,
                               int supplierId,
+                              @NonNull String itemType,
+                              boolean isActive,
                               @Nullable Uri imageUri,
                               @NonNull ItemCallback cb) {
 
         final String url = ApiConfig.url(session, ENDPOINT_PRODUCTS);
+        Log.i(TAG, "REQ: POST MULTIPART " + url);
 
         Map<String, String> headers = new HashMap<>();
         headers.put("Accept", "application/json");
@@ -157,26 +157,25 @@ public class ProductRepository {
                 headers,
                 response -> {
                     try {
-                        String json = new String(response.data, java.nio.charset.StandardCharsets.UTF_8);
+                        String json = new String(response.data, StandardCharsets.UTF_8);
                         Log.d(TAG, "Create product response: " + json);
 
                         JSONObject res = new JSONObject(json);
                         cb.onSuccess(parseProduct(res));
 
                     } catch (Exception e) {
+                        Log.e(TAG, "Create parse error", e);
                         cb.onError(0, "Parse error: " + e.getMessage());
                     }
                 },
                 err -> {
-
                     int code2 = -1;
                     String msg = "Network error";
 
                     NetworkResponse nr = err.networkResponse;
-
                     if (nr != null) {
                         code2 = nr.statusCode;
-                        msg = new String(nr.data);
+                        msg = buildVolleyErrorMessage(nr);
                     } else if (err.getMessage() != null) {
                         msg = err.getMessage();
                     }
@@ -185,50 +184,62 @@ public class ProductRepository {
                     cb.onError(code2, msg);
                 }
         ) {
-
             @Override
             protected Map<String, String> getParams() {
-
                 Map<String, String> params = new HashMap<>();
 
-                params.put("name", name);
-                params.put("sku", sku);
-                params.put("code", code);
+                params.put("name", safe(name));
+                params.put("sku", safe(sku));
+                params.put("code", safe(code));
 
-                params.put("category", String.valueOf(categoryId));
-                params.put("description", description != null ? description : "");
-
+                params.put("category_id", String.valueOf(categoryId));
+                params.put("description", safe(description));
                 params.put("stock", String.valueOf(stock));
 
-                params.put("buy_price", buyPrice);
-                params.put("sell_price", sellPrice);
-                params.put("weight", weight);
+                params.put("buy_price", safe(buyPrice));
+                params.put("sell_price", safe(sellPrice));
+                params.put("weight", safe(weight));
 
-                params.put("unit", String.valueOf(unitId));
-                params.put("supplier", String.valueOf(supplierId));
+                params.put("unit_id", String.valueOf(unitId));
+                params.put("supplier_id", String.valueOf(supplierId));
+
+                params.put("item_type", safe(itemType));
+                params.put("is_active", String.valueOf(isActive));
+
+                Log.d(TAG, "CREATE params="
+                        + " name=" + name
+                        + ", code=" + code
+                        + ", category_id=" + categoryId
+                        + ", unit_id=" + unitId
+                        + ", supplier_id=" + supplierId
+                        + ", item_type=" + itemType
+                        + ", is_active=" + isActive);
 
                 return params;
             }
 
             @Override
             protected Map<String, DataPart> getByteData() {
-
                 Map<String, DataPart> data = new HashMap<>();
 
                 if (imageUri != null) {
                     try {
-
                         byte[] imageData = readBytesFromUri(imageUri);
 
                         String mimeType = appContext.getContentResolver().getType(imageUri);
-                        if (mimeType == null) mimeType = "image/jpeg";
+                        if (mimeType == null || mimeType.trim().isEmpty()) {
+                            mimeType = "image/jpeg";
+                        }
 
-                        String fileName = "product_" + System.currentTimeMillis() + ".jpg";
+                        String fileName = getFileName(imageUri);
+                        if (fileName == null || fileName.trim().isEmpty()) {
+                            fileName = "product_" + System.currentTimeMillis() + ".jpg";
+                        }
 
                         data.put("image", new DataPart(fileName, imageData, mimeType));
 
                     } catch (Exception e) {
-                        Log.e(TAG, "Image read error", e);
+                        Log.e(TAG, "Create image read error", e);
                     }
                 }
 
@@ -238,48 +249,11 @@ public class ProductRepository {
 
         req.setRetryPolicy(new DefaultRetryPolicy(TIMEOUT_MS, MAX_RETRIES, BACKOFF_MULT));
         req.setShouldCache(false);
-
         ApiClient.getInstance(appContext).add(req);
     }
 
-    private byte[] readBytesFromUri(@NonNull Uri uri) throws java.io.IOException {
-        java.io.InputStream is = appContext.getContentResolver().openInputStream(uri);
-        if (is == null) throw new java.io.IOException("Cannot open image uri");
-
-        java.io.ByteArrayOutputStream buffer = new java.io.ByteArrayOutputStream();
-        byte[] data = new byte[8192];
-        int nRead;
-
-        while ((nRead = is.read(data, 0, data.length)) != -1) {
-            buffer.write(data, 0, nRead);
-        }
-
-        is.close();
-        return buffer.toByteArray();
-    }
-
-    @Nullable
-    private String getFileName(@NonNull Uri uri) {
-        android.database.Cursor cursor = null;
-        try {
-            cursor = appContext.getContentResolver().query(uri, null, null, null, null);
-            if (cursor != null && cursor.moveToFirst()) {
-                int index = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME);
-                if (index >= 0) {
-                    return cursor.getString(index);
-                }
-            }
-        } catch (Exception ignored) {
-        } finally {
-            if (cursor != null) cursor.close();
-        }
-        return null;
-    }
-
-    // ==========================================================
-    // UPDATE PRODUCT (JSON)
-    // IMPORTANT: Stock must NOT be sent on update (backend locks stock).
-    // ==========================================================
+    // IMPORTANT:
+    // stock intentionally not sent on update because backend blocks direct stock edit.
     public void updateProduct(@NonNull String token,
                               int productId,
                               @NonNull String name,
@@ -293,6 +267,8 @@ public class ProductRepository {
                               @NonNull String weight,
                               int unitId,
                               int supplierId,
+                              @NonNull String itemType,
+                              boolean isActive,
                               @Nullable Uri imageUri,
                               @NonNull ItemCallback cb) {
 
@@ -316,6 +292,7 @@ public class ProductRepository {
                         cb.onSuccess(parseProduct(res));
 
                     } catch (Exception e) {
+                        Log.e(TAG, "Update parse error", e);
                         cb.onError(0, "Parse error: " + e.getMessage());
                     }
                 },
@@ -339,22 +316,31 @@ public class ProductRepository {
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
 
-                params.put("name", name);
-                params.put("sku", sku);
-                params.put("code", code);
+                params.put("name", safe(name));
+                params.put("sku", safe(sku));
+                params.put("code", safe(code));
 
-                params.put("category", String.valueOf(categoryId));
-                params.put("description", description != null ? description : "");
+                params.put("category_id", String.valueOf(categoryId));
+                params.put("description", safe(description));
 
-                // IMPORTANT: jangan kirim stock saat update
-                // params.put("stock", String.valueOf(stock));
+                params.put("buy_price", safe(buyPrice));
+                params.put("sell_price", safe(sellPrice));
+                params.put("weight", safe(weight));
 
-                params.put("buy_price", buyPrice);
-                params.put("sell_price", sellPrice);
-                params.put("weight", weight);
+                params.put("unit_id", String.valueOf(unitId));
+                params.put("supplier_id", String.valueOf(supplierId));
 
-                params.put("unit", String.valueOf(unitId));
-                params.put("supplier", String.valueOf(supplierId));
+                params.put("item_type", safe(itemType));
+                params.put("is_active", String.valueOf(isActive));
+
+                Log.d(TAG, "UPDATE params="
+                        + " productId=" + productId
+                        + ", code=" + code
+                        + ", category_id=" + categoryId
+                        + ", unit_id=" + unitId
+                        + ", supplier_id=" + supplierId
+                        + ", item_type=" + itemType
+                        + ", is_active=" + isActive);
 
                 return params;
             }
@@ -390,13 +376,9 @@ public class ProductRepository {
 
         req.setRetryPolicy(new DefaultRetryPolicy(TIMEOUT_MS, MAX_RETRIES, BACKOFF_MULT));
         req.setShouldCache(false);
-
         ApiClient.getInstance(appContext).add(req);
     }
 
-    // ==========================================================
-    // DELETE PRODUCT
-    // ==========================================================
     public void deleteProduct(@NonNull String token,
                               @NonNull String productId,
                               @NonNull DeleteCallback cb) {
@@ -440,13 +422,9 @@ public class ProductRepository {
 
         req.setRetryPolicy(new DefaultRetryPolicy(TIMEOUT_MS, 0, BACKOFF_MULT));
         req.setShouldCache(false);
-
         ApiClient.getInstance(appContext).add(req);
     }
 
-    // =========================
-    // URL builder
-    // =========================
     private String buildProductsUrl(@Nullable String categoryId) {
         String c = (categoryId == null) ? "" : categoryId.trim();
 
@@ -458,9 +436,40 @@ public class ProductRepository {
         return ApiConfig.url(session, path);
     }
 
-    // =========================
-    // Parsing
-    // =========================
+    private byte[] readBytesFromUri(@NonNull Uri uri) throws IOException {
+        InputStream is = appContext.getContentResolver().openInputStream(uri);
+        if (is == null) throw new IOException("Cannot open image uri");
+
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        byte[] data = new byte[8192];
+        int nRead;
+
+        while ((nRead = is.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, nRead);
+        }
+
+        is.close();
+        return buffer.toByteArray();
+    }
+
+    @Nullable
+    private String getFileName(@NonNull Uri uri) {
+        android.database.Cursor cursor = null;
+        try {
+            cursor = appContext.getContentResolver().query(uri, null, null, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                int index = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME);
+                if (index >= 0) {
+                    return cursor.getString(index);
+                }
+            }
+        } catch (Exception ignored) {
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+        return null;
+    }
+
     private static Product parseProduct(@NonNull JSONObject o) {
         String id = asString(o, "id", "uuid");
         String name = asString(o, "name", "title", "product_name");
@@ -477,8 +486,6 @@ public class ProductRepository {
         String barcode = asString(o, "code", "barcode");
         int stock = asInt(o, "stock", "qty", "quantity", "current_stock");
         String imageUrl = asString(o, "image_url", "image", "photo", "thumbnail", "icon_url");
-
-        // ✅ important
         int shopId = asInt(o, "shop_id", "shop");
 
         String categoryIdOut = "";
@@ -489,7 +496,7 @@ public class ProductRepository {
             JSONObject c = (JSONObject) cat;
             categoryIdOut = asString(c, "id");
             categoryName = asString(c, "name", "title");
-        } else if (cat != null) {
+        } else if (cat != null && cat != JSONObject.NULL) {
             categoryIdOut = String.valueOf(cat).trim();
         }
 
@@ -502,20 +509,28 @@ public class ProductRepository {
         p.name = name;
         p.shopId = shopId;
         p.shop_id = shopId;
+
         p.sku = sku;
         p.price = price;
         p.imageUrl = imageUrl;
         p.image_url = imageUrl;
         p.stock = stock;
+
         p.categoryId = categoryIdOut;
         p.categoryName = categoryName;
+
         p.barcode = barcode;
+        p.description = asString(o, "description");
+        p.buyPrice = asString(o, "buy_price", "buyPrice");
+        p.sellPrice = asString(o, "sell_price", "sellPrice");
+        p.weight = asString(o, "weight");
+        p.itemType = asString(o, "item_type");
+
+        String activeRaw = asString(o, "is_active");
+        p.isActive = "true".equalsIgnoreCase(activeRaw)
+                || "1".equals(activeRaw);
 
         try {
-            p.buyPrice = asString(o, "buy_price", "buyPrice");
-            p.sellPrice = asString(o, "sell_price", "sellPrice");
-            p.weight = asString(o, "weight");
-
             JSONObject unitObj = o.optJSONObject("unit");
             if (unitObj != null) {
                 p.unitId = asString(unitObj, "id");
@@ -531,18 +546,20 @@ public class ProductRepository {
             } else {
                 p.supplierId = asString(o, "supplier_id", "supplier");
             }
-
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         Log.d(TAG, "parseProduct(): id=" + p.id
                 + ", name=" + p.name
-                + ", shopId=" + p.shopId);
+                + ", shopId=" + p.shopId
+                + ", itemType=" + p.itemType
+                + ", isActive=" + p.isActive);
 
         return p;
     }
 
     private static String safe(String s) {
-        return s == null ? "" : s;
+        return s == null ? "" : s.trim();
     }
 
     private static String asString(@NonNull JSONObject o, String... keys) {
@@ -564,7 +581,8 @@ public class ProductRepository {
                     if (raw instanceof Number) return ((Number) raw).intValue();
                     return Integer.parseInt(String.valueOf(raw).replace(",", "").trim());
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
         return 0;
     }
@@ -585,7 +603,8 @@ public class ProductRepository {
 
                     if (!s.isEmpty()) return Double.parseDouble(s);
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
         return 0.0;
     }
@@ -597,7 +616,8 @@ public class ProductRepository {
                 if (body.length() > 500) body = body.substring(0, 500) + "...";
                 return "HTTP " + nr.statusCode + " - " + body;
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         return "HTTP " + nr.statusCode;
     }
 }

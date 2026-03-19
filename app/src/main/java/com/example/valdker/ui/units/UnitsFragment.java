@@ -1,6 +1,7 @@
 package com.example.valdker.ui.units;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -28,7 +29,8 @@ import com.example.valdker.R;
 import com.example.valdker.SessionManager;
 import com.example.valdker.network.ApiClient;
 import com.example.valdker.network.ApiConfig;
-import com.google.android.material.button.MaterialButton;
+import com.example.valdker.utils.InsetsHelper;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 
 import org.json.JSONArray;
@@ -45,16 +47,20 @@ public class UnitsFragment extends Fragment {
     private static final String TAG = "UNITS";
     private static final String ENDPOINT_UNITS = "api/units/";
     private static final Object REQ_TAG = "UnitsFragmentRequests";
+    private static final long FAB_CLICK_DELAY_MS = 700L;
 
     private SessionManager session;
 
     private RecyclerView rv;
     private ProgressBar progress;
     private TextView tvEmpty;
-    private MaterialButton btnAdd;
+    private FloatingActionButton fabAdd;
 
     private final List<Unit> items = new ArrayList<>();
     private UnitAdapter adapter;
+
+    private long lastFabClickTime = 0L;
+    private boolean isFormShowing = false;
 
     public UnitsFragment() {
         super(R.layout.fragment_units);
@@ -68,34 +74,93 @@ public class UnitsFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
         rv = view.findViewById(R.id.rvList);
         progress = view.findViewById(R.id.progress);
         tvEmpty = view.findViewById(R.id.tvEmpty);
-        btnAdd = view.findViewById(R.id.btnAdd);
+        fabAdd = view.findViewById(R.id.fabAddUnit);
 
-        rv.setLayoutManager(new LinearLayoutManager(requireContext()));
+        InsetsHelper.applyRecyclerBottomInsets(view, rv, TAG);
+
+        if (rv != null) {
+            rv.setLayoutManager(new LinearLayoutManager(requireContext()));
+            rv.setHasFixedSize(true);
+        }
+
         adapter = new UnitAdapter(items, new UnitAdapter.Listener() {
-            @Override public void onEdit(Unit u) { openForm(u); }
-            @Override public void onDelete(Unit u) { confirmDelete(u); }
-        });
-        rv.setAdapter(adapter);
+            @Override
+            public void onEdit(Unit u) {
+                openForm(u);
+            }
 
-        btnAdd.setOnClickListener(v -> openForm(null));
+            @Override
+            public void onDelete(Unit u) {
+                confirmDelete(u);
+            }
+        });
+
+        if (rv != null) {
+            rv.setAdapter(adapter);
+        }
+
+        if (fabAdd != null) {
+            fabAdd.setOnClickListener(v -> openAddUnitSafely());
+        }
 
         fetch();
+    }
+
+    private void openAddUnitSafely() {
+        if (!isAdded()) return;
+        if (isFormShowing) return;
+
+        long now = System.currentTimeMillis();
+        if (now - lastFabClickTime < FAB_CLICK_DELAY_MS) {
+            return;
+        }
+        lastFabClickTime = now;
+
+        if (fabAdd != null) {
+            fabAdd.setEnabled(false);
+            fabAdd.postDelayed(() -> {
+                if (fabAdd != null && isAdded() && !isFormShowing) {
+                    fabAdd.setEnabled(true);
+                }
+            }, FAB_CLICK_DELAY_MS);
+        }
+
+        openForm(null);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        // Prevent callbacks after fragment is no longer visible
-        ApiClient.getInstance(requireContext()).cancelAll(REQ_TAG);
+        Context ctx = getContext();
+        if (ctx != null) {
+            ApiClient.getInstance(ctx.getApplicationContext()).cancelAll(REQ_TAG);
+        }
     }
 
     private void fetch() {
+        if (!isAdded()) return;
+
         setLoading(true);
 
-        final String token = session.getToken();
+        final String token = session != null ? session.getToken() : null;
+        if (token == null || token.trim().isEmpty()) {
+            setLoading(false);
+            setEmpty(true);
+            toast("Token is missing. Please login again.");
+            return;
+        }
+
+        final Context ctx = getContext();
+        if (ctx == null) {
+            setLoading(false);
+            return;
+        }
+
         final String url = ApiConfig.url(session, ENDPOINT_UNITS);
 
         JsonArrayRequest req = new JsonArrayRequest(
@@ -103,6 +168,8 @@ public class UnitsFragment extends Fragment {
                 url,
                 null,
                 (JSONArray res) -> {
+                    if (!isAdded()) return;
+
                     items.clear();
 
                     for (int i = 0; i < res.length(); i++) {
@@ -115,13 +182,15 @@ public class UnitsFragment extends Fragment {
                         items.add(u);
                     }
 
-                    adapter.notifyDataSetChanged();
+                    if (adapter != null) adapter.notifyDataSetChanged();
+
                     setLoading(false);
                     setEmpty(items.isEmpty());
 
                     Log.i(TAG, "Fetched units: " + items.size());
                 },
                 err -> {
+                    if (!isAdded()) return;
                     setLoading(false);
                     setEmpty(items.isEmpty());
                     toastVolleyError("Fetch units failed", err);
@@ -134,15 +203,24 @@ public class UnitsFragment extends Fragment {
         };
 
         req.setTag(REQ_TAG);
-        ApiClient.getInstance(requireContext()).add(req);
+        ApiClient.getInstance(ctx.getApplicationContext()).add(req);
     }
 
     private void openForm(@Nullable Unit edit) {
+        if (!isAdded()) return;
+        if (isFormShowing) return;
+
+        isFormShowing = true;
+        if (fabAdd != null) fabAdd.setEnabled(false);
+
         View content = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_unit_form, null, false);
 
         TextInputEditText etName = content.findViewById(R.id.etUnitName);
-        if (edit != null) etName.setText(edit.name);
+
+        if (edit != null && etName != null) {
+            etName.setText(edit.name);
+        }
 
         AlertDialog dialog = new AlertDialog.Builder(requireContext())
                 .setTitle(edit == null ? "Add Unit" : "Edit Unit")
@@ -151,42 +229,84 @@ public class UnitsFragment extends Fragment {
                 .setPositiveButton(edit == null ? "Create" : "Save", null)
                 .create();
 
-        dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
-            String name = safeText(etName);
-            if (name.isEmpty()) {
-                etName.setError("Name is required");
-                etName.requestFocus();
-                return;
-            }
+        dialog.setOnDismissListener(d -> {
+            isFormShowing = false;
 
-            if (edit == null) createUnit(name, dialog);
-            else updateUnit(edit.id, name, dialog);
-        }));
+            if (fabAdd != null && isAdded()) {
+                fabAdd.postDelayed(() -> {
+                    if (fabAdd != null && isAdded() && !isFormShowing) {
+                        fabAdd.setEnabled(true);
+                    }
+                }, 180L);
+            }
+        });
+
+        dialog.setOnShowListener(d -> {
+            View positiveBtn = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            if (positiveBtn == null) return;
+
+            positiveBtn.setOnClickListener(v -> {
+                String name = safeText(etName);
+
+                if (name.isEmpty()) {
+                    if (etName != null) {
+                        etName.setError("Name is required");
+                        etName.requestFocus();
+                    }
+                    return;
+                }
+
+                positiveBtn.setEnabled(false);
+
+                if (edit == null) {
+                    createUnit(name, dialog, positiveBtn);
+                } else {
+                    updateUnit(edit.id, name, dialog, positiveBtn);
+                }
+            });
+        });
 
         dialog.show();
     }
 
-    private void createUnit(@NonNull String name, @NonNull AlertDialog dialog) {
+    private void createUnit(@NonNull String name, @NonNull AlertDialog dialog, @NonNull View positiveBtn) {
+        if (!isAdded()) return;
+
         setLoading(true);
 
-        final String token = session.getToken();
+        final String token = session != null ? session.getToken() : null;
         final String url = ApiConfig.url(session, ENDPOINT_UNITS);
 
         JSONObject body = new JSONObject();
-        try { body.put("name", name); } catch (Exception ignored) {}
+        try {
+            body.put("name", name);
+        } catch (Exception ignored) {
+        }
+
+        Context ctx = getContext();
+        if (ctx == null) {
+            setLoading(false);
+            positiveBtn.setEnabled(true);
+            return;
+        }
 
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.POST,
                 url,
                 body,
                 res -> {
+                    if (!isAdded()) return;
+
                     setLoading(false);
                     dialog.dismiss();
-                    Toast.makeText(requireContext(), "Unit created", Toast.LENGTH_SHORT).show();
+                    toast("Unit created");
                     fetch();
                 },
                 err -> {
+                    if (!isAdded()) return;
+
                     setLoading(false);
+                    positiveBtn.setEnabled(true);
                     toastVolleyError("Create unit failed", err);
                 }
         ) {
@@ -197,30 +317,47 @@ public class UnitsFragment extends Fragment {
         };
 
         req.setTag(REQ_TAG);
-        ApiClient.getInstance(requireContext()).add(req);
+        ApiClient.getInstance(ctx.getApplicationContext()).add(req);
     }
 
-    private void updateUnit(int id, @NonNull String name, @NonNull AlertDialog dialog) {
+    private void updateUnit(int id, @NonNull String name, @NonNull AlertDialog dialog, @NonNull View positiveBtn) {
+        if (!isAdded()) return;
+
         setLoading(true);
 
-        final String token = session.getToken();
+        final String token = session != null ? session.getToken() : null;
         final String url = ApiConfig.url(session, ENDPOINT_UNITS) + id + "/";
 
         JSONObject body = new JSONObject();
-        try { body.put("name", name); } catch (Exception ignored) {}
+        try {
+            body.put("name", name);
+        } catch (Exception ignored) {
+        }
+
+        Context ctx = getContext();
+        if (ctx == null) {
+            setLoading(false);
+            positiveBtn.setEnabled(true);
+            return;
+        }
 
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.PUT,
                 url,
                 body,
                 res -> {
+                    if (!isAdded()) return;
+
                     setLoading(false);
                     dialog.dismiss();
-                    Toast.makeText(requireContext(), "Unit updated", Toast.LENGTH_SHORT).show();
+                    toast("Unit updated");
                     fetch();
                 },
                 err -> {
+                    if (!isAdded()) return;
+
                     setLoading(false);
+                    positiveBtn.setEnabled(true);
                     toastVolleyError("Update unit failed", err);
                 }
         ) {
@@ -231,10 +368,12 @@ public class UnitsFragment extends Fragment {
         };
 
         req.setTag(REQ_TAG);
-        ApiClient.getInstance(requireContext()).add(req);
+        ApiClient.getInstance(ctx.getApplicationContext()).add(req);
     }
 
     private void confirmDelete(@NonNull Unit u) {
+        if (!isAdded()) return;
+
         new AlertDialog.Builder(requireContext())
                 .setTitle("Delete Unit")
                 .setMessage("Delete \"" + u.name + "\" ?")
@@ -244,20 +383,32 @@ public class UnitsFragment extends Fragment {
     }
 
     private void deleteUnit(int id) {
+        if (!isAdded()) return;
+
         setLoading(true);
 
-        final String token = session.getToken();
+        final String token = session != null ? session.getToken() : null;
         final String url = ApiConfig.url(session, ENDPOINT_UNITS) + id + "/";
+
+        Context ctx = getContext();
+        if (ctx == null) {
+            setLoading(false);
+            return;
+        }
 
         StringRequest req = new StringRequest(
                 Request.Method.DELETE,
                 url,
                 res -> {
+                    if (!isAdded()) return;
+
                     setLoading(false);
-                    Toast.makeText(requireContext(), "Unit deleted", Toast.LENGTH_SHORT).show();
+                    toast("Unit deleted");
                     fetch();
                 },
                 err -> {
+                    if (!isAdded()) return;
+
                     setLoading(false);
                     toastVolleyError("Delete unit failed", err);
                 }
@@ -269,25 +420,37 @@ public class UnitsFragment extends Fragment {
         };
 
         req.setTag(REQ_TAG);
-        ApiClient.getInstance(requireContext()).add(req);
+        ApiClient.getInstance(ctx.getApplicationContext()).add(req);
     }
 
     private void setLoading(boolean loading) {
-        if (progress != null) progress.setVisibility(loading ? View.VISIBLE : View.GONE);
+        if (progress != null) {
+            progress.setVisibility(loading ? View.VISIBLE : View.GONE);
+        }
+        if (fabAdd != null) {
+            fabAdd.setEnabled(!loading && !isFormShowing);
+        }
     }
 
     private void setEmpty(boolean empty) {
-        if (tvEmpty != null) tvEmpty.setVisibility(empty ? View.VISIBLE : View.GONE);
-        if (rv != null) rv.setVisibility(empty ? View.GONE : View.VISIBLE);
+        if (tvEmpty != null) {
+            tvEmpty.setVisibility(empty ? View.VISIBLE : View.GONE);
+        }
+        if (rv != null) {
+            rv.setVisibility(empty ? View.GONE : View.VISIBLE);
+        }
     }
 
+    @NonNull
     private String safeText(@Nullable TextInputEditText et) {
         if (et == null || et.getText() == null) return "";
         return et.getText().toString().trim();
     }
 
+    @NonNull
     private Map<String, String> authHeaders(@Nullable String token) {
         Map<String, String> h = new HashMap<>();
+        h.put("Accept", "application/json");
         if (token != null && !token.trim().isEmpty()) {
             h.put("Authorization", "Token " + token.trim());
         }
@@ -304,15 +467,17 @@ public class UnitsFragment extends Fragment {
             } else if (err.getMessage() != null) {
                 msg = prefix + ": " + err.getMessage();
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         Log.w(TAG, msg);
-        Toast.makeText(requireContext(), prefix, Toast.LENGTH_SHORT).show();
+        toast(prefix);
     }
 
-    /* -----------------------------
-     * Model + Adapter
-     * ----------------------------- */
+    private void toast(@NonNull String msg) {
+        if (!isAdded()) return;
+        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
+    }
 
     static class Unit {
         int id;
@@ -329,7 +494,7 @@ public class UnitsFragment extends Fragment {
         private final List<Unit> data;
         private final Listener listener;
 
-        UnitAdapter(List<Unit> data, Listener listener) {
+        UnitAdapter(@NonNull List<Unit> data, @NonNull Listener listener) {
             this.data = data;
             this.listener = listener;
         }
@@ -346,11 +511,15 @@ public class UnitsFragment extends Fragment {
         public void onBindViewHolder(@NonNull VH h, int position) {
             Unit u = data.get(position);
 
-            h.tvTitle.setText(u.name);
-            h.img.setVisibility(View.GONE);
+            if (h.tvTitle != null) h.tvTitle.setText(u.name);
+            if (h.img != null) h.img.setVisibility(View.GONE);
 
-            h.btnEdit.setOnClickListener(v -> listener.onEdit(u));
-            h.btnDelete.setOnClickListener(v -> listener.onDelete(u));
+            if (h.btnEdit != null) {
+                h.btnEdit.setOnClickListener(v -> listener.onEdit(u));
+            }
+            if (h.btnDelete != null) {
+                h.btnDelete.setOnClickListener(v -> listener.onDelete(u));
+            }
         }
 
         @Override

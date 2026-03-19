@@ -1,6 +1,5 @@
 package com.example.valdker.adapters;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,22 +27,38 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
         void onClick(Product p);
     }
 
-    private static final String TAG = "PRODUCT_ADAPTER";
-
     private final List<Product> items;
     private final Listener listener;
     private final NumberFormat usd = NumberFormat.getCurrencyInstance(Locale.US);
 
-    public ProductAdapter(List<Product> items, Listener listener) {
+    private final boolean useGridPosLayout;
+    private final boolean showProductImagesInPos;
+    private final String businessType;
+
+    public ProductAdapter(
+            @NonNull List<Product> items,
+            @NonNull Listener listener,
+            boolean useGridPosLayout,
+            boolean showProductImagesInPos,
+            @NonNull String businessType
+    ) {
         this.items = items;
         this.listener = listener;
+        this.useGridPosLayout = useGridPosLayout;
+        this.showProductImagesInPos = showProductImagesInPos;
+        this.businessType = businessType != null
+                ? businessType.trim().toLowerCase(Locale.US)
+                : "retail";
     }
 
     @NonNull
     @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_product, parent, false);
+        int layoutId = useGridPosLayout
+                ? R.layout.item_product_grid
+                : R.layout.item_product_list;
+
+        View v = LayoutInflater.from(parent.getContext()).inflate(layoutId, parent, false);
         return new VH(v);
     }
 
@@ -51,61 +66,32 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
     public void onBindViewHolder(@NonNull VH h, int position) {
         Product p = items.get(position);
 
-        // ===== NAME =====
-        String name = safeString(readAnyField(p, new String[]{"name", "title", "product_name"}));
-        h.tvName.setText(!name.isEmpty() ? name : "-");
+        String name = safeString(readAnyField(p, new String[]{
+                "name", "title", "product_name"
+        }));
+        h.tvName.setText(name.isEmpty() ? "-" : name);
 
-        // ===== PRICE =====
-        String[] PRICE_FIELDS = new String[]{
+        Object priceObj = readAnyField(p, new String[]{
                 "price",
                 "selling_price", "sell_price", "sale_price",
                 "unit_price",
                 "price_usd", "usd_price",
                 "harga",
-                "amount", "total",
                 "final_price", "finalPrice",
-                "price_after_discount", "priceAfterDiscount",
-                "cost_price", "costPrice"
-        };
-
-        Object priceObj = readAnyField(p, PRICE_FIELDS);
-
-        // Log only first item to identify which price field matches the model
-        if (position == 0) {
-            Log.i(TAG, "==== DEBUG PRICE FIELDS (first item) ====");
-            for (String f : PRICE_FIELDS) {
-                Object v = readAnyField(p, new String[]{f});
-                if (v != null) Log.i(TAG, "price field hit: " + f + " = " + v);
-            }
-        }
+                "price_after_discount", "priceAfterDiscount"
+        });
 
         double priceVal = toDouble(priceObj);
-        h.tvPrice.setText(priceVal <= 0.0 ? "-" : usd.format(priceVal));
+        h.tvPrice.setText(priceVal > 0 ? usd.format(priceVal) : "-");
 
-        // ===== STOCK =====
-        Object stockObj = readAnyField(p, new String[]{"stock", "qty", "quantity", "current_stock"});
+        Object stockObj = readAnyField(p, new String[]{
+                "stock", "qty", "quantity", "current_stock"
+        });
         int stockVal = toInt(stockObj);
         h.tvStock.setText("Stock: " + stockVal);
 
-        // ===== IMAGE =====
-        Object imgObj = readAnyField(p, new String[]{
-                "image", "img", "photo", "thumbnail", "thumb",
-                "image_url", "imageUrl", "product_image", "productImage",
-                "picture", "pic", "url"
-        });
-        String imgUrl = safeString(imgObj);
-
-        if (imgUrl.isEmpty()) {
-            h.img.setImageResource(android.R.color.darker_gray);
-        } else {
-            String finalUrl = forceHttpsIfCloudinary(imgUrl);
-            Glide.with(h.itemView.getContext())
-                    .load(finalUrl)
-                    .placeholder(android.R.color.darker_gray)
-                    .error(android.R.color.darker_gray)
-                    .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
-                    .into(h.img);
-        }
+        bindImage(h, p);
+        applyBusinessUi(h);
 
         h.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onClick(p);
@@ -116,14 +102,55 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
         });
     }
 
+    private void bindImage(@NonNull VH h, @NonNull Product p) {
+        if (!showProductImagesInPos) {
+            h.img.setVisibility(View.GONE);
+            return;
+        }
+
+        h.img.setVisibility(View.VISIBLE);
+
+        Object imgObj = readAnyField(p, new String[]{
+                "image", "img", "photo", "thumbnail", "thumb",
+                "image_url", "imageUrl", "product_image", "productImage",
+                "picture", "pic", "url"
+        });
+
+        String imgUrl = safeString(imgObj);
+
+        if (imgUrl.isEmpty()) {
+            h.img.setImageResource(R.drawable.bg_image_placeholder);
+            return;
+        }
+
+        String finalUrl = forceHttpsIfCloudinary(imgUrl);
+
+        Glide.with(h.itemView.getContext())
+                .load(finalUrl)
+                .placeholder(R.drawable.bg_image_placeholder)
+                .error(R.drawable.bg_image_placeholder)
+                .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+                .into(h.img);
+    }
+
+    private void applyBusinessUi(@NonNull VH h) {
+        h.btnAdd.setText("Add");
+
+        if ("restaurant".equals(businessType)) {
+            h.tvStock.setVisibility(View.VISIBLE);
+        } else if ("retail".equals(businessType)) {
+            h.tvStock.setVisibility(View.VISIBLE);
+        } else if ("workshop".equals(businessType)) {
+            h.tvStock.setVisibility(View.VISIBLE);
+        } else {
+            h.tvStock.setVisibility(View.VISIBLE);
+        }
+    }
+
     @Override
     public int getItemCount() {
         return items != null ? items.size() : 0;
     }
-
-    // =========================================================
-    // Reflection helpers (safe even if field does not exist)
-    // =========================================================
 
     private Object readAnyField(Object obj, String[] candidates) {
         if (obj == null) return null;
@@ -136,14 +163,16 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
                 f.setAccessible(true);
                 Object v = f.get(obj);
                 if (v != null) return v;
-            } catch (Throwable ignored) {}
+            } catch (Throwable ignored) {
+            }
 
             try {
                 Field f = c.getDeclaredField(key);
                 f.setAccessible(true);
                 Object v = f.get(obj);
                 if (v != null) return v;
-            } catch (Throwable ignored) {}
+            } catch (Throwable ignored) {
+            }
         }
 
         return null;

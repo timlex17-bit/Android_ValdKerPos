@@ -27,6 +27,8 @@ import java.util.List;
 public class CustomersFragment extends Fragment {
 
     private static final String TAG = "CUSTOMERS";
+    private static final String TAG_ADD_CUSTOMER = "add_customer";
+    private static final long FAB_CLICK_DEBOUNCE_MS = 700L;
 
     private SwipeRefreshLayout swipe;
     private RecyclerView rv;
@@ -39,6 +41,8 @@ public class CustomersFragment extends Fragment {
 
     private SessionManager session;
     private CustomerRepository repo;
+
+    private long lastFabClickTime = 0L;
 
     public CustomersFragment() {
         super(R.layout.fragment_customers);
@@ -57,14 +61,12 @@ public class CustomersFragment extends Fragment {
         tvEmpty = view.findViewById(R.id.tvEmptyCustomers);
         fabAdd = view.findViewById(R.id.fabAddCustomer);
 
-        // ✅ Null-safe logs (helps if layout-land missing ids)
         if (swipe == null) Log.w(TAG, "swipeRefreshCustomers not found.");
         if (rv == null) Log.w(TAG, "rvCustomers not found.");
         if (progress == null) Log.w(TAG, "progressCustomers not found.");
         if (tvEmpty == null) Log.w(TAG, "tvEmptyCustomers not found.");
         if (fabAdd == null) Log.w(TAG, "fabAddCustomer not found.");
 
-        // ✅ Insets (production)
         InsetsHelper.applyRecyclerBottomInsets(view, rv, TAG);
         InsetsHelper.applyFabMarginInsets(fabAdd, 16, TAG);
 
@@ -95,13 +97,36 @@ public class CustomersFragment extends Fragment {
         if (swipe != null) swipe.setOnRefreshListener(() -> load(true));
 
         if (fabAdd != null) {
-            fabAdd.setOnClickListener(v ->
-                    CustomerFormDialog.newAdd((saved) -> load(false))
-                            .show(getParentFragmentManager(), "add_customer")
-            );
+            fabAdd.setOnClickListener(v -> openAddCustomerDialogSafely());
         }
 
         load(false);
+    }
+
+    private void openAddCustomerDialogSafely() {
+        if (!isAdded()) return;
+
+        long now = System.currentTimeMillis();
+        if (now - lastFabClickTime < FAB_CLICK_DEBOUNCE_MS) {
+            Log.d(TAG, "FAB click ignored: too fast");
+            return;
+        }
+        lastFabClickTime = now;
+
+        if (getParentFragmentManager().findFragmentByTag(TAG_ADD_CUSTOMER) != null) {
+            Log.d(TAG, "Add customer dialog already showing");
+            return;
+        }
+
+        if (fabAdd != null) {
+            fabAdd.setEnabled(false);
+            fabAdd.postDelayed(() -> {
+                if (fabAdd != null) fabAdd.setEnabled(true);
+            }, FAB_CLICK_DEBOUNCE_MS);
+        }
+
+        CustomerFormDialog dialog = CustomerFormDialog.newAdd((saved) -> load(false));
+        dialog.show(getParentFragmentManager(), TAG_ADD_CUSTOMER);
     }
 
     private void load(boolean fromSwipe) {
@@ -146,7 +171,6 @@ public class CustomersFragment extends Fragment {
                 Log.e(TAG, "fetchCustomers ERROR " + statusCode + " / " + message);
                 toast("Fetch failed: " + statusCode);
 
-                // ✅ Kalau masih ada data lama, tetap tampilkan list
                 if (!items.isEmpty()) {
                     showList();
                 } else {

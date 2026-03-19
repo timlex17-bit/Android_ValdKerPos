@@ -3,6 +3,7 @@ package com.example.valdker;
 import android.content.Context;
 import android.content.SharedPreferences;
 import com.example.valdker.BuildConfig;
+import org.json.JSONObject;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -40,11 +41,15 @@ public class SessionManager {
     private static final String KEY_SHOP_ID = "shop_id";
     private static final String KEY_FULL_NAME = "full_name";
     private static final String KEY_SHOP_NAME = "shop_name";
+    private static final String KEY_SHOP_ADDRESS = "shop_address";
+    private static final String KEY_SHOP_LOGO = "shop_logo";
     private static final String KEY_IS_SUPERUSER = "is_superuser";
     private static final String KEY_IS_PLATFORM_ADMIN = "is_platform_admin";
     private static final String KEY_IS_SHOP_OWNER = "is_shop_owner";
     private static final String KEY_IS_SHOP_MANAGER = "is_shop_manager";
     private static final String KEY_IS_SHOP_CASHIER = "is_shop_cashier";
+    private static final String KEY_BUSINESS_TYPE = "business_type";
+    private static final String KEY_FEATURES_JSON = "features_json";
 
     private static final String KEY_TOKEN = "token";
     private static final String KEY_USERNAME = "username";
@@ -66,11 +71,15 @@ public class SessionManager {
             int shopId,
             @Nullable String shopCode,
             @Nullable String shopName,
+            @Nullable String shopAddress,
+            @Nullable String shopLogo,
             boolean isSuperuser,
             boolean isPlatformAdmin,
             boolean isShopOwner,
             boolean isShopManager,
             boolean isShopCashier,
+            @Nullable String businessType,
+            @Nullable JSONObject features,
             @Nullable JSONArray permissions
     ) {
         if (token == null) token = "";
@@ -79,6 +88,9 @@ public class SessionManager {
         if (role == null) role = "";
         if (shopCode == null) shopCode = "";
         if (shopName == null) shopName = "";
+        if (shopAddress == null) shopAddress = "";
+        if (shopLogo == null) shopLogo = "";
+        if (businessType == null) businessType = "retail";
 
         Set<String> permSet = new HashSet<>();
         if (permissions != null) {
@@ -88,19 +100,25 @@ public class SessionManager {
             }
         }
 
+        String featuresJson = features != null ? features.toString() : "{}";
+
         prefs.edit()
                 .putString(KEY_TOKEN, token.trim())
                 .putString(KEY_USERNAME, username.trim())
                 .putString(KEY_FULL_NAME, fullName.trim())
                 .putString(KEY_ROLE, role.trim())
                 .putInt(KEY_SHOP_ID, shopId)
-                .putString(KEY_SHOP_CODE, shopCode != null ? shopCode.trim() : "")
+                .putString(KEY_SHOP_CODE, shopCode.trim())
                 .putString(KEY_SHOP_NAME, shopName.trim())
+                .putString(KEY_SHOP_ADDRESS, shopAddress.trim())
+                .putString(KEY_SHOP_LOGO, shopLogo.trim())
                 .putBoolean(KEY_IS_SUPERUSER, isSuperuser)
                 .putBoolean(KEY_IS_PLATFORM_ADMIN, isPlatformAdmin)
                 .putBoolean(KEY_IS_SHOP_OWNER, isShopOwner)
                 .putBoolean(KEY_IS_SHOP_MANAGER, isShopManager)
                 .putBoolean(KEY_IS_SHOP_CASHIER, isShopCashier)
+                .putString(KEY_BUSINESS_TYPE, businessType.trim().toLowerCase())
+                .putString(KEY_FEATURES_JSON, featuresJson)
                 .putStringSet(KEY_PERMS, permSet)
                 .apply();
     }
@@ -152,6 +170,90 @@ public class SessionManager {
     }
 
     @NonNull
+    public String getBusinessType() {
+        String v = prefs.getString(KEY_BUSINESS_TYPE, "retail");
+        if (v == null || v.trim().isEmpty()) return "retail";
+        return v.trim().toLowerCase();
+    }
+
+    @NonNull
+    public JSONObject getShopFeatures() {
+        String raw = prefs.getString(KEY_FEATURES_JSON, "{}");
+        try {
+            return new JSONObject(raw != null ? raw : "{}");
+        } catch (Exception e) {
+            return new JSONObject();
+        }
+    }
+
+    public boolean getFeatureBoolean(@NonNull String key, boolean defaultValue) {
+        JSONObject obj = getShopFeatures();
+        return obj.optBoolean(key, defaultValue);
+    }
+
+    public boolean isRestaurant() {
+        return "restaurant".equals(getBusinessType());
+    }
+
+    public boolean isRetail() {
+        return "retail".equals(getBusinessType());
+    }
+
+    public boolean isWorkshop() {
+        return "workshop".equals(getBusinessType());
+    }
+
+    public boolean useGridPosLayout() {
+        if (isRestaurant()) {
+            return getFeatureBoolean("use_grid_pos_layout", true);
+        }
+        return getFeatureBoolean("use_grid_pos_layout", false);
+    }
+
+    public boolean showProductImagesInPos() {
+        if (isRestaurant()) {
+            return getFeatureBoolean("show_product_images_in_pos", true);
+        }
+        return getFeatureBoolean("show_product_images_in_pos", false);
+    }
+
+    public boolean enableBarcodeScan() {
+        return getFeatureBoolean("enable_barcode_scan", true);
+    }
+
+    public boolean enableDineIn() {
+        if (isRestaurant()) {
+            return getFeatureBoolean("enable_dine_in", true);
+        }
+        return false;
+    }
+
+    public boolean enableTakeaway() {
+        if (isRestaurant()) {
+            return getFeatureBoolean("enable_takeaway", true);
+        }
+        return false;
+    }
+
+    public boolean enableDelivery() {
+        if (isRestaurant()) {
+            return getFeatureBoolean("enable_delivery", true);
+        }
+        return false;
+    }
+
+    public boolean enableTableNumber() {
+        if (isRestaurant()) {
+            return getFeatureBoolean("enable_table_number", true);
+        }
+        return false;
+    }
+
+    public boolean enableSplitPayment() {
+        return getFeatureBoolean("enable_split_payment", false);
+    }
+
+    @NonNull
     public String getOpeningCash() {
         String v = prefs.getString(KEY_OPENING_CASH, "0.00");
         return v != null ? v : "0.00";
@@ -160,6 +262,12 @@ public class SessionManager {
     @NonNull
     public String getShopCode() {
         String v = prefs.getString(KEY_SHOP_CODE, "");
+        return v != null ? v : "";
+    }
+
+    @NonNull
+    public String getShopLogo() {
+        String v = prefs.getString(KEY_SHOP_LOGO, "");
         return v != null ? v : "";
     }
 
@@ -259,6 +367,12 @@ public class SessionManager {
         return v != null ? v : "";
     }
 
+    @NonNull
+    public String getShopAddress() {
+        String v = prefs.getString(KEY_SHOP_ADDRESS, "");
+        return v != null ? v : "";
+    }
+
     public boolean isOwner() {
         return isPlatformSuperuser() || isPlatformAdmin() || isShopOwner();
     }
@@ -293,7 +407,7 @@ public class SessionManager {
 
     public void clear() {
         Log.w(TAG, "Clearing session");
-//        prefs.edit().clear().apply();
+        prefs.edit().clear().apply();
     }
 
     public void logSession(@NonNull String tag) {
@@ -316,11 +430,15 @@ public class SessionManager {
         editor.remove(KEY_SHOP_ID);
         editor.remove(KEY_FULL_NAME);
         editor.remove(KEY_SHOP_NAME);
+        editor.remove(KEY_SHOP_ADDRESS);
+        editor.remove(KEY_SHOP_LOGO);
         editor.remove(KEY_IS_SUPERUSER);
         editor.remove(KEY_IS_PLATFORM_ADMIN);
         editor.remove(KEY_IS_SHOP_OWNER);
         editor.remove(KEY_IS_SHOP_MANAGER);
         editor.remove(KEY_IS_SHOP_CASHIER);
+        editor.remove(KEY_BUSINESS_TYPE);
+        editor.remove(KEY_FEATURES_JSON);
 
         editor.apply();
     }
@@ -350,5 +468,12 @@ public class SessionManager {
     }
 
     public void clearToken() {
+        prefs.edit().remove(KEY_TOKEN).apply();
+    }
+
+    public void logout() {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.clear();
+        editor.apply();
     }
 }

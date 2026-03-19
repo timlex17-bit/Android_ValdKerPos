@@ -28,6 +28,8 @@ import java.util.List;
 public class SuppliersFragment extends Fragment {
 
     private static final String TAG = "SUPPLIERS";
+    private static final String TAG_ADD_SUPPLIER = "add_supplier";
+    private static final long FAB_CLICK_DELAY_MS = 700L;
 
     private SwipeRefreshLayout swipe;
     private RecyclerView rv;
@@ -40,6 +42,8 @@ public class SuppliersFragment extends Fragment {
 
     private SessionManager session;
     private SupplierRepository repo;
+
+    private long lastFabClickTime = 0L;
 
     public SuppliersFragment() {
         super(R.layout.fragment_suppliers);
@@ -58,16 +62,13 @@ public class SuppliersFragment extends Fragment {
         tvEmpty = view.findViewById(R.id.tvEmptySuppliers);
         fabAdd = view.findViewById(R.id.fabAddSupplier);
 
-        // ✅ Null-safe logs (helps if layout-land missing ids)
         if (swipe == null) Log.w(TAG, "swipeRefreshSuppliers not found.");
         if (rv == null) Log.w(TAG, "rvSuppliers not found.");
         if (progress == null) Log.w(TAG, "progressSuppliers not found.");
         if (tvEmpty == null) Log.w(TAG, "tvEmptySuppliers not found.");
         if (fabAdd == null) Log.w(TAG, "fabAddSupplier not found.");
 
-        // ✅ Insets (production)
         InsetsHelper.applyRecyclerBottomInsets(view, rv, TAG);
-        InsetsHelper.applyFabMarginInsets(fabAdd, 16, TAG);
 
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -96,13 +97,34 @@ public class SuppliersFragment extends Fragment {
         if (swipe != null) swipe.setOnRefreshListener(() -> load(true));
 
         if (fabAdd != null) {
-            fabAdd.setOnClickListener(v ->
-                    SupplierFormDialog.newAdd((saved) -> load(false))
-                            .show(getParentFragmentManager(), "add_supplier")
-            );
+            fabAdd.setOnClickListener(v -> openAddSupplierDialogSafely());
         }
 
         load(false);
+    }
+
+    private void openAddSupplierDialogSafely() {
+        if (!isAdded()) return;
+
+        long now = System.currentTimeMillis();
+        if (now - lastFabClickTime < FAB_CLICK_DELAY_MS) {
+            return;
+        }
+        lastFabClickTime = now;
+
+        if (getParentFragmentManager().findFragmentByTag(TAG_ADD_SUPPLIER) != null) {
+            return;
+        }
+
+        if (fabAdd != null) {
+            fabAdd.setEnabled(false);
+            fabAdd.postDelayed(() -> {
+                if (fabAdd != null) fabAdd.setEnabled(true);
+            }, FAB_CLICK_DELAY_MS);
+        }
+
+        SupplierFormDialog dialog = SupplierFormDialog.newAdd(saved -> load(false));
+        dialog.show(getParentFragmentManager(), TAG_ADD_SUPPLIER);
     }
 
     private void load(boolean fromSwipe) {
@@ -173,8 +195,12 @@ public class SuppliersFragment extends Fragment {
 
                 int pos = -1;
                 for (int i = 0; i < items.size(); i++) {
-                    if (items.get(i).id == s.id) { pos = i; break; }
+                    if (items.get(i).id == s.id) {
+                        pos = i;
+                        break;
+                    }
                 }
+
                 if (pos >= 0) {
                     items.remove(pos);
                     if (adapter != null) adapter.notifyItemRemoved(pos);
