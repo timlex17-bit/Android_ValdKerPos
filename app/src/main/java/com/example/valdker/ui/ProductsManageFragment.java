@@ -44,6 +44,8 @@ public class ProductsManageFragment extends Fragment {
 
     private SessionManager session;
     private ProductRepository repo;
+    private boolean isDialogOpening = false;
+    private boolean isDeleteRunning = false;
 
     private long lastFabClickTime = 0L;
 
@@ -111,21 +113,29 @@ public class ProductsManageFragment extends Fragment {
         if (fabAdd != null) {
             fabAdd.setOnClickListener(v -> openAddProductDialogSafely());
         }
+
+        if (fabAdd != null) {
+            fabAdd.post(() -> {
+                if (fabAdd == null) return;
+                fabAdd.bringToFront();
+                fabAdd.setElevation(100f);
+                fabAdd.setTranslationZ(100f);
+            });
+        }
     }
 
     private void applyInsets() {
         if (rootManage == null || rv == null) return;
 
         InsetsHelper.applyRecyclerBottomInsets(rootManage, rv, TAG);
-        // Jangan pakai ini dulu, karena bikin posisi FAB tidak konsisten
-        // InsetsHelper.applyFabMarginInsets(fabAdd, 16, TAG);
-        // InsetsHelper.applyRecyclerBottomInsetsWithFab(rootManage, rv, fabAdd, 32, TAG);
     }
 
     private void openAddProductDialogSafely() {
         if (!isAdded()) return;
+        if (isStateSaved()) return;
+        if (isDialogOpening) return;
 
-        long now = System.currentTimeMillis();
+        long now = android.os.SystemClock.elapsedRealtime();
         if (now - lastFabClickTime < FAB_CLICK_DELAY_MS) {
             return;
         }
@@ -135,14 +145,39 @@ public class ProductsManageFragment extends Fragment {
             return;
         }
 
+        isDialogOpening = true;
+
         if (fabAdd != null) {
             fabAdd.setEnabled(false);
-            fabAdd.postDelayed(() -> {
-                if (fabAdd != null) fabAdd.setEnabled(true);
-            }, FAB_CLICK_DELAY_MS);
+            fabAdd.setAlpha(0.65f);
         }
 
-        ProductFormDialog dialog = ProductFormDialog.newAdd(saved -> loadProducts(false));
+        ProductFormDialog dialog = ProductFormDialog.newAdd(saved -> {
+            isDialogOpening = false;
+            if (fabAdd != null) {
+                fabAdd.setEnabled(true);
+                fabAdd.setAlpha(1f);
+            }
+            loadProducts(false);
+        });
+
+        getParentFragmentManager().registerFragmentLifecycleCallbacks(
+                new androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks() {
+                    @Override
+                    public void onFragmentViewDestroyed(@NonNull androidx.fragment.app.FragmentManager fm,
+                                                        @NonNull androidx.fragment.app.Fragment f) {
+                        if (f == dialog) {
+                            isDialogOpening = false;
+                            if (fabAdd != null) {
+                                fabAdd.setEnabled(true);
+                                fabAdd.setAlpha(1f);
+                            }
+                            fm.unregisterFragmentLifecycleCallbacks(this);
+                        }
+                    }
+                }, false
+        );
+
         dialog.show(getParentFragmentManager(), TAG_ADD_PRODUCT);
     }
 
@@ -195,12 +230,16 @@ public class ProductsManageFragment extends Fragment {
     }
 
     private void doDelete(@NonNull Product p) {
+        if (!isAdded()) return;
+        if (isDeleteRunning) return;
+
         String token = session.getToken();
         if (token == null || token.trim().isEmpty()) {
             toast("Token is missing.");
             return;
         }
 
+        isDeleteRunning = true;
         showLoading();
 
         repo.deleteProduct(token, p.id, new ProductRepository.DeleteCallback() {
@@ -208,6 +247,7 @@ public class ProductsManageFragment extends Fragment {
             public void onSuccess() {
                 if (!isAdded()) return;
 
+                isDeleteRunning = false;
                 toast("Deleted: " + (p.name != null ? p.name : "Product"));
 
                 int pos = -1;
@@ -232,6 +272,8 @@ public class ProductsManageFragment extends Fragment {
             @Override
             public void onError(int statusCode, @NonNull String message) {
                 if (!isAdded()) return;
+
+                isDeleteRunning = false;
 
                 if (statusCode == 404) {
                     toast("Already deleted");
