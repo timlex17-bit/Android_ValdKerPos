@@ -958,7 +958,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
             out.add(new DashboardItem(DashboardItem.ID_PRODUCTS, "PRODUTU", "Stok, presu no detallu produtu", R.drawable.ic_box));
             out.add(new DashboardItem(DashboardItem.ID_CATEGORIES, "KATEGORIA", "Jere kategoria produtu", R.drawable.ic_categories));
             out.add(new DashboardItem(DashboardItem.ID_UNITS, "UNIDADE", "Jere unidade produtu", R.drawable.ic_units));
-            out.add(new DashboardItem(DashboardItem.ID_PRODUCT_RETURNS, "DEVOLUSAUN", "Return produtu", R.drawable.ic_return));
+            out.add(new DashboardItem(DashboardItem.ID_PRODUCT_RETURNS, "RETORNU PRODUTU", "Return produtu", R.drawable.ic_return));
             out.add(new DashboardItem(DashboardItem.ID_STOCK_ADJUSTMENTS, "AJUSTA STOK", "Ajusta stok manual", R.drawable.ic_report));
             return out;
         }
@@ -973,7 +973,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
             out.add(new DashboardItem(DashboardItem.ID_POS, "POS", "Tranzasaun fa'an agora", R.drawable.ic_pos));
             out.add(new DashboardItem(DashboardItem.ID_EXPENSE, "DESPEZA", "Rejistu gastu negósiu", R.drawable.ic_expense));
             out.add(new DashboardItem(DashboardItem.ID_ORDERS, "ORDEM", "Haree istória tranzasaun", R.drawable.ic_receipt));
-            out.add(new DashboardItem(DashboardItem.ID_PRODUCT_RETURNS, "DEVOLUSAUN", "Return produtu", R.drawable.ic_return));
+            out.add(new DashboardItem(DashboardItem.ID_PRODUCT_RETURNS, "RETORNU PRODUTU", "Return produtu", R.drawable.ic_return));
             out.add(new DashboardItem(DashboardItem.ID_INVENTORY_COUNTS, "KONTÁJEN STOK", "Stock opname", R.drawable.ic_report));
             out.add(new DashboardItem(DashboardItem.ID_STOCK_ADJUSTMENTS, "AJUSTA STOK", "Ajusta stok manual", R.drawable.ic_report));
             out.add(new DashboardItem(DashboardItem.ID_STOCK_MOVEMENTS, "MOVIMENTU STOK", "Movimentu stok", R.drawable.ic_stockmovement));

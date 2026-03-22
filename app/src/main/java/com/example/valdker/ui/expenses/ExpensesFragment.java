@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -55,6 +56,8 @@ public class ExpensesFragment extends BaseFragment {
 
     private long lastFabClickTime = 0L;
     private boolean isFormShowing = false;
+    private boolean isLoading = false;
+    private boolean isDeleteRunning = false;
     private String currentQuery = "";
 
     public ExpensesFragment() {
@@ -83,10 +86,13 @@ public class ExpensesFragment extends BaseFragment {
             tvTitle.setText("Expense");
         }
 
+        InsetsHelper.applyRecyclerBottomInsets(view, rv, "EXPENSES");
+        applyFabBottomInset(fabAdd, 56);
+
         if (rv != null) {
-            InsetsHelper.applyRecyclerBottomInsets(view, rv, "EXPENSES");
             rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-            rv.setHasFixedSize(true);
+            rv.setHasFixedSize(false);
+            rv.setClipToPadding(false);
         }
 
         adapter = new ExpenseAdapter(new ExpenseAdapter.Listener() {
@@ -107,6 +113,13 @@ public class ExpensesFragment extends BaseFragment {
 
         if (fabAdd != null) {
             fabAdd.setOnClickListener(v -> openAddExpenseSafely());
+
+            fabAdd.post(() -> {
+                if (fabAdd == null) return;
+                fabAdd.bringToFront();
+                fabAdd.setElevation(100f);
+                fabAdd.setTranslationZ(100f);
+            });
         }
 
         if (btnBack != null) {
@@ -116,7 +129,10 @@ public class ExpensesFragment extends BaseFragment {
         }
 
         if (ivHeaderAction != null) {
-            ivHeaderAction.setOnClickListener(v -> load());
+            ivHeaderAction.setOnClickListener(v -> {
+                if (isLoading) return;
+                load();
+            });
         }
 
         if (etSearchExpense != null) {
@@ -143,44 +159,40 @@ public class ExpensesFragment extends BaseFragment {
     private void openAddExpenseSafely() {
         if (!isAdded()) return;
         if (isFormShowing) return;
+        if (isLoading) return;
 
-        long now = System.currentTimeMillis();
+        long now = SystemClock.elapsedRealtime();
         if (now - lastFabClickTime < FAB_CLICK_DELAY_MS) {
             return;
         }
         lastFabClickTime = now;
 
-        if (fabAdd != null) {
-            fabAdd.setEnabled(false);
-            fabAdd.postDelayed(() -> {
-                if (fabAdd != null && isAdded() && !isFormShowing) {
-                    fabAdd.setEnabled(true);
-                }
-            }, FAB_CLICK_DELAY_MS);
-        }
-
+        setFabEnabled(false);
         openForm(null);
     }
 
     private void load() {
         if (!isAdded()) return;
+        if (isLoading) return;
 
-        String token = session.getToken();
+        String token = session != null ? session.getToken() : null;
         if (TextUtils.isEmpty(token)) {
-            Toast.makeText(requireContext(), "No token. Please login again.", Toast.LENGTH_SHORT).show();
             allExpenses.clear();
             if (adapter != null) {
                 adapter.submit(new ArrayList<>());
             }
             setEmpty(true);
+            toast("No token. Please login again.");
             return;
         }
 
+        isLoading = true;
         showLoading(true);
 
         repo.fetchExpenses(token, new ExpenseRepository.ListCallback() {
             @Override
             public void onSuccess(@NonNull List<Expense> list) {
+                isLoading = false;
                 if (!isAdded()) return;
 
                 showLoading(false);
@@ -191,10 +203,11 @@ public class ExpensesFragment extends BaseFragment {
 
             @Override
             public void onError(int statusCode, @NonNull String message) {
+                isLoading = false;
                 if (!isAdded()) return;
 
                 showLoading(false);
-                Toast.makeText(requireContext(), "Load failed: " + statusCode, Toast.LENGTH_SHORT).show();
+                toast("Load failed: " + statusCode);
                 setEmpty(adapter == null || adapter.getItemCount() == 0);
             }
         });
@@ -241,7 +254,7 @@ public class ExpensesFragment extends BaseFragment {
         if (isFormShowing) return;
 
         isFormShowing = true;
-        if (fabAdd != null) fabAdd.setEnabled(false);
+        setFabEnabled(false);
 
         View form = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_expense_form, null, false);
 
@@ -336,14 +349,7 @@ public class ExpensesFragment extends BaseFragment {
 
         dialog.setOnDismissListener(d -> {
             isFormShowing = false;
-
-            if (fabAdd != null && isAdded()) {
-                fabAdd.postDelayed(() -> {
-                    if (fabAdd != null && isAdded() && !isFormShowing) {
-                        fabAdd.setEnabled(true);
-                    }
-                }, 180L);
-            }
+            setFabEnabled(true);
         });
 
         dialog.setOnShowListener(d -> {
@@ -358,7 +364,7 @@ public class ExpensesFragment extends BaseFragment {
                 String time = etTime.getText().toString().trim();
 
                 if (TextUtils.isEmpty(name) || TextUtils.isEmpty(amount) || TextUtils.isEmpty(date) || TextUtils.isEmpty(time)) {
-                    Toast.makeText(requireContext(), "Name, Amount, Date, Time are required.", Toast.LENGTH_SHORT).show();
+                    toast("Name, Amount, Date, Time are required.");
                     return;
                 }
 
@@ -369,7 +375,12 @@ public class ExpensesFragment extends BaseFragment {
                 payload.date = date;
                 payload.time = time;
 
-                String token = session.getToken();
+                String token = session != null ? session.getToken() : null;
+                if (TextUtils.isEmpty(token)) {
+                    toast("No token. Please login again.");
+                    return;
+                }
+
                 showLoading(true);
                 positiveBtn.setEnabled(false);
 
@@ -390,7 +401,7 @@ public class ExpensesFragment extends BaseFragment {
 
                             showLoading(false);
                             positiveBtn.setEnabled(true);
-                            Toast.makeText(requireContext(), "Create failed: " + statusCode, Toast.LENGTH_SHORT).show();
+                            toast("Create failed: " + statusCode);
                         }
                     });
                 } else {
@@ -410,7 +421,7 @@ public class ExpensesFragment extends BaseFragment {
 
                             showLoading(false);
                             positiveBtn.setEnabled(true);
-                            Toast.makeText(requireContext(), "Update failed: " + statusCode, Toast.LENGTH_SHORT).show();
+                            toast("Update failed: " + statusCode);
                         }
                     });
                 }
@@ -422,10 +433,11 @@ public class ExpensesFragment extends BaseFragment {
 
     private void confirmDelete(@NonNull Expense e) {
         if (!isAdded()) return;
+        if (isDeleteRunning) return;
 
         new AlertDialog.Builder(requireContext())
                 .setTitle("Delete Expense")
-                .setMessage("Delete \"" + e.name + "\"?")
+                .setMessage("Delete \"" + safeText(e.name) + "\"?")
                 .setNegativeButton("Cancel", null)
                 .setPositiveButton("Delete", (d, w) -> doDelete(e))
                 .show();
@@ -433,13 +445,21 @@ public class ExpensesFragment extends BaseFragment {
 
     private void doDelete(@NonNull Expense e) {
         if (!isAdded()) return;
+        if (isDeleteRunning) return;
 
-        String token = session.getToken();
+        String token = session != null ? session.getToken() : null;
+        if (TextUtils.isEmpty(token)) {
+            toast("No token. Please login again.");
+            return;
+        }
+
+        isDeleteRunning = true;
         showLoading(true);
 
         repo.deleteExpense(token, e.id, new ExpenseRepository.SimpleCallback() {
             @Override
             public void onSuccess() {
+                isDeleteRunning = false;
                 if (!isAdded()) return;
 
                 showLoading(false);
@@ -448,10 +468,11 @@ public class ExpensesFragment extends BaseFragment {
 
             @Override
             public void onError(int statusCode, @NonNull String message) {
+                isDeleteRunning = false;
                 if (!isAdded()) return;
 
                 showLoading(false);
-                Toast.makeText(requireContext(), "Delete failed: " + statusCode, Toast.LENGTH_SHORT).show();
+                toast("Delete failed: " + statusCode);
             }
         });
     }
@@ -459,16 +480,59 @@ public class ExpensesFragment extends BaseFragment {
     private void showLoading(boolean on) {
         if (progress != null) progress.setVisibility(on ? View.VISIBLE : View.GONE);
         if (rv != null) rv.setEnabled(!on);
-        if (fabAdd != null) fabAdd.setEnabled(!on && !isFormShowing);
-        if (ivHeaderAction != null) ivHeaderAction.setEnabled(!on);
+        setFabEnabled(!on);
+        if (ivHeaderAction != null) {
+            ivHeaderAction.setEnabled(!on);
+            ivHeaderAction.setAlpha(on ? 0.5f : 1f);
+        }
+    }
+
+    private void setFabEnabled(boolean enabled) {
+        if (fabAdd == null) return;
+        boolean finalEnabled = enabled && !isFormShowing && !isLoading && !isDeleteRunning;
+        fabAdd.setEnabled(finalEnabled);
+        fabAdd.setAlpha(finalEnabled ? 1f : 0.65f);
     }
 
     private void setEmpty(boolean empty) {
         if (tvEmpty != null) {
             tvEmpty.setVisibility(empty ? View.VISIBLE : View.GONE);
+            if (empty) {
+                tvEmpty.setText(TextUtils.isEmpty(currentQuery) ? "No expense yet." : "No matching expense.");
+            }
         }
         if (rv != null) {
             rv.setVisibility(empty ? View.GONE : View.VISIBLE);
         }
+    }
+
+    @NonNull
+    private String safeText(@Nullable String value) {
+        if (value == null) return "-";
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? "-" : trimmed;
+    }
+
+    private void toast(@NonNull String msg) {
+        if (!isAdded()) return;
+        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        isFormShowing = false;
+        isLoading = false;
+        isDeleteRunning = false;
+
+        rv = null;
+        progress = null;
+        tvEmpty = null;
+        tvTitle = null;
+        fabAdd = null;
+        etSearchExpense = null;
+        btnBack = null;
+        ivHeaderAction = null;
     }
 }

@@ -25,6 +25,7 @@ import com.example.valdker.models.ProductLite;
 import com.example.valdker.models.ProductReturn;
 import com.example.valdker.repositories.LiteRepository;
 import com.example.valdker.repositories.ProductReturnRepository;
+import com.example.valdker.utils.InsetsHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ import java.util.List;
 public class ProductReturnsFragment extends BaseFragment {
 
     private static final long CLICK_GUARD_MS = 700L;
+    private static final String TAG = "PRODUCT_RETURNS";
 
     private SwipeRefreshLayout swipe;
     private ProgressBar progress;
@@ -68,6 +70,7 @@ public class ProductReturnsFragment extends BaseFragment {
         applyTopInset(view.findViewById(R.id.topBar));
 
         bindViews(view);
+        applyInsets(view);
         setupHeader();
         setupRecycler();
         setupFab();
@@ -87,6 +90,11 @@ public class ProductReturnsFragment extends BaseFragment {
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
     }
 
+    private void applyInsets(@NonNull View root) {
+        InsetsHelper.applyRecyclerBottomInsets(root, rv, TAG);
+        applyFabBottomInset(fabAdd, 56);
+    }
+
     private void setupHeader() {
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> {
@@ -100,6 +108,7 @@ public class ProductReturnsFragment extends BaseFragment {
             ivHeaderAction.setOnClickListener(v -> {
                 if (!isAdded()) return;
                 if (isRapidRefreshClick()) return;
+                if (isLoadingList) return;
 
                 if (swipe != null && !swipe.isRefreshing()) {
                     swipe.setRefreshing(true);
@@ -124,13 +133,14 @@ public class ProductReturnsFragment extends BaseFragment {
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         rv.setAdapter(adapter);
         rv.setHasFixedSize(false);
+        rv.setClipToPadding(false);
     }
 
     private void setupFab() {
         if (fabAdd == null) return;
 
-        fabAdd.setEnabled(true);
-        fabAdd.setAlpha(1f);
+        setFabEnabled(true);
+
         fabAdd.post(() -> {
             if (fabAdd == null) return;
             fabAdd.bringToFront();
@@ -142,6 +152,7 @@ public class ProductReturnsFragment extends BaseFragment {
             if (!isAdded()) return;
             if (isRapidFabClick()) return;
             if (isDialogOpening) return;
+            if (isLoadingList) return;
 
             openAddDialog();
         });
@@ -363,6 +374,14 @@ public class ProductReturnsFragment extends BaseFragment {
                 swipe.setRefreshing(false);
             }
         }
+
+        setFabEnabled(!loading);
+
+        if (ivHeaderAction != null) {
+            boolean enabled = !loading;
+            ivHeaderAction.setEnabled(enabled);
+            ivHeaderAction.setAlpha(enabled ? 1f : 0.5f);
+        }
     }
 
     private void updateEmptyDefault() {
@@ -378,8 +397,9 @@ public class ProductReturnsFragment extends BaseFragment {
 
     private void setFabEnabled(boolean enabled) {
         if (fabAdd == null) return;
-        fabAdd.setEnabled(enabled);
-        fabAdd.setAlpha(enabled ? 1f : 0.65f);
+        boolean finalEnabled = enabled && !isDialogOpening && !isLoadingList;
+        fabAdd.setEnabled(finalEnabled);
+        fabAdd.setAlpha(finalEnabled ? 1f : 0.65f);
     }
 
     private void toast(@NonNull String message) {
@@ -405,6 +425,10 @@ public class ProductReturnsFragment extends BaseFragment {
         btnBack = null;
         ivHeaderAction = null;
         adapter = null;
+
+        isLoadingList = false;
+        isPreloadingLite = false;
+        isDialogOpening = false;
 
         super.onDestroyView();
     }
