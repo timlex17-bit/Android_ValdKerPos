@@ -38,7 +38,7 @@ public class ProductsManageFragment extends BaseFragment {
     private static final String TAG = "PRODUCTS_MANAGE";
     private static final String TAG_ADD_PRODUCT = "add_product";
     private static final String TAG_EDIT_PRODUCT = "edit_product";
-    private static final long FAB_CLICK_DELAY_MS = 700L;
+    private static final long CLICK_GUARD_MS = 700L;
 
     private SwipeRefreshLayout swipe;
     private RecyclerView rv;
@@ -57,10 +57,13 @@ public class ProductsManageFragment extends BaseFragment {
 
     private SessionManager session;
     private ProductRepository repo;
+
+    private boolean isLoading = false;
     private boolean isDialogOpening = false;
     private boolean isDeleteRunning = false;
 
     private long lastFabClickTime = 0L;
+    private long lastRowActionTime = 0L;
     private String currentQuery = "";
 
     public ProductsManageFragment() {
@@ -92,6 +95,12 @@ public class ProductsManageFragment extends BaseFragment {
             tvTitle.setText("Manage Products");
         }
 
+        if (swipe == null) Log.w(TAG, "swipeRefreshManage not found.");
+        if (rv == null) Log.w(TAG, "rvProductsManage not found.");
+        if (progress == null) Log.w(TAG, "progressManage not found.");
+        if (tvEmpty == null) Log.w(TAG, "tvEmptyManage not found.");
+        if (fabAdd == null) Log.w(TAG, "fabAddProduct not found.");
+
         setupRecycler();
         setupAdapter();
         setupActions();
@@ -103,7 +112,7 @@ public class ProductsManageFragment extends BaseFragment {
     private void setupRecycler() {
         if (rv == null) return;
         rv.setLayoutManager(new GridLayoutManager(requireContext(), 2));
-        rv.setHasFixedSize(true);
+        rv.setHasFixedSize(false);
         rv.setClipToPadding(false);
     }
 
@@ -111,57 +120,31 @@ public class ProductsManageFragment extends BaseFragment {
         adapter = new ProductManageAdapter(items, new ProductManageAdapter.Listener() {
             @Override
             public void onEdit(@NonNull Product p) {
-                if (!isAdded()) return;
-                if (isStateSaved()) return;
-                if (isDialogOpening) return;
-
-                if (getParentFragmentManager().findFragmentByTag(TAG_EDIT_PRODUCT) != null) {
-                    return;
-                }
-
-                isDialogOpening = true;
-                setFabEnabled(false);
-
-                ProductFormDialog dialog = ProductFormDialog.newEdit(p, saved -> {
-                    isDialogOpening = false;
-                    setFabEnabled(true);
-                    loadProducts(false);
-                });
-
-                getParentFragmentManager().registerFragmentLifecycleCallbacks(
-                        new androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks() {
-                            @Override
-                            public void onFragmentViewDestroyed(@NonNull androidx.fragment.app.FragmentManager fm,
-                                                                @NonNull androidx.fragment.app.Fragment f) {
-                                if (f == dialog) {
-                                    isDialogOpening = false;
-                                    setFabEnabled(true);
-                                    fm.unregisterFragmentLifecycleCallbacks(this);
-                                }
-                            }
-                        }, false
-                );
-
-                dialog.show(getParentFragmentManager(), TAG_EDIT_PRODUCT);
+                if (!canRunRowAction()) return;
+                openEditProductDialogSafely(p);
             }
 
             @Override
             public void onDelete(@NonNull Product p) {
-                ConfirmDeleteDialog.show(
-                        requireContext(),
-                        "Delete product",
-                        "Delete \"" + (p.name != null ? p.name : "this product") + "\"?",
-                        () -> doDelete(p)
-                );
+                if (!canRunRowAction()) return;
+                confirmDeleteSafely(p);
             }
         });
 
-        if (rv != null) rv.setAdapter(adapter);
+        if (rv != null) {
+            rv.setAdapter(adapter);
+        }
     }
 
     private void setupActions() {
         if (swipe != null) {
-            swipe.setOnRefreshListener(() -> loadProducts(true));
+            swipe.setOnRefreshListener(() -> {
+                if (isLoading) {
+                    stopRefreshing();
+                    return;
+                }
+                loadProducts(true);
+            });
         }
 
         if (fabAdd != null) {
@@ -182,7 +165,13 @@ public class ProductsManageFragment extends BaseFragment {
         }
 
         if (ivHeaderAction != null) {
-            ivHeaderAction.setOnClickListener(v -> loadProducts(false));
+            ivHeaderAction.setOnClickListener(v -> {
+                if (isLoading) {
+                    stopRefreshing();
+                    return;
+                }
+                loadProducts(false);
+            });
         }
 
         if (etSearchManage != null) {
@@ -205,22 +194,38 @@ public class ProductsManageFragment extends BaseFragment {
     }
 
     private void applyInsets() {
-        if (rootManage == null || rv == null) return;
-        InsetsHelper.applyRecyclerBottomInsets(rootManage, rv, TAG);
+        InsetsHelper.applyRecyclerBottomInsets(rootManage != null ? rootManage : requireView(), rv, TAG);
+        applyFabBottomInset(fabAdd, 56);
+    }
+
+    private boolean isRapidFabClick() {
+        long now = SystemClock.elapsedRealtime();
+        if (now - lastFabClickTime < CLICK_GUARD_MS) {
+            Log.d(TAG, "FAB click ignored: too fast");
+            return true;
+        }
+        lastFabClickTime = now;
+        return false;
+    }
+
+    private boolean canRunRowAction() {
+        long now = SystemClock.elapsedRealtime();
+        if (now - lastRowActionTime < CLICK_GUARD_MS) {
+            Log.d(TAG, "Row action ignored: too fast");
+            return false;
+        }
+        lastRowActionTime = now;
+        return true;
     }
 
     private void openAddProductDialogSafely() {
         if (!isAdded()) return;
+        if (isRapidFabClick()) return;
         if (isStateSaved()) return;
         if (isDialogOpening) return;
 
-        long now = SystemClock.elapsedRealtime();
-        if (now - lastFabClickTime < FAB_CLICK_DELAY_MS) {
-            return;
-        }
-        lastFabClickTime = now;
-
         if (getParentFragmentManager().findFragmentByTag(TAG_ADD_PRODUCT) != null) {
+            Log.d(TAG, "Add product dialog already showing");
             return;
         }
 
@@ -250,16 +255,79 @@ public class ProductsManageFragment extends BaseFragment {
         dialog.show(getParentFragmentManager(), TAG_ADD_PRODUCT);
     }
 
+    private void openEditProductDialogSafely(@NonNull Product p) {
+        if (!isAdded()) return;
+        if (isStateSaved()) return;
+        if (isDialogOpening) return;
+
+        if (getParentFragmentManager().findFragmentByTag(TAG_EDIT_PRODUCT) != null) {
+            Log.d(TAG, "Edit product dialog already showing");
+            return;
+        }
+
+        isDialogOpening = true;
+        setFabEnabled(false);
+
+        ProductFormDialog dialog = ProductFormDialog.newEdit(p, saved -> {
+            isDialogOpening = false;
+            setFabEnabled(true);
+            loadProducts(false);
+        });
+
+        getParentFragmentManager().registerFragmentLifecycleCallbacks(
+                new androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks() {
+                    @Override
+                    public void onFragmentViewDestroyed(@NonNull androidx.fragment.app.FragmentManager fm,
+                                                        @NonNull androidx.fragment.app.Fragment f) {
+                        if (f == dialog) {
+                            isDialogOpening = false;
+                            setFabEnabled(true);
+                            fm.unregisterFragmentLifecycleCallbacks(this);
+                        }
+                    }
+                }, false
+        );
+
+        dialog.show(getParentFragmentManager(), TAG_EDIT_PRODUCT);
+    }
+
+    private void confirmDeleteSafely(@NonNull Product p) {
+        if (!isAdded()) return;
+        if (isDeleteRunning) return;
+
+        ConfirmDeleteDialog.show(
+                requireContext(),
+                "Delete product",
+                "Delete \"" + safeText(p.name, "this product") + "\"?",
+                () -> {
+                    if (isDeleteRunning) return;
+                    doDelete(p);
+                }
+        );
+    }
+
     private void loadProducts(boolean fromSwipe) {
         if (!isAdded()) return;
 
+        if (isLoading) {
+            stopRefreshing();
+            return;
+        }
+
+        if (session == null || repo == null) {
+            Log.e(TAG, "Session/Repo not initialized.");
+            stopRefreshing();
+            return;
+        }
+
         String token = session.getToken();
         if (token == null || token.trim().isEmpty()) {
-            toast("Token is missing. Please login again.");
             showEmpty("Token is missing");
             stopRefreshing();
             return;
         }
+
+        isLoading = true;
 
         if (!fromSwipe && swipe != null && !swipe.isRefreshing()) {
             showLoading();
@@ -268,6 +336,7 @@ public class ProductsManageFragment extends BaseFragment {
         repo.fetchProducts(token, "all", new ProductRepository.Callback() {
             @Override
             public void onSuccess(@NonNull List<Product> products) {
+                isLoading = false;
                 if (!isAdded()) return;
 
                 Log.i(TAG, "fetchProducts SUCCESS: " + products.size());
@@ -281,14 +350,18 @@ public class ProductsManageFragment extends BaseFragment {
 
             @Override
             public void onError(int statusCode, @NonNull String message) {
+                isLoading = false;
                 if (!isAdded()) return;
 
                 Log.e(TAG, "fetchProducts ERROR: " + statusCode + " / " + message);
 
-                if (items.isEmpty()) showEmpty("Failed to load products");
-                else showList();
+                if (items.isEmpty()) {
+                    showEmpty("Failed to load products");
+                } else {
+                    showList();
+                }
 
-                toast(message);
+                toast("Failed to load products");
                 stopRefreshing();
             }
         });
@@ -303,12 +376,12 @@ public class ProductsManageFragment extends BaseFragment {
             String q = currentQuery.toLowerCase(Locale.US);
 
             for (Product p : allItems) {
-                String name = p.name == null ? "" : p.name.toLowerCase(Locale.US);
-                String sku = p.sku == null ? "" : p.sku.toLowerCase(Locale.US);
-                String barcode = p.barcode == null ? "" : p.barcode.toLowerCase(Locale.US);
-                String category = p.categoryName == null ? "" : p.categoryName.toLowerCase(Locale.US);
-                String unit = p.unitName == null ? "" : p.unitName.toLowerCase(Locale.US);
-                String supplier = p.supplierName == null ? "" : p.supplierName.toLowerCase(Locale.US);
+                String name = safeLower(p.name);
+                String sku = safeLower(p.sku);
+                String barcode = safeLower(p.barcode);
+                String category = safeLower(p.categoryName);
+                String unit = safeLower(p.unitName);
+                String supplier = safeLower(p.supplierName);
 
                 if (name.contains(q)
                         || sku.contains(q)
@@ -321,7 +394,9 @@ public class ProductsManageFragment extends BaseFragment {
             }
         }
 
-        if (adapter != null) adapter.notifyDataSetChanged();
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
 
         if (items.isEmpty()) {
             showEmpty(TextUtils.isEmpty(currentQuery) ? "No products" : "No matching products");
@@ -334,9 +409,9 @@ public class ProductsManageFragment extends BaseFragment {
         if (!isAdded()) return;
         if (isDeleteRunning) return;
 
-        String token = session.getToken();
+        String token = session != null ? session.getToken() : null;
         if (token == null || token.trim().isEmpty()) {
-            toast("Token is missing.");
+            toast("Token is missing");
             return;
         }
 
@@ -346,81 +421,77 @@ public class ProductsManageFragment extends BaseFragment {
         repo.deleteProduct(token, p.id, new ProductRepository.DeleteCallback() {
             @Override
             public void onSuccess() {
+                isDeleteRunning = false;
                 if (!isAdded()) return;
 
-                isDeleteRunning = false;
-                toast("Deleted: " + (p.name != null ? p.name : "Product"));
+                toast("Deleted: " + safeText(p.name, "Product"));
 
-                int pos = -1;
-                for (int i = 0; i < items.size(); i++) {
-                    if (items.get(i).id != null && items.get(i).id.equals(p.id)) {
-                        pos = i;
-                        break;
-                    }
+                removeItemById(p.id, allItems);
+                removeItemById(p.id, items);
+
+                if (adapter != null) {
+                    adapter.notifyDataSetChanged();
                 }
 
-                if (pos >= 0) {
-                    items.remove(pos);
-                    if (adapter != null) adapter.notifyItemRemoved(pos);
+                if (items.isEmpty()) {
+                    showEmpty(TextUtils.isEmpty(currentQuery) ? "No products" : "No matching products");
                 } else {
-                    if (adapter != null) adapter.notifyDataSetChanged();
+                    showList();
                 }
-
-                for (int i = 0; i < allItems.size(); i++) {
-                    if (allItems.get(i).id != null && allItems.get(i).id.equals(p.id)) {
-                        allItems.remove(i);
-                        break;
-                    }
-                }
-
-                if (items.isEmpty()) showEmpty(TextUtils.isEmpty(currentQuery) ? "No products" : "No matching products");
-                else showList();
             }
 
             @Override
             public void onError(int statusCode, @NonNull String message) {
-                if (!isAdded()) return;
-
                 isDeleteRunning = false;
+                if (!isAdded()) return;
 
                 if (statusCode == 404) {
                     toast("Already deleted");
 
-                    int pos = -1;
-                    for (int i = 0; i < items.size(); i++) {
-                        if (items.get(i).id != null && items.get(i).id.equals(p.id)) {
-                            pos = i;
-                            break;
-                        }
-                    }
+                    removeItemById(p.id, allItems);
+                    removeItemById(p.id, items);
 
-                    if (pos >= 0) {
-                        items.remove(pos);
-                        if (adapter != null) adapter.notifyItemRemoved(pos);
-                    } else if (adapter != null) {
+                    if (adapter != null) {
                         adapter.notifyDataSetChanged();
                     }
 
-                    for (int i = 0; i < allItems.size(); i++) {
-                        if (allItems.get(i).id != null && allItems.get(i).id.equals(p.id)) {
-                            allItems.remove(i);
-                            break;
-                        }
+                    if (items.isEmpty()) {
+                        showEmpty(TextUtils.isEmpty(currentQuery) ? "No products" : "No matching products");
+                    } else {
+                        showList();
                     }
-
-                    if (items.isEmpty()) showEmpty(TextUtils.isEmpty(currentQuery) ? "No products" : "No matching products");
-                    else showList();
                     return;
                 }
 
-                toast("Delete failed: " + message);
-                showList();
+                toast("Delete failed");
+                if (!items.isEmpty()) {
+                    showList();
+                } else {
+                    showEmpty(TextUtils.isEmpty(currentQuery) ? "No products" : "No matching products");
+                }
             }
         });
     }
 
+    private void removeItemById(@Nullable String id, @NonNull List<Product> target) {
+        if (id == null) return;
+
+        String safeId = id.trim();
+
+        for (int i = 0; i < target.size(); i++) {
+            String itemId = target.get(i).id;
+
+            if (itemId != null && safeId.equals(itemId.trim())) {
+                target.remove(i);
+                return;
+            }
+        }
+    }
+
     private void stopRefreshing() {
-        if (swipe != null) swipe.setRefreshing(false);
+        if (swipe != null) {
+            swipe.setRefreshing(false);
+        }
     }
 
     private void toast(@NonNull String msg) {
@@ -454,13 +525,31 @@ public class ProductsManageFragment extends BaseFragment {
 
     private void setFabEnabled(boolean enabled) {
         if (fabAdd == null) return;
-        fabAdd.setEnabled(enabled && !isDialogOpening);
-        fabAdd.setAlpha((enabled && !isDialogOpening) ? 1f : 0.65f);
+        boolean finalEnabled = enabled && !isDialogOpening && !isLoading && !isDeleteRunning;
+        fabAdd.setEnabled(finalEnabled);
+        fabAdd.setAlpha(finalEnabled ? 1f : 0.65f);
+    }
+
+    @NonNull
+    private String safeLower(@Nullable String value) {
+        return value == null ? "" : value.trim().toLowerCase(Locale.US);
+    }
+
+    @NonNull
+    private String safeText(@Nullable String value, @NonNull String fallback) {
+        if (value == null) return fallback;
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? fallback : trimmed;
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+
+        isLoading = false;
+        isDialogOpening = false;
+        isDeleteRunning = false;
+
         swipe = null;
         rv = null;
         progress = null;

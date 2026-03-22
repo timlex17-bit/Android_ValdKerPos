@@ -55,7 +55,6 @@
                 android:padding="2dp"
                 android:src="@android:drawable/ic_popup_sync"
                 app:tint="@android:color/white" />
-
         </LinearLayout>
 
         <!-- Search -->
@@ -103,9 +102,7 @@
                     android:contentDescription="Search"
                     android:src="@android:drawable/ic_menu_search"
                     app:tint="#22C55E" />
-
             </LinearLayout>
-
         </com.google.android.material.card.MaterialCardView>
 
         <!-- Content -->
@@ -129,7 +126,7 @@
                     android:paddingStart="12dp"
                     android:paddingTop="8dp"
                     android:paddingEnd="12dp"
-                    android:paddingBottom="110dp" />
+                    android:paddingBottom="16dp" />
             </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
             <ProgressBar
@@ -159,8 +156,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="90dp"
-        android:contentDescription="Add expense"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="Add product"
         app:backgroundTint="#22C55E"
         app:srcCompat="@android:drawable/ic_input_add"
         app:tint="@android:color/white" />

@@ -29,9 +29,10 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Back"
                 android:padding="2dp"
                 android:src="@drawable/ic_arrow_back"
-                app:tint="@android:color/white"/>
+                app:tint="@android:color/white" />
 
             <TextView
                 android:id="@+id/tvTitle"
@@ -42,21 +43,27 @@
                 android:text="Units"
                 android:textColor="@android:color/white"
                 android:textSize="22sp"
-                android:textStyle="bold"/>
+                android:textStyle="bold" />
 
             <ImageView
                 android:id="@+id/ivHeaderAction"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Refresh"
+                android:padding="2dp"
                 android:src="@android:drawable/ic_popup_sync"
-                app:tint="@android:color/white"/>
+                app:tint="@android:color/white" />
         </LinearLayout>
 
         <!-- SEARCH -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="14dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="6dp"
             android:backgroundTint="@android:color/white"
             app:cardCornerRadius="16dp"
             app:strokeColor="#22C55E"
@@ -65,9 +72,9 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:padding="12dp"
-                android:gravity="center_vertical">
+                android:padding="12dp">
 
                 <EditText
                     android:id="@+id/etSearch"
@@ -76,13 +83,17 @@
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
                     android:hint="Search unit..."
-                    android:textSize="16sp"/>
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:textSize="16sp" />
 
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
+                    android:contentDescription="Search"
                     android:src="@android:drawable/ic_menu_search"
-                    app:tint="#22C55E"/>
+                    app:tint="#22C55E" />
 
             </LinearLayout>
 
@@ -98,8 +109,9 @@
                 android:id="@+id/rvList"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:clipToPadding="false"
                 android:padding="16dp"
-                android:paddingBottom="110dp"/>
+                android:paddingBottom="16dp" />
 
             <TextView
                 android:id="@+id/tvEmpty"
@@ -108,14 +120,14 @@
                 android:layout_gravity="center"
                 android:text="No units yet"
                 android:textColor="#6B7280"
-                android:visibility="gone"/>
+                android:visibility="gone" />
 
             <ProgressBar
                 android:id="@+id/progress"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:visibility="gone"/>
+                android:visibility="gone" />
 
         </FrameLayout>
 
@@ -127,8 +139,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="90dp"
-        android:contentDescription="Add expense"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="Add unit"
         app:backgroundTint="#22C55E"
         app:srcCompat="@android:drawable/ic_input_add"
         app:tint="@android:color/white" />

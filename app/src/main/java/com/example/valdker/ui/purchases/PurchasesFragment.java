@@ -47,6 +47,7 @@ public class PurchasesFragment extends BaseFragment {
     private PurchaseRepository repo;
 
     private final List<PurchaseLite> allItems = new ArrayList<>();
+
     private boolean isLoading = false;
     private boolean isDialogOpening = false;
     private long lastFabClickAt = 0L;
@@ -77,10 +78,12 @@ public class PurchasesFragment extends BaseFragment {
 
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-            rv.setHasFixedSize(true);
+            rv.setHasFixedSize(false);
             rv.setClipToPadding(false);
-            InsetsHelper.applyRecyclerBottomInsets(view, rv, TAG_REQ);
         }
+
+        InsetsHelper.applyRecyclerBottomInsets(view, rv, TAG_REQ);
+        applyFabBottomInset(fabAdd, 56);
 
         adapter = new PurchaseListAdapter(new ArrayList<>());
         if (rv != null) {
@@ -101,6 +104,7 @@ public class PurchasesFragment extends BaseFragment {
                 if (!isAdded()) return;
                 if (isRapidFabClick()) return;
                 if (isDialogOpening) return;
+                if (isStateSaved()) return;
                 openAddDialog();
             });
         }
@@ -112,7 +116,10 @@ public class PurchasesFragment extends BaseFragment {
         }
 
         if (ivHeaderAction != null) {
-            ivHeaderAction.setOnClickListener(v -> loadPurchases());
+            ivHeaderAction.setOnClickListener(v -> {
+                if (isLoading) return;
+                loadPurchases();
+            });
         }
 
         if (etSearchPurchase != null) {
@@ -167,6 +174,7 @@ public class PurchasesFragment extends BaseFragment {
     private void loadPurchases() {
         if (!isAdded()) return;
         if (isLoading) return;
+        if (repo == null) return;
 
         isLoading = true;
         showLoading(true);
@@ -174,9 +182,9 @@ public class PurchasesFragment extends BaseFragment {
         repo.fetchPurchases(new PurchaseRepository.ListCallback() {
             @Override
             public void onSuccess(@NonNull List<PurchaseLite> list) {
+                isLoading = false;
                 if (!isAdded()) return;
 
-                isLoading = false;
                 showLoading(false);
 
                 allItems.clear();
@@ -186,14 +194,20 @@ public class PurchasesFragment extends BaseFragment {
 
             @Override
             public void onError(int code, @NonNull String message) {
+                isLoading = false;
                 if (!isAdded()) return;
 
-                isLoading = false;
                 showLoading(false);
+
                 if (tvEmpty != null) {
                     tvEmpty.setText("Failed to load purchases");
                     tvEmpty.setVisibility(View.VISIBLE);
                 }
+
+                if (rv != null) {
+                    rv.setVisibility(View.GONE);
+                }
+
                 Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
             }
         });
@@ -220,7 +234,7 @@ public class PurchasesFragment extends BaseFragment {
 
         if (tvEmpty != null) {
             tvEmpty.setText(filtered.isEmpty()
-                    ? (currentQuery == null || currentQuery.trim().isEmpty()
+                    ? ((currentQuery == null || currentQuery.trim().isEmpty())
                     ? "No purchases yet."
                     : "No matching purchases.")
                     : "No purchases yet.");
@@ -275,11 +289,24 @@ public class PurchasesFragment extends BaseFragment {
     }
 
     private void showLoading(boolean loading) {
-        if (progress != null) progress.setVisibility(loading ? View.VISIBLE : View.GONE);
-        if (rv != null) rv.setVisibility(loading ? View.GONE : View.VISIBLE);
-        if (tvEmpty != null && loading) tvEmpty.setVisibility(View.GONE);
+        if (progress != null) {
+            progress.setVisibility(loading ? View.VISIBLE : View.GONE);
+        }
+
+        if (rv != null) {
+            rv.setVisibility(loading ? View.GONE : View.VISIBLE);
+        }
+
+        if (tvEmpty != null && loading) {
+            tvEmpty.setVisibility(View.GONE);
+        }
+
         setFabEnabled(!loading && !isDialogOpening);
-        if (ivHeaderAction != null) ivHeaderAction.setEnabled(!loading);
+
+        if (ivHeaderAction != null) {
+            ivHeaderAction.setEnabled(!loading);
+            ivHeaderAction.setAlpha(loading ? 0.5f : 1f);
+        }
     }
 
     private void setFabEnabled(boolean enabled) {
@@ -299,6 +326,10 @@ public class PurchasesFragment extends BaseFragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+
+        isLoading = false;
+        isDialogOpening = false;
+
         rv = null;
         progress = null;
         tvEmpty = null;

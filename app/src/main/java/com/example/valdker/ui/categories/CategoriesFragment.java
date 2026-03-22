@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.provider.OpenableColumns;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -99,6 +100,8 @@ public class CategoriesFragment extends BaseFragment {
 
     private long lastFabClickTime = 0L;
     private boolean isFormShowing = false;
+    private boolean isLoading = false;
+    private boolean isDeleteRunning = false;
     private String currentQuery = "";
 
     public CategoriesFragment() {
@@ -202,10 +205,12 @@ public class CategoriesFragment extends BaseFragment {
         }
 
         InsetsHelper.applyRecyclerBottomInsets(view, rv, TAG);
+        applyFabBottomInset(fabAdd, 56);
 
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-            rv.setHasFixedSize(true);
+            rv.setHasFixedSize(false);
+            rv.setClipToPadding(false);
         }
 
         adapter = new CategoryAdapter(items, new CategoryAdapter.Listener() {
@@ -224,6 +229,13 @@ public class CategoriesFragment extends BaseFragment {
 
         if (fabAdd != null) {
             fabAdd.setOnClickListener(v -> openAddCategorySafely());
+
+            fabAdd.post(() -> {
+                if (fabAdd == null) return;
+                fabAdd.bringToFront();
+                fabAdd.setElevation(100f);
+                fabAdd.setTranslationZ(100f);
+            });
         }
 
         if (btnBack != null) {
@@ -233,7 +245,10 @@ public class CategoriesFragment extends BaseFragment {
         }
 
         if (ivHeaderAction != null) {
-            ivHeaderAction.setOnClickListener(v -> fetch());
+            ivHeaderAction.setOnClickListener(v -> {
+                if (isLoading) return;
+                fetch();
+            });
         }
 
         if (etSearch != null) {
@@ -260,22 +275,15 @@ public class CategoriesFragment extends BaseFragment {
     private void openAddCategorySafely() {
         if (!isAdded()) return;
         if (isFormShowing) return;
+        if (isLoading) return;
 
-        long now = System.currentTimeMillis();
+        long now = SystemClock.elapsedRealtime();
         if (now - lastFabClickTime < FAB_CLICK_DELAY_MS) {
             return;
         }
         lastFabClickTime = now;
 
-        if (fabAdd != null) {
-            fabAdd.setEnabled(false);
-            fabAdd.postDelayed(() -> {
-                if (fabAdd != null && isAdded() && !isFormShowing) {
-                    fabAdd.setEnabled(true);
-                }
-            }, FAB_CLICK_DELAY_MS);
-        }
-
+        setFabEnabled(false);
         openForm(null);
     }
 
@@ -294,10 +302,13 @@ public class CategoriesFragment extends BaseFragment {
     }
 
     private void fetch() {
+        if (isLoading) return;
+        isLoading = true;
         setLoading(true);
 
         final String token = session != null ? session.getToken() : null;
         if (token == null || token.trim().isEmpty()) {
+            isLoading = false;
             setLoading(false);
             setEmpty(true);
             showToast(getContext(), "Token is missing. Please login again.");
@@ -306,6 +317,7 @@ public class CategoriesFragment extends BaseFragment {
 
         final Context ctx = getContext();
         if (ctx == null) {
+            isLoading = false;
             setLoading(false);
             return;
         }
@@ -317,6 +329,7 @@ public class CategoriesFragment extends BaseFragment {
                 url,
                 null,
                 (JSONArray res) -> {
+                    isLoading = false;
                     if (!isAdded()) return;
 
                     allItems.clear();
@@ -336,6 +349,7 @@ public class CategoriesFragment extends BaseFragment {
                     setLoading(false);
                 },
                 err -> {
+                    isLoading = false;
                     if (!isAdded()) return;
                     setLoading(false);
                     setEmpty(items.isEmpty());
@@ -379,7 +393,7 @@ public class CategoriesFragment extends BaseFragment {
         if (isFormShowing) return;
 
         isFormShowing = true;
-        if (fabAdd != null) fabAdd.setEnabled(false);
+        setFabEnabled(false);
 
         final Context formContext = requireContext();
         final Context appContext = formContext.getApplicationContext();
@@ -442,14 +456,7 @@ public class CategoriesFragment extends BaseFragment {
                 currentFormState = null;
             }
             clearFormIconState(state, false);
-
-            if (fabAdd != null && isAdded()) {
-                fabAdd.postDelayed(() -> {
-                    if (fabAdd != null && isAdded() && !isFormShowing) {
-                        fabAdd.setEnabled(true);
-                    }
-                }, 180L);
-            }
+            setFabEnabled(true);
         });
 
         dialog.setOnShowListener(d -> {
@@ -626,6 +633,7 @@ public class CategoriesFragment extends BaseFragment {
 
     private void confirmDelete(@NonNull Category c) {
         if (!isAdded()) return;
+        if (isDeleteRunning) return;
 
         new AlertDialog.Builder(requireContext())
                 .setTitle("Delete Category")
@@ -636,10 +644,13 @@ public class CategoriesFragment extends BaseFragment {
     }
 
     private void deleteCategory(int id) {
+        if (isDeleteRunning) return;
+        isDeleteRunning = true;
         setLoading(true);
 
         final Context ctx = getContext();
         if (ctx == null) {
+            isDeleteRunning = false;
             setLoading(false);
             return;
         }
@@ -651,12 +662,14 @@ public class CategoriesFragment extends BaseFragment {
                 Request.Method.DELETE,
                 url,
                 res -> {
+                    isDeleteRunning = false;
                     if (!isAdded()) return;
                     setLoading(false);
                     showToast(ctx, "Category deleted");
                     fetch();
                 },
                 err -> {
+                    isDeleteRunning = false;
                     if (!isAdded()) return;
                     setLoading(false);
                     toastVolleyError("Delete category failed", err);
@@ -674,7 +687,14 @@ public class CategoriesFragment extends BaseFragment {
 
     private void setLoading(boolean loading) {
         if (progress != null) progress.setVisibility(loading ? View.VISIBLE : View.GONE);
-        if (fabAdd != null) fabAdd.setEnabled(!loading && !isFormShowing);
+        setFabEnabled(!loading);
+    }
+
+    private void setFabEnabled(boolean enabled) {
+        if (fabAdd == null) return;
+        boolean finalEnabled = enabled && !isFormShowing && !isLoading && !isDeleteRunning;
+        fabAdd.setEnabled(finalEnabled);
+        fabAdd.setAlpha(finalEnabled ? 1f : 0.65f);
     }
 
     private void setEmpty(boolean empty) {

@@ -3,6 +3,7 @@ package com.example.valdker.ui.units;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -43,6 +44,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class UnitsFragment extends BaseFragment {
@@ -70,6 +72,9 @@ public class UnitsFragment extends BaseFragment {
 
     private long lastFabClickTime = 0L;
     private boolean isFormShowing = false;
+    private boolean isLoading = false;
+    private boolean isDeleteRunning = false;
+    private String currentQuery = "";
 
     public UnitsFragment() {
         super(R.layout.fragment_units);
@@ -108,7 +113,10 @@ public class UnitsFragment extends BaseFragment {
         }
 
         if (ivHeaderAction != null) {
-            ivHeaderAction.setOnClickListener(v -> fetch());
+            ivHeaderAction.setOnClickListener(v -> {
+                if (isLoading) return;
+                fetch();
+            });
         }
 
         if (etSearch != null) {
@@ -119,7 +127,8 @@ public class UnitsFragment extends BaseFragment {
 
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    applyFilter(s == null ? "" : s.toString());
+                    currentQuery = s == null ? "" : s.toString().trim();
+                    applyFilter(currentQuery);
                 }
 
                 @Override
@@ -129,10 +138,12 @@ public class UnitsFragment extends BaseFragment {
         }
 
         InsetsHelper.applyRecyclerBottomInsets(view, rv, TAG);
+        applyFabBottomInset(fabAdd, 56);
 
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-            rv.setHasFixedSize(true);
+            rv.setHasFixedSize(false);
+            rv.setClipToPadding(false);
         }
 
         adapter = new UnitAdapter(items, new UnitAdapter.Listener() {
@@ -153,13 +164,20 @@ public class UnitsFragment extends BaseFragment {
 
         if (fabAdd != null) {
             fabAdd.setOnClickListener(v -> openAddUnitSafely());
+
+            fabAdd.post(() -> {
+                if (fabAdd == null) return;
+                fabAdd.bringToFront();
+                fabAdd.setElevation(100f);
+                fabAdd.setTranslationZ(100f);
+            });
         }
 
         fetch();
     }
 
     private void applyFilter(@Nullable String query) {
-        String q = query == null ? "" : query.trim().toLowerCase();
+        String q = query == null ? "" : query.trim().toLowerCase(Locale.US);
 
         items.clear();
 
@@ -167,7 +185,7 @@ public class UnitsFragment extends BaseFragment {
             items.addAll(allItems);
         } else {
             for (Unit u : allItems) {
-                String name = u.name == null ? "" : u.name.toLowerCase();
+                String name = u.name == null ? "" : u.name.toLowerCase(Locale.US);
                 if (name.contains(q)) {
                     items.add(u);
                 }
@@ -184,22 +202,15 @@ public class UnitsFragment extends BaseFragment {
     private void openAddUnitSafely() {
         if (!isAdded()) return;
         if (isFormShowing) return;
+        if (isLoading) return;
 
-        long now = System.currentTimeMillis();
+        long now = SystemClock.elapsedRealtime();
         if (now - lastFabClickTime < FAB_CLICK_DELAY_MS) {
             return;
         }
         lastFabClickTime = now;
 
-        if (fabAdd != null) {
-            fabAdd.setEnabled(false);
-            fabAdd.postDelayed(() -> {
-                if (fabAdd != null && isAdded() && !isFormShowing) {
-                    fabAdd.setEnabled(true);
-                }
-            }, FAB_CLICK_DELAY_MS);
-        }
-
+        setFabEnabled(false);
         openForm(null);
     }
 
@@ -214,8 +225,7 @@ public class UnitsFragment extends BaseFragment {
 
     private void fetch() {
         if (!isAdded()) return;
-
-        setLoading(true);
+        if (isLoading) return;
 
         final String token = session != null ? session.getToken() : null;
         if (token == null || token.trim().isEmpty()) {
@@ -231,6 +241,9 @@ public class UnitsFragment extends BaseFragment {
             return;
         }
 
+        isLoading = true;
+        setLoading(true);
+
         final String url = ApiConfig.url(session, ENDPOINT_UNITS);
 
         JsonArrayRequest req = new JsonArrayRequest(
@@ -238,6 +251,7 @@ public class UnitsFragment extends BaseFragment {
                 url,
                 null,
                 (JSONArray res) -> {
+                    isLoading = false;
                     if (!isAdded()) return;
 
                     allItems.clear();
@@ -252,13 +266,14 @@ public class UnitsFragment extends BaseFragment {
                         allItems.add(u);
                     }
 
-                    applyFilter(etSearch != null ? etSearch.getText().toString() : "");
-
+                    applyFilter(currentQuery);
                     setLoading(false);
                     Log.i(TAG, "Fetched units: " + allItems.size());
                 },
                 err -> {
+                    isLoading = false;
                     if (!isAdded()) return;
+
                     setLoading(false);
                     setEmpty(items.isEmpty());
                     toastVolleyError("Fetch units failed", err);
@@ -279,7 +294,7 @@ public class UnitsFragment extends BaseFragment {
         if (isFormShowing) return;
 
         isFormShowing = true;
-        if (fabAdd != null) fabAdd.setEnabled(false);
+        setFabEnabled(false);
 
         View content = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_unit_form, null, false);
@@ -299,14 +314,7 @@ public class UnitsFragment extends BaseFragment {
 
         dialog.setOnDismissListener(d -> {
             isFormShowing = false;
-
-            if (fabAdd != null && isAdded()) {
-                fabAdd.postDelayed(() -> {
-                    if (fabAdd != null && isAdded() && !isFormShowing) {
-                        fabAdd.setEnabled(true);
-                    }
-                }, 180L);
-            }
+            setFabEnabled(true);
         });
 
         dialog.setOnShowListener(d -> {
@@ -340,8 +348,6 @@ public class UnitsFragment extends BaseFragment {
     private void createUnit(@NonNull String name, @NonNull AlertDialog dialog, @NonNull View positiveBtn) {
         if (!isAdded()) return;
 
-        setLoading(true);
-
         final String token = session != null ? session.getToken() : null;
         final String url = ApiConfig.url(session, ENDPOINT_UNITS);
 
@@ -353,10 +359,11 @@ public class UnitsFragment extends BaseFragment {
 
         Context ctx = getContext();
         if (ctx == null) {
-            setLoading(false);
             positiveBtn.setEnabled(true);
             return;
         }
+
+        setLoading(true);
 
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.POST,
@@ -391,8 +398,6 @@ public class UnitsFragment extends BaseFragment {
     private void updateUnit(int id, @NonNull String name, @NonNull AlertDialog dialog, @NonNull View positiveBtn) {
         if (!isAdded()) return;
 
-        setLoading(true);
-
         final String token = session != null ? session.getToken() : null;
         final String url = ApiConfig.url(session, ENDPOINT_UNITS) + id + "/";
 
@@ -404,10 +409,11 @@ public class UnitsFragment extends BaseFragment {
 
         Context ctx = getContext();
         if (ctx == null) {
-            setLoading(false);
             positiveBtn.setEnabled(true);
             return;
         }
+
+        setLoading(true);
 
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.PUT,
@@ -441,10 +447,11 @@ public class UnitsFragment extends BaseFragment {
 
     private void confirmDelete(@NonNull Unit u) {
         if (!isAdded()) return;
+        if (isDeleteRunning) return;
 
         new AlertDialog.Builder(requireContext())
                 .setTitle("Delete Unit")
-                .setMessage("Delete \"" + u.name + "\" ?")
+                .setMessage("Delete \"" + safeText(u.name) + "\"?")
                 .setNegativeButton("Cancel", (d, w) -> d.dismiss())
                 .setPositiveButton("Delete", (d, w) -> deleteUnit(u.id))
                 .show();
@@ -452,22 +459,24 @@ public class UnitsFragment extends BaseFragment {
 
     private void deleteUnit(int id) {
         if (!isAdded()) return;
-
-        setLoading(true);
+        if (isDeleteRunning) return;
 
         final String token = session != null ? session.getToken() : null;
         final String url = ApiConfig.url(session, ENDPOINT_UNITS) + id + "/";
 
         Context ctx = getContext();
         if (ctx == null) {
-            setLoading(false);
             return;
         }
+
+        isDeleteRunning = true;
+        setLoading(true);
 
         StringRequest req = new StringRequest(
                 Request.Method.DELETE,
                 url,
                 res -> {
+                    isDeleteRunning = false;
                     if (!isAdded()) return;
 
                     setLoading(false);
@@ -475,6 +484,7 @@ public class UnitsFragment extends BaseFragment {
                     fetch();
                 },
                 err -> {
+                    isDeleteRunning = false;
                     if (!isAdded()) return;
 
                     setLoading(false);
@@ -495,14 +505,28 @@ public class UnitsFragment extends BaseFragment {
         if (progress != null) {
             progress.setVisibility(loading ? View.VISIBLE : View.GONE);
         }
-        if (fabAdd != null) {
-            fabAdd.setEnabled(!loading && !isFormShowing);
+        setFabEnabled(!loading);
+        if (ivHeaderAction != null) {
+            ivHeaderAction.setEnabled(!loading);
+            ivHeaderAction.setAlpha(loading ? 0.5f : 1f);
         }
+    }
+
+    private void setFabEnabled(boolean enabled) {
+        if (fabAdd == null) return;
+        boolean finalEnabled = enabled && !isFormShowing && !isLoading && !isDeleteRunning;
+        fabAdd.setEnabled(finalEnabled);
+        fabAdd.setAlpha(finalEnabled ? 1f : 0.65f);
     }
 
     private void setEmpty(boolean empty) {
         if (tvEmpty != null) {
             tvEmpty.setVisibility(empty ? View.VISIBLE : View.GONE);
+            if (empty) {
+                tvEmpty.setText(currentQuery == null || currentQuery.trim().isEmpty()
+                        ? "No units yet"
+                        : "No matching units");
+            }
         }
         if (rv != null) {
             rv.setVisibility(empty ? View.GONE : View.VISIBLE);
@@ -513,6 +537,13 @@ public class UnitsFragment extends BaseFragment {
     private String safeText(@Nullable TextInputEditText et) {
         if (et == null || et.getText() == null) return "";
         return et.getText().toString().trim();
+    }
+
+    @NonNull
+    private String safeText(@Nullable String text) {
+        if (text == null) return "-";
+        String trimmed = text.trim();
+        return trimmed.isEmpty() ? "-" : trimmed;
     }
 
     @NonNull
@@ -545,6 +576,23 @@ public class UnitsFragment extends BaseFragment {
     private void toast(@NonNull String msg) {
         if (!isAdded()) return;
         Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        isLoading = false;
+        isFormShowing = false;
+        isDeleteRunning = false;
+
+        btnBack = null;
+        ivHeaderAction = null;
+        tvTitle = null;
+        etSearch = null;
+        rv = null;
+        progress = null;
+        tvEmpty = null;
+        fabAdd = null;
     }
 
     static class Unit {
