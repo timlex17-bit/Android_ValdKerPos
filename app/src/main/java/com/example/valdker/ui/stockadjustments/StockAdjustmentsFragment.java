@@ -25,6 +25,7 @@ import com.example.valdker.models.StockAdjustment;
 import com.example.valdker.network.ApiClient;
 import com.example.valdker.network.ApiConfig;
 import com.example.valdker.repositories.StockAdjustmentRepository;
+import com.example.valdker.utils.InsetsHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONArray;
@@ -36,6 +37,7 @@ import java.util.Map;
 
 public class StockAdjustmentsFragment extends BaseFragment {
 
+    private static final String TAG = "STOCK_ADJUSTMENTS";
     private static final String TAG_ADD_DIALOG = "add_stock_adjustment";
     private static final long CLICK_GUARD_MS = 700L;
 
@@ -71,6 +73,7 @@ public class StockAdjustmentsFragment extends BaseFragment {
         applyTopInset(view.findViewById(R.id.topBar));
 
         bindViews(view);
+        applyInsets(view);
         setupHeader();
         setupRecycler();
         setupSwipe();
@@ -90,6 +93,11 @@ public class StockAdjustmentsFragment extends BaseFragment {
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
     }
 
+    private void applyInsets(@NonNull View root) {
+        InsetsHelper.applyRecyclerBottomInsets(root, rv, TAG);
+        applyFabBottomInset(fab, 56);
+    }
+
     private void setupHeader() {
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> {
@@ -103,6 +111,7 @@ public class StockAdjustmentsFragment extends BaseFragment {
             ivHeaderAction.setOnClickListener(v -> {
                 if (!isAdded()) return;
                 if (isRapidRefreshClick()) return;
+                if (isLoadingList) return;
 
                 if (swipe != null && !swipe.isRefreshing()) {
                     swipe.setRefreshing(true);
@@ -117,6 +126,7 @@ public class StockAdjustmentsFragment extends BaseFragment {
 
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         rv.setHasFixedSize(false);
+        rv.setClipToPadding(false);
 
         adapter = new StockAdjustmentsAdapter(data, item -> {
             if (!canRunRowClick()) return;
@@ -142,8 +152,7 @@ public class StockAdjustmentsFragment extends BaseFragment {
     private void setupFab() {
         if (fab == null) return;
 
-        fab.setEnabled(false);
-        fab.setAlpha(0.4f);
+        setFabEnabled(false);
 
         fab.post(() -> {
             if (fab == null) return;
@@ -176,6 +185,7 @@ public class StockAdjustmentsFragment extends BaseFragment {
     private void openAddDialogSafely() {
         if (!isAdded()) return;
         if (isAddDialogShowing) return;
+        if (isLoadingList) return;
 
         long now = SystemClock.elapsedRealtime();
         if (now - lastFabClickTime < CLICK_GUARD_MS) {
@@ -230,13 +240,7 @@ public class StockAdjustmentsFragment extends BaseFragment {
         if (isLoadingList) return;
 
         isLoadingList = true;
-
-        if (tvEmpty != null) {
-            tvEmpty.setVisibility(View.GONE);
-        }
-        if (swipe != null && !swipe.isRefreshing() && progress != null) {
-            progress.setVisibility(View.VISIBLE);
-        }
+        showListLoading(true);
 
         StockAdjustmentRepository.fetch(requireContext(), new StockAdjustmentRepository.ListCallback() {
             @Override
@@ -244,9 +248,7 @@ public class StockAdjustmentsFragment extends BaseFragment {
                 if (!isAdded()) return;
 
                 isLoadingList = false;
-
-                if (progress != null) progress.setVisibility(View.GONE);
-                if (swipe != null) swipe.setRefreshing(false);
+                showListLoading(false);
 
                 data.clear();
                 if (list != null) {
@@ -268,9 +270,7 @@ public class StockAdjustmentsFragment extends BaseFragment {
                 if (!isAdded()) return;
 
                 isLoadingList = false;
-
-                if (progress != null) progress.setVisibility(View.GONE);
-                if (swipe != null) swipe.setRefreshing(false);
+                showListLoading(false);
 
                 toast(message == null ? "Failed to load stock adjustments" : message);
 
@@ -289,7 +289,7 @@ public class StockAdjustmentsFragment extends BaseFragment {
         isLoadingProducts = true;
 
         SessionManager sm = new SessionManager(requireContext());
-        String url = ApiConfig.url(sm, "api/products/");
+        String url = ApiConfig.url(sm, "api/products/?track_stock=true");
 
         JsonArrayRequest req = new JsonArrayRequest(
                 Request.Method.GET,
@@ -343,10 +343,37 @@ public class StockAdjustmentsFragment extends BaseFragment {
         ApiClient.getInstance(requireContext()).add(req);
     }
 
+    private void showListLoading(boolean loading) {
+        if (loading) {
+            if (tvEmpty != null) {
+                tvEmpty.setVisibility(View.GONE);
+            }
+            if (swipe != null && !swipe.isRefreshing() && progress != null) {
+                progress.setVisibility(View.VISIBLE);
+            }
+        } else {
+            if (progress != null) {
+                progress.setVisibility(View.GONE);
+            }
+            if (swipe != null) {
+                swipe.setRefreshing(false);
+            }
+        }
+
+        if (ivHeaderAction != null) {
+            boolean enabled = !loading;
+            ivHeaderAction.setEnabled(enabled);
+            ivHeaderAction.setAlpha(enabled ? 1f : 0.5f);
+        }
+
+        setFabEnabled(productsLoaded);
+    }
+
     private void setFabEnabled(boolean enabled) {
         if (fab == null) return;
-        fab.setEnabled(enabled);
-        fab.setAlpha(enabled ? 1f : 0.4f);
+        boolean finalEnabled = enabled && !isAddDialogShowing && !isLoadingList && !isLoadingProducts;
+        fab.setEnabled(finalEnabled);
+        fab.setAlpha(finalEnabled ? 1f : 0.4f);
     }
 
     private void toast(@NonNull String message) {
@@ -372,7 +399,10 @@ public class StockAdjustmentsFragment extends BaseFragment {
         btnBack = null;
         ivHeaderAction = null;
         adapter = null;
+
         isAddDialogShowing = false;
+        isLoadingList = false;
+        isLoadingProducts = false;
 
         super.onDestroyView();
     }

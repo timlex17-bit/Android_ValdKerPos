@@ -28,6 +28,7 @@ import com.example.valdker.models.InventoryCount;
 import com.example.valdker.network.ApiClient;
 import com.example.valdker.network.ApiConfig;
 import com.example.valdker.repositories.InventoryCountRepository;
+import com.example.valdker.utils.InsetsHelper;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -45,10 +46,13 @@ public class InventoryCountsFragment extends BaseFragment {
     private static final int MAX_RETRIES = 1;
     private static final float BACKOFF_MULT = 1.2f;
     private static final long CLICK_GUARD_MS = 700L;
+    private static final String TAG = "INVENTORY_COUNTS";
 
     private SwipeRefreshLayout swipe;
     private ProgressBar progress;
     private TextView tvEmpty;
+    private TextView tvEmptySub;
+    private View emptyState;
     private RecyclerView rv;
     private FloatingActionButton fab;
     private EditText etSearch;
@@ -83,6 +87,7 @@ public class InventoryCountsFragment extends BaseFragment {
         applyTopInset(view.findViewById(R.id.topBar));
 
         bindViews(view);
+        applyInsets(view);
         setupHeader();
         setupRecycler();
         setupSearch();
@@ -97,11 +102,18 @@ public class InventoryCountsFragment extends BaseFragment {
         swipe = view.findViewById(R.id.swipe);
         progress = view.findViewById(R.id.progress);
         tvEmpty = view.findViewById(R.id.tvEmpty);
+        tvEmptySub = view.findViewById(R.id.tvEmptySub);
+        emptyState = view.findViewById(R.id.emptyState);
         rv = view.findViewById(R.id.rv);
         fab = view.findViewById(R.id.fabAdd);
         etSearch = view.findViewById(R.id.etSearch);
         btnBack = view.findViewById(R.id.btnBack);
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
+    }
+
+    private void applyInsets(@NonNull View root) {
+        InsetsHelper.applyRecyclerBottomInsets(root, rv, TAG);
+        applyFabBottomInset(fab, 56);
     }
 
     private void setupHeader() {
@@ -117,6 +129,7 @@ public class InventoryCountsFragment extends BaseFragment {
             ivHeaderAction.setOnClickListener(v -> {
                 if (!isAdded()) return;
                 if (isRapidRefreshClick()) return;
+                if (isLoadingCounts) return;
 
                 if (swipe != null && !swipe.isRefreshing()) {
                     swipe.setRefreshing(true);
@@ -131,6 +144,7 @@ public class InventoryCountsFragment extends BaseFragment {
 
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         rv.setHasFixedSize(false);
+        rv.setClipToPadding(false);
 
         adapter = new InventoryCountAdapter(
                 data,
@@ -193,8 +207,8 @@ public class InventoryCountsFragment extends BaseFragment {
     private void setupFab() {
         if (fab == null) return;
 
-        fab.setEnabled(true);
-        fab.setAlpha(1f);
+        setFabEnabled(true);
+
         fab.post(() -> {
             if (fab == null) return;
             fab.bringToFront();
@@ -206,6 +220,7 @@ public class InventoryCountsFragment extends BaseFragment {
             if (!isAdded()) return;
             if (isRapidFabClick()) return;
             if (isDialogOpening) return;
+            if (isLoadingCounts) return;
 
             if (productsJson == null || productsJson.length() == 0) {
                 toast("Loading products...");
@@ -249,6 +264,7 @@ public class InventoryCountsFragment extends BaseFragment {
         if (isStateSaved()) return;
 
         isDialogOpening = true;
+        setFabEnabled(false);
 
         InventoryCountFormDialog dialog = InventoryCountFormDialog.newAddInstance(
                 productsJson != null ? productsJson.toString() : "[]"
@@ -256,10 +272,14 @@ public class InventoryCountsFragment extends BaseFragment {
 
         dialog.setOnSavedListener(() -> {
             isDialogOpening = false;
+            setFabEnabled(true);
             loadCounts();
         });
 
-        dialog.setOnDismissListener(d -> isDialogOpening = false);
+        dialog.setOnDismissListener(d -> {
+            isDialogOpening = false;
+            setFabEnabled(true);
+        });
 
         dialog.show(getParentFragmentManager(), "add_inventory_count");
     }
@@ -270,6 +290,7 @@ public class InventoryCountsFragment extends BaseFragment {
         if (isStateSaved()) return;
 
         isDialogOpening = true;
+        setFabEnabled(false);
 
         InventoryCountFormDialog dialog = InventoryCountFormDialog.newEditInstance(
                 productsJson != null ? productsJson.toString() : "[]",
@@ -278,10 +299,14 @@ public class InventoryCountsFragment extends BaseFragment {
 
         dialog.setOnSavedListener(() -> {
             isDialogOpening = false;
+            setFabEnabled(true);
             loadCounts();
         });
 
-        dialog.setOnDismissListener(d -> isDialogOpening = false);
+        dialog.setOnDismissListener(d -> {
+            isDialogOpening = false;
+            setFabEnabled(true);
+        });
 
         dialog.show(getParentFragmentManager(), "edit_inventory_count");
     }
@@ -291,19 +316,15 @@ public class InventoryCountsFragment extends BaseFragment {
         if (isLoadingCounts) return;
 
         isLoadingCounts = true;
-
-        if (tvEmpty != null) tvEmpty.setVisibility(View.GONE);
-        if (swipe != null && !swipe.isRefreshing() && progress != null) {
-            progress.setVisibility(View.VISIBLE);
-        }
+        showCountsLoading(true);
 
         InventoryCountRepository.fetch(requireContext(), new InventoryCountRepository.Callback() {
             @Override
             public void onSuccess(@NonNull List<InventoryCount> list) {
                 isLoadingCounts = false;
+                if (!isAdded()) return;
 
-                if (progress != null) progress.setVisibility(View.GONE);
-                if (swipe != null) swipe.setRefreshing(false);
+                showCountsLoading(false);
 
                 allData.clear();
                 allData.addAll(list);
@@ -313,10 +334,9 @@ public class InventoryCountsFragment extends BaseFragment {
             @Override
             public void onError(@NonNull String message) {
                 isLoadingCounts = false;
+                if (!isAdded()) return;
 
-                if (progress != null) progress.setVisibility(View.GONE);
-                if (swipe != null) swipe.setRefreshing(false);
-
+                showCountsLoading(false);
                 toast(message);
                 updateEmptyState();
             }
@@ -328,10 +348,10 @@ public class InventoryCountsFragment extends BaseFragment {
         if (isLoadingProducts) return;
 
         isLoadingProducts = true;
-        setFabLoading(true);
+        setFabEnabled(false);
 
         SessionManager sm = new SessionManager(requireContext());
-        String url = ApiConfig.url(sm, "api/products/");
+        String url = ApiConfig.url(sm, "api/products/?track_stock=true");
 
         JsonArrayRequest req = new JsonArrayRequest(
                 Request.Method.GET,
@@ -339,11 +359,10 @@ public class InventoryCountsFragment extends BaseFragment {
                 null,
                 response -> {
                     isLoadingProducts = false;
-                    setFabLoading(false);
-
                     if (!isAdded()) return;
 
                     productsJson = response;
+                    setFabEnabled(true);
 
                     if (productsJson == null || productsJson.length() == 0) {
                         toast("Products are empty");
@@ -360,11 +379,10 @@ public class InventoryCountsFragment extends BaseFragment {
                 },
                 error -> {
                     isLoadingProducts = false;
-                    setFabLoading(false);
-
                     if (!isAdded()) return;
 
                     productsJson = null;
+                    setFabEnabled(true);
 
                     String msg = "Failed load products";
                     if (error != null && error.networkResponse != null) {
@@ -410,7 +428,6 @@ public class InventoryCountsFragment extends BaseFragment {
                 if (item == null) continue;
 
                 String title = item.title == null ? "" : item.title.trim().toLowerCase(Locale.getDefault());
-
                 if (title.contains(query)) {
                     data.add(item);
                 }
@@ -429,8 +446,27 @@ public class InventoryCountsFragment extends BaseFragment {
 
     private void updateEmptyState() {
         boolean showEmpty = data.isEmpty();
-        if (tvEmpty != null) {
+
+        if (emptyState != null) {
+            emptyState.setVisibility(showEmpty ? View.VISIBLE : View.GONE);
+        } else if (tvEmpty != null) {
             tvEmpty.setVisibility(showEmpty ? View.VISIBLE : View.GONE);
+        }
+
+        if (tvEmpty != null) {
+            tvEmpty.setText(
+                    (currentQuery == null || currentQuery.trim().isEmpty())
+                            ? "No inventory counts found"
+                            : "No matching inventory counts"
+            );
+        }
+
+        if (tvEmptySub != null) {
+            tvEmptySub.setText(
+                    (currentQuery == null || currentQuery.trim().isEmpty())
+                            ? "Tap + to create a new inventory count."
+                            : "Try another keyword."
+            );
         }
     }
 
@@ -447,6 +483,7 @@ public class InventoryCountsFragment extends BaseFragment {
                     if (isDeleteRunning) return;
 
                     isDeleteRunning = true;
+                    setFabEnabled(false);
 
                     InventoryCountRepository.delete(
                             requireContext(),
@@ -455,14 +492,20 @@ public class InventoryCountsFragment extends BaseFragment {
                                 @Override
                                 public void onSuccess() {
                                     isDeleteRunning = false;
+                                    if (!isAdded()) return;
+
                                     toast("Deleted");
+                                    setFabEnabled(true);
                                     loadCounts();
                                 }
 
                                 @Override
                                 public void onError(@NonNull String message) {
                                     isDeleteRunning = false;
+                                    if (!isAdded()) return;
+
                                     toast(message);
+                                    setFabEnabled(true);
                                 }
                             }
                     );
@@ -470,10 +513,35 @@ public class InventoryCountsFragment extends BaseFragment {
                 .show();
     }
 
-    private void setFabLoading(boolean loading) {
+    private void showCountsLoading(boolean loading) {
+        if (loading) {
+            if (emptyState != null) {
+                emptyState.setVisibility(View.GONE);
+            } else if (tvEmpty != null) {
+                tvEmpty.setVisibility(View.GONE);
+            }
+            if (swipe != null && !swipe.isRefreshing() && progress != null) {
+                progress.setVisibility(View.VISIBLE);
+            }
+        } else {
+            if (progress != null) progress.setVisibility(View.GONE);
+            if (swipe != null) swipe.setRefreshing(false);
+        }
+
+        if (ivHeaderAction != null) {
+            boolean enabled = !loading;
+            ivHeaderAction.setEnabled(enabled);
+            ivHeaderAction.setAlpha(enabled ? 1f : 0.5f);
+        }
+
+        setFabEnabled(true);
+    }
+
+    private void setFabEnabled(boolean enabled) {
         if (fab == null) return;
-        fab.setEnabled(!loading);
-        fab.setAlpha(loading ? 0.65f : 1f);
+        boolean finalEnabled = enabled && !isDialogOpening && !isLoadingCounts && !isLoadingProducts && !isDeleteRunning;
+        fab.setEnabled(finalEnabled);
+        fab.setAlpha(finalEnabled ? 1f : 0.65f);
     }
 
     @NonNull
@@ -499,11 +567,19 @@ public class InventoryCountsFragment extends BaseFragment {
         swipe = null;
         progress = null;
         tvEmpty = null;
+        tvEmptySub = null;
+        emptyState = null;
         rv = null;
         fab = null;
         etSearch = null;
         btnBack = null;
         ivHeaderAction = null;
+        adapter = null;
+
+        isLoadingCounts = false;
+        isLoadingProducts = false;
+        isDeleteRunning = false;
+        isDialogOpening = false;
 
         super.onDestroyView();
     }

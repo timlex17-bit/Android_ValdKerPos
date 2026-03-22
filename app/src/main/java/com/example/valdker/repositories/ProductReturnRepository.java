@@ -116,29 +116,25 @@ public class ProductReturnRepository {
             JSONObject body = new JSONObject();
             body.put("order", orderId);
 
-            if (customerId > 0) body.put("customer", customerId);
+            if (customerId > 0) {
+                body.put("customer_id", customerId);
+            }
 
-            if (note != null) body.put("note", note);
-
-            // optional
-            if (returnedAtIso != null && !returnedAtIso.trim().isEmpty()) {
-                body.put("returned_at", returnedAtIso);
+            if (note != null) {
+                body.put("note", note);
             }
 
             JSONArray arr = new JSONArray();
             for (CreateItem it : items) {
                 JSONObject jo = new JSONObject();
-
                 jo.put("product_id", it.productId);
-
-                // optional fallback
-                jo.put("product", it.productId);
-
                 jo.put("quantity", it.quantity);
                 jo.put("unit_price", it.unitPrice);
                 arr.put(jo);
             }
             body.put("items", arr);
+
+            Log.d(TAG, "POST body: " + body.toString());
 
             String url = ApiConfig.url(new SessionManager(ctx), ENDPOINT);
 

@@ -1,492 +1,567 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/rootSettings"
+    android:id="@+id/rootSettingsContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F6F7FB"
-    android:clipToPadding="false"
-    android:fillViewport="true"
-    android:overScrollMode="never">
+    android:background="#F6F7FB">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingStart="16dp"
-        android:paddingTop="16dp"
-        android:paddingEnd="16dp"
-        android:paddingBottom="16dp">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <!-- Header -->
-        <com.google.android.material.card.MaterialCardView
+        <!-- TOP BAR -->
+        <LinearLayout
+            android:id="@+id/topBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardBackgroundColor="#FFFFFF"
-            app:cardCornerRadius="22dp"
-            app:cardElevation="0dp"
-            app:strokeColor="#E5E7EB"
-            app:strokeWidth="1dp">
+            android:background="#22C55E"
+            android:elevation="4dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="12dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="10dp">
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <ImageView
+                android:id="@+id/btnBack"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Back"
+                android:padding="8dp"
+                android:src="@drawable/ic_arrow_back"
+                android:tint="@android:color/white" />
+
+            <TextView
+                android:id="@+id/tvTopTitle"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="16dp">
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:text="Settings"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/tvTitleSettings"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Shop Settings"
-                    android:textColor="#111827"
-                    android:textSize="22sp"
-                    android:textStyle="bold" />
+            <ImageView
+                android:id="@+id/ivHeaderAction"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Refresh"
+                android:padding="8dp"
+                android:src="@android:drawable/ic_popup_sync"
+                android:tint="@android:color/white" />
+        </LinearLayout>
 
-                <ProgressBar
-                    android:id="@+id/progressSettings"
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
-                    android:visibility="gone" />
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- SERVER -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardServer"
+        <ScrollView
+            android:id="@+id/rootSettings"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardBackgroundColor="#FFFFFF"
-            app:cardCornerRadius="22dp"
-            app:cardElevation="0dp"
-            app:strokeColor="#E5E7EB"
-            app:strokeWidth="1dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="18dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Server"
-                    android:textColor="#111827"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    app:boxBackgroundMode="outline"
-                    app:boxCornerRadiusBottomEnd="16dp"
-                    app:boxCornerRadiusBottomStart="16dp"
-                    app:boxCornerRadiusTopEnd="16dp"
-                    app:boxCornerRadiusTopStart="16dp"
-                    app:boxStrokeColor="#E5E7EB"
-                    app:boxStrokeWidth="1dp"
-                    app:hintTextColor="#6B7280">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etBaseUrl"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Base URL (ex: https://valdker.onrender.com/)"
-                        android:inputType="textUri"
-                        android:paddingHorizontal="14dp"
-                        android:paddingVertical="14dp" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnSaveBaseUrl"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="12dp"
-                    android:backgroundTint="#FFFFFF"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:text="Save Server"
-                    android:textAllCaps="false"
-                    android:textColor="#111827"
-                    app:cornerRadius="14dp"
-                    app:strokeColor="#E5E7EB"
-                    app:strokeWidth="1dp" />
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- PRINTER -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardPrinter"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardBackgroundColor="#FFFFFF"
-            app:cardCornerRadius="22dp"
-            app:cardElevation="0dp"
-            app:strokeColor="#E5E7EB"
-            app:strokeWidth="1dp">
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="#F6F7FB"
+            android:clipToPadding="false"
+            android:fillViewport="true"
+            android:overScrollMode="never">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="18dp">
+                android:paddingStart="16dp"
+                android:paddingTop="16dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="16dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Printer"
-                        android:textColor="#111827"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                    <View
-                        android:id="@+id/viewPrinterDot"
-                        android:layout_width="10dp"
-                        android:layout_height="10dp"
-                        android:background="@drawable/bg_status_dot_red" />
-
-                    <TextView
-                        android:id="@+id/tvPrinterStatus"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:text="Not connected"
-                        android:textColor="#6B7280"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/tvPrinterSelected"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="Selected printer: -"
-                    android:textColor="#111827"
-                    android:textSize="12sp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:orientation="horizontal">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnOpenPrinterSettings"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="0dp"
-                        android:layout_height="44dp"
-                        android:layout_weight="1"
-                        android:backgroundTint="#FFFFFF"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:text="Settings"
-                        android:textAllCaps="false"
-                        android:textColor="#111827"
-                        app:cornerRadius="14dp"
-                        app:strokeColor="#E5E7EB"
-                        app:strokeWidth="1dp" />
-
-                    <Space
-                        android:layout_width="12dp"
-                        android:layout_height="0dp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnTestPrint"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="0dp"
-                        android:layout_height="44dp"
-                        android:layout_weight="1"
-                        android:backgroundTint="#FFFFFF"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:text="Test Print"
-                        android:textAllCaps="false"
-                        android:textColor="#111827"
-                        app:cornerRadius="14dp"
-                        app:strokeColor="#E5E7EB"
-                        app:strokeWidth="1dp" />
-                </LinearLayout>
-
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/switchAutoPrint"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="Auto print after payment"
-                    android:textColor="#111827" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:text="Paper Width"
-                    android:textColor="#111827"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-
-                <com.google.android.material.chip.ChipGroup
-                    android:id="@+id/chipGroupPaperWidth"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    app:chipSpacingHorizontal="10dp"
-                    app:chipSpacingVertical="10dp"
-                    app:selectionRequired="true"
-                    app:singleSelection="true">
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipPaper58"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="58mm"
-                        app:chipBackgroundColor="#FFFFFF"
-                        app:chipCornerRadius="14dp"
-                        app:chipStrokeColor="#E5E7EB"
-                        app:chipStrokeWidth="1dp" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipPaper80"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="80mm"
-                        app:chipBackgroundColor="#FFFFFF"
-                        app:chipCornerRadius="14dp"
-                        app:chipStrokeColor="#E5E7EB"
-                        app:chipStrokeWidth="1dp" />
-                </com.google.android.material.chip.ChipGroup>
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- BRANDING -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardImages"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardBackgroundColor="#FFFFFF"
-            app:cardCornerRadius="22dp"
-            app:cardElevation="0dp"
-            app:strokeColor="#E5E7EB"
-            app:strokeWidth="1dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="18dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Branding"
-                    android:textColor="#111827"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:text="Shop Logo"
-                    android:textColor="#6B7280"
-                    android:textSize="12sp" />
-
+                <!-- Header -->
                 <com.google.android.material.card.MaterialCardView
-                    android:layout_width="88dp"
-                    android:layout_height="88dp"
-                    android:layout_marginTop="10dp"
-                    app:cardBackgroundColor="#F3F4F6"
-                    app:cardCornerRadius="44dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="22dp"
                     app:cardElevation="0dp"
                     app:strokeColor="#E5E7EB"
                     app:strokeWidth="1dp">
 
-                    <ImageView
-                        android:id="@+id/imgLogoPreview"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:contentDescription="Logo preview"
-                        android:scaleType="centerCrop"
-                        android:src="@drawable/ic_store" />
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/tvTitleSettings"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Shop Settings"
+                            android:textColor="#111827"
+                            android:textSize="22sp"
+                            android:textStyle="bold" />
+
+                        <ProgressBar
+                            android:id="@+id/progressSettings"
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:visibility="gone" />
+
+                    </LinearLayout>
+
                 </com.google.android.material.card.MaterialCardView>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnPickLogo"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                <!-- SERVER -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardServer"
                     android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="12dp"
-                    android:backgroundTint="#FFFFFF"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:text="Choose Logo"
-                    android:textAllCaps="false"
-                    android:textColor="#111827"
-                    app:cornerRadius="14dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="22dp"
+                    app:cardElevation="0dp"
                     app:strokeColor="#E5E7EB"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="18dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Server"
+                            android:textColor="#111827"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusBottomEnd="16dp"
+                            app:boxCornerRadiusBottomStart="16dp"
+                            app:boxCornerRadiusTopEnd="16dp"
+                            app:boxCornerRadiusTopStart="16dp"
+                            app:boxStrokeColor="#E5E7EB"
+                            app:boxStrokeWidth="1dp"
+                            app:hintTextColor="#6B7280">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etBaseUrl"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Base URL (ex: https://valdker.onrender.com/)"
+                                android:inputType="textUri"
+                                android:paddingHorizontal="14dp"
+                                android:paddingVertical="14dp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnSaveBaseUrl"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="44dp"
+                            android:layout_marginTop="12dp"
+                            android:backgroundTint="#FFFFFF"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:text="Save Server"
+                            android:textAllCaps="false"
+                            android:textColor="#111827"
+                            app:cornerRadius="14dp"
+                            app:strokeColor="#E5E7EB"
+                            app:strokeWidth="1dp" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- PRINTER -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardPrinter"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="22dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#E5E7EB"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="18dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Printer"
+                                android:textColor="#111827"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <View
+                                android:id="@+id/viewPrinterDot"
+                                android:layout_width="10dp"
+                                android:layout_height="10dp"
+                                android:background="@drawable/bg_status_dot_red" />
+
+                            <TextView
+                                android:id="@+id/tvPrinterStatus"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:text="Not connected"
+                                android:textColor="#6B7280"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvPrinterSelected"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:text="Selected printer: -"
+                            android:textColor="#111827"
+                            android:textSize="12sp" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnOpenPrinterSettings"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                android:layout_width="0dp"
+                                android:layout_height="44dp"
+                                android:layout_weight="1"
+                                android:backgroundTint="#FFFFFF"
+                                android:insetTop="0dp"
+                                android:insetBottom="0dp"
+                                android:text="Settings"
+                                android:textAllCaps="false"
+                                android:textColor="#111827"
+                                app:cornerRadius="14dp"
+                                app:strokeColor="#E5E7EB"
+                                app:strokeWidth="1dp" />
+
+                            <Space
+                                android:layout_width="12dp"
+                                android:layout_height="0dp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnTestPrint"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                android:layout_width="0dp"
+                                android:layout_height="44dp"
+                                android:layout_weight="1"
+                                android:backgroundTint="#FFFFFF"
+                                android:insetTop="0dp"
+                                android:insetBottom="0dp"
+                                android:text="Test Print"
+                                android:textAllCaps="false"
+                                android:textColor="#111827"
+                                app:cornerRadius="14dp"
+                                app:strokeColor="#E5E7EB"
+                                app:strokeWidth="1dp" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switchAutoPrint"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="Auto print after payment"
+                            android:textColor="#111827" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:text="Paper Width"
+                            android:textColor="#111827"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <com.google.android.material.chip.ChipGroup
+                            android:id="@+id/chipGroupPaperWidth"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            app:chipSpacingHorizontal="10dp"
+                            app:chipSpacingVertical="10dp"
+                            app:selectionRequired="true"
+                            app:singleSelection="true">
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipPaper58"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:checkable="true"
+                                android:clickable="true"
+                                android:text="58mm"
+                                android:textColor="#111827"
+                                app:checkedIconVisible="false"
+                                app:chipBackgroundColor="@color/chip_paper_bg_selector"
+                                app:chipCornerRadius="14dp"
+                                app:chipStrokeColor="@color/chip_paper_stroke_selector"
+                                app:chipStrokeWidth="1dp" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipPaper80"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:checkable="true"
+                                android:clickable="true"
+                                android:text="80mm"
+                                android:textColor="#111827"
+                                app:checkedIconVisible="false"
+                                app:chipBackgroundColor="@color/chip_paper_bg_selector"
+                                app:chipCornerRadius="14dp"
+                                app:chipStrokeColor="@color/chip_paper_stroke_selector"
+                                app:chipStrokeWidth="1dp" />
+
+                        </com.google.android.material.chip.ChipGroup>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- BRANDING -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardImages"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="22dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#E5E7EB"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="18dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Branding"
+                            android:textColor="#111827"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:text="Shop Logo"
+                            android:textColor="#6B7280"
+                            android:textSize="12sp" />
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="88dp"
+                            android:layout_height="88dp"
+                            android:layout_marginTop="10dp"
+                            app:cardBackgroundColor="#F3F4F6"
+                            app:cardCornerRadius="44dp"
+                            app:cardElevation="0dp"
+                            app:strokeColor="#E5E7EB"
+                            app:strokeWidth="1dp">
+
+                            <ImageView
+                                android:id="@+id/imgLogoPreview"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:contentDescription="Logo preview"
+                                android:scaleType="centerCrop"
+                                android:src="@drawable/ic_store" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnPickLogo"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="44dp"
+                            android:layout_marginTop="12dp"
+                            android:backgroundTint="#FFFFFF"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:text="Choose Logo"
+                            android:textAllCaps="false"
+                            android:textColor="#111827"
+                            app:cornerRadius="14dp"
+                            app:strokeColor="#E5E7EB"
+                            app:strokeWidth="1dp" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- SHOP PROFILE -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardForm"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="22dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#E5E7EB"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="18dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Shop Profile"
+                            android:textColor="#111827"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusBottomEnd="16dp"
+                            app:boxCornerRadiusBottomStart="16dp"
+                            app:boxCornerRadiusTopEnd="16dp"
+                            app:boxCornerRadiusTopStart="16dp"
+                            app:boxStrokeColor="#E5E7EB"
+                            app:boxStrokeWidth="1dp"
+                            app:hintTextColor="#6B7280">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etShopName"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Name *"
+                                android:paddingHorizontal="14dp"
+                                android:paddingVertical="14dp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusBottomEnd="16dp"
+                            app:boxCornerRadiusBottomStart="16dp"
+                            app:boxCornerRadiusTopEnd="16dp"
+                            app:boxCornerRadiusTopStart="16dp"
+                            app:boxStrokeColor="#E5E7EB"
+                            app:boxStrokeWidth="1dp"
+                            app:hintTextColor="#6B7280">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etShopAddress"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Address *"
+                                android:paddingHorizontal="14dp"
+                                android:paddingVertical="14dp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusBottomEnd="16dp"
+                            app:boxCornerRadiusBottomStart="16dp"
+                            app:boxCornerRadiusTopEnd="16dp"
+                            app:boxCornerRadiusTopStart="16dp"
+                            app:boxStrokeColor="#E5E7EB"
+                            app:boxStrokeWidth="1dp"
+                            app:hintTextColor="#6B7280">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etShopPhone"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Phone *"
+                                android:inputType="phone"
+                                android:paddingHorizontal="14dp"
+                                android:paddingVertical="14dp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusBottomEnd="16dp"
+                            app:boxCornerRadiusBottomStart="16dp"
+                            app:boxCornerRadiusTopEnd="16dp"
+                            app:boxCornerRadiusTopStart="16dp"
+                            app:boxStrokeColor="#E5E7EB"
+                            app:boxStrokeWidth="1dp"
+                            app:hintTextColor="#6B7280">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etShopEmail"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Email"
+                                android:inputType="textEmailAddress"
+                                android:paddingHorizontal="14dp"
+                                android:paddingVertical="14dp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnSaveShop"
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            android:layout_marginTop="18dp"
+                            android:backgroundTint="#16A34A"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:text="Save Changes"
+                            android:textAllCaps="false"
+                            android:textColor="@android:color/white"
+                            android:textStyle="bold"
+                            app:cornerRadius="18dp"
+                            app:elevation="0dp" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="24dp" />
 
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
 
-        <!-- SHOP PROFILE -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardForm"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardBackgroundColor="#FFFFFF"
-            app:cardCornerRadius="22dp"
-            app:cardElevation="0dp"
-            app:strokeColor="#E5E7EB"
-            app:strokeWidth="1dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="18dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Shop Profile"
-                    android:textColor="#111827"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    app:boxBackgroundMode="outline"
-                    app:boxCornerRadiusBottomEnd="16dp"
-                    app:boxCornerRadiusBottomStart="16dp"
-                    app:boxCornerRadiusTopEnd="16dp"
-                    app:boxCornerRadiusTopStart="16dp"
-                    app:boxStrokeColor="#E5E7EB"
-                    app:boxStrokeWidth="1dp"
-                    app:hintTextColor="#6B7280">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etShopName"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Name *"
-                        android:paddingHorizontal="14dp"
-                        android:paddingVertical="14dp" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    app:boxBackgroundMode="outline"
-                    app:boxCornerRadiusBottomEnd="16dp"
-                    app:boxCornerRadiusBottomStart="16dp"
-                    app:boxCornerRadiusTopEnd="16dp"
-                    app:boxCornerRadiusTopStart="16dp"
-                    app:boxStrokeColor="#E5E7EB"
-                    app:boxStrokeWidth="1dp"
-                    app:hintTextColor="#6B7280">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etShopAddress"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Address *"
-                        android:paddingHorizontal="14dp"
-                        android:paddingVertical="14dp" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    app:boxBackgroundMode="outline"
-                    app:boxCornerRadiusBottomEnd="16dp"
-                    app:boxCornerRadiusBottomStart="16dp"
-                    app:boxCornerRadiusTopEnd="16dp"
-                    app:boxCornerRadiusTopStart="16dp"
-                    app:boxStrokeColor="#E5E7EB"
-                    app:boxStrokeWidth="1dp"
-                    app:hintTextColor="#6B7280">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etShopPhone"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Phone *"
-                        android:inputType="phone"
-                        android:paddingHorizontal="14dp"
-                        android:paddingVertical="14dp" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    app:boxBackgroundMode="outline"
-                    app:boxCornerRadiusBottomEnd="16dp"
-                    app:boxCornerRadiusBottomStart="16dp"
-                    app:boxCornerRadiusTopEnd="16dp"
-                    app:boxCornerRadiusTopStart="16dp"
-                    app:boxStrokeColor="#E5E7EB"
-                    app:boxStrokeWidth="1dp"
-                    app:hintTextColor="#6B7280">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etShopEmail"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Email"
-                        android:inputType="textEmailAddress"
-                        android:paddingHorizontal="14dp"
-                        android:paddingVertical="14dp" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnSaveShop"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:layout_marginTop="18dp"
-                    android:backgroundTint="#16A34A"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:text="Save Changes"
-                    android:textAllCaps="false"
-                    android:textColor="@android:color/white"
-                    android:textStyle="bold"
-                    app:cornerRadius="18dp"
-                    app:elevation="0dp" />
-
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="24dp" />
+        </ScrollView>
 
     </LinearLayout>
 
-</ScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

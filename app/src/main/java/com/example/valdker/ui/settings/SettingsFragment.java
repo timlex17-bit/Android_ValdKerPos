@@ -12,17 +12,18 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedDispatcher;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.valdker.LoginActivity;
 import com.example.valdker.R;
 import com.example.valdker.SessionManager;
+import com.example.valdker.base.BaseFragment;
 import com.example.valdker.models.Shop;
 import com.example.valdker.network.ApiClient;
 import com.example.valdker.repositories.ShopRepository;
@@ -36,7 +37,7 @@ import com.google.android.material.materialswitch.MaterialSwitch;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SettingsFragment extends Fragment {
+public class SettingsFragment extends BaseFragment {
 
     private static final String TAG = "SettingsFragment";
 
@@ -62,6 +63,10 @@ public class SettingsFragment extends Fragment {
     private Shop currentShop;
     private View rootSettings;
 
+    private ImageView btnBack;
+    private ImageView ivHeaderAction;
+    private TextView tvTopTitle;
+
     public SettingsFragment() {
         super(R.layout.fragment_settings);
     }
@@ -70,9 +75,31 @@ public class SettingsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        applyTopInset(view.findViewById(R.id.topBar));
+
         rootSettings = view.findViewById(R.id.rootSettings);
         if (rootSettings != null) {
             InsetsHelper.applyScrollInsets(rootSettings);
+        }
+
+        btnBack = view.findViewById(R.id.btnBack);
+        ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
+        tvTopTitle = view.findViewById(R.id.tvTopTitle);
+
+        if (tvTopTitle != null) {
+            tvTopTitle.setText("Settings");
+        }
+
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                if (!isAdded()) return;
+                OnBackPressedDispatcher dispatcher = requireActivity().getOnBackPressedDispatcher();
+                dispatcher.onBackPressed();
+            });
+        }
+
+        if (ivHeaderAction != null) {
+            ivHeaderAction.setOnClickListener(v -> loadShop());
         }
 
         progress = view.findViewById(R.id.progressSettings);
@@ -182,18 +209,29 @@ public class SettingsFragment extends Fragment {
         }
 
         int mm = com.example.valdker.print.PrinterPrefs.getPaperWidthMm(requireContext());
+
+        if (chipGroupPaperWidth != null) {
+            chipGroupPaperWidth.setOnCheckedChangeListener(null);
+        }
+
         if (chipPaper80 != null && chipPaper58 != null) {
-            if (mm >= 80) chipPaper80.setChecked(true);
-            else chipPaper58.setChecked(true);
+            if (mm >= 80) {
+                chipPaper80.setChecked(true);
+            } else {
+                chipPaper58.setChecked(true);
+            }
         }
 
         if (chipGroupPaperWidth != null) {
             chipGroupPaperWidth.setOnCheckedChangeListener((group, checkedId) -> {
                 if (!isAdded()) return;
+
                 if (checkedId == R.id.chipPaper80) {
                     com.example.valdker.print.PrinterPrefs.setPaperWidthMm(requireContext(), 80);
+                    Toast.makeText(requireContext(), "Paper width set to 80mm", Toast.LENGTH_SHORT).show();
                 } else if (checkedId == R.id.chipPaper58) {
                     com.example.valdker.print.PrinterPrefs.setPaperWidthMm(requireContext(), 58);
+                    Toast.makeText(requireContext(), "Paper width set to 58mm", Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -419,6 +457,10 @@ public class SettingsFragment extends Fragment {
         if (btnSaveBaseUrl != null) btnSaveBaseUrl.setEnabled(!loading);
         if (btnOpenPrinterSettings != null) btnOpenPrinterSettings.setEnabled(!loading);
         if (btnTestPrint != null) btnTestPrint.setEnabled(!loading);
+        if (ivHeaderAction != null) {
+            ivHeaderAction.setEnabled(!loading);
+            ivHeaderAction.setAlpha(loading ? 0.5f : 1f);
+        }
     }
 
     @Override
@@ -441,5 +483,9 @@ public class SettingsFragment extends Fragment {
         switchAutoPrint = null;
         chipGroupPaperWidth = null;
         chipPaper58 = chipPaper80 = null;
+
+        btnBack = null;
+        ivHeaderAction = null;
+        tvTopTitle = null;
     }
 }

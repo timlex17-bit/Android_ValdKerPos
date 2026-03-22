@@ -156,7 +156,6 @@
                     android:text="Tap + to create a new inventory count."
                     android:textColor="#9CA3AF"
                     android:textSize="13sp" />
-
             </LinearLayout>
 
             <!-- List -->
@@ -169,7 +168,7 @@
                 android:paddingStart="12dp"
                 android:paddingTop="12dp"
                 android:paddingEnd="12dp"
-                android:paddingBottom="110dp" />
+                android:paddingBottom="16dp" />
         </LinearLayout>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -178,8 +177,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
             android:layout_marginEnd="16dp"
-            android:layout_marginBottom="90dp"
-            android:contentDescription="Add expense"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="Add inventory count"
             app:backgroundTint="#22C55E"
             app:srcCompat="@android:drawable/ic_input_add"
             app:tint="@android:color/white" />
