@@ -9,11 +9,15 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -24,7 +28,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -40,6 +43,7 @@ import com.bumptech.glide.Glide;
 import com.example.valdker.BuildConfig;
 import com.example.valdker.R;
 import com.example.valdker.SessionManager;
+import com.example.valdker.base.BaseFragment;
 import com.example.valdker.models.Category;
 import com.example.valdker.network.ApiClient;
 import com.example.valdker.network.ApiConfig;
@@ -56,9 +60,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
-public class CategoriesFragment extends Fragment {
+public class CategoriesFragment extends BaseFragment {
 
     private static final String TAG = "CATEGORIES";
     private static final String ENDPOINT_CATEGORIES = "api/categories/";
@@ -77,9 +82,14 @@ public class CategoriesFragment extends Fragment {
     private RecyclerView rv;
     private ProgressBar progress;
     private TextView tvEmpty;
+    private TextView tvTitle;
     private FloatingActionButton fabAdd;
+    private ImageView btnBack;
+    private ImageView ivHeaderAction;
+    private EditText etSearch;
 
     private final List<Category> items = new ArrayList<>();
+    private final List<Category> allItems = new ArrayList<>();
     private CategoryAdapter adapter;
 
     @Nullable
@@ -89,6 +99,7 @@ public class CategoriesFragment extends Fragment {
 
     private long lastFabClickTime = 0L;
     private boolean isFormShowing = false;
+    private String currentQuery = "";
 
     public CategoriesFragment() {
         super(R.layout.fragment_manage_categories);
@@ -175,10 +186,20 @@ public class CategoriesFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        applyTopInset(view.findViewById(R.id.topBar));
+
         rv = view.findViewById(R.id.rvList);
         progress = view.findViewById(R.id.progress);
         tvEmpty = view.findViewById(R.id.tvEmpty);
         fabAdd = view.findViewById(R.id.fabAddCategory);
+        btnBack = view.findViewById(R.id.btnBack);
+        ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
+        tvTitle = view.findViewById(R.id.tvTitle);
+        etSearch = view.findViewById(R.id.etSearch);
+
+        if (tvTitle != null) {
+            tvTitle.setText("Categories");
+        }
 
         InsetsHelper.applyRecyclerBottomInsets(view, rv, TAG);
 
@@ -203,6 +224,34 @@ public class CategoriesFragment extends Fragment {
 
         if (fabAdd != null) {
             fabAdd.setOnClickListener(v -> openAddCategorySafely());
+        }
+
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v ->
+                    requireActivity().getOnBackPressedDispatcher().onBackPressed()
+            );
+        }
+
+        if (ivHeaderAction != null) {
+            ivHeaderAction.setOnClickListener(v -> fetch());
+        }
+
+        if (etSearch != null) {
+            etSearch.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    currentQuery = s == null ? "" : s.toString().trim();
+                    applyFilter();
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                }
+            });
         }
 
         fetch();
@@ -237,9 +286,10 @@ public class CategoriesFragment extends Fragment {
             Context ctx = getContext();
             if (ctx != null) {
                 ApiClient.getInstance(ctx.getApplicationContext()).cancelAll(FETCH_TAG);
+                ApiClient.getInstance(ctx.getApplicationContext()).cancelAll(MUTATION_TAG);
             }
         } catch (Exception e) {
-            logw("cancel fetch failed: " + e.getMessage());
+            logw("cancel requests failed: " + e.getMessage());
         }
     }
 
@@ -269,7 +319,7 @@ public class CategoriesFragment extends Fragment {
                 (JSONArray res) -> {
                     if (!isAdded()) return;
 
-                    items.clear();
+                    allItems.clear();
 
                     for (int i = 0; i < res.length(); i++) {
                         JSONObject o = res.optJSONObject(i);
@@ -279,12 +329,11 @@ public class CategoriesFragment extends Fragment {
                         c.id = o.optInt("id", 0);
                         c.name = o.optString("name", "");
                         c.iconUrl = o.optString("icon_url", "");
-                        items.add(c);
+                        allItems.add(c);
                     }
 
-                    if (adapter != null) adapter.notifyDataSetChanged();
+                    applyFilter();
                     setLoading(false);
-                    setEmpty(items.isEmpty());
                 },
                 err -> {
                     if (!isAdded()) return;
@@ -301,6 +350,28 @@ public class CategoriesFragment extends Fragment {
 
         req.setTag(FETCH_TAG);
         ApiClient.getInstance(ctx.getApplicationContext()).add(req);
+    }
+
+    private void applyFilter() {
+        items.clear();
+
+        if (TextUtils.isEmpty(currentQuery)) {
+            items.addAll(allItems);
+        } else {
+            String q = currentQuery.toLowerCase(Locale.US);
+
+            for (Category c : allItems) {
+                String name = c.name == null ? "" : c.name.toLowerCase(Locale.US);
+                String icon = c.iconUrl == null ? "" : c.iconUrl.toLowerCase(Locale.US);
+
+                if (name.contains(q) || icon.contains(q)) {
+                    items.add(c);
+                }
+            }
+        }
+
+        if (adapter != null) adapter.notifyDataSetChanged();
+        setEmpty(items.isEmpty());
     }
 
     private void openForm(@Nullable Category edit) {
@@ -607,7 +678,12 @@ public class CategoriesFragment extends Fragment {
     }
 
     private void setEmpty(boolean empty) {
-        if (tvEmpty != null) tvEmpty.setVisibility(empty ? View.VISIBLE : View.GONE);
+        if (tvEmpty != null) {
+            tvEmpty.setVisibility(empty ? View.VISIBLE : View.GONE);
+            if (empty) {
+                tvEmpty.setText(TextUtils.isEmpty(currentQuery) ? "No data yet." : "No matching categories.");
+            }
+        }
         if (rv != null) rv.setVisibility(empty ? View.GONE : View.VISIBLE);
     }
 

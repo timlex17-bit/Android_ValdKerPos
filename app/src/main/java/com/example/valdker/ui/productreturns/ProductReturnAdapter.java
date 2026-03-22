@@ -98,9 +98,12 @@ public class ProductReturnAdapter extends RecyclerView.Adapter<ProductReturnAdap
         );
 
         h.headerToggle.setOnClickListener(v -> {
+            int pos = h.getBindingAdapterPosition();
+            if (pos == RecyclerView.NO_POSITION) return;
+
             boolean newExpanded = !expandedStates.get(it.id, false);
             expandedStates.put(it.id, newExpanded);
-            notifyItemChanged(h.getBindingAdapterPosition());
+            notifyItemChanged(pos);
         });
 
         // ✅ Click -> delegate to Fragment/Activity

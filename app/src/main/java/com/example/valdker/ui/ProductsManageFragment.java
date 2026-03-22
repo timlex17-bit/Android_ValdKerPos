@@ -1,15 +1,20 @@
 package com.example.valdker.ui;
 
 import android.os.Bundle;
+import android.os.SystemClock;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -17,6 +22,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.example.valdker.R;
 import com.example.valdker.SessionManager;
 import com.example.valdker.adapters.ProductManageAdapter;
+import com.example.valdker.base.BaseFragment;
 import com.example.valdker.models.Product;
 import com.example.valdker.repositories.ProductRepository;
 import com.example.valdker.ui.customers.ConfirmDeleteDialog;
@@ -25,21 +31,28 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
-public class ProductsManageFragment extends Fragment {
+public class ProductsManageFragment extends BaseFragment {
 
     private static final String TAG = "PRODUCTS_MANAGE";
     private static final String TAG_ADD_PRODUCT = "add_product";
+    private static final String TAG_EDIT_PRODUCT = "edit_product";
     private static final long FAB_CLICK_DELAY_MS = 700L;
 
     private SwipeRefreshLayout swipe;
     private RecyclerView rv;
     private ProgressBar progress;
     private TextView tvEmpty;
+    private TextView tvTitle;
     private FloatingActionButton fabAdd;
+    private EditText etSearchManage;
+    private ImageView btnBack;
+    private ImageView ivHeaderAction;
     private View rootManage;
 
     private final List<Product> items = new ArrayList<>();
+    private final List<Product> allItems = new ArrayList<>();
     private ProductManageAdapter adapter;
 
     private SessionManager session;
@@ -48,6 +61,7 @@ public class ProductsManageFragment extends Fragment {
     private boolean isDeleteRunning = false;
 
     private long lastFabClickTime = 0L;
+    private String currentQuery = "";
 
     public ProductsManageFragment() {
         super(R.layout.fragment_products_manage);
@@ -56,6 +70,8 @@ public class ProductsManageFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        applyTopInset(view.findViewById(R.id.topBar));
 
         session = new SessionManager(requireContext());
         repo = new ProductRepository(requireContext());
@@ -66,6 +82,15 @@ public class ProductsManageFragment extends Fragment {
         tvEmpty = view.findViewById(R.id.tvEmptyManage);
         fabAdd = view.findViewById(R.id.fabAddProduct);
         rootManage = view.findViewById(R.id.rootManage);
+
+        tvTitle = view.findViewById(R.id.tvTitleManage);
+        etSearchManage = view.findViewById(R.id.etSearchManage);
+        btnBack = view.findViewById(R.id.btnBack);
+        ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
+
+        if (tvTitle != null) {
+            tvTitle.setText("Manage Products");
+        }
 
         setupRecycler();
         setupAdapter();
@@ -86,9 +111,38 @@ public class ProductsManageFragment extends Fragment {
         adapter = new ProductManageAdapter(items, new ProductManageAdapter.Listener() {
             @Override
             public void onEdit(@NonNull Product p) {
-                ProductFormDialog
-                        .newEdit(p, saved -> loadProducts(false))
-                        .show(getParentFragmentManager(), "edit_product");
+                if (!isAdded()) return;
+                if (isStateSaved()) return;
+                if (isDialogOpening) return;
+
+                if (getParentFragmentManager().findFragmentByTag(TAG_EDIT_PRODUCT) != null) {
+                    return;
+                }
+
+                isDialogOpening = true;
+                setFabEnabled(false);
+
+                ProductFormDialog dialog = ProductFormDialog.newEdit(p, saved -> {
+                    isDialogOpening = false;
+                    setFabEnabled(true);
+                    loadProducts(false);
+                });
+
+                getParentFragmentManager().registerFragmentLifecycleCallbacks(
+                        new androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks() {
+                            @Override
+                            public void onFragmentViewDestroyed(@NonNull androidx.fragment.app.FragmentManager fm,
+                                                                @NonNull androidx.fragment.app.Fragment f) {
+                                if (f == dialog) {
+                                    isDialogOpening = false;
+                                    setFabEnabled(true);
+                                    fm.unregisterFragmentLifecycleCallbacks(this);
+                                }
+                            }
+                        }, false
+                );
+
+                dialog.show(getParentFragmentManager(), TAG_EDIT_PRODUCT);
             }
 
             @Override
@@ -112,9 +166,7 @@ public class ProductsManageFragment extends Fragment {
 
         if (fabAdd != null) {
             fabAdd.setOnClickListener(v -> openAddProductDialogSafely());
-        }
 
-        if (fabAdd != null) {
             fabAdd.post(() -> {
                 if (fabAdd == null) return;
                 fabAdd.bringToFront();
@@ -122,11 +174,38 @@ public class ProductsManageFragment extends Fragment {
                 fabAdd.setTranslationZ(100f);
             });
         }
+
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v ->
+                    requireActivity().getOnBackPressedDispatcher().onBackPressed()
+            );
+        }
+
+        if (ivHeaderAction != null) {
+            ivHeaderAction.setOnClickListener(v -> loadProducts(false));
+        }
+
+        if (etSearchManage != null) {
+            etSearchManage.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    currentQuery = s == null ? "" : s.toString().trim();
+                    applyFilter();
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                }
+            });
+        }
     }
 
     private void applyInsets() {
         if (rootManage == null || rv == null) return;
-
         InsetsHelper.applyRecyclerBottomInsets(rootManage, rv, TAG);
     }
 
@@ -135,7 +214,7 @@ public class ProductsManageFragment extends Fragment {
         if (isStateSaved()) return;
         if (isDialogOpening) return;
 
-        long now = android.os.SystemClock.elapsedRealtime();
+        long now = SystemClock.elapsedRealtime();
         if (now - lastFabClickTime < FAB_CLICK_DELAY_MS) {
             return;
         }
@@ -146,18 +225,11 @@ public class ProductsManageFragment extends Fragment {
         }
 
         isDialogOpening = true;
-
-        if (fabAdd != null) {
-            fabAdd.setEnabled(false);
-            fabAdd.setAlpha(0.65f);
-        }
+        setFabEnabled(false);
 
         ProductFormDialog dialog = ProductFormDialog.newAdd(saved -> {
             isDialogOpening = false;
-            if (fabAdd != null) {
-                fabAdd.setEnabled(true);
-                fabAdd.setAlpha(1f);
-            }
+            setFabEnabled(true);
             loadProducts(false);
         });
 
@@ -168,10 +240,7 @@ public class ProductsManageFragment extends Fragment {
                                                         @NonNull androidx.fragment.app.Fragment f) {
                         if (f == dialog) {
                             isDialogOpening = false;
-                            if (fabAdd != null) {
-                                fabAdd.setEnabled(true);
-                                fabAdd.setAlpha(1f);
-                            }
+                            setFabEnabled(true);
                             fm.unregisterFragmentLifecycleCallbacks(this);
                         }
                     }
@@ -203,13 +272,9 @@ public class ProductsManageFragment extends Fragment {
 
                 Log.i(TAG, "fetchProducts SUCCESS: " + products.size());
 
-                items.clear();
-                items.addAll(products);
-
-                if (adapter != null) adapter.notifyDataSetChanged();
-
-                if (items.isEmpty()) showEmpty("No products");
-                else showList();
+                allItems.clear();
+                allItems.addAll(products);
+                applyFilter();
 
                 stopRefreshing();
             }
@@ -227,6 +292,42 @@ public class ProductsManageFragment extends Fragment {
                 stopRefreshing();
             }
         });
+    }
+
+    private void applyFilter() {
+        items.clear();
+
+        if (TextUtils.isEmpty(currentQuery)) {
+            items.addAll(allItems);
+        } else {
+            String q = currentQuery.toLowerCase(Locale.US);
+
+            for (Product p : allItems) {
+                String name = p.name == null ? "" : p.name.toLowerCase(Locale.US);
+                String sku = p.sku == null ? "" : p.sku.toLowerCase(Locale.US);
+                String barcode = p.barcode == null ? "" : p.barcode.toLowerCase(Locale.US);
+                String category = p.categoryName == null ? "" : p.categoryName.toLowerCase(Locale.US);
+                String unit = p.unitName == null ? "" : p.unitName.toLowerCase(Locale.US);
+                String supplier = p.supplierName == null ? "" : p.supplierName.toLowerCase(Locale.US);
+
+                if (name.contains(q)
+                        || sku.contains(q)
+                        || barcode.contains(q)
+                        || category.contains(q)
+                        || unit.contains(q)
+                        || supplier.contains(q)) {
+                    items.add(p);
+                }
+            }
+        }
+
+        if (adapter != null) adapter.notifyDataSetChanged();
+
+        if (items.isEmpty()) {
+            showEmpty(TextUtils.isEmpty(currentQuery) ? "No products" : "No matching products");
+        } else {
+            showList();
+        }
     }
 
     private void doDelete(@NonNull Product p) {
@@ -265,7 +366,14 @@ public class ProductsManageFragment extends Fragment {
                     if (adapter != null) adapter.notifyDataSetChanged();
                 }
 
-                if (items.isEmpty()) showEmpty("No products");
+                for (int i = 0; i < allItems.size(); i++) {
+                    if (allItems.get(i).id != null && allItems.get(i).id.equals(p.id)) {
+                        allItems.remove(i);
+                        break;
+                    }
+                }
+
+                if (items.isEmpty()) showEmpty(TextUtils.isEmpty(currentQuery) ? "No products" : "No matching products");
                 else showList();
             }
 
@@ -293,7 +401,14 @@ public class ProductsManageFragment extends Fragment {
                         adapter.notifyDataSetChanged();
                     }
 
-                    if (items.isEmpty()) showEmpty("No products");
+                    for (int i = 0; i < allItems.size(); i++) {
+                        if (allItems.get(i).id != null && allItems.get(i).id.equals(p.id)) {
+                            allItems.remove(i);
+                            break;
+                        }
+                    }
+
+                    if (items.isEmpty()) showEmpty(TextUtils.isEmpty(currentQuery) ? "No products" : "No matching products");
                     else showList();
                     return;
                 }
@@ -317,6 +432,7 @@ public class ProductsManageFragment extends Fragment {
         if (progress != null) progress.setVisibility(View.VISIBLE);
         if (tvEmpty != null) tvEmpty.setVisibility(View.GONE);
         if (rv != null) rv.setVisibility(View.GONE);
+        setFabEnabled(false);
     }
 
     private void showEmpty(@NonNull String msg) {
@@ -326,12 +442,20 @@ public class ProductsManageFragment extends Fragment {
             tvEmpty.setText(msg);
         }
         if (rv != null) rv.setVisibility(View.GONE);
+        setFabEnabled(true);
     }
 
     private void showList() {
         if (progress != null) progress.setVisibility(View.GONE);
         if (tvEmpty != null) tvEmpty.setVisibility(View.GONE);
         if (rv != null) rv.setVisibility(View.VISIBLE);
+        setFabEnabled(true);
+    }
+
+    private void setFabEnabled(boolean enabled) {
+        if (fabAdd == null) return;
+        fabAdd.setEnabled(enabled && !isDialogOpening);
+        fabAdd.setAlpha((enabled && !isDialogOpening) ? 1f : 0.65f);
     }
 
     @Override
@@ -341,7 +465,11 @@ public class ProductsManageFragment extends Fragment {
         rv = null;
         progress = null;
         tvEmpty = null;
+        tvTitle = null;
         fabAdd = null;
+        etSearchManage = null;
+        btnBack = null;
+        ivHeaderAction = null;
         rootManage = null;
     }
 }

@@ -3,10 +3,13 @@ package com.example.valdker.ui.units;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -15,7 +18,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,6 +29,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.example.valdker.R;
 import com.example.valdker.SessionManager;
+import com.example.valdker.base.BaseFragment;
 import com.example.valdker.network.ApiClient;
 import com.example.valdker.network.ApiConfig;
 import com.example.valdker.utils.InsetsHelper;
@@ -42,12 +45,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class UnitsFragment extends Fragment {
+public class UnitsFragment extends BaseFragment {
 
     private static final String TAG = "UNITS";
     private static final String ENDPOINT_UNITS = "api/units/";
     private static final Object REQ_TAG = "UnitsFragmentRequests";
     private static final long FAB_CLICK_DELAY_MS = 700L;
+
+    private ImageView btnBack;
+    private ImageView ivHeaderAction;
+    private TextView tvTitle;
+    private EditText etSearch;
 
     private SessionManager session;
 
@@ -57,6 +65,7 @@ public class UnitsFragment extends Fragment {
     private FloatingActionButton fabAdd;
 
     private final List<Unit> items = new ArrayList<>();
+    private final List<Unit> allItems = new ArrayList<>();
     private UnitAdapter adapter;
 
     private long lastFabClickTime = 0L;
@@ -76,10 +85,48 @@ public class UnitsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        applyTopInset(view.findViewById(R.id.topBar));
+
         rv = view.findViewById(R.id.rvList);
         progress = view.findViewById(R.id.progress);
         tvEmpty = view.findViewById(R.id.tvEmpty);
         fabAdd = view.findViewById(R.id.fabAddUnit);
+
+        btnBack = view.findViewById(R.id.btnBack);
+        ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
+        tvTitle = view.findViewById(R.id.tvTitle);
+        etSearch = view.findViewById(R.id.etSearch);
+
+        if (tvTitle != null) {
+            tvTitle.setText("Units");
+        }
+
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v ->
+                    requireActivity().getOnBackPressedDispatcher().onBackPressed()
+            );
+        }
+
+        if (ivHeaderAction != null) {
+            ivHeaderAction.setOnClickListener(v -> fetch());
+        }
+
+        if (etSearch != null) {
+            etSearch.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    applyFilter(s == null ? "" : s.toString());
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                }
+            });
+        }
 
         InsetsHelper.applyRecyclerBottomInsets(view, rv, TAG);
 
@@ -109,6 +156,29 @@ public class UnitsFragment extends Fragment {
         }
 
         fetch();
+    }
+
+    private void applyFilter(@Nullable String query) {
+        String q = query == null ? "" : query.trim().toLowerCase();
+
+        items.clear();
+
+        if (q.isEmpty()) {
+            items.addAll(allItems);
+        } else {
+            for (Unit u : allItems) {
+                String name = u.name == null ? "" : u.name.toLowerCase();
+                if (name.contains(q)) {
+                    items.add(u);
+                }
+            }
+        }
+
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
+
+        setEmpty(items.isEmpty());
     }
 
     private void openAddUnitSafely() {
@@ -170,7 +240,7 @@ public class UnitsFragment extends Fragment {
                 (JSONArray res) -> {
                     if (!isAdded()) return;
 
-                    items.clear();
+                    allItems.clear();
 
                     for (int i = 0; i < res.length(); i++) {
                         JSONObject o = res.optJSONObject(i);
@@ -179,15 +249,13 @@ public class UnitsFragment extends Fragment {
                         Unit u = new Unit();
                         u.id = o.optInt("id", 0);
                         u.name = o.optString("name", "");
-                        items.add(u);
+                        allItems.add(u);
                     }
 
-                    if (adapter != null) adapter.notifyDataSetChanged();
+                    applyFilter(etSearch != null ? etSearch.getText().toString() : "");
 
                     setLoading(false);
-                    setEmpty(items.isEmpty());
-
-                    Log.i(TAG, "Fetched units: " + items.size());
+                    Log.i(TAG, "Fetched units: " + allItems.size());
                 },
                 err -> {
                     if (!isAdded()) return;

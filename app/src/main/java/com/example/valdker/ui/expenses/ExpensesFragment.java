@@ -4,32 +4,36 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.Calendar;
-import java.util.List;
-import java.util.Locale;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.valdker.R;
 import com.example.valdker.SessionManager;
+import com.example.valdker.base.BaseFragment;
 import com.example.valdker.models.Expense;
 import com.example.valdker.repositories.ExpenseRepository;
 import com.example.valdker.utils.InsetsHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-public class ExpensesFragment extends Fragment {
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
+
+public class ExpensesFragment extends BaseFragment {
 
     private static final long FAB_CLICK_DELAY_MS = 700L;
 
@@ -39,12 +43,19 @@ public class ExpensesFragment extends Fragment {
     private RecyclerView rv;
     private ProgressBar progress;
     private TextView tvEmpty;
+    private TextView tvTitle;
     private FloatingActionButton fabAdd;
+    private EditText etSearchExpense;
+    private ImageView btnBack;
+    private ImageView ivHeaderAction;
 
     private ExpenseAdapter adapter;
 
+    private final List<Expense> allExpenses = new ArrayList<>();
+
     private long lastFabClickTime = 0L;
     private boolean isFormShowing = false;
+    private String currentQuery = "";
 
     public ExpensesFragment() {
         super(R.layout.fragment_expenses);
@@ -54,17 +65,26 @@ public class ExpensesFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        applyTopInset(view.findViewById(R.id.topBar));
+
         session = new SessionManager(requireContext());
         repo = new ExpenseRepository(requireContext());
 
         rv = view.findViewById(R.id.rvExpenses);
         progress = view.findViewById(R.id.progress);
         tvEmpty = view.findViewById(R.id.tvEmpty);
+        tvTitle = view.findViewById(R.id.tvTitle);
         fabAdd = view.findViewById(R.id.fabAddExpense);
+        etSearchExpense = view.findViewById(R.id.etSearchExpense);
+        btnBack = view.findViewById(R.id.btnBack);
+        ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
 
-        InsetsHelper.applyRecyclerBottomInsets(view, rv, "EXPENSES");
+        if (tvTitle != null) {
+            tvTitle.setText("Expense");
+        }
 
         if (rv != null) {
+            InsetsHelper.applyRecyclerBottomInsets(view, rv, "EXPENSES");
             rv.setLayoutManager(new LinearLayoutManager(requireContext()));
             rv.setHasFixedSize(true);
         }
@@ -87,6 +107,34 @@ public class ExpensesFragment extends Fragment {
 
         if (fabAdd != null) {
             fabAdd.setOnClickListener(v -> openAddExpenseSafely());
+        }
+
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v ->
+                    requireActivity().getOnBackPressedDispatcher().onBackPressed()
+            );
+        }
+
+        if (ivHeaderAction != null) {
+            ivHeaderAction.setOnClickListener(v -> load());
+        }
+
+        if (etSearchExpense != null) {
+            etSearchExpense.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    currentQuery = s == null ? "" : s.toString().trim();
+                    applyFilter();
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                }
+            });
         }
 
         load();
@@ -120,6 +168,10 @@ public class ExpensesFragment extends Fragment {
         String token = session.getToken();
         if (TextUtils.isEmpty(token)) {
             Toast.makeText(requireContext(), "No token. Please login again.", Toast.LENGTH_SHORT).show();
+            allExpenses.clear();
+            if (adapter != null) {
+                adapter.submit(new ArrayList<>());
+            }
             setEmpty(true);
             return;
         }
@@ -132,8 +184,9 @@ public class ExpensesFragment extends Fragment {
                 if (!isAdded()) return;
 
                 showLoading(false);
-                adapter.submit(list);
-                setEmpty(list.isEmpty());
+                allExpenses.clear();
+                allExpenses.addAll(list);
+                applyFilter();
             }
 
             @Override
@@ -145,6 +198,42 @@ public class ExpensesFragment extends Fragment {
                 setEmpty(adapter == null || adapter.getItemCount() == 0);
             }
         });
+    }
+
+    private void applyFilter() {
+        if (!isAdded() || adapter == null) return;
+
+        List<Expense> filtered = new ArrayList<>();
+
+        if (TextUtils.isEmpty(currentQuery)) {
+            filtered.addAll(allExpenses);
+        } else {
+            String q = currentQuery.toLowerCase(Locale.US);
+
+            for (Expense e : allExpenses) {
+                String name = safeLower(e.name);
+                String note = safeLower(e.note);
+                String amount = safeLower(e.amount);
+                String date = safeLower(e.date);
+                String time = safeLower(e.time);
+
+                if (name.contains(q)
+                        || note.contains(q)
+                        || amount.contains(q)
+                        || date.contains(q)
+                        || time.contains(q)) {
+                    filtered.add(e);
+                }
+            }
+        }
+
+        adapter.submit(filtered);
+        setEmpty(filtered.isEmpty());
+    }
+
+    @NonNull
+    private String safeLower(@Nullable String value) {
+        return value == null ? "" : value.toLowerCase(Locale.US);
     }
 
     private void openForm(@Nullable Expense editing) {
@@ -371,6 +460,7 @@ public class ExpensesFragment extends Fragment {
         if (progress != null) progress.setVisibility(on ? View.VISIBLE : View.GONE);
         if (rv != null) rv.setEnabled(!on);
         if (fabAdd != null) fabAdd.setEnabled(!on && !isFormShowing);
+        if (ivHeaderAction != null) ivHeaderAction.setEnabled(!on);
     }
 
     private void setEmpty(boolean empty) {

@@ -25,6 +25,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -98,6 +100,9 @@ public class HomeDashboardActivity extends AppCompatActivity {
     private TextView tvNetValue;
     private MaterialButton btnLogout;
 
+    private View header;
+    private View contentHost;
+
     private TextView tvHello;
     private TextView tvBrand;
     private ImageView imgLogo;
@@ -111,10 +116,10 @@ public class HomeDashboardActivity extends AppCompatActivity {
     private View fabAddCustomer;
 
     private final FragmentManager.OnBackStackChangedListener backStackChangedListener = () -> {
-        if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
-            showDashboardGrid();
-        } else {
+        if (hasOpenedFragment()) {
             showFragmentContainer();
+        } else {
+            showDashboardGrid();
         }
     };
 
@@ -174,14 +179,14 @@ public class HomeDashboardActivity extends AppCompatActivity {
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                if (hasOpenedFragment()) {
                     getSupportFragmentManager().popBackStack();
                     getSupportFragmentManager().executePendingTransactions();
 
-                    if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
-                        showDashboardGrid();
-                    } else {
+                    if (hasOpenedFragment()) {
                         showFragmentContainer();
+                    } else {
+                        showDashboardGrid();
                     }
                 } else {
                     setEnabled(false);
@@ -201,8 +206,41 @@ public class HomeDashboardActivity extends AppCompatActivity {
         }
     }
 
+    private void applyDashboardStatusBarMode() {
+        WindowInsetsControllerCompat controller =
+                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+
+        if (controller != null) {
+            controller.show(WindowInsetsCompat.Type.statusBars());
+            controller.setAppearanceLightStatusBars(false); // icon putih
+        }
+
+        getWindow().setStatusBarColor(Color.TRANSPARENT);
+    }
+
+    private void applyFragmentStatusBarMode() {
+        WindowInsetsControllerCompat controller =
+                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+
+        if (controller != null) {
+            controller.show(WindowInsetsCompat.Type.statusBars());
+            controller.setAppearanceLightStatusBars(false); // tetap putih, cocok utk header biru/cyan fragment
+        }
+
+        getWindow().setStatusBarColor(Color.TRANSPARENT);
+    }
+
     private void setupSystemBars() {
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+
+        WindowInsetsControllerCompat controller =
+                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+
+        if (controller != null) {
+            controller.show(WindowInsetsCompat.Type.statusBars());
+            controller.setAppearanceLightStatusBars(false); // icon putih
+        }
+
         getWindow().setStatusBarColor(Color.TRANSPARENT);
     }
 
@@ -220,6 +258,10 @@ public class HomeDashboardActivity extends AppCompatActivity {
         layoutOwnerSummary = findViewById(R.id.layoutOwnerSummary);
         layoutManagerSummary = findViewById(R.id.layoutManagerSummary);
 
+        header = findViewById(R.id.header);
+        headerContent = findViewById(R.id.headerContent);
+        contentHost = findViewById(R.id.contentHost);
+
         bottomNav = findViewById(R.id.bottomNav);
         fragmentContainer = findViewById(R.id.fragmentContainer);
 
@@ -227,7 +269,6 @@ public class HomeDashboardActivity extends AppCompatActivity {
         tvSumHint = findViewById(R.id.tvSumHint);
 
         rvDashboard = findViewById(R.id.rvDashboard);
-        headerContent = findViewById(R.id.headerContent);
         fabAddCustomer = findViewById(R.id.fabAddCustomer);
 
         if (rvDashboard != null) {
@@ -275,6 +316,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
 
             if (id == R.id.nav_home) {
                 clearBackStackInclusive();
+                getSupportFragmentManager().executePendingTransactions();
                 showDashboardGrid();
                 return true;
             }
@@ -612,6 +654,12 @@ public class HomeDashboardActivity extends AppCompatActivity {
         renderHeader();
         applyRoleDeviceUI();
         configureBottomNavItems();
+
+        if (hasOpenedFragment()) {
+            showFragmentContainer();
+        } else {
+            showDashboardGrid();
+        }
     }
 
     private void handleMenuClick(@NonNull DashboardItem item) {
@@ -734,19 +782,44 @@ public class HomeDashboardActivity extends AppCompatActivity {
 
         getSupportFragmentManager()
                 .beginTransaction()
+                .setReorderingAllowed(true)
                 .replace(R.id.fragmentContainer, fragment)
                 .addToBackStack(backstackTag)
                 .commit();
     }
 
     private void showFragmentContainer() {
-        if (rvDashboard != null) rvDashboard.setVisibility(View.GONE);
-        if (fragmentContainer != null) fragmentContainer.setVisibility(View.VISIBLE);
+        updateHeaderVisibility(false);
+        applyFragmentStatusBarMode();
+
+        if (rvDashboard != null) {
+            rvDashboard.setVisibility(View.GONE);
+        }
+
+        if (fragmentContainer != null) {
+            fragmentContainer.setVisibility(View.VISIBLE);
+        }
+
+        if (bottomNav != null && isOwnerDevice()) {
+            bottomNav.setVisibility(View.VISIBLE);
+        }
     }
 
     private void showDashboardGrid() {
-        if (fragmentContainer != null) fragmentContainer.setVisibility(View.GONE);
-        if (rvDashboard != null) rvDashboard.setVisibility(View.VISIBLE);
+        updateHeaderVisibility(true);
+        applyDashboardStatusBarMode();
+
+        if (fragmentContainer != null) {
+            fragmentContainer.setVisibility(View.GONE);
+        }
+
+        if (rvDashboard != null) {
+            rvDashboard.setVisibility(View.VISIBLE);
+        }
+
+        if (bottomNav != null) {
+            bottomNav.setVisibility(isOwnerDevice() ? View.VISIBLE : View.GONE);
+        }
     }
 
     private void doLogout() {
@@ -843,6 +916,26 @@ public class HomeDashboardActivity extends AppCompatActivity {
     private String safeLower(@Nullable String s) {
         if (s == null) return "";
         return s.trim().toLowerCase(Locale.US);
+    }
+
+    private boolean hasOpenedFragment() {
+        return getSupportFragmentManager().getBackStackEntryCount() > 0;
+    }
+
+    private void updateHeaderVisibility(boolean showHeader) {
+        if (header != null) {
+            header.setVisibility(showHeader ? View.VISIBLE : View.GONE);
+        }
+
+        if (contentHost != null) {
+            ViewGroup.MarginLayoutParams lp =
+                    (ViewGroup.MarginLayoutParams) contentHost.getLayoutParams();
+
+            if (lp != null) {
+                lp.topMargin = 0;
+                contentHost.setLayoutParams(lp);
+            }
+        }
     }
 
     private List<DashboardItem> buildMenu() {

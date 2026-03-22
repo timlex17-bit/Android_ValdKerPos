@@ -6,24 +6,24 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedDispatcher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.valdker.R;
 import com.example.valdker.SessionManager;
+import com.example.valdker.base.BaseFragment;
 import com.example.valdker.models.DailyProfitReport;
 import com.example.valdker.models.DailyProfitRow;
 import com.example.valdker.repositories.ReportRepository;
-import com.example.valdker.utils.InsetsHelper;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.BarData;
@@ -42,25 +42,39 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class ReportsFragment extends Fragment {
+public class ReportsFragment extends BaseFragment {
 
     private static final String TAG = "REPORTS";
+    private static final long CLICK_GUARD_MS = 700L;
 
     private SessionManager session;
     private ReportRepository repo;
 
-    private EditText etStart, etEnd;
+    private EditText etStart;
+    private EditText etEnd;
 
-    private MaterialButton btnFetch;         // ✅ CHANGED
-    private Chip btnToday, btn7Days, btnThisMonth; // ✅ CHANGED
+    private MaterialButton btnFetch;
+    private Chip btnToday;
+    private Chip btn7Days;
+    private Chip btnThisMonth;
 
-    private TextView tvSales, tvExpense, tvProfit;
+    private TextView tvSales;
+    private TextView tvExpense;
+    private TextView tvProfit;
     private ProgressBar progress;
 
     private LineChart lineChart;
     private BarChart barChart;
+    private RecyclerView rvRows;
+
+    private ImageView btnBack;
+    private ImageView ivHeaderAction;
 
     private ProfitRowAdapter adapter;
+
+    private boolean isLoading = false;
+    private long lastQuickActionAt = 0L;
+    private long lastRefreshClickAt = 0L;
 
     public ReportsFragment() {
         super(R.layout.fragment_reports);
@@ -70,12 +84,25 @@ public class ReportsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        View root = view.findViewById(R.id.rootReports);
-        InsetsHelper.applySystemBarsPadding(root, root);
+        applyTopInset(view.findViewById(R.id.topBar));
 
         session = new SessionManager(requireContext());
         repo = new ReportRepository(requireContext());
 
+        bindViews(view);
+        setupHeader();
+        setupRecycler();
+        setupDatePickers();
+        setupQuickRanges();
+        setupFetchButton();
+
+        String today = fmtDate(new Date());
+        setRange(today, today);
+
+        fetch();
+    }
+
+    private void bindViews(@NonNull View view) {
         etStart = view.findViewById(R.id.etStart);
         etEnd = view.findViewById(R.id.etEnd);
 
@@ -91,51 +118,127 @@ public class ReportsFragment extends Fragment {
 
         lineChart = view.findViewById(R.id.lineChart);
         barChart = view.findViewById(R.id.barChart);
+        rvRows = view.findViewById(R.id.rvRows);
 
-        RecyclerView rv = view.findViewById(R.id.rvRows);
-        rv.setLayoutManager(new LinearLayoutManager(requireContext()));
+        btnBack = view.findViewById(R.id.btnBack);
+        ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
+    }
+
+    private void setupHeader() {
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                if (!isAdded()) return;
+                OnBackPressedDispatcher dispatcher = requireActivity().getOnBackPressedDispatcher();
+                dispatcher.onBackPressed();
+            });
+        }
+
+        if (ivHeaderAction != null) {
+            ivHeaderAction.setOnClickListener(v -> {
+                if (!isAdded()) return;
+                if (isRapidRefreshClick()) return;
+                fetch();
+            });
+        }
+    }
+
+    private void setupRecycler() {
+        if (rvRows == null) return;
+
+        rvRows.setLayoutManager(new LinearLayoutManager(requireContext()));
+        rvRows.setHasFixedSize(false);
+
         adapter = new ProfitRowAdapter();
-        rv.setAdapter(adapter);
+        rvRows.setAdapter(adapter);
+    }
 
-        // default today
-        String today = fmtDate(new Date());
-        setRange(today, today);
+    private void setupDatePickers() {
+        if (etStart != null) {
+            etStart.setOnClickListener(v -> {
+                if (isLoading) return;
+                pickDate(etStart);
+            });
+        }
 
-        // Date picker
-        etStart.setOnClickListener(v -> pickDate(etStart));
-        etEnd.setOnClickListener(v -> pickDate(etEnd));
+        if (etEnd != null) {
+            etEnd.setOnClickListener(v -> {
+                if (isLoading) return;
+                pickDate(etEnd);
+            });
+        }
+    }
 
-        // Quick ranges
-        btnToday.setOnClickListener(v -> {
-            String t = fmtDate(new Date());
-            setRange(t, t);
-            fetch();
-        });
+    private void setupQuickRanges() {
+        if (btnToday != null) {
+            btnToday.setOnClickListener(v -> {
+                if (!canRunQuickAction()) return;
 
-        btn7Days.setOnClickListener(v -> {
-            Calendar c = Calendar.getInstance();
-            String end = fmtDate(c.getTime());
-            c.add(Calendar.DAY_OF_MONTH, -6);
-            String start = fmtDate(c.getTime());
-            setRange(start, end);
-            fetch();
-        });
+                String t = fmtDate(new Date());
+                setRange(t, t);
+                fetch();
+            });
+        }
 
-        btnThisMonth.setOnClickListener(v -> {
-            Calendar c = Calendar.getInstance();
-            String end = fmtDate(c.getTime());
-            c.set(Calendar.DAY_OF_MONTH, 1);
-            String start = fmtDate(c.getTime());
-            setRange(start, end);
-            fetch();
-        });
+        if (btn7Days != null) {
+            btn7Days.setOnClickListener(v -> {
+                if (!canRunQuickAction()) return;
 
-        btnFetch.setOnClickListener(v -> fetch());
+                Calendar c = Calendar.getInstance();
+                String end = fmtDate(c.getTime());
+                c.add(Calendar.DAY_OF_MONTH, -6);
+                String start = fmtDate(c.getTime());
+                setRange(start, end);
+                fetch();
+            });
+        }
 
-        fetch();
+        if (btnThisMonth != null) {
+            btnThisMonth.setOnClickListener(v -> {
+                if (!canRunQuickAction()) return;
+
+                Calendar c = Calendar.getInstance();
+                String end = fmtDate(c.getTime());
+                c.set(Calendar.DAY_OF_MONTH, 1);
+                String start = fmtDate(c.getTime());
+                setRange(start, end);
+                fetch();
+            });
+        }
+    }
+
+    private void setupFetchButton() {
+        if (btnFetch != null) {
+            btnFetch.setOnClickListener(v -> {
+                if (isLoading) return;
+                fetch();
+            });
+        }
+    }
+
+    private boolean canRunQuickAction() {
+        if (isLoading) return false;
+
+        long now = android.os.SystemClock.elapsedRealtime();
+        if (now - lastQuickActionAt < CLICK_GUARD_MS) {
+            return false;
+        }
+        lastQuickActionAt = now;
+        return true;
+    }
+
+    private boolean isRapidRefreshClick() {
+        long now = android.os.SystemClock.elapsedRealtime();
+        if (now - lastRefreshClickAt < CLICK_GUARD_MS) {
+            return true;
+        }
+        lastRefreshClickAt = now;
+        return false;
     }
 
     private void fetch() {
+        if (!isAdded()) return;
+        if (isLoading) return;
+
         String token = session.getToken();
         if (TextUtils.isEmpty(token)) {
             Toast.makeText(requireContext(), "No token. Please login again.", Toast.LENGTH_SHORT).show();
@@ -150,6 +253,7 @@ public class ReportsFragment extends Fragment {
             return;
         }
 
+        isLoading = true;
         showLoading(true);
 
         Log.i(TAG, "Fetching daily profit: start=" + start + ", end=" + end);
@@ -157,13 +261,18 @@ public class ReportsFragment extends Fragment {
         repo.fetchDailyProfit(token, start, end, new ReportRepository.Callback() {
             @Override
             public void onSuccess(@NonNull DailyProfitReport report) {
+                if (!isAdded()) return;
+
+                isLoading = false;
                 showLoading(false);
 
                 tvSales.setText("Sales: $" + report.totalSales);
                 tvExpense.setText("Expense: $" + report.totalExpense);
                 tvProfit.setText("Profit: $" + report.totalProfit);
 
-                adapter.submit(report.rows);
+                if (adapter != null) {
+                    adapter.submit(report.rows);
+                }
 
                 renderCharts(report);
 
@@ -172,8 +281,17 @@ public class ReportsFragment extends Fragment {
 
             @Override
             public void onError(int statusCode, @NonNull String message) {
+                if (!isAdded()) return;
+
+                isLoading = false;
                 showLoading(false);
-                Toast.makeText(requireContext(), "Report failed: " + statusCode, Toast.LENGTH_SHORT).show();
+
+                Toast.makeText(
+                        requireContext(),
+                        "Report failed: " + statusCode,
+                        Toast.LENGTH_SHORT
+                ).show();
+
                 Log.e(TAG, "Report error " + statusCode + " " + message);
             }
         });
@@ -195,18 +313,14 @@ public class ReportsFragment extends Fragment {
         }
 
         for (int i = 0; i < report.rows.size(); i++) {
-            DailyProfitRow r = report.rows.get(i);
+            DailyProfitRow row = report.rows.get(i);
+            if (row == null) continue;
 
-            float sales = (float) r.sales;
-            float expense = (float) r.expense;
-            float profit = (float) r.profit;
-
-            salesEntries.add(new Entry(i, sales));
-            expenseEntries.add(new Entry(i, expense));
-            profitEntries.add(new BarEntry(i, profit));
+            salesEntries.add(new Entry(i, (float) row.sales));
+            expenseEntries.add(new Entry(i, (float) row.expense));
+            profitEntries.add(new BarEntry(i, (float) row.profit));
         }
 
-        // LINE: Sales vs Expense
         LineDataSet salesSet = new LineDataSet(salesEntries, "Sales");
         salesSet.setColor(Color.BLUE);
         salesSet.setLineWidth(2f);
@@ -227,7 +341,6 @@ public class ReportsFragment extends Fragment {
         lineChart.getAxisRight().setEnabled(false);
         lineChart.invalidate();
 
-        // BAR: Profit
         BarDataSet profitSet = new BarDataSet(profitEntries, "Profit");
         profitSet.setColor(Color.GREEN);
         profitSet.setDrawValues(false);
@@ -241,9 +354,11 @@ public class ReportsFragment extends Fragment {
         barChart.invalidate();
     }
 
-    private void pickDate(EditText target) {
+    private void pickDate(@NonNull EditText target) {
+        if (!isAdded()) return;
+
         Calendar cal = Calendar.getInstance();
-        DatePickerDialog dlg = new DatePickerDialog(
+        DatePickerDialog dialog = new DatePickerDialog(
                 requireContext(),
                 (dp, year, month, day) -> {
                     String out = String.format(Locale.US, "%04d-%02d-%02d", year, (month + 1), day);
@@ -253,7 +368,7 @@ public class ReportsFragment extends Fragment {
                 cal.get(Calendar.MONTH),
                 cal.get(Calendar.DAY_OF_MONTH)
         );
-        dlg.show();
+        dialog.show();
     }
 
     private void setRange(@NonNull String start, @NonNull String end) {
@@ -261,22 +376,25 @@ public class ReportsFragment extends Fragment {
         if (etEnd != null) etEnd.setText(end);
     }
 
-    private String fmtDate(@NonNull Date d) {
-        return new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(d);
+    @NonNull
+    private String fmtDate(@NonNull Date date) {
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(date);
     }
 
-    private String safeText(EditText et) {
+    @NonNull
+    private String safeText(@Nullable EditText et) {
         if (et == null || et.getText() == null) return "";
         return et.getText().toString().trim();
     }
 
-    private boolean isValidDate(String s) {
-        if (s == null) return false;
-        return s.matches("^\\d{4}-\\d{2}-\\d{2}$");
+    private boolean isValidDate(@Nullable String s) {
+        return s != null && s.matches("^\\d{4}-\\d{2}-\\d{2}$");
     }
 
     private void showLoading(boolean on) {
-        if (progress != null) progress.setVisibility(on ? View.VISIBLE : View.GONE);
+        if (progress != null) {
+            progress.setVisibility(on ? View.VISIBLE : View.GONE);
+        }
 
         if (btnFetch != null) btnFetch.setEnabled(!on);
         if (btnToday != null) btnToday.setEnabled(!on);
@@ -285,5 +403,33 @@ public class ReportsFragment extends Fragment {
 
         if (etStart != null) etStart.setEnabled(!on);
         if (etEnd != null) etEnd.setEnabled(!on);
+
+        if (ivHeaderAction != null) ivHeaderAction.setEnabled(!on);
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (rvRows != null) {
+            rvRows.setAdapter(null);
+        }
+
+        etStart = null;
+        etEnd = null;
+        btnFetch = null;
+        btnToday = null;
+        btn7Days = null;
+        btnThisMonth = null;
+        tvSales = null;
+        tvExpense = null;
+        tvProfit = null;
+        progress = null;
+        lineChart = null;
+        barChart = null;
+        rvRows = null;
+        btnBack = null;
+        ivHeaderAction = null;
+        adapter = null;
+
+        super.onDestroyView();
     }
 }

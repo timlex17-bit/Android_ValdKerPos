@@ -3,21 +3,22 @@ package com.example.valdker.ui.productreturns;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedDispatcher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.valdker.R;
+import com.example.valdker.base.BaseFragment;
 import com.example.valdker.models.CustomerLite;
 import com.example.valdker.models.OrderLite;
 import com.example.valdker.models.ProductLite;
@@ -29,9 +30,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProductReturnsFragment extends Fragment {
+public class ProductReturnsFragment extends BaseFragment {
 
-    private static final String TAG = "ProductReturnsFragment";
     private static final long CLICK_GUARD_MS = 700L;
 
     private SwipeRefreshLayout swipe;
@@ -39,6 +39,8 @@ public class ProductReturnsFragment extends Fragment {
     private TextView tvEmpty;
     private RecyclerView rv;
     private FloatingActionButton fabAdd;
+    private ImageView btnBack;
+    private ImageView ivHeaderAction;
 
     private final List<OrderLite> ordersLite = new ArrayList<>();
     private final List<CustomerLite> customersLite = new ArrayList<>();
@@ -53,23 +55,62 @@ public class ProductReturnsFragment extends Fragment {
 
     private long lastFabClickAt = 0L;
     private long lastRowClickAt = 0L;
+    private long lastRefreshClickAt = 0L;
 
-    @Nullable
+    public ProductReturnsFragment() {
+        super(R.layout.fragment_product_returns);
+    }
+
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        View v = inflater.inflate(R.layout.fragment_product_returns, container, false);
+        applyTopInset(view.findViewById(R.id.topBar));
 
-        swipe = v.findViewById(R.id.swipe);
-        progress = v.findViewById(R.id.progress);
-        tvEmpty = v.findViewById(R.id.tvEmpty);
-        rv = v.findViewById(R.id.rv);
-        fabAdd = v.findViewById(R.id.fabAdd);
+        bindViews(view);
+        setupHeader();
+        setupRecycler();
+        setupFab();
+        setupSwipe();
 
-        // Jangan pakai InsetsHelper.applyFabMarginInsets(...)
-        // supaya posisi FAB tetap persis di bawah seperti fragment lain
+        load();
+        preloadLiteData();
+    }
+
+    private void bindViews(@NonNull View view) {
+        swipe = view.findViewById(R.id.swipe);
+        progress = view.findViewById(R.id.progress);
+        tvEmpty = view.findViewById(R.id.tvEmpty);
+        rv = view.findViewById(R.id.rv);
+        fabAdd = view.findViewById(R.id.fabAdd);
+        btnBack = view.findViewById(R.id.btnBack);
+        ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
+    }
+
+    private void setupHeader() {
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                if (!isAdded()) return;
+                OnBackPressedDispatcher dispatcher = requireActivity().getOnBackPressedDispatcher();
+                dispatcher.onBackPressed();
+            });
+        }
+
+        if (ivHeaderAction != null) {
+            ivHeaderAction.setOnClickListener(v -> {
+                if (!isAdded()) return;
+                if (isRapidRefreshClick()) return;
+
+                if (swipe != null && !swipe.isRefreshing()) {
+                    swipe.setRefreshing(true);
+                }
+                load();
+            });
+        }
+    }
+
+    private void setupRecycler() {
+        if (rv == null) return;
 
         adapter = new ProductReturnAdapter(data, item -> {
             if (!canRunRowAction()) return;
@@ -82,14 +123,32 @@ public class ProductReturnsFragment extends Fragment {
 
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         rv.setAdapter(adapter);
+        rv.setHasFixedSize(false);
+    }
 
-        fabAdd.setOnClickListener(view -> {
+    private void setupFab() {
+        if (fabAdd == null) return;
+
+        fabAdd.setEnabled(true);
+        fabAdd.setAlpha(1f);
+        fabAdd.post(() -> {
+            if (fabAdd == null) return;
+            fabAdd.bringToFront();
+            fabAdd.setElevation(100f);
+            fabAdd.setTranslationZ(100f);
+        });
+
+        fabAdd.setOnClickListener(v -> {
             if (!isAdded()) return;
             if (isRapidFabClick()) return;
             if (isDialogOpening) return;
 
             openAddDialog();
         });
+    }
+
+    private void setupSwipe() {
+        if (swipe == null) return;
 
         swipe.setOnRefreshListener(() -> {
             if (isLoadingList) {
@@ -98,18 +157,6 @@ public class ProductReturnsFragment extends Fragment {
             }
             load();
         });
-
-        fabAdd.post(() -> {
-            if (fabAdd == null) return;
-            fabAdd.bringToFront();
-            fabAdd.setElevation(100f);
-            fabAdd.setTranslationZ(100f);
-        });
-
-        load();
-        preloadLiteData();
-
-        return v;
     }
 
     private boolean isRapidFabClick() {
@@ -118,6 +165,15 @@ public class ProductReturnsFragment extends Fragment {
             return true;
         }
         lastFabClickAt = now;
+        return false;
+    }
+
+    private boolean isRapidRefreshClick() {
+        long now = SystemClock.elapsedRealtime();
+        if (now - lastRefreshClickAt < CLICK_GUARD_MS) {
+            return true;
+        }
+        lastRefreshClickAt = now;
         return false;
     }
 
@@ -136,7 +192,7 @@ public class ProductReturnsFragment extends Fragment {
         if (isStateSaved()) return;
 
         if (ordersLite.isEmpty() || customersLite.isEmpty() || productsLite.isEmpty()) {
-            Toast.makeText(requireContext(), "Loading spinner data...", Toast.LENGTH_SHORT).show();
+            toast("Loading spinner data...");
             preloadLiteData();
             return;
         }
@@ -144,26 +200,27 @@ public class ProductReturnsFragment extends Fragment {
         isDialogOpening = true;
         setFabEnabled(false);
 
-        ProductReturnAddDialog dlg = new ProductReturnAddDialog(
+        ProductReturnAddDialog dialog = new ProductReturnAddDialog(
                 ordersLite,
                 this::fetchData
         );
 
         getChildFragmentManager().registerFragmentLifecycleCallbacks(
-                new androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks() {
+                new FragmentManager.FragmentLifecycleCallbacks() {
                     @Override
-                    public void onFragmentViewDestroyed(@NonNull androidx.fragment.app.FragmentManager fm,
+                    public void onFragmentViewDestroyed(@NonNull FragmentManager fm,
                                                         @NonNull androidx.fragment.app.Fragment f) {
-                        if (f == dlg) {
+                        if (f == dialog) {
                             isDialogOpening = false;
                             setFabEnabled(true);
                             fm.unregisterFragmentLifecycleCallbacks(this);
                         }
                     }
-                }, false
+                },
+                false
         );
 
-        dlg.show(getChildFragmentManager(), "add_return");
+        dialog.show(getChildFragmentManager(), "add_return");
     }
 
     private void fetchData() {
@@ -177,7 +234,6 @@ public class ProductReturnsFragment extends Fragment {
         if (isPreloadingLite) return;
 
         isPreloadingLite = true;
-
         final int[] doneCount = {0};
 
         LiteRepository.fetchOrdersLite(requireContext(), new LiteRepository.LiteCallback<OrderLite>() {
@@ -193,7 +249,7 @@ public class ProductReturnsFragment extends Fragment {
             @Override
             public void onError(@NonNull String message) {
                 if (!isAdded()) return;
-                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                toast(message);
                 doneCount[0]++;
                 finishPreloadIfDone(doneCount[0]);
             }
@@ -212,7 +268,7 @@ public class ProductReturnsFragment extends Fragment {
             @Override
             public void onError(@NonNull String message) {
                 if (!isAdded()) return;
-                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                toast(message);
                 doneCount[0]++;
                 finishPreloadIfDone(doneCount[0]);
             }
@@ -231,7 +287,7 @@ public class ProductReturnsFragment extends Fragment {
             @Override
             public void onError(@NonNull String message) {
                 if (!isAdded()) return;
-                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                toast(message);
                 doneCount[0]++;
                 finishPreloadIfDone(doneCount[0]);
             }
@@ -257,12 +313,16 @@ public class ProductReturnsFragment extends Fragment {
                 if (!isAdded()) return;
 
                 isLoadingList = false;
+                showLoading(false);
+
                 data.clear();
                 data.addAll(items);
-                adapter.notifyDataSetChanged();
 
-                showLoading(false);
-                updateEmpty();
+                if (adapter != null) {
+                    adapter.notifyDataSetChanged();
+                }
+
+                updateEmptyDefault();
             }
 
             @Override
@@ -271,22 +331,41 @@ public class ProductReturnsFragment extends Fragment {
 
                 isLoadingList = false;
                 showLoading(false);
-                tvEmpty.setText(message);
-                tvEmpty.setVisibility(View.VISIBLE);
+
+                data.clear();
+                if (adapter != null) {
+                    adapter.notifyDataSetChanged();
+                }
+
+                if (tvEmpty != null) {
+                    tvEmpty.setText(message == null || message.trim().isEmpty()
+                            ? "Failed to load product returns."
+                            : message);
+                    tvEmpty.setVisibility(View.VISIBLE);
+                }
             }
         });
     }
 
     private void showLoading(boolean loading) {
-        if (swipe != null) {
-            swipe.setRefreshing(false);
-        }
-        if (progress != null) {
-            progress.setVisibility(loading ? View.VISIBLE : View.GONE);
+        if (loading) {
+            if (progress != null) {
+                progress.setVisibility(View.VISIBLE);
+            }
+            if (tvEmpty != null) {
+                tvEmpty.setVisibility(View.GONE);
+            }
+        } else {
+            if (progress != null) {
+                progress.setVisibility(View.GONE);
+            }
+            if (swipe != null) {
+                swipe.setRefreshing(false);
+            }
         }
     }
 
-    private void updateEmpty() {
+    private void updateEmptyDefault() {
         if (tvEmpty == null) return;
 
         if (data.isEmpty()) {
@@ -301,5 +380,32 @@ public class ProductReturnsFragment extends Fragment {
         if (fabAdd == null) return;
         fabAdd.setEnabled(enabled);
         fabAdd.setAlpha(enabled ? 1f : 0.65f);
+    }
+
+    private void toast(@NonNull String message) {
+        if (!isAdded()) return;
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (swipe != null) {
+            swipe.setOnRefreshListener(null);
+        }
+
+        if (rv != null) {
+            rv.setAdapter(null);
+        }
+
+        swipe = null;
+        progress = null;
+        tvEmpty = null;
+        rv = null;
+        fabAdd = null;
+        btnBack = null;
+        ivHeaderAction = null;
+        adapter = null;
+
+        super.onDestroyView();
     }
 }

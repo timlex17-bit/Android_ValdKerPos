@@ -1,16 +1,16 @@
 package com.example.valdker.ui.stockadjustments;
 
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.os.SystemClock;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedDispatcher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -20,11 +20,11 @@ import com.android.volley.Request;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.example.valdker.R;
 import com.example.valdker.SessionManager;
+import com.example.valdker.base.BaseFragment;
 import com.example.valdker.models.StockAdjustment;
 import com.example.valdker.network.ApiClient;
 import com.example.valdker.network.ApiConfig;
 import com.example.valdker.repositories.StockAdjustmentRepository;
-import com.example.valdker.utils.InsetsHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONArray;
@@ -34,79 +34,164 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class StockAdjustmentsFragment extends Fragment {
+public class StockAdjustmentsFragment extends BaseFragment {
 
-    private static final String TAG = "StockAdjustmentsFragment";
     private static final String TAG_ADD_DIALOG = "add_stock_adjustment";
-    private static final long FAB_CLICK_DELAY_MS = 700L;
+    private static final long CLICK_GUARD_MS = 700L;
 
     private SwipeRefreshLayout swipe;
     private ProgressBar progress;
     private TextView tvEmpty;
     private RecyclerView rv;
     private FloatingActionButton fab;
+    private ImageView btnBack;
+    private ImageView ivHeaderAction;
 
     private StockAdjustmentsAdapter adapter;
     private final List<StockAdjustment> data = new ArrayList<>();
 
     private JSONArray productsJson = null;
     private boolean productsLoaded = false;
-
-    private long lastFabClickTime = 0L;
+    private boolean isLoadingList = false;
+    private boolean isLoadingProducts = false;
     private boolean isAddDialogShowing = false;
 
-    @Nullable
+    private long lastFabClickTime = 0L;
+    private long lastRowClickTime = 0L;
+    private long lastRefreshClickTime = 0L;
+
+    public StockAdjustmentsFragment() {
+        super(R.layout.fragment_stock_adjustments);
+    }
+
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        View v = inflater.inflate(R.layout.fragment_stock_adjustments, container, false);
+        applyTopInset(view.findViewById(R.id.topBar));
 
-        swipe = v.findViewById(R.id.swipe);
-        progress = v.findViewById(R.id.progress);
-        tvEmpty = v.findViewById(R.id.tvEmpty);
-        rv = v.findViewById(R.id.rv);
-        fab = v.findViewById(R.id.fabAdd);
-
-        InsetsHelper.applyRecyclerBottomInsets(v, rv, TAG);
-        // Jangan pakai ini supaya posisi FAB konsisten seperti fragment lain
-        // InsetsHelper.applyFabMarginInsets(fab, 16, TAG);
-
-        rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-        adapter = new StockAdjustmentsAdapter(data, item ->
-                StockAdjustmentDetailActivity.open(requireContext(), item)
-        );
-        rv.setAdapter(adapter);
-
-        swipe.setOnRefreshListener(() -> {
-            load();
-            // loadProducts();
-        });
-
-        fab.setEnabled(false);
-        fab.setAlpha(0.4f);
-        fab.setOnClickListener(view -> openAddDialogSafely());
+        bindViews(view);
+        setupHeader();
+        setupRecycler();
+        setupSwipe();
+        setupFab();
 
         loadProducts();
         load();
+    }
 
-        return v;
+    private void bindViews(@NonNull View view) {
+        swipe = view.findViewById(R.id.swipe);
+        progress = view.findViewById(R.id.progress);
+        tvEmpty = view.findViewById(R.id.tvEmpty);
+        rv = view.findViewById(R.id.rv);
+        fab = view.findViewById(R.id.fabAdd);
+        btnBack = view.findViewById(R.id.btnBack);
+        ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
+    }
+
+    private void setupHeader() {
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                if (!isAdded()) return;
+                OnBackPressedDispatcher dispatcher = requireActivity().getOnBackPressedDispatcher();
+                dispatcher.onBackPressed();
+            });
+        }
+
+        if (ivHeaderAction != null) {
+            ivHeaderAction.setOnClickListener(v -> {
+                if (!isAdded()) return;
+                if (isRapidRefreshClick()) return;
+
+                if (swipe != null && !swipe.isRefreshing()) {
+                    swipe.setRefreshing(true);
+                }
+                load();
+            });
+        }
+    }
+
+    private void setupRecycler() {
+        if (rv == null) return;
+
+        rv.setLayoutManager(new LinearLayoutManager(requireContext()));
+        rv.setHasFixedSize(false);
+
+        adapter = new StockAdjustmentsAdapter(data, item -> {
+            if (!canRunRowClick()) return;
+            if (!isAdded()) return;
+            StockAdjustmentDetailActivity.open(requireContext(), item);
+        });
+
+        rv.setAdapter(adapter);
+    }
+
+    private void setupSwipe() {
+        if (swipe == null) return;
+
+        swipe.setOnRefreshListener(() -> {
+            if (isLoadingList) {
+                swipe.setRefreshing(false);
+                return;
+            }
+            load();
+        });
+    }
+
+    private void setupFab() {
+        if (fab == null) return;
+
+        fab.setEnabled(false);
+        fab.setAlpha(0.4f);
+
+        fab.post(() -> {
+            if (fab == null) return;
+            fab.bringToFront();
+            fab.setElevation(100f);
+            fab.setTranslationZ(100f);
+        });
+
+        fab.setOnClickListener(v -> openAddDialogSafely());
+    }
+
+    private boolean isRapidRefreshClick() {
+        long now = SystemClock.elapsedRealtime();
+        if (now - lastRefreshClickTime < CLICK_GUARD_MS) {
+            return true;
+        }
+        lastRefreshClickTime = now;
+        return false;
+    }
+
+    private boolean canRunRowClick() {
+        long now = SystemClock.elapsedRealtime();
+        if (now - lastRowClickTime < CLICK_GUARD_MS) {
+            return false;
+        }
+        lastRowClickTime = now;
+        return true;
     }
 
     private void openAddDialogSafely() {
         if (!isAdded()) return;
-        if (!productsLoaded || productsJson == null || productsJson.length() == 0) {
-            Toast.makeText(requireContext(), "Product list not loaded yet", Toast.LENGTH_SHORT).show();
-            return;
-        }
         if (isAddDialogShowing) return;
 
-        long now = System.currentTimeMillis();
-        if (now - lastFabClickTime < FAB_CLICK_DELAY_MS) {
+        long now = SystemClock.elapsedRealtime();
+        if (now - lastFabClickTime < CLICK_GUARD_MS) {
             return;
         }
         lastFabClickTime = now;
+
+        if (!productsLoaded || productsJson == null || productsJson.length() == 0) {
+            toast("Product list not loaded yet");
+            if (!isLoadingProducts) {
+                loadProducts();
+            }
+            return;
+        }
+
+        if (isStateSaved()) return;
 
         FragmentManager fm = getChildFragmentManager();
         if (fm.findFragmentByTag(TAG_ADD_DIALOG) != null) {
@@ -114,82 +199,94 @@ public class StockAdjustmentsFragment extends Fragment {
         }
 
         isAddDialogShowing = true;
-
-        if (fab != null) {
-            fab.setEnabled(false);
-            fab.setAlpha(0.4f);
-            fab.postDelayed(() -> {
-                if (fab != null && isAdded() && !isAddDialogShowing) {
-                    fab.setEnabled(productsLoaded);
-                    fab.setAlpha(productsLoaded ? 1f : 0.4f);
-                }
-            }, FAB_CLICK_DELAY_MS);
-        }
+        setFabEnabled(false);
 
         StockAdjustmentFormDialog dialog =
-                StockAdjustmentFormDialog.create(productsJson, this::load);
+                StockAdjustmentFormDialog.create(productsJson, this::reloadAfterDialog);
+
+        fm.registerFragmentLifecycleCallbacks(new FragmentManager.FragmentLifecycleCallbacks() {
+            @Override
+            public void onFragmentViewDestroyed(@NonNull FragmentManager fragmentManager,
+                                                @NonNull androidx.fragment.app.Fragment fragment) {
+                if (fragment == dialog) {
+                    isAddDialogShowing = false;
+                    setFabEnabled(productsLoaded);
+                    fragmentManager.unregisterFragmentLifecycleCallbacks(this);
+                }
+            }
+        }, false);
 
         dialog.show(fm, TAG_ADD_DIALOG);
+    }
 
-        fm.executePendingTransactions();
-        Fragment fragment = fm.findFragmentByTag(TAG_ADD_DIALOG);
-        if (fragment instanceof StockAdjustmentFormDialog) {
-            ((StockAdjustmentFormDialog) fragment).getDialog().setOnDismissListener(d -> {
-                isAddDialogShowing = false;
-                if (fab != null && isAdded()) {
-                    fab.postDelayed(() -> {
-                        if (fab != null && isAdded()) {
-                            fab.setEnabled(productsLoaded);
-                            fab.setAlpha(productsLoaded ? 1f : 0.4f);
-                        }
-                    }, 180L);
-                }
-            });
-        } else {
-            isAddDialogShowing = false;
-            if (fab != null && isAdded()) {
-                fab.setEnabled(productsLoaded);
-                fab.setAlpha(productsLoaded ? 1f : 0.4f);
-            }
-        }
+    private void reloadAfterDialog() {
+        isAddDialogShowing = false;
+        setFabEnabled(productsLoaded);
+        load();
     }
 
     private void load() {
         if (!isAdded()) return;
+        if (isLoadingList) return;
 
-        tvEmpty.setVisibility(View.GONE);
-        if (!swipe.isRefreshing()) progress.setVisibility(View.VISIBLE);
+        isLoadingList = true;
+
+        if (tvEmpty != null) {
+            tvEmpty.setVisibility(View.GONE);
+        }
+        if (swipe != null && !swipe.isRefreshing() && progress != null) {
+            progress.setVisibility(View.VISIBLE);
+        }
 
         StockAdjustmentRepository.fetch(requireContext(), new StockAdjustmentRepository.ListCallback() {
             @Override
             public void onSuccess(List<StockAdjustment> list) {
                 if (!isAdded()) return;
 
-                progress.setVisibility(View.GONE);
-                swipe.setRefreshing(false);
+                isLoadingList = false;
+
+                if (progress != null) progress.setVisibility(View.GONE);
+                if (swipe != null) swipe.setRefreshing(false);
 
                 data.clear();
-                data.addAll(list);
-                adapter.notifyDataSetChanged();
+                if (list != null) {
+                    data.addAll(list);
+                }
 
-                tvEmpty.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
+                if (adapter != null) {
+                    adapter.notifyDataSetChanged();
+                }
+
+                if (tvEmpty != null) {
+                    tvEmpty.setText("No stock adjustments");
+                    tvEmpty.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
+                }
             }
 
             @Override
             public void onError(String message) {
                 if (!isAdded()) return;
 
-                progress.setVisibility(View.GONE);
-                swipe.setRefreshing(false);
+                isLoadingList = false;
 
-                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
-                tvEmpty.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
+                if (progress != null) progress.setVisibility(View.GONE);
+                if (swipe != null) swipe.setRefreshing(false);
+
+                toast(message == null ? "Failed to load stock adjustments" : message);
+
+                if (tvEmpty != null) {
+                    tvEmpty.setText("No stock adjustments");
+                    tvEmpty.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
+                }
             }
         });
     }
 
     private void loadProducts() {
         if (!isAdded()) return;
+        if (isLoadingProducts) return;
+
+        isLoadingProducts = true;
 
         SessionManager sm = new SessionManager(requireContext());
         String url = ApiConfig.url(sm, "api/products/");
@@ -201,45 +298,42 @@ public class StockAdjustmentsFragment extends Fragment {
                 response -> {
                     if (!isAdded()) return;
 
+                    isLoadingProducts = false;
                     productsJson = response;
-                    productsLoaded = (productsJson != null && productsJson.length() > 0);
+                    productsLoaded = productsJson != null && productsJson.length() > 0;
 
-                    if (fab != null && !isAddDialogShowing) {
-                        fab.setEnabled(productsLoaded);
-                        fab.setAlpha(productsLoaded ? 1f : 0.4f);
+                    if (!isAddDialogShowing) {
+                        setFabEnabled(productsLoaded);
                     }
 
                     if (!productsLoaded) {
-                        Toast.makeText(requireContext(), "Products are empty", Toast.LENGTH_SHORT).show();
+                        toast("Products are empty");
                     }
                 },
                 error -> {
                     if (!isAdded()) return;
 
+                    isLoadingProducts = false;
                     productsLoaded = false;
                     productsJson = null;
-
-                    if (fab != null) {
-                        fab.setEnabled(false);
-                        fab.setAlpha(0.4f);
-                    }
+                    setFabEnabled(false);
 
                     String msg = "Failed load products";
                     if (error != null && error.networkResponse != null) {
                         msg += " (" + error.networkResponse.statusCode + ")";
                     }
-                    Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show();
+                    toast(msg);
                 }
         ) {
             @Override
             public Map<String, String> getHeaders() {
-                SessionManager sm = new SessionManager(requireContext());
-                String token = sm.getToken();
+                SessionManager sessionManager = new SessionManager(requireContext());
+                String token = sessionManager.getToken();
 
                 Map<String, String> headers = new HashMap<>();
                 headers.put("Accept", "application/json");
                 if (token != null && !token.trim().isEmpty()) {
-                    headers.put("Authorization", "Token " + token);
+                    headers.put("Authorization", "Token " + token.trim());
                 }
                 return headers;
             }
@@ -249,14 +343,37 @@ public class StockAdjustmentsFragment extends Fragment {
         ApiClient.getInstance(requireContext()).add(req);
     }
 
+    private void setFabEnabled(boolean enabled) {
+        if (fab == null) return;
+        fab.setEnabled(enabled);
+        fab.setAlpha(enabled ? 1f : 0.4f);
+    }
+
+    private void toast(@NonNull String message) {
+        if (!isAdded()) return;
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
     @Override
     public void onDestroyView() {
-        super.onDestroyView();
+        if (swipe != null) {
+            swipe.setOnRefreshListener(null);
+        }
+
+        if (rv != null) {
+            rv.setAdapter(null);
+        }
+
         swipe = null;
         progress = null;
         tvEmpty = null;
         rv = null;
         fab = null;
+        btnBack = null;
+        ivHeaderAction = null;
+        adapter = null;
         isAddDialogShowing = false;
+
+        super.onDestroyView();
     }
 }

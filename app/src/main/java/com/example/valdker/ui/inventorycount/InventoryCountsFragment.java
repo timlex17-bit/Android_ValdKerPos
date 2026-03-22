@@ -2,16 +2,18 @@ package com.example.valdker.ui.inventorycount;
 
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.view.LayoutInflater;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedDispatcher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -21,11 +23,11 @@ import com.android.volley.Request;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.example.valdker.R;
 import com.example.valdker.SessionManager;
+import com.example.valdker.base.BaseFragment;
 import com.example.valdker.models.InventoryCount;
 import com.example.valdker.network.ApiClient;
 import com.example.valdker.network.ApiConfig;
 import com.example.valdker.repositories.InventoryCountRepository;
-import com.example.valdker.utils.InsetsHelper;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -34,25 +36,32 @@ import org.json.JSONArray;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
-public class InventoryCountsFragment extends Fragment {
+public class InventoryCountsFragment extends BaseFragment {
+
+    private static final int TIMEOUT_MS = 20000;
+    private static final int MAX_RETRIES = 1;
+    private static final float BACKOFF_MULT = 1.2f;
+    private static final long CLICK_GUARD_MS = 700L;
 
     private SwipeRefreshLayout swipe;
     private ProgressBar progress;
     private TextView tvEmpty;
     private RecyclerView rv;
     private FloatingActionButton fab;
+    private EditText etSearch;
+    private ImageView btnBack;
+    private ImageView ivHeaderAction;
 
     private InventoryCountAdapter adapter;
+
     private final List<InventoryCount> data = new ArrayList<>();
+    private final List<InventoryCount> allData = new ArrayList<>();
 
     private JSONArray productsJson = null;
-
-    private static final int TIMEOUT_MS = 20000;
-    private static final int MAX_RETRIES = 1;
-    private static final float BACKOFF_MULT = 1.2f;
-    private static final long CLICK_GUARD_MS = 700L;
+    private String currentQuery = "";
 
     private boolean isLoadingCounts = false;
     private boolean isLoadingProducts = false;
@@ -61,20 +70,64 @@ public class InventoryCountsFragment extends Fragment {
 
     private long lastFabClickAt = 0L;
     private long lastRowActionAt = 0L;
+    private long lastRefreshClickAt = 0L;
 
-    @Nullable
+    public InventoryCountsFragment() {
+        super(R.layout.fragment_inventory_count_list);
+    }
+
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        View v = inflater.inflate(R.layout.fragment_inventory_count_list, container, false);
+        applyTopInset(view.findViewById(R.id.topBar));
 
-        swipe = v.findViewById(R.id.swipe);
-        progress = v.findViewById(R.id.progress);
-        tvEmpty = v.findViewById(R.id.tvEmpty);
-        rv = v.findViewById(R.id.rv);
-        fab = v.findViewById(R.id.fabAdd);
+        bindViews(view);
+        setupHeader();
+        setupRecycler();
+        setupSearch();
+        setupSwipe();
+        setupFab();
+
+        loadProducts(false, null);
+        loadCounts();
+    }
+
+    private void bindViews(@NonNull View view) {
+        swipe = view.findViewById(R.id.swipe);
+        progress = view.findViewById(R.id.progress);
+        tvEmpty = view.findViewById(R.id.tvEmpty);
+        rv = view.findViewById(R.id.rv);
+        fab = view.findViewById(R.id.fabAdd);
+        etSearch = view.findViewById(R.id.etSearch);
+        btnBack = view.findViewById(R.id.btnBack);
+        ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
+    }
+
+    private void setupHeader() {
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                if (!isAdded()) return;
+                OnBackPressedDispatcher dispatcher = requireActivity().getOnBackPressedDispatcher();
+                dispatcher.onBackPressed();
+            });
+        }
+
+        if (ivHeaderAction != null) {
+            ivHeaderAction.setOnClickListener(v -> {
+                if (!isAdded()) return;
+                if (isRapidRefreshClick()) return;
+
+                if (swipe != null && !swipe.isRefreshing()) {
+                    swipe.setRefreshing(true);
+                }
+                loadCounts();
+            });
+        }
+    }
+
+    private void setupRecycler() {
+        if (rv == null) return;
 
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         rv.setHasFixedSize(false);
@@ -103,15 +156,42 @@ public class InventoryCountsFragment extends Fragment {
                     deleteItem(item);
                 }
         );
+
         rv.setAdapter(adapter);
+    }
+
+    private void setupSearch() {
+        if (etSearch == null) return;
+
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                currentQuery = s == null ? "" : s.toString().trim();
+                applyFilter();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) { }
+        });
+    }
+
+    private void setupSwipe() {
+        if (swipe == null) return;
 
         swipe.setOnRefreshListener(() -> {
             if (isLoadingCounts) {
-                swipe.setRefreshing(false);
+                if (swipe != null) swipe.setRefreshing(false);
                 return;
             }
             loadCounts();
         });
+    }
+
+    private void setupFab() {
+        if (fab == null) return;
 
         fab.setEnabled(true);
         fab.setAlpha(1f);
@@ -122,7 +202,7 @@ public class InventoryCountsFragment extends Fragment {
             fab.setTranslationZ(100f);
         });
 
-        fab.setOnClickListener(vv -> {
+        fab.setOnClickListener(v -> {
             if (!isAdded()) return;
             if (isRapidFabClick()) return;
             if (isDialogOpening) return;
@@ -134,10 +214,6 @@ public class InventoryCountsFragment extends Fragment {
             }
             openAddDialog();
         });
-
-        loadProducts(false, null);
-        loadCounts();
-        return v;
     }
 
     private boolean isRapidFabClick() {
@@ -146,6 +222,15 @@ public class InventoryCountsFragment extends Fragment {
             return true;
         }
         lastFabClickAt = now;
+        return false;
+    }
+
+    private boolean isRapidRefreshClick() {
+        long now = SystemClock.elapsedRealtime();
+        if (now - lastRefreshClickAt < CLICK_GUARD_MS) {
+            return true;
+        }
+        lastRefreshClickAt = now;
         return false;
     }
 
@@ -207,37 +292,33 @@ public class InventoryCountsFragment extends Fragment {
 
         isLoadingCounts = true;
 
-        tvEmpty.setVisibility(View.GONE);
-        if (!swipe.isRefreshing()) {
+        if (tvEmpty != null) tvEmpty.setVisibility(View.GONE);
+        if (swipe != null && !swipe.isRefreshing() && progress != null) {
             progress.setVisibility(View.VISIBLE);
         }
 
         InventoryCountRepository.fetch(requireContext(), new InventoryCountRepository.Callback() {
             @Override
             public void onSuccess(@NonNull List<InventoryCount> list) {
-                if (!isAdded()) return;
-
                 isLoadingCounts = false;
-                progress.setVisibility(View.GONE);
-                swipe.setRefreshing(false);
 
-                data.clear();
-                data.addAll(list);
-                adapter.notifyDataSetChanged();
+                if (progress != null) progress.setVisibility(View.GONE);
+                if (swipe != null) swipe.setRefreshing(false);
 
-                tvEmpty.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
+                allData.clear();
+                allData.addAll(list);
+                applyFilter();
             }
 
             @Override
             public void onError(@NonNull String message) {
-                if (!isAdded()) return;
-
                 isLoadingCounts = false;
-                progress.setVisibility(View.GONE);
-                swipe.setRefreshing(false);
+
+                if (progress != null) progress.setVisibility(View.GONE);
+                if (swipe != null) swipe.setRefreshing(false);
 
                 toast(message);
-                tvEmpty.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
+                updateEmptyState();
             }
         });
     }
@@ -257,10 +338,11 @@ public class InventoryCountsFragment extends Fragment {
                 url,
                 null,
                 response -> {
-                    if (!isAdded()) return;
-
                     isLoadingProducts = false;
                     setFabLoading(false);
+
+                    if (!isAdded()) return;
+
                     productsJson = response;
 
                     if (productsJson == null || productsJson.length() == 0) {
@@ -277,10 +359,11 @@ public class InventoryCountsFragment extends Fragment {
                     }
                 },
                 error -> {
-                    if (!isAdded()) return;
-
                     isLoadingProducts = false;
                     setFabLoading(false);
+
+                    if (!isAdded()) return;
+
                     productsJson = null;
 
                     String msg = "Failed load products";
@@ -292,8 +375,8 @@ public class InventoryCountsFragment extends Fragment {
         ) {
             @Override
             public Map<String, String> getHeaders() {
-                SessionManager sm = new SessionManager(requireContext());
-                String token = sm.getToken();
+                SessionManager sessionManager = new SessionManager(requireContext());
+                String token = sessionManager.getToken();
 
                 Map<String, String> headers = new HashMap<>();
                 headers.put("Accept", "application/json");
@@ -309,13 +392,55 @@ public class InventoryCountsFragment extends Fragment {
         ApiClient.getInstance(requireContext()).add(req);
     }
 
+    private void applyFilter() {
+        data.clear();
+
+        if (allData.isEmpty()) {
+            notifyAdapterChanged();
+            updateEmptyState();
+            return;
+        }
+
+        String query = currentQuery == null ? "" : currentQuery.trim().toLowerCase(Locale.getDefault());
+
+        if (query.isEmpty()) {
+            data.addAll(allData);
+        } else {
+            for (InventoryCount item : allData) {
+                if (item == null) continue;
+
+                String title = item.title == null ? "" : item.title.trim().toLowerCase(Locale.getDefault());
+
+                if (title.contains(query)) {
+                    data.add(item);
+                }
+            }
+        }
+
+        notifyAdapterChanged();
+        updateEmptyState();
+    }
+
+    private void notifyAdapterChanged() {
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
+    }
+
+    private void updateEmptyState() {
+        boolean showEmpty = data.isEmpty();
+        if (tvEmpty != null) {
+            tvEmpty.setVisibility(showEmpty ? View.VISIBLE : View.GONE);
+        }
+    }
+
     private void deleteItem(@NonNull InventoryCount item) {
         if (!isAdded()) return;
         if (isDeleteRunning) return;
 
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Delete")
-                .setMessage("Delete \"" + item.title + "\"?")
+                .setMessage("Delete \"" + safeText(item.title) + "\"?")
                 .setNegativeButton("Cancel", null)
                 .setPositiveButton("Delete", (d, w) -> {
                     if (!isAdded()) return;
@@ -323,12 +448,12 @@ public class InventoryCountsFragment extends Fragment {
 
                     isDeleteRunning = true;
 
-                    InventoryCountRepository.delete(requireContext(), item.id,
+                    InventoryCountRepository.delete(
+                            requireContext(),
+                            item.id,
                             new InventoryCountRepository.DeleteCallback() {
                                 @Override
                                 public void onSuccess() {
-                                    if (!isAdded()) return;
-
                                     isDeleteRunning = false;
                                     toast("Deleted");
                                     loadCounts();
@@ -336,12 +461,11 @@ public class InventoryCountsFragment extends Fragment {
 
                                 @Override
                                 public void onError(@NonNull String message) {
-                                    if (!isAdded()) return;
-
                                     isDeleteRunning = false;
                                     toast(message);
                                 }
-                            });
+                            }
+                    );
                 })
                 .show();
     }
@@ -352,6 +476,11 @@ public class InventoryCountsFragment extends Fragment {
         fab.setAlpha(loading ? 0.65f : 1f);
     }
 
+    @NonNull
+    private String safeText(@Nullable String value) {
+        return value == null || value.trim().isEmpty() ? "-" : value.trim();
+    }
+
     private void toast(@NonNull String message) {
         if (!isAdded()) return;
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
@@ -359,11 +488,23 @@ public class InventoryCountsFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
-        super.onDestroyView();
+        if (swipe != null) {
+            swipe.setOnRefreshListener(null);
+        }
+
+        if (rv != null) {
+            rv.setAdapter(null);
+        }
+
         swipe = null;
         progress = null;
         tvEmpty = null;
         rv = null;
         fab = null;
+        etSearch = null;
+        btnBack = null;
+        ivHeaderAction = null;
+
+        super.onDestroyView();
     }
 }

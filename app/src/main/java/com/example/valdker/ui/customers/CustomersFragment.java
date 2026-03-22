@@ -17,6 +17,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.valdker.R;
 import com.example.valdker.SessionManager;
+import com.example.valdker.base.BaseFragment;
 import com.example.valdker.models.Customer;
 import com.example.valdker.repositories.CustomerRepository;
 import com.example.valdker.utils.InsetsHelper;
@@ -25,12 +26,17 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CustomersFragment extends Fragment {
+public class CustomersFragment extends BaseFragment {
 
     private static final String TAG = "CUSTOMERS";
     private static final String TAG_ADD_CUSTOMER = "add_customer";
     private static final String TAG_EDIT_CUSTOMER = "edit_customer";
     private static final long CLICK_GUARD_MS = 700L;
+
+    private TextView tvTitle;
+    private android.widget.EditText etSearchCustomer;
+    private android.widget.ImageView btnBack;
+    private android.widget.ImageView ivHeaderAction;
 
     private SwipeRefreshLayout swipe;
     private RecyclerView rv;
@@ -59,6 +65,8 @@ public class CustomersFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        applyTopInset(view.findViewById(R.id.topBar));
+
         session = new SessionManager(requireContext());
         repo = new CustomerRepository(requireContext());
 
@@ -68,6 +76,25 @@ public class CustomersFragment extends Fragment {
         tvEmpty = view.findViewById(R.id.tvEmptyCustomers);
         fabAdd = view.findViewById(R.id.fabAddCustomer);
 
+        tvTitle = view.findViewById(R.id.tvTitleCustomers);
+        etSearchCustomer = view.findViewById(R.id.etSearchCustomer);
+        btnBack = view.findViewById(R.id.btnBack);
+        ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
+
+        if (tvTitle != null) {
+            tvTitle.setText("Customers");
+        }
+
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v ->
+                    requireActivity().getOnBackPressedDispatcher().onBackPressed()
+            );
+        }
+
+        if (ivHeaderAction != null) {
+            ivHeaderAction.setOnClickListener(v -> load(false));
+        }
+
         if (swipe == null) Log.w(TAG, "swipeRefreshCustomers not found.");
         if (rv == null) Log.w(TAG, "rvCustomers not found.");
         if (progress == null) Log.w(TAG, "progressCustomers not found.");
@@ -75,8 +102,7 @@ public class CustomersFragment extends Fragment {
         if (fabAdd == null) Log.w(TAG, "fabAddCustomer not found.");
 
         InsetsHelper.applyRecyclerBottomInsets(view, rv, TAG);
-        // Jangan pakai applyFabMarginInsets supaya posisi FAB tetap sama seperti fragment lain
-        // InsetsHelper.applyFabMarginInsets(fabAdd, 16, TAG);
+        applyFabBottomInset(fabAdd, 56);
 
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(requireContext()));

@@ -1,70 +1,151 @@
 package com.example.valdker.ui.stockmovements;
 
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.os.SystemClock;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedDispatcher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.valdker.R;
+import com.example.valdker.base.BaseFragment;
 import com.example.valdker.models.StockMovement;
 import com.example.valdker.repositories.StockMovementRepository;
-import com.example.valdker.utils.InsetsHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class StockMovementsFragment extends Fragment {
+public class StockMovementsFragment extends BaseFragment {
+
+    private static final long CLICK_GUARD_MS = 700L;
 
     private SwipeRefreshLayout swipe;
     private ProgressBar progress;
     private TextView tvEmpty;
     private RecyclerView rv;
+    private ImageView btnBack;
+    private ImageView ivHeaderAction;
 
     private StockMovementsAdapter adapter;
     private final List<StockMovement> data = new ArrayList<>();
 
-    @Nullable
+    private boolean isLoading = false;
+    private long lastRowClickAt = 0L;
+    private long lastRefreshClickAt = 0L;
+
+    public StockMovementsFragment() {
+        super(R.layout.fragment_stock_movements);
+    }
+
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        View v = inflater.inflate(R.layout.fragment_stock_movements, container, false);
+        applyTopInset(view.findViewById(R.id.topBar));
 
-        swipe = v.findViewById(R.id.swipe);
-        progress = v.findViewById(R.id.progress);
-        tvEmpty = v.findViewById(R.id.tvEmpty);
-        rv = v.findViewById(R.id.rv);
-
-        rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-        adapter = new StockMovementsAdapter(data, item ->
-                StockMovementDetailActivity.open(requireContext(), item)
-        );
-        rv.setAdapter(adapter);
-
-        // ✅ Apply safe bottom inset so list is not covered by navigation bar
-        InsetsHelper.applyRecyclerBottomInsets(v, rv);
-
-        swipe.setOnRefreshListener(this::load);
+        bindViews(view);
+        setupHeader();
+        setupRecycler();
+        setupSwipe();
 
         load();
-        return v;
+    }
+
+    private void bindViews(@NonNull View view) {
+        swipe = view.findViewById(R.id.swipe);
+        progress = view.findViewById(R.id.progress);
+        tvEmpty = view.findViewById(R.id.tvEmpty);
+        rv = view.findViewById(R.id.rv);
+        btnBack = view.findViewById(R.id.btnBack);
+        ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
+    }
+
+    private void setupHeader() {
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                if (!isAdded()) return;
+                OnBackPressedDispatcher dispatcher = requireActivity().getOnBackPressedDispatcher();
+                dispatcher.onBackPressed();
+            });
+        }
+
+        if (ivHeaderAction != null) {
+            ivHeaderAction.setOnClickListener(v -> {
+                if (!isAdded()) return;
+                if (isRapidRefreshClick()) return;
+
+                if (swipe != null && !swipe.isRefreshing()) {
+                    swipe.setRefreshing(true);
+                }
+                load();
+            });
+        }
+    }
+
+    private void setupRecycler() {
+        if (rv == null) return;
+
+        rv.setLayoutManager(new LinearLayoutManager(requireContext()));
+        rv.setHasFixedSize(false);
+
+        adapter = new StockMovementsAdapter(data, item -> {
+            if (!canRunRowClick()) return;
+            if (!isAdded()) return;
+            StockMovementDetailActivity.open(requireContext(), item);
+        });
+
+        rv.setAdapter(adapter);
+    }
+
+    private void setupSwipe() {
+        if (swipe == null) return;
+
+        swipe.setOnRefreshListener(() -> {
+            if (isLoading) {
+                swipe.setRefreshing(false);
+                return;
+            }
+            load();
+        });
+    }
+
+    private boolean canRunRowClick() {
+        long now = SystemClock.elapsedRealtime();
+        if (now - lastRowClickAt < CLICK_GUARD_MS) {
+            return false;
+        }
+        lastRowClickAt = now;
+        return true;
+    }
+
+    private boolean isRapidRefreshClick() {
+        long now = SystemClock.elapsedRealtime();
+        if (now - lastRefreshClickAt < CLICK_GUARD_MS) {
+            return true;
+        }
+        lastRefreshClickAt = now;
+        return false;
     }
 
     private void load() {
-        tvEmpty.setVisibility(View.GONE);
+        if (!isAdded()) return;
+        if (isLoading) return;
 
-        if (!swipe.isRefreshing()) {
+        isLoading = true;
+
+        if (tvEmpty != null) {
+            tvEmpty.setVisibility(View.GONE);
+        }
+
+        if (swipe != null && !swipe.isRefreshing() && progress != null) {
             progress.setVisibility(View.VISIBLE);
         }
 
@@ -73,15 +154,23 @@ public class StockMovementsFragment extends Fragment {
             public void onSuccess(List<StockMovement> list) {
                 if (!isAdded()) return;
 
-                progress.setVisibility(View.GONE);
-                swipe.setRefreshing(false);
+                isLoading = false;
+
+                if (progress != null) progress.setVisibility(View.GONE);
+                if (swipe != null) swipe.setRefreshing(false);
 
                 data.clear();
-                data.addAll(list);
-                adapter.notifyDataSetChanged();
+                if (list != null) {
+                    data.addAll(list);
+                }
 
-                if (data.isEmpty()) {
-                    tvEmpty.setVisibility(View.VISIBLE);
+                if (adapter != null) {
+                    adapter.notifyDataSetChanged();
+                }
+
+                if (tvEmpty != null) {
+                    tvEmpty.setText("No stock movements");
+                    tvEmpty.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
                 }
             }
 
@@ -89,15 +178,45 @@ public class StockMovementsFragment extends Fragment {
             public void onError(String message) {
                 if (!isAdded()) return;
 
-                progress.setVisibility(View.GONE);
-                swipe.setRefreshing(false);
+                isLoading = false;
 
-                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+                if (progress != null) progress.setVisibility(View.GONE);
+                if (swipe != null) swipe.setRefreshing(false);
 
-                if (data.isEmpty()) {
-                    tvEmpty.setVisibility(View.VISIBLE);
+                Toast.makeText(
+                        requireContext(),
+                        message == null || message.trim().isEmpty()
+                                ? "Failed to load stock movements"
+                                : message,
+                        Toast.LENGTH_LONG
+                ).show();
+
+                if (tvEmpty != null) {
+                    tvEmpty.setText("No stock movements");
+                    tvEmpty.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
                 }
             }
         });
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (swipe != null) {
+            swipe.setOnRefreshListener(null);
+        }
+
+        if (rv != null) {
+            rv.setAdapter(null);
+        }
+
+        swipe = null;
+        progress = null;
+        tvEmpty = null;
+        rv = null;
+        btnBack = null;
+        ivHeaderAction = null;
+        adapter = null;
+
+        super.onDestroyView();
     }
 }
