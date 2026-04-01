@@ -88,10 +88,6 @@ public class SuppliersFragment extends BaseFragment {
         btnBack = view.findViewById(R.id.btnBack);
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
 
-        if (tvTitle != null) {
-            tvTitle.setText("Suppliers");
-        }
-
         if (swipe == null) Log.w(TAG, "swipeRefreshSuppliers not found.");
         if (rv == null) Log.w(TAG, "rvSuppliers not found.");
         if (progress == null) Log.w(TAG, "progressSuppliers not found.");

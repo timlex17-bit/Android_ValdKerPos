@@ -80,7 +80,11 @@ public class SupplierFormDialog extends DialogFragment {
         final String mode = args != null ? args.getString(ARG_MODE, MODE_ADD) : MODE_ADD;
         final boolean isEdit = MODE_EDIT.equals(mode);
 
-        tvTitle.setText(isEdit ? "Edit Supplier" : "Add Supplier");
+        int titleRes = isEdit
+                ? R.string.title_edit_supplier
+                : R.string.title_add_supplier;
+
+        tvTitle.setText(getString(titleRes));
 
         if (isEdit && args != null) {
             etName.setText(valueOrEmpty(args.getString(ARG_NAME)));

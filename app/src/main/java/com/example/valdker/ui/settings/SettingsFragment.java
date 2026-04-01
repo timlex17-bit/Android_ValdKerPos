@@ -2,13 +2,17 @@ package com.example.valdker.ui.settings;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,6 +21,8 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.os.LocaleListCompat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -41,7 +47,14 @@ public class SettingsFragment extends BaseFragment {
 
     private static final String TAG = "SettingsFragment";
 
+    private static final String PREFS_APP_SETTINGS = "app_settings";
+    private static final String KEY_APP_LANGUAGE = "app_language";
+    private static final String DEFAULT_LANGUAGE_CODE = "id";
+
     private ProgressBar progress;
+    private Spinner spinnerLanguage;
+    private boolean isLanguageChanging = false;
+    private boolean isBindingLanguageSpinner = false;
 
     private EditText etName, etAddress, etPhone, etEmail;
     private EditText etBaseUrl;
@@ -87,7 +100,7 @@ public class SettingsFragment extends BaseFragment {
         tvTopTitle = view.findViewById(R.id.tvTopTitle);
 
         if (tvTopTitle != null) {
-            tvTopTitle.setText("Settings");
+            tvTopTitle.setText(R.string.title_settings);
         }
 
         if (btnBack != null) {
@@ -121,6 +134,9 @@ public class SettingsFragment extends BaseFragment {
         btnPickLogo = view.findViewById(R.id.btnPickLogo);
         btnSave = view.findViewById(R.id.btnSaveShop);
 
+        spinnerLanguage = view.findViewById(R.id.spinnerLanguage);
+        setupLanguageMenu();
+
         dot = view.findViewById(R.id.viewPrinterDot);
         tvPrinterStatus = view.findViewById(R.id.tvPrinterStatus);
         tvPrinterSelected = view.findViewById(R.id.tvPrinterSelected);
@@ -139,6 +155,161 @@ public class SettingsFragment extends BaseFragment {
         loadShop();
     }
 
+    private void setupLanguageMenu() {
+        if (!isAdded() || spinnerLanguage == null) return;
+
+        String[] labels = new String[]{
+                getString(R.string.language_tetun),
+                getString(R.string.language_english),
+                getString(R.string.language_indonesia),
+                getString(R.string.language_mandarin)
+        };
+
+        String[] codes = new String[]{
+                "tet",
+                "en",
+                "id",
+                "zh"
+        };
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_item,
+                labels
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerLanguage.setAdapter(adapter);
+
+        String savedLang = getSavedLanguageCode();
+
+        int selectedIndex = 0;
+        for (int i = 0; i < codes.length; i++) {
+            if (codes[i].equalsIgnoreCase(savedLang)) {
+                selectedIndex = i;
+                break;
+            }
+        }
+
+        isBindingLanguageSpinner = true;
+        spinnerLanguage.setSelection(selectedIndex, false);
+        isBindingLanguageSpinner = false;
+
+        spinnerLanguage.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (!isAdded()) return;
+                if (isBindingLanguageSpinner) return;
+                if (isLanguageChanging) return;
+                if (position < 0 || position >= codes.length) return;
+
+                String selectedCode = codes[position];
+                String currentCode = getSavedLanguageCode();
+
+                if (selectedCode.equalsIgnoreCase(currentCode)) {
+                    return;
+                }
+
+                applyLanguageChange(selectedCode);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // no-op
+            }
+        });
+    }
+
+    private void applyLanguageChange(@NonNull String selectedCode) {
+        if (!isAdded()) return;
+
+        isLanguageChanging = true;
+
+        try {
+            saveLanguageCode(selectedCode);
+            applyLocale(selectedCode);
+
+            Toast.makeText(
+                    requireContext(),
+                    getString(R.string.msg_language_changed),
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            spinnerLanguage.postDelayed(() -> {
+                if (!isAdded()) return;
+
+                Intent intent = new Intent(requireContext(), LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+                startActivity(intent);
+                requireActivity().finish();
+
+            }, 200);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to change language to: " + selectedCode, e);
+            isLanguageChanging = false;
+
+            Toast.makeText(
+                    requireContext(),
+                    "Failed to apply language: " + e.getMessage(),
+                    Toast.LENGTH_LONG
+            ).show();
+        }
+    }
+
+    private void saveLanguageCode(@NonNull String code) {
+        if (!isAdded()) return;
+
+        SharedPreferences prefs = requireContext().getSharedPreferences(
+                PREFS_APP_SETTINGS,
+                Context.MODE_PRIVATE
+        );
+
+        prefs.edit()
+                .putString(KEY_APP_LANGUAGE, code)
+                .apply();
+    }
+
+    @NonNull
+    private String getSavedLanguageCode() {
+        if (!isAdded()) return DEFAULT_LANGUAGE_CODE;
+
+        SharedPreferences prefs = requireContext().getSharedPreferences(
+                PREFS_APP_SETTINGS,
+                Context.MODE_PRIVATE
+        );
+
+        String code = prefs.getString(KEY_APP_LANGUAGE, DEFAULT_LANGUAGE_CODE);
+        if (code == null || code.trim().isEmpty()) {
+            return DEFAULT_LANGUAGE_CODE;
+        }
+        return code;
+    }
+
+    private void applyLocale(@NonNull String languageCode) {
+        String languageTag = mapLanguageCodeToTag(languageCode);
+
+        LocaleListCompat appLocale = LocaleListCompat.forLanguageTags(languageTag);
+        AppCompatDelegate.setApplicationLocales(appLocale);
+
+        Log.d(TAG, "applyLocale: code=" + languageCode + ", tag=" + languageTag);
+    }
+
+    @NonNull
+    private String mapLanguageCodeToTag(@NonNull String languageCode) {
+        switch (languageCode) {
+            case "en":
+                return "en";
+            case "id":
+                return "id";
+            case "zh":
+                return "zh";
+            case "tet":
+            default:
+                return "tet";
+        }
+    }
+
     private void saveBaseUrl() {
         if (!isAdded()) return;
 
@@ -147,12 +318,12 @@ public class SettingsFragment extends BaseFragment {
                 : "";
 
         if (newUrl.isEmpty()) {
-            Toast.makeText(requireContext(), "Base URL cannot be empty", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), getString(R.string.msg_base_url_empty), Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (!newUrl.startsWith("http://") && !newUrl.startsWith("https://")) {
-            Toast.makeText(requireContext(), "URL must start with http:// or https://", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), getString(R.string.msg_base_url_invalid_scheme), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -193,9 +364,9 @@ public class SettingsFragment extends BaseFragment {
 
         if (tvPrinterSelected != null) {
             if (name != null && mac != null) {
-                tvPrinterSelected.setText("Selected printer: " + name + " (" + mac + ")");
+                tvPrinterSelected.setText(getString(R.string.settings_selected_printer, name, mac));
             } else {
-                tvPrinterSelected.setText("Selected printer: -");
+                tvPrinterSelected.setText(getString(R.string.settings_selected_printer_empty));
             }
         }
 
@@ -228,10 +399,10 @@ public class SettingsFragment extends BaseFragment {
 
                 if (checkedId == R.id.chipPaper80) {
                     com.example.valdker.print.PrinterPrefs.setPaperWidthMm(requireContext(), 80);
-                    Toast.makeText(requireContext(), "Paper width set to 80mm", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), getString(R.string.msg_paper_width_set_80), Toast.LENGTH_SHORT).show();
                 } else if (checkedId == R.id.chipPaper58) {
                     com.example.valdker.print.PrinterPrefs.setPaperWidthMm(requireContext(), 58);
-                    Toast.makeText(requireContext(), "Paper width set to 58mm", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), getString(R.string.msg_paper_width_set_58), Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -244,7 +415,9 @@ public class SettingsFragment extends BaseFragment {
 
         if (dot != null && tvPrinterStatus != null) {
             dot.setBackgroundResource(connectedLike ? R.drawable.bg_status_dot_green : R.drawable.bg_status_dot_red);
-            tvPrinterStatus.setText(connectedLike ? "Connected" : "Not connected");
+            tvPrinterStatus.setText(connectedLike
+                    ? getString(R.string.settings_printer_connected)
+                    : getString(R.string.settings_printer_not_connected));
         }
 
         if (btnOpenPrinterSettings != null) {
@@ -266,29 +439,29 @@ public class SettingsFragment extends BaseFragment {
         if (!com.example.valdker.print.PrinterService.hasBtPermission(requireContext())) {
             Toast.makeText(
                     requireContext(),
-                    "Bluetooth permission is not granted yet. Please allow Bluetooth permission first.",
+                    getString(R.string.msg_bluetooth_permission_required),
                     Toast.LENGTH_LONG
             ).show();
             return;
         }
 
         String demo =
-                "[C]<b>VALDKER POS</b>\n" +
+                "[C]<b>" + getString(R.string.app_name) + "</b>\n" +
                         "[C]-------------------------------\n" +
-                        "[L]TEST PRINT\n" +
-                        "[L]Printer OK ✅\n" +
+                        "[L]" + getString(R.string.settings_test_print) + "\n" +
+                        "[L]" + getString(R.string.settings_printer_ok) + " ✅\n" +
                         "[C]-------------------------------\n" +
-                        "[L]Paper Width: " +
+                        "[L]" + getString(R.string.label_paper_width) + ": " +
                         com.example.valdker.print.PrinterPrefs.getPaperWidthMm(requireContext()) +
                         "mm\n" +
                         "[C]\n\n\n";
 
         try {
             com.example.valdker.print.PrinterService.printText(requireContext(), demo);
-            Toast.makeText(requireContext(), "✅ Test printed", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), getString(R.string.msg_test_print_success), Toast.LENGTH_SHORT).show();
             setupPrinterUi();
         } catch (Exception e) {
-            Toast.makeText(requireContext(), "Test print failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(), getString(R.string.msg_test_print_failed, e.getMessage()), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -316,7 +489,7 @@ public class SettingsFragment extends BaseFragment {
         String token = sm.getToken();
 
         if (token == null || token.trim().isEmpty()) {
-            Toast.makeText(requireContext(), "Missing token. Please login again.", Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(), getString(R.string.msg_missing_token_login_again), Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -335,14 +508,14 @@ public class SettingsFragment extends BaseFragment {
             public void onEmpty() {
                 if (!isAdded()) return;
                 setLoading(false);
-                Toast.makeText(requireContext(), "No shop found on server.", Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), getString(R.string.msg_no_shop_found_server), Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onError(@NonNull String message) {
                 if (!isAdded()) return;
                 setLoading(false);
-                Toast.makeText(requireContext(), "Failed to load shop: " + message, Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), getString(R.string.msg_failed_load_shop, message), Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -378,7 +551,7 @@ public class SettingsFragment extends BaseFragment {
         if (!isAdded()) return;
 
         if (currentShop == null) {
-            Toast.makeText(requireContext(), "Shop is not loaded yet.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), getString(R.string.msg_shop_not_loaded), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -388,7 +561,7 @@ public class SettingsFragment extends BaseFragment {
         String email = etEmail != null ? etEmail.getText().toString().trim() : "";
 
         if (name.isEmpty() || address.isEmpty() || phone.isEmpty()) {
-            Toast.makeText(requireContext(), "Name, Address, and Phone are required.", Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(), getString(R.string.msg_name_address_phone_required), Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -396,7 +569,7 @@ public class SettingsFragment extends BaseFragment {
         String token = sm.getToken();
 
         if (token == null || token.trim().isEmpty()) {
-            Toast.makeText(requireContext(), "Missing token. Please login again.", Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(), getString(R.string.msg_missing_token_login_again), Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -426,7 +599,7 @@ public class SettingsFragment extends BaseFragment {
 
                         bind(updatedShop);
 
-                        Toast.makeText(requireContext(), "✅ Shop saved", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), getString(R.string.msg_shop_saved), Toast.LENGTH_SHORT).show();
                         sendShopUpdatedBroadcast(requireContext());
                     }
 
@@ -436,7 +609,7 @@ public class SettingsFragment extends BaseFragment {
                         setLoading(false);
                         Toast.makeText(
                                 requireContext(),
-                                "Save failed (" + statusCode + "): " + message,
+                                getString(R.string.msg_save_failed_with_code, statusCode, message),
                                 Toast.LENGTH_LONG
                         ).show();
                     }
@@ -466,6 +639,10 @@ public class SettingsFragment extends BaseFragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+
+        isLanguageChanging = false;
+        isBindingLanguageSpinner = false;
+        spinnerLanguage = null;
 
         rootSettings = null;
         progress = null;

@@ -49,7 +49,7 @@
                     android:maxLines="1"
                     android:paddingStart="8dp"
                     android:paddingEnd="8dp"
-                    android:text="Stock Adjustments"
+                    android:text="@string/title_stock_adjustments"
                     android:textColor="@android:color/white"
                     android:textSize="20sp"
                     android:textStyle="bold" />

@@ -55,13 +55,6 @@ public class ProductReturnAdapter extends RecyclerView.Adapter<ProductReturnAdap
             h.tvTitle.setText("Return #" + it.id);
         }
 
-        // ✅ Invoice (fallback to Order id)
-        if (inv.isEmpty()) {
-            h.tvInvoice.setText("Order: " + (it.order != null ? it.order : "-"));
-        } else {
-            h.tvInvoice.setText("Invoice: " + inv);
-        }
-
         // ✅ Customer name
         String customerName = (it.customer != null && it.customer.name != null && !it.customer.name.trim().isEmpty())
                 ? it.customer.name
@@ -93,8 +86,8 @@ public class ProductReturnAdapter extends RecyclerView.Adapter<ProductReturnAdap
         boolean expanded = expandedStates.get(it.id, false);
         h.layoutExpandable.setVisibility(expanded ? View.VISIBLE : View.GONE);
         h.ivChevron.setImageResource(
-                expanded ? android.R.drawable.arrow_up_float
-                        : android.R.drawable.arrow_down_float
+                expanded ? R.drawable.ic_arrow_up
+                        : R.drawable.ic_arrow_down
         );
 
         h.headerToggle.setOnClickListener(v -> {
@@ -128,15 +121,16 @@ public class ProductReturnAdapter extends RecyclerView.Adapter<ProductReturnAdap
     }
 
     static class VH extends RecyclerView.ViewHolder {
-        TextView tvTitle, tvDate, tvInvoice, tvCustomer, tvReturnedBy, tvNote, tvItems;
+
+        TextView tvTitle, tvDate, tvCustomer, tvReturnedBy, tvNote, tvItems;
         LinearLayout headerToggle, layoutExpandable;
         ImageView ivChevron;
 
         VH(@NonNull View itemView) {
             super(itemView);
+
             tvTitle = itemView.findViewById(R.id.tvTitle);
             tvDate = itemView.findViewById(R.id.tvDate);
-            tvInvoice = itemView.findViewById(R.id.tvInvoice);
             tvCustomer = itemView.findViewById(R.id.tvCustomer);
             tvReturnedBy = itemView.findViewById(R.id.tvReturnedBy);
             tvNote = itemView.findViewById(R.id.tvNote);

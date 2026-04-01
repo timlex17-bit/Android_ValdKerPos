@@ -81,10 +81,6 @@ public class CustomersFragment extends BaseFragment {
         btnBack = view.findViewById(R.id.btnBack);
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
 
-        if (tvTitle != null) {
-            tvTitle.setText("Customers");
-        }
-
         if (btnBack != null) {
             btnBack.setOnClickListener(v ->
                     requireActivity().getOnBackPressedDispatcher().onBackPressed()

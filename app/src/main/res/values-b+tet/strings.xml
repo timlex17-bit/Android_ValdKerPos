@@ -1,0 +1,647 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="settings_language_desc">Hili lian aplikasaun ba teste</string>
+
+    <string name="language_tetun">Tetun</string>
+    <string name="language_english">Ingles</string>
+    <string name="language_indonesia">Indonesia</string>
+    <string name="language_mandarin">Mandarin</string>
+
+    <string name="msg_language_changed">Lian troka ona</string>
+
+    <!-- ================================================== -->
+    <!-- APP -->
+    <!-- ================================================== -->
+    <string name="app_name">ValdKerPOS</string>
+    <string name="app_tagline">Sistema POS ba negósiu modernu sira</string>
+    <string name="app_version">Versaun</string>
+    <string name="app_powered_by">Habelar husi ValdKer</string>
+    <string name="app_brand">ValdKerPOS</string>
+    <string name="app_logo">Logo aplikasaun</string>
+    <string name="welcome">Bemvindu</string>
+    <string name="welcome_back">Bemvindu fila fali</string>
+    <string name="logout">Sai</string>
+    <string name="profile">Perfíl</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="home">Uma</string>
+
+    <!-- ================================================== -->
+    <!-- AUTH / LOGIN -->
+    <!-- ================================================== -->
+    <string name="login_welcome">Bemvindu fila fali</string>
+    <string name="login_btn">Tama</string>
+    <string name="login_help_text">Uza ita-nia shop code, username no password atu asesu loja loos.</string>
+    <string name="login_title">Tama ba ita-nia loja</string>
+    <string name="login_subtitle">Uza ita-nia shop code, username no password atu kontinua</string>
+    <string name="login_multi_tenant">Multi-Tenant</string>
+    <string name="login_shop_code">Kode Loja</string>
+    <string name="login_username">Naran Uzuariu</string>
+    <string name="login_password">Senha</string>
+    <string name="login_button">Tama</string>
+    <string name="login_demo">Prenxe Dadus Demo</string>
+    <string name="login_remember_me">Hanoin hela hau</string>
+    <string name="login_forgot_password">Haluhan senha?</string>
+    <string name="login_invalid_credentials">Dadus login la loos</string>
+    <string name="login_failed">Login falla</string>
+    <string name="login_success">Login susesu</string>
+    <string name="hint_shop_code">Ezemplu: WFOUR</string>
+    <string name="hint_username">Hatama naran uzuariu</string>
+    <string name="hint_password">Hatama senha</string>
+    <string name="show_password">Haree senha</string>
+    <string name="hide_password">Subar senha</string>
+
+    <!-- ================================================== -->
+    <!-- DASHBOARD EXTRA -->
+    <!-- ================================================== -->
+    <string name="dashboard_hello">Olá</string>
+    <string name="dashboard_welcome_user">Olá, %1$s</string>
+    <string name="dashboard_subtitle">Hili módulu ida atu kontinua</string>
+    <string name="select_a_module_to_continue">Hili módulu ida atu kontinua</string>
+    <string name="today_sales">Venda ohin</string>
+    <string name="today_expenses">Despeza ohin</string>
+    <string name="net_profit">Lucro Líquidu</string>
+    <string name="shift_today">Shift ohin</string>
+    <string name="shift_summary_hint">Atividade hotu ne\'ebé rejista ohin</string>
+    <string name="dashboard_summary">Rezumu</string>
+    <string name="dashboard_quick_access">Asezu Lalais</string>
+    <string name="dashboard_overview">Vizaun Jerál</string>
+    <string name="dashboard_no_modules">La iha módulu disponivel</string>
+    <string name="dashboard_loading_modules">Hein hela módulu dashboard...</string>
+    <string name="view_all">Haree Hotu</string>
+    <string name="see_more">Haree Tan</string>
+
+    <!-- ================================================== -->
+    <!-- DASHBOARD TILE / CARD -->
+    <!-- ================================================== -->
+    <string name="tile_open_module">Loke módulu</string>
+    <string name="tile_module_icon">Ikone módulu</string>
+    <string name="tile_reports">Relatóriu</string>
+    <string name="tile_inventory">Inventóriu</string>
+    <string name="tile_sales">Venda</string>
+    <string name="tile_finance">Finansa</string>
+
+    <!-- ================================================== -->
+    <!-- BOTTOM NAVIGATION -->
+    <!-- ================================================== -->
+    <string name="nav_home">Uma</string>
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_pos">POS</string>
+    <string name="nav_orders">Ordem</string>
+    <string name="nav_profile">Perfíl</string>
+    <string name="nav_settings">Konfigurasaun</string>
+    <string name="nav_more">Tan</string>
+
+    <!-- ================================================== -->
+    <!-- DASHBOARD FILTER / STATE -->
+    <!-- ================================================== -->
+    <string name="filter_today">Ohin</string>
+    <string name="filter_this_week">Semana ida ne\'e</string>
+    <string name="filter_this_month">Fulán ida ne\'e</string>
+    <string name="filter_custom_range">Intervalu Personalizadu</string>
+    <string name="state_online">Online</string>
+    <string name="state_offline">Offline</string>
+    <string name="state_syncing">Hein sinkronizasaun...</string>
+    <string name="state_last_updated">Atualizadu ikus</string>
+
+    <!-- ================================================== -->
+    <!-- DASHBOARD QUICK INFO -->
+    <!-- ================================================== -->
+    <string name="info_total_sales">Total Venda</string>
+    <string name="info_total_expenses">Total Despeza</string>
+    <string name="info_total_orders">Total Ordem</string>
+    <string name="info_total_customers">Total Kliente</string>
+    <string name="info_total_products">Total Produtu</string>
+    <string name="info_total_profit">Total Lukru</string>
+
+    <!-- ================================================== -->
+    <!-- CONTENT DESCRIPTIONS -->
+    <!-- ================================================== -->
+    <string name="cd_logout">Sai</string>
+    <string name="cd_dashboard_logo">Logo dashboard</string>
+    <string name="cd_dashboard_summary">Rezumu dashboard</string>
+    <string name="cd_bottom_navigation">Navegasaun kraik</string>
+    <string name="cd_dashboard_list">Lista módulu dashboard</string>
+
+    <!-- ================================================== -->
+    <!-- COMMON ACTIONS -->
+    <!-- ================================================== -->
+    <string name="action_add">Aumenta</string>
+    <string name="action_create">Kriau</string>
+    <string name="action_save">Rai</string>
+    <string name="action_update">Atualiza</string>
+    <string name="action_edit">Edita</string>
+    <string name="action_delete">Apaga</string>
+    <string name="action_remove">Hasai</string>
+    <string name="action_cancel">Kansela</string>
+    <string name="action_close">Taka</string>
+    <string name="action_back">Fila</string>
+    <string name="action_next">Tuir mai</string>
+    <string name="action_done">Remata</string>
+    <string name="action_search">Buka</string>
+    <string name="action_filter">Filtru</string>
+    <string name="action_reset">Hamos hotu</string>
+    <string name="action_clear">Hamós</string>
+    <string name="action_refresh">Atualiza fila fali</string>
+    <string name="action_confirm">Konfirma</string>
+    <string name="action_submit">Haruka</string>
+    <string name="action_retry">Koko fila fali</string>
+    <string name="action_yes">Sin</string>
+    <string name="action_no">Lae</string>
+    <string name="action_print">Imprime</string>
+    <string name="action_reprint">Imprime fila fali</string>
+    <string name="action_checkout">Checkout</string>
+    <string name="action_pay">Selu</string>
+    <string name="action_scan">Scan</string>
+    <string name="action_upload">Upload</string>
+    <string name="action_download">Download</string>
+    <string name="action_export">Exporta</string>
+    <string name="action_import">Importa</string>
+    <string name="action_view">Haree</string>
+    <string name="action_open">Loke</string>
+    <string name="action_apply">Aplika</string>
+    <string name="action_continue">Kontinua</string>
+
+    <!-- ================================================== -->
+    <!-- COMMON LABELS -->
+    <!-- ================================================== -->
+    <string name="label_name">Naran</string>
+    <string name="label_title">Títulu</string>
+    <string name="label_code">Kode</string>
+    <string name="label_sku">SKU</string>
+    <string name="label_barcode">Barcode</string>
+    <string name="label_phone">Telemovel</string>
+    <string name="label_email">Email</string>
+    <string name="label_address">Enderesu</string>
+    <string name="label_date">Data</string>
+    <string name="label_time">Oras</string>
+    <string name="label_status">Estadu</string>
+    <string name="label_note">Nota</string>
+    <string name="label_notes">Nota sira</string>
+    <string name="label_description">Detalle</string>
+    <string name="label_total">Total</string>
+    <string name="label_subtotal">Subtotal</string>
+    <string name="label_discount">Diskontu</string>
+    <string name="label_tax">Impostu</string>
+    <string name="label_price">Presu</string>
+    <string name="label_cost_price">Presu Kustu</string>
+    <string name="label_selling_price">Presu Fa’an</string>
+    <string name="label_quantity">Kuantidade</string>
+    <string name="label_stock">Stok</string>
+    <string name="label_old_stock">Stok Tuan</string>
+    <string name="label_new_stock">Stok Foun</string>
+    <string name="label_min_stock">Stok Mínimu</string>
+    <string name="label_category">Kategoria</string>
+    <string name="label_unit">Unidade</string>
+    <string name="label_supplier">Fornesedór</string>
+    <string name="label_customer">Kliente</string>
+    <string name="label_product">Produtu</string>
+    <string name="label_products">Produtu sira</string>
+    <string name="label_payment_method">Métodu Selu</string>
+    <string name="label_invoice">Fatura</string>
+    <string name="label_invoice_id">ID Fatura</string>
+    <string name="label_reason">Razaun</string>
+    <string name="label_role">Knaar</string>
+    <string name="label_shop">Loja</string>
+    <string name="label_store">Loja</string>
+    <string name="label_search">Buka</string>
+    <string name="label_from">Husi</string>
+    <string name="label_to">Ba</string>
+    <string name="label_amount">Montante</string>
+    <string name="label_type">Tipu</string>
+    <string name="label_method">Métodu</string>
+    <string name="label_cashier">Caixeiru</string>
+    <string name="label_user">Uzuariu</string>
+    <string name="label_username">Naran Uzuariu</string>
+    <string name="label_password">Senha</string>
+    <string name="label_location">Fatin</string>
+    <string name="label_store_name">Naran Loja</string>
+    <string name="label_store_address">Enderesu Loja</string>
+    <string name="label_currency">Osan</string>
+    <string name="label_language">Lian</string>
+    <string name="label_paper_width">Luan Papel</string>
+    <string name="label_opening_cash">Osan Hahu</string>
+    <string name="label_closing_cash">Osan Taka</string>
+    <string name="label_expected_cash">Osan Ne’ebé Espera</string>
+    <string name="label_difference">Diferensa</string>
+    <string name="label_received">Simu</string>
+    <string name="label_change">Troku</string>
+    <string name="label_cart">Cart</string>
+    <string name="label_items">Item sira</string>
+    <string name="label_actions">Aksaun sira</string>
+
+    <!-- ================================================== -->
+    <!-- HINTS -->
+    <!-- ================================================== -->
+    <string name="hint_search_here">Buka iha ne’e...</string>
+    <string name="hint_search_product">Buka produtu...</string>
+    <string name="hint_search_customer">Buka kliente...</string>
+    <string name="hint_search_supplier">Buka fornesedór...</string>
+    <string name="hint_search_order">Buka ordem...</string>
+    <string name="hint_search_purchase">Buka kompra...</string>
+    <string name="hint_search_inventory">Buka dadus inventóriu...</string>
+    <string name="hint_product_name">Hatama naran produtu</string>
+    <string name="hint_product_code">Hatama kode produtu</string>
+    <string name="hint_product_barcode">Hatama barcode</string>
+    <string name="hint_customer_name">Hatama naran kliente</string>
+    <string name="hint_supplier_name">Hatama naran fornesedór</string>
+    <string name="hint_note">Hatama nota</string>
+    <string name="hint_amount">Hatama montante</string>
+    <string name="hint_reason">Hatama razaun</string>
+
+    <!-- ================================================== -->
+    <!-- STATUS -->
+    <!-- ================================================== -->
+    <string name="status_active">Ativu</string>
+    <string name="status_inactive">La Ativu</string>
+    <string name="status_pending">Hein hela</string>
+    <string name="status_completed">Remata ona</string>
+    <string name="status_cancelled">Kanseladu</string>
+    <string name="status_paid">Selu ona</string>
+    <string name="status_unpaid">Seidauk selu</string>
+    <string name="status_draft">Rascuñu</string>
+    <string name="status_open">Loke</string>
+    <string name="status_closed">Taka</string>
+    <string name="status_success">Susesu</string>
+    <string name="status_failed">Falla</string>
+
+    <!-- ================================================== -->
+    <!-- MESSAGES -->
+    <!-- ================================================== -->
+    <string name="msg_loading">Hein hela...</string>
+    <string name="msg_no_data">Dadus la iha</string>
+    <string name="msg_empty_list">Lista mamuk</string>
+    <string name="msg_save_success">Dadus rai ho susesu</string>
+    <string name="msg_update_success">Dadus atualiza ho susesu</string>
+    <string name="msg_delete_success">Dadus apaga ho susesu</string>
+    <string name="msg_create_success">Kriasaun susesu</string>
+    <string name="msg_action_failed">Operasaun falla</string>
+    <string name="msg_network_error">Problema koneksaun internet</string>
+    <string name="msg_server_error">Problema servidor</string>
+    <string name="msg_timeout_error">Koneksaun liu tempu</string>
+    <string name="msg_confirm_delete">Ita boot hakarak apaga dadus ida ne’e?</string>
+    <string name="msg_required_field">Favor prenxe kampu obrigatóriu sira</string>
+    <string name="msg_form_invalid">Favor haree fila fali kampu iha form</string>
+    <string name="msg_data_not_found">Dadus la hetan</string>
+    <string name="msg_feature_coming_soon">Fitur ida ne’e sei mai lalais</string>
+    <string name="msg_permission_denied">Ita boot la iha lisensa atu asesu fitur ida ne’e</string>
+    <string name="msg_session_expired">Ita boot-nia sesaun remata ona. Favor tama fila fali</string>
+    <string name="msg_no_internet">La iha koneksaun internet</string>
+    <string name="msg_try_again">Favor koko fila fali</string>
+    <string name="msg_select_item">Favor hili item ida</string>
+    <string name="msg_select_customer">Favor hili kliente ida</string>
+    <string name="msg_select_supplier">Favor hili fornesedór ida</string>
+    <string name="msg_select_product">Favor hili produtu ida</string>
+    <string name="msg_cart_empty">Cart sei mamuk</string>
+    <string name="msg_checkout_success">Checkout susesu</string>
+    <string name="msg_payment_success">Selu susesu</string>
+    <string name="msg_payment_failed">Selu falla</string>
+    <string name="msg_backup_success">Backup remata ho susesu</string>
+    <string name="msg_restore_success">Restore remata ho susesu</string>
+    <string name="msg_import_success">Import remata ho susesu</string>
+    <string name="msg_export_success">Export remata ho susesu</string>
+
+    <!-- ================================================== -->
+    <!-- VALIDATION / ERRORS -->
+    <!-- ================================================== -->
+    <string name="error_required">Kampu ida ne’e obrigatóriu</string>
+    <string name="error_invalid_email">Email la loos</string>
+    <string name="error_invalid_phone">Númeru telemovel la loos</string>
+    <string name="error_invalid_price">Presu la loos</string>
+    <string name="error_invalid_stock">Valor stok la loos</string>
+    <string name="error_invalid_quantity">Kuantidade la loos</string>
+    <string name="error_invalid_amount">Montante la loos</string>
+    <string name="error_password_too_short">Senha badak demais</string>
+    <string name="error_shop_code_required">Shop code obrigatóriu</string>
+    <string name="error_username_required">Naran uzuariu obrigatóriu</string>
+    <string name="error_password_required">Senha obrigatóriu</string>
+
+    <!-- ================================================== -->
+    <!-- DASHBOARD MENU -->
+    <!-- ================================================== -->
+    <string name="title_dashboard">Dashboard</string>
+    <string name="menu_pos">POS</string>
+    <string name="menu_pos_desc">Halo tranzasaun fa’an</string>
+    <string name="menu_reports">Relatóriu</string>
+    <string name="menu_reports_desc">Analiza rendimentu negósiu</string>
+    <string name="menu_stock_movements">Movimentu Stok</string>
+    <string name="menu_stock_movements_desc">Haree istória movimentu stok</string>
+    <string name="menu_inventory_counts">Kontájen Inventóriu</string>
+    <string name="menu_inventory_counts_desc">Halo stock opname</string>
+    <string name="menu_settings">Konfigurasaun</string>
+    <string name="menu_settings_desc">Atu regula aplikasaun</string>
+    <string name="menu_bank_accounts">Konta Banku</string>
+    <string name="menu_bank_accounts_desc">Jere konta bank loja</string>
+    <string name="menu_orders">Pedidu</string>
+    <string name="menu_orders_desc">Haree istória tranzasaun</string>
+    <string name="menu_expenses">Despeza</string>
+    <string name="menu_expenses_desc">Rejistu gastu negósiu</string>
+    <string name="menu_customers">Kliente</string>
+    <string name="menu_customers_desc">Jere no haree dadus kliente</string>
+    <string name="menu_suppliers">Fornesedór</string>
+    <string name="menu_suppliers_desc">Lista no jere fornesedór</string>
+    <string name="menu_purchases">Kompra</string>
+    <string name="menu_purchases_desc">Rejistu kompra husi fornesedór</string>
+    <string name="menu_products">Produtu</string>
+    <string name="menu_products_desc">Jere stok, presu no detalle produtu</string>
+    <string name="menu_categories">Kategoria</string>
+    <string name="menu_categories_desc">Jere kategoria produtu</string>
+    <string name="menu_units">Unidade</string>
+    <string name="menu_units_desc">Jere unidade produtu</string>
+    <string name="menu_product_returns">Retornu Produtu</string>
+    <string name="menu_product_returns_desc">Jere produtu retornu</string>
+    <string name="menu_stock_adjustments">Ajusta Stok</string>
+    <string name="menu_stock_adjustments_desc">Ajusta stock manualmente</string>
+    <string name="menu_users">Uzuariu sira</string>
+    <string name="menu_users_desc">Jere konta staff</string>
+    <string name="menu_shift">Shift</string>
+    <string name="menu_shift_desc">Jere shift caixeiru</string>
+
+    <!-- ================================================== -->
+    <!-- PRODUCTS -->
+    <!-- ================================================== -->
+    <string name="title_products">Jere Produtu</string>
+    <string name="title_add_product">Aumenta Produtu</string>
+    <string name="title_edit_product">Edita Produtu</string>
+    <string name="title_product_details">Detalle Produtu</string>
+    <string name="product_name">Naran Produtu</string>
+    <string name="product_code">Kode Produtu</string>
+    <string name="product_barcode">Barcode</string>
+    <string name="product_price">Presu Produtu</string>
+    <string name="product_cost_price">Presu Kustu</string>
+    <string name="product_stock">Stok</string>
+    <string name="product_min_stock">Stok Mínimu</string>
+    <string name="product_category">Kategoria</string>
+    <string name="product_unit">Unidade</string>
+    <string name="product_supplier">Fornesedór</string>
+    <string name="product_image">Imajen Produtu</string>
+    <string name="product_variant">Variante</string>
+
+    <!-- ================================================== -->
+    <!-- CATEGORIES -->
+    <!-- ================================================== -->
+    <string name="title_categories">Jere Kategoria</string>
+    <string name="title_add_category">Aumenta Kategoria</string>
+    <string name="title_edit_category">Edita Kategoria</string>
+    <string name="category_name">Naran Kategoria</string>
+
+    <!-- ================================================== -->
+    <!-- UNITS -->
+    <!-- ================================================== -->
+    <string name="title_units">Jere Unidade</string>
+    <string name="title_add_unit">Aumenta Unidade</string>
+    <string name="title_edit_unit">Edita Unidade</string>
+    <string name="unit_name">Naran Unidade</string>
+
+    <string name="title_customers">Jere Kliente</string>
+    <string name="title_add_customer">Aumenta Kliente</string>
+    <string name="customer_details">Detalle Kliente</string>
+    <string name="title_edit_customer">Edita Kliente</string>
+    <string name="customer_name">Naran Kliente</string>
+    <string name="customer_phone">Telemovel Kliente</string>
+    <string name="customer_email">Email Kliente</string>
+    <string name="customer_address">Enderesu Kliente</string>
+    <string name="customer_points">Pontu Kliente</string>
+
+    <string name="customer_dialog_name">Naran *</string>
+    <string name="customer_dialog_cell">Telemovel *</string>
+    <string name="customer_dialog_email">Email</string>
+    <string name="customer_dialog_address">Enderesu</string>
+
+    <string name="title_suppliers">Jere Fornesedór</string>
+    <string name="title_add_supplier">Aumenta Fornesedór</string>
+    <string name="title_add_details">Detalle Fornesedór</string>
+    <string name="title_edit_supplier">Edita Fornesedór</string>
+    <string name="supplier_name">Naran Fornesedór</string>
+    <string name="supplier_phone">Telemovel Fornesedór</string>
+    <string name="supplier_email">Email Fornesedór</string>
+    <string name="supplier_address">Enderesu Fornesedór</string>
+
+    <string name="supplier_dialog_name">Naran *</string>
+    <string name="supplier_dialog_contact">Kontaktu pesoal *</string>
+    <string name="supplier_dialog_phone">Telemovel</string>
+    <string name="supplier_dialog_email">Email</string>
+    <string name="supplier_dialog_address">Enderesu</string>
+    <!-- ================================================== -->
+    <!-- ORDERS / SALES -->
+    <!-- ================================================== -->
+    <string name="title_orders">Ordem sira</string>
+    <string name="title_order_details">Detalle Ordem</string>
+    <string name="label_order_history">Istória Tranzasaun</string>
+    <string name="label_order_total">Total Ordem</string>
+    <string name="label_order_date">Data Ordem</string>
+    <string name="label_order_status">Estadu Ordem</string>
+
+    <!-- ================================================== -->
+    <!-- PURCHASES -->
+    <!-- ================================================== -->
+    <string name="title_purchases">Kompra</string>
+    <string name="title_add_purchase">Aumenta Kompra</string>
+    <string name="title_add_upplier">Fornesedór</string>
+    <string name="title_edit_purchase">Edita Kompra</string>
+    <string name="title_purchase_details">Detalle Kompra</string>
+    <string name="purchase_date">Data Kompra</string>
+    <string name="purchase_total">Total Kompra</string>
+    <string name="purchase_items">Item Kompra</string>
+    <string name="title_product_items">Produtu</string>
+    <string name="expired_date">Data Expira (Opsional)</string>
+    <string name="title_add_item">Aumenta Item</string>
+    <string name="batch_code">Kode Batch</string>
+
+    <!-- ================================================== -->
+    <!-- POS -->
+    <!-- ================================================== -->
+    <string name="title_pos">POS</string>
+    <string name="pos_search_products">Buka produtu sira</string>
+    <string name="pos_add_to_cart">Tau ba Cart</string>
+    <string name="pos_checkout">Checkout</string>
+    <string name="pos_payment">Selu</string>
+    <string name="pos_cash">Osan Kontan</string>
+    <string name="pos_change">Troku</string>
+    <string name="pos_total">Total</string>
+    <string name="pos_subtotal">Subtotal</string>
+    <string name="pos_discount">Diskontu</string>
+    <string name="pos_tax">Impostu</string>
+    <string name="pos_customer">Kliente</string>
+    <string name="pos_table_number">Numeru Meza</string>
+    <string name="pos_dine_in">Han iha Fatin</string>
+    <string name="pos_take_away">Lori Ba</string>
+    <string name="pos_delivery">Entrega</string>
+
+    <!-- ================================================== -->
+    <!-- PAYMENT -->
+    <!-- ================================================== -->
+    <string name="title_payment_methods">Métodu Selu sira</string>
+    <string name="payment_cash">Osan Kontan</string>
+    <string name="payment_qris">Selu QR</string>
+    <string name="payment_bank_transfer">Transferénsia Banku</string>
+    <string name="payment_select_method">Hili métodu selu</string>
+    <string name="payment_proof">Prova Selu</string>
+    <string name="payment_reference">Referénsia Selu</string>
+
+    <!-- ================================================== -->
+    <!-- EXPENSES -->
+    <!-- ================================================== -->
+    <string name="title_expenses">Despeza</string>
+    <string name="title_add_expense">Aumenta Despeza</string>
+    <string name="title_edit_expense">Edita Despeza</string>
+    <string name="expense_name">Naran</string>
+    <string name="expense_amount">Montante Despeza</string>
+    <string name="expense_note">Nota Despeza</string>
+    <string name="expense_date">Data Despeza</string>
+
+    <!-- ================================================== -->
+    <!-- INVENTORY -->
+    <!-- ================================================== -->
+    <string name="title_inventory_counts">Kontájen Inventóriu</string>
+    <string name="title_stock_adjustments">Ajusta Stok</string>
+    <string name="title_stock_movements">Movimentu Stok</string>
+    <string name="inventory_count">Kontájen Inventóriu</string>
+    <string name="stock_adjustment">Ajusta Stok</string>
+    <string name="stock_movement">Movimentu Stok</string>
+    <string name="stock_count">Konta Stok</string>
+    <string name="stock_in">Stok Tama</string>
+    <string name="stock_out">Stok Sai</string>
+    <string name="low_stock">Stok Ki’ik</string>
+    <string name="out_of_stock">Stok Hotu</string>
+    <string name="available_stock">Stok Disponível</string>
+
+    <!-- ================================================== -->
+    <!-- RETURNS -->
+    <!-- ================================================== -->
+    <string name="title_product_returns">Retornu Produtu</string>
+    <string name="product_return">Retornu Produtu</string>
+    <string name="return_quantity">Kuantidade Retornu</string>
+    <string name="return_reason">Razaun Retornu</string>
+    <string name="return_date">Data Retornu</string>
+
+    <!-- ================================================== -->
+    <!-- REPORTS -->
+    <!-- ================================================== -->
+    <string name="title_reports">Relatóriu sira</string>
+    <string name="sales_report">Relatóriu Fa’an</string>
+    <string name="expense_report">Relatóriu Despeza</string>
+    <string name="transaction_report">Relatóriu Tranzasaun</string>
+    <string name="daily_sales">Fa’an Loron-loron</string>
+    <string name="monthly_sales">Fa’an Fulán-fulán</string>
+    <string name="gross_sales">Fa’an Brutu</string>
+    <string name="net_sales">Fa’an Líquidu</string>
+    <string name="best_selling_products">Produtu sira ne’ebé Fa’an Barak Liu</string>
+
+    <!-- ================================================== -->
+    <!-- BANK / FINANCE -->
+    <!-- ================================================== -->
+    <string name="title_bank_accounts">Konta Banku sira</string>
+    <string name="title_add_bank_account">Aumenta Konta Banku</string>
+    <string name="bank_name">Naran Banku</string>
+    <string name="bank_account_name">Naran Konta</string>
+    <string name="bank_account_number">Numeru Konta</string>
+
+    <!-- ================================================== -->
+    <!-- SHIFT -->
+    <!-- ================================================== -->
+    <string name="title_shifts">Shift sira</string>
+    <string name="shift_open">Loke Shift</string>
+    <string name="shift_close">Taka Shift</string>
+    <string name="shift_opening_cash">Osan Hahu</string>
+    <string name="shift_closing_cash">Osan Taka</string>
+    <string name="shift_summary">Rezumu Shift</string>
+
+    <!-- ================================================== -->
+    <!-- USERS / ROLES -->
+    <!-- ================================================== -->
+    <string name="title_users">Uzuariu sira</string>
+    <string name="title_add_user">Aumenta Uzuariu</string>
+    <string name="title_edit_user">Edita Uzuariu</string>
+    <string name="role_owner">Na’in</string>
+    <string name="role_manager">Jerente</string>
+    <string name="role_cashier">Caixeiru</string>
+
+    <!-- ================================================== -->
+    <!-- SETTINGS -->
+    <!-- ================================================== -->
+    <string name="title_settings">Konfigurasaun</string>
+    <string name="settings_store_profile">Perfíl Loja</string>
+    <string name="settings_printer">Konfigurasaun Printer</string>
+    <string name="settings_customer_display">Tela Kliente</string>
+    <string name="settings_language">Lian</string>
+    <string name="settings_currency">Osan</string>
+    <string name="settings_backup">Backup</string>
+    <string name="settings_restore">Restore</string>
+    <string name="settings_dark_mode">Modu Nakukun</string>
+    <string name="settings_notifications">Notifikasaun sira</string>
+
+    <!-- ================================================== -->
+    <!-- PRINTER / RECEIPT -->
+    <!-- ================================================== -->
+    <string name="title_printer_settings">Konfigurasaun</string>
+    <string name="paper_width">Luan Papel</string>
+    <string name="paper_width_58mm">58mm</string>
+    <string name="paper_width_80mm">80mm</string>
+    <string name="print_receipt">Imprime Resibu</string>
+    <string name="reprint_receipt">Imprime Resibu fila fali</string>
+    <string name="receipt">Resibu</string>
+    <string name="receipt_footer">Obrigadu ba ita-nia sosa</string>
+    <string name="receipt_order_no">Numeru Ordem</string>
+    <string name="receipt_cashier">Caixeiru</string>
+    <string name="receipt_date">Data</string>
+
+    <!-- ================================================== -->
+    <!-- SETTINGS FRAGMENT -->
+    <!-- ================================================== -->
+    <string name="settings_shop_settings">Konfigurasaun Loja</string>
+    <string name="settings_server">Server</string>
+    <string name="settings_printer_title">Printer</string>
+    <string name="settings_branding">Branding</string>
+    <string name="settings_shop_profile">Perfil Loja</string>
+    <string name="settings_shop_logo">Logo Loja</string>
+    <string name="settings_logo_preview">Previsualizasaun logo</string>
+    <string name="settings_choose_logo">Hili Logo</string>
+    <string name="settings_save_server">Rai Server</string>
+    <string name="settings_test_print">Teste Imprime</string>
+    <string name="settings_auto_print_after_payment">Imprime automátiku depois pagamentu</string>
+    <string name="settings_selected_printer">Printer ne\'ebé hili: %1$s (%2$s)</string>
+    <string name="settings_selected_printer_empty">Printer ne\'ebé hili: -</string>
+    <string name="settings_printer_connected">Konekta ona</string>
+    <string name="settings_printer_not_connected">La konekta</string>
+    <string name="settings_base_url_hint">Base URL (ezemplu: https://valdker.onrender.com/)</string>
+    <string name="settings_name_required_hint">Naran *</string>
+    <string name="settings_address_required_hint">Enderesu *</string>
+    <string name="settings_phone_required_hint">Telemovel *</string>
+    <string name="settings_email_hint">Email</string>
+    <string name="settings_save_changes">Rai Mudansa</string>
+    <string name="settings_printer_ok">Printer di\'ak</string>
+
+    <!-- ================================================== -->
+    <!-- SETTINGS MESSAGES -->
+    <!-- ================================================== -->
+    <string name="msg_base_url_empty">Base URL labele mamuk</string>
+    <string name="msg_base_url_invalid_scheme">URL tenke hahu ho http:// ka https://</string>
+    <string name="msg_bluetooth_permission_required">Permisaun Bluetooth seidauk iha. Favór husu permisaun Bluetooth uluk.</string>
+    <string name="msg_paper_width_set_80">Largura papel muda ba 80mm</string>
+    <string name="msg_paper_width_set_58">Largura papel muda ba 58mm</string>
+    <string name="msg_test_print_success">Teste imprime susesu</string>
+    <string name="msg_test_print_failed">Teste imprime falla: %1$s</string>
+    <string name="msg_missing_token_login_again">Token la iha. Favór login fali.</string>
+    <string name="msg_no_shop_found_server">La hetan loja iha server.</string>
+    <string name="msg_failed_load_shop">Labele carrega loja: %1$s</string>
+    <string name="msg_shop_not_loaded">Loja seidauk carrega.</string>
+    <string name="msg_name_address_phone_required">Naran, Enderesu no Telemovel obrigatóriu.</string>
+    <string name="msg_shop_saved">Loja rai ona</string>
+    <string name="msg_save_failed_with_code">Rai falla (%1$d): %2$s</string>
+
+
+    <!-- ================================================== -->
+    <!-- BACKUP / RESTORE -->
+    <!-- ================================================== -->
+    <string name="title_backup">Backup</string>
+    <string name="title_restore">Restore</string>
+    <string name="backup_database">Halo Backup Database</string>
+    <string name="restore_database">Halo Restore Database</string>
+    <string name="export_excel">Exporta ba Excel</string>
+    <string name="export_pdf">Exporta ba PDF</string>
+    <string name="import_data">Importa Dadus</string>
+    <string name="orders_titles">Pedidu</string>
+    <string name="name">Name *</string>
+
+</resources>

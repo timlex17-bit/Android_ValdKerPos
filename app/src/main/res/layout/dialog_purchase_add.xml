@@ -30,7 +30,7 @@
                 android:id="@+id/tvTitlePurchaseAdd"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Add Purchase"
+                android:text="@string/title_add_purchase"
                 android:textColor="#111827"
                 android:textSize="18sp"
                 android:textStyle="bold"
@@ -87,7 +87,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Purchase Details"
+                                android:text="@string/title_purchase_details"
                                 android:textColor="#111827"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
@@ -96,7 +96,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="14dp"
-                                android:text="Supplier"
+                                android:text="@string/title_add_upplier"
                                 android:textColor="#6B7280"
                                 android:textSize="12sp"
                                 android:textStyle="bold" />
@@ -173,7 +173,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="14dp"
-                                android:text="Purchase Date"
+                                android:text="@string/purchase_date"
                                 android:textColor="#6B7280"
                                 android:textSize="12sp"
                                 android:textStyle="bold" />
@@ -223,7 +223,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Add Item"
+                                android:text="@string/purchase_items"
                                 android:textColor="#111827"
                                 android:textSize="18sp"
                                 android:textStyle="bold" />
@@ -232,7 +232,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="14dp"
-                                android:text="Product"
+                                android:text="@string/title_product_items"
                                 android:textColor="#6B7280"
                                 android:textSize="12sp"
                                 android:textStyle="bold" />
@@ -314,7 +314,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="14dp"
-                                android:text="Expired Date (optional)"
+                                android:text="@string/expired_date"
                                 android:textColor="#6B7280"
                                 android:textSize="12sp"
                                 android:textStyle="bold" />
@@ -349,7 +349,7 @@
                                 android:layout_height="54dp"
                                 android:layout_marginTop="16dp"
                                 android:backgroundTint="#22C55E"
-                                android:text="Add Item"
+                                android:text="@string/title_add_item"
                                 android:textAllCaps="false"
                                 android:textColor="#FFFFFF"
                                 android:textSize="15sp"

@@ -51,7 +51,7 @@
                     android:maxLines="1"
                     android:paddingStart="8dp"
                     android:paddingEnd="8dp"
-                    android:text="Orders"
+                    android:text="@string/orders_titles"
                     android:textColor="@android:color/white"
                     android:textSize="20sp"
                     android:textStyle="bold" />

@@ -72,7 +72,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Bemvindu fila fali"
+                                android:text="@string/login_welcome"
                                 android:textColor="#86A38F"
                                 android:textSize="13sp"
                                 android:textStyle="bold"/>
@@ -81,10 +81,11 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="6dp"
-                                android:text="Sign in"
+                                android:text="@string/login_title"
                                 android:textColor="#111827"
-                                android:textSize="24sp"
+                                android:textSize="18sp"
                                 android:textStyle="bold"/>
+
                         </LinearLayout>
 
                         <LinearLayout
@@ -106,7 +107,7 @@
                                 android:id="@+id/tvStatusRight"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Multi-Tenant"
+                                android:text="@string/login_multi_tenant"
                                 android:textColor="#111827"
                                 android:textSize="14sp"
                                 android:textStyle="bold"/>
@@ -124,7 +125,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        android:text="Shop Code"
+                        android:text="@string/login_shop_code"
                         android:textColor="#111827"
                         android:textSize="13sp"
                         android:textStyle="bold"/>
@@ -153,7 +154,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:background="@android:color/transparent"
-                            android:hint="Exemplo: WFOUR"
+                            android:hint="@string/hint_shop_code"
                             android:textColor="#111827"
                             android:textColorHint="#9CA3AF"
                             android:textSize="15sp"
@@ -168,7 +169,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        android:text="Username"
+                        android:text="@string/login_username"
                         android:textColor="#111827"
                         android:textSize="13sp"
                         android:textStyle="bold"/>
@@ -197,7 +198,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:background="@android:color/transparent"
-                            android:hint="Exemplo: rivaldo"
+                            android:hint="@string/hint_username"
                             android:textColor="#111827"
                             android:textColorHint="#9CA3AF"
                             android:textSize="15sp"
@@ -212,7 +213,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:text="Password"
+                        android:text="@string/login_password"
                         android:textColor="#111827"
                         android:textSize="13sp"
                         android:textStyle="bold"/>
@@ -266,7 +267,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
                         android:layout_marginTop="18dp"
-                        android:text="Login"
+                        android:text="@string/login_btn"
                         android:textAllCaps="false"
                         android:textStyle="bold"
                         android:textSize="16sp"
@@ -278,7 +279,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="54dp"
                         android:layout_marginTop="10dp"
-                        android:text="Prenxe Exemplo (Demo)"
+                        android:text="@string/login_demo"
                         android:textAllCaps="false"
                         android:textStyle="bold"
                         android:textSize="15sp"
@@ -290,7 +291,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
                         android:gravity="center"
-                        android:text="Login uza shop code, username no password atu tama ba loja loos."
+                        android:text="@string/login_help_text"
                         android:textColor="#6B7280"
                         android:textSize="13sp"/>
                 </LinearLayout>

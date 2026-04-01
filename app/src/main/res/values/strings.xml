@@ -1,3 +1,651 @@
 <resources>
-    <string name="app_name">ValdKer</string>
+
+    <string name="settings_language_desc">Choose app language for testing</string>
+
+    <string name="language_tetun">Tetun</string>
+    <string name="language_english">English</string>
+    <string name="language_indonesia">Indonesia</string>
+    <string name="language_mandarin">Mandarin</string>
+
+    <string name="msg_language_changed">Language changed</string>
+
+    <string name="msg_owner_summary_not_accessible">Owner summary not accessible (401/403)</string>
+    <string name="msg_ui_container_missing">UI container missing in layout</string>
+
+    <!-- ================================================== -->
+    <!-- APP -->
+    <!-- ================================================== -->
+    <string name="app_name">ValdKerPOS</string>
+    <string name="app_tagline">POS system for modern businesses</string>
+    <string name="app_version">Version</string>
+    <string name="app_powered_by">Powered by ValdKer</string>
+    <string name="app_brand">ValdKerPOS</string>
+    <string name="app_logo">App logo</string>
+    <string name="welcome">Welcome</string>
+    <string name="welcome_back">Welcome back</string>
+    <string name="logout">Logout</string>
+    <string name="profile">Profile</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="home">Home</string>
+
+    <!-- ================================================== -->
+    <!-- AUTH / LOGIN -->
+    <!-- ================================================== -->
+    <string name="login_welcome">Welcome back</string>
+    <string name="login_btn">Login</string>
+    <string name="login_help_text">Log in using your shop code, username, and password to access the correct shop.</string>
+    <string name="login_title">Sign in to your shop</string>
+    <string name="login_subtitle">Use your shop code, username, and password to continue</string>
+    <string name="login_multi_tenant">Multi-Tenant</string>
+    <string name="login_shop_code">Shop Code</string>
+    <string name="login_username">Username</string>
+    <string name="login_password">Password</string>
+    <string name="login_button">Login</string>
+    <string name="login_demo">Fill Demo Data</string>
+    <string name="login_remember_me">Remember me</string>
+    <string name="login_forgot_password">Forgot password?</string>
+    <string name="login_invalid_credentials">Invalid login credentials</string>
+    <string name="login_failed">Login failed</string>
+    <string name="login_success">Login successful</string>
+    <string name="hint_shop_code">Example: WFOUR</string>
+    <string name="hint_username">Enter username</string>
+    <string name="hint_password">Enter password</string>
+    <string name="show_password">Show password</string>
+    <string name="hide_password">Hide password</string>
+
+    <!-- ================================================== -->
+    <!-- DASHBOARD EXTRA -->
+    <!-- ================================================== -->
+    <string name="dashboard_hello">Hello</string>
+    <string name="dashboard_welcome_user">Hello, %1$s</string>
+    <string name="dashboard_subtitle">Select a module to continue</string>
+    <string name="select_a_module_to_continue">Select a module to continue</string>
+    <string name="today_sales">Today\'s Sales</string>
+    <string name="today_expenses">Today\'s Expenses</string>
+    <string name="net_profit">Net Profit</string>
+    <string name="shift_today">Shift Today</string>
+    <string name="shift_summary_hint">Total activities recorded today</string>
+    <string name="dashboard_summary">Summary</string>
+    <string name="dashboard_quick_access">Quick Access</string>
+    <string name="dashboard_overview">Overview</string>
+    <string name="dashboard_no_modules">No modules available</string>
+    <string name="dashboard_loading_modules">Loading dashboard modules...</string>
+    <string name="view_all">View All</string>
+    <string name="see_more">See More</string>
+
+    <!-- ================================================== -->
+    <!-- DASHBOARD TILE / CARD -->
+    <!-- ================================================== -->
+    <string name="tile_open_module">Open module</string>
+    <string name="tile_module_icon">Module icon</string>
+    <string name="tile_reports">Reports</string>
+    <string name="tile_inventory">Inventory</string>
+    <string name="tile_sales">Sales</string>
+    <string name="tile_finance">Finance</string>
+
+    <!-- ================================================== -->
+    <!-- BOTTOM NAVIGATION -->
+    <!-- ================================================== -->
+    <string name="nav_home">Home</string>
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_pos">POS</string>
+    <string name="nav_orders">Orders</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_more">More</string>
+
+    <!-- ================================================== -->
+    <!-- DASHBOARD FILTER / STATE -->
+    <!-- ================================================== -->
+    <string name="filter_today">Today</string>
+    <string name="filter_this_week">This Week</string>
+    <string name="filter_this_month">This Month</string>
+    <string name="filter_custom_range">Custom Range</string>
+    <string name="state_online">Online</string>
+    <string name="state_offline">Offline</string>
+    <string name="state_syncing">Syncing...</string>
+    <string name="state_last_updated">Last updated</string>
+
+    <!-- ================================================== -->
+    <!-- DASHBOARD QUICK INFO -->
+    <!-- ================================================== -->
+    <string name="info_total_sales">Total Sales</string>
+    <string name="info_total_expenses">Total Expenses</string>
+    <string name="info_total_orders">Total Orders</string>
+    <string name="info_total_customers">Total Customers</string>
+    <string name="info_total_products">Total Products</string>
+    <string name="info_total_profit">Total Profit</string>
+
+    <!-- ================================================== -->
+    <!-- CONTENT DESCRIPTIONS -->
+    <!-- ================================================== -->
+    <string name="cd_logout">Logout</string>
+    <string name="cd_dashboard_logo">Dashboard logo</string>
+    <string name="cd_dashboard_summary">Dashboard summary</string>
+    <string name="cd_bottom_navigation">Bottom navigation</string>
+    <string name="cd_dashboard_list">Dashboard module list</string>
+
+    <!-- ================================================== -->
+    <!-- COMMON ACTIONS -->
+    <!-- ================================================== -->
+    <string name="action_add">Add</string>
+    <string name="action_create">Create</string>
+    <string name="action_save">Save</string>
+    <string name="action_update">Update</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_remove">Remove</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_close">Close</string>
+    <string name="action_back">Back</string>
+    <string name="action_next">Next</string>
+    <string name="action_done">Done</string>
+    <string name="action_search">Search</string>
+    <string name="action_filter">Filter</string>
+    <string name="action_reset">Reset</string>
+    <string name="action_clear">Clear</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_confirm">Confirm</string>
+    <string name="action_submit">Submit</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_yes">Yes</string>
+    <string name="action_no">No</string>
+    <string name="action_print">Print</string>
+    <string name="action_reprint">Reprint</string>
+    <string name="action_checkout">Checkout</string>
+    <string name="action_pay">Pay</string>
+    <string name="action_scan">Scan</string>
+    <string name="action_upload">Upload</string>
+    <string name="action_download">Download</string>
+    <string name="action_export">Export</string>
+    <string name="action_import">Import</string>
+    <string name="action_view">View</string>
+    <string name="action_open">Open</string>
+    <string name="action_apply">Apply</string>
+    <string name="action_continue">Continue</string>
+
+    <!-- ================================================== -->
+    <!-- COMMON LABELS -->
+    <!-- ================================================== -->
+    <string name="label_name">Name</string>
+    <string name="label_title">Title</string>
+    <string name="label_code">Code</string>
+    <string name="label_sku">SKU</string>
+    <string name="label_barcode">Barcode</string>
+    <string name="label_phone">Phone</string>
+    <string name="label_email">Email</string>
+    <string name="label_address">Address</string>
+    <string name="label_date">Date</string>
+    <string name="label_time">Time</string>
+    <string name="label_status">Status</string>
+    <string name="label_note">Note</string>
+    <string name="label_notes">Notes</string>
+    <string name="label_description">Description</string>
+    <string name="label_total">Total</string>
+    <string name="label_subtotal">Subtotal</string>
+    <string name="label_discount">Discount</string>
+    <string name="label_tax">Tax</string>
+    <string name="label_price">Price</string>
+    <string name="label_cost_price">Cost Price</string>
+    <string name="label_selling_price">Selling Price</string>
+    <string name="label_quantity">Quantity</string>
+    <string name="label_stock">Stock</string>
+    <string name="label_old_stock">Old Stock</string>
+    <string name="label_new_stock">New Stock</string>
+    <string name="label_min_stock">Minimum Stock</string>
+    <string name="label_category">Category</string>
+    <string name="label_unit">Unit</string>
+    <string name="label_supplier">Supplier</string>
+    <string name="label_customer">Customer</string>
+    <string name="label_product">Product</string>
+    <string name="label_products">Products</string>
+    <string name="label_payment_method">Payment Method</string>
+    <string name="label_invoice">Invoice</string>
+    <string name="label_invoice_id">Invoice ID</string>
+    <string name="label_reason">Reason</string>
+    <string name="label_role">Role</string>
+    <string name="label_shop">Shop</string>
+    <string name="label_store">Store</string>
+    <string name="label_search">Search</string>
+    <string name="label_from">From</string>
+    <string name="label_to">To</string>
+    <string name="label_amount">Amount</string>
+    <string name="label_type">Type</string>
+    <string name="label_method">Method</string>
+    <string name="label_cashier">Cashier</string>
+    <string name="label_user">User</string>
+    <string name="label_username">Username</string>
+    <string name="label_password">Password</string>
+    <string name="label_location">Location</string>
+    <string name="label_store_name">Store Name</string>
+    <string name="label_store_address">Store Address</string>
+    <string name="label_currency">Currency</string>
+    <string name="label_language">Language</string>
+    <string name="label_paper_width">Paper Width</string>
+    <string name="label_opening_cash">Opening Cash</string>
+    <string name="label_closing_cash">Closing Cash</string>
+    <string name="label_expected_cash">Expected Cash</string>
+    <string name="label_difference">Difference</string>
+    <string name="label_received">Received</string>
+    <string name="label_change">Change</string>
+    <string name="label_cart">Cart</string>
+    <string name="label_items">Items</string>
+    <string name="label_actions">Actions</string>
+
+    <!-- ================================================== -->
+    <!-- HINTS -->
+    <!-- ================================================== -->
+    <string name="hint_search_here">Search here...</string>
+    <string name="hint_search_product">Search product...</string>
+    <string name="hint_search_customer">Search customer...</string>
+    <string name="hint_search_supplier">Search supplier...</string>
+    <string name="hint_search_order">Search order...</string>
+    <string name="hint_search_purchase">Search purchase...</string>
+    <string name="hint_search_inventory">Search inventory data...</string>
+    <string name="hint_product_name">Enter product name</string>
+    <string name="hint_product_code">Enter product code</string>
+    <string name="hint_product_barcode">Enter barcode</string>
+    <string name="hint_customer_name">Enter customer name</string>
+    <string name="hint_supplier_name">Enter supplier name</string>
+    <string name="hint_note">Enter note</string>
+    <string name="hint_amount">Enter amount</string>
+    <string name="hint_reason">Enter reason</string>
+
+    <!-- ================================================== -->
+    <!-- STATUS -->
+    <!-- ================================================== -->
+    <string name="status_active">Active</string>
+    <string name="status_inactive">Inactive</string>
+    <string name="status_pending">Pending</string>
+    <string name="status_completed">Completed</string>
+    <string name="status_cancelled">Cancelled</string>
+    <string name="status_paid">Paid</string>
+    <string name="status_unpaid">Unpaid</string>
+    <string name="status_draft">Draft</string>
+    <string name="status_open">Open</string>
+    <string name="status_closed">Closed</string>
+    <string name="status_success">Success</string>
+    <string name="status_failed">Failed</string>
+
+    <!-- ================================================== -->
+    <!-- MESSAGES -->
+    <!-- ================================================== -->
+    <string name="msg_loading">Loading...</string>
+    <string name="msg_no_data">No data found</string>
+    <string name="msg_empty_list">Empty list</string>
+    <string name="msg_save_success">Data saved successfully</string>
+    <string name="msg_update_success">Data updated successfully</string>
+    <string name="msg_delete_success">Data deleted successfully</string>
+    <string name="msg_create_success">Created successfully</string>
+    <string name="msg_action_failed">Operation failed</string>
+    <string name="msg_network_error">Internet connection problem</string>
+    <string name="msg_server_error">Server error</string>
+    <string name="msg_timeout_error">Connection timeout</string>
+    <string name="msg_confirm_delete">Are you sure you want to delete this data?</string>
+    <string name="msg_required_field">Please fill in all required fields</string>
+    <string name="msg_form_invalid">Please check the form fields</string>
+    <string name="msg_data_not_found">Data not found</string>
+    <string name="msg_feature_coming_soon">This feature is coming soon</string>
+    <string name="msg_permission_denied">You do not have permission to access this feature</string>
+    <string name="msg_session_expired">Your session has expired. Please log in again</string>
+    <string name="msg_no_internet">No internet connection</string>
+    <string name="msg_try_again">Please try again</string>
+    <string name="msg_select_item">Please select an item</string>
+    <string name="msg_select_customer">Please select a customer</string>
+    <string name="msg_select_supplier">Please select a supplier</string>
+    <string name="msg_select_product">Please select a product</string>
+    <string name="msg_cart_empty">Cart is empty</string>
+    <string name="msg_checkout_success">Checkout successful</string>
+    <string name="msg_payment_success">Payment successful</string>
+    <string name="msg_payment_failed">Payment failed</string>
+    <string name="msg_backup_success">Backup completed successfully</string>
+    <string name="msg_restore_success">Restore completed successfully</string>
+    <string name="msg_import_success">Import completed successfully</string>
+    <string name="msg_export_success">Export completed successfully</string>
+
+    <!-- ================================================== -->
+    <!-- VALIDATION / ERRORS -->
+    <!-- ================================================== -->
+    <string name="error_required">This field is required</string>
+    <string name="error_invalid_email">Invalid email address</string>
+    <string name="error_invalid_phone">Invalid phone number</string>
+    <string name="error_invalid_price">Invalid price</string>
+    <string name="error_invalid_stock">Invalid stock value</string>
+    <string name="error_invalid_quantity">Invalid quantity</string>
+    <string name="error_invalid_amount">Invalid amount</string>
+    <string name="error_password_too_short">Password is too short</string>
+    <string name="error_shop_code_required">Shop code is required</string>
+    <string name="error_username_required">Username is required</string>
+    <string name="error_password_required">Password is required</string>
+
+    <!-- ================================================== -->
+    <!-- DASHBOARD MENU -->
+    <!-- ================================================== -->
+    <string name="title_dashboard">Dashboard</string>
+    <string name="menu_pos">POS</string>
+    <string name="menu_pos_desc">Create sales transactions</string>
+    <string name="menu_reports">Reports</string>
+    <string name="menu_reports_desc">Business performance analytics</string>
+    <string name="menu_stock_movements">Stock Movements</string>
+    <string name="menu_stock_movements_desc">View stock movement history</string>
+    <string name="menu_inventory_counts">Inventory Counts</string>
+    <string name="menu_inventory_counts_desc">Perform stock opname</string>
+    <string name="menu_settings">Settings</string>
+    <string name="menu_settings_desc">Configure the application</string>
+    <string name="menu_bank_accounts">Bank Accounts</string>
+    <string name="menu_bank_accounts_desc">Manage shop bank accounts</string>
+    <string name="menu_orders">Orders</string>
+    <string name="menu_orders_desc">View transaction history</string>
+    <string name="menu_expenses">Expenses</string>
+    <string name="menu_expenses_desc">Record business expenses</string>
+    <string name="menu_customers">Customers</string>
+    <string name="menu_customers_desc">Manage and view customer data</string>
+    <string name="menu_suppliers">Suppliers</string>
+    <string name="menu_suppliers_desc">List and manage suppliers</string>
+    <string name="menu_purchases">Purchases</string>
+    <string name="menu_purchases_desc">Record purchases from suppliers</string>
+    <string name="menu_products">Products</string>
+    <string name="menu_products_desc">Manage stock, price, and product details</string>
+    <string name="menu_categories">Categories</string>
+    <string name="menu_categories_desc">Manage product categories</string>
+    <string name="menu_units">Units</string>
+    <string name="menu_units_desc">Manage product units</string>
+    <string name="menu_product_returns">Product Returns</string>
+    <string name="menu_product_returns_desc">Manage returned products</string>
+    <string name="menu_stock_adjustments">Stock Adjustments</string>
+    <string name="menu_stock_adjustments_desc">Adjust stock manually</string>
+    <string name="menu_users">Users</string>
+    <string name="menu_users_desc">Manage staff accounts</string>
+    <string name="menu_shift">Shifts</string>
+    <string name="menu_shift_desc">Manage cashier shifts</string>
+
+    <!-- ================================================== -->
+    <!-- PRODUCTS -->
+    <!-- ================================================== -->
+    <string name="title_products">Products</string>
+    <string name="title_add_product">Add Product</string>
+    <string name="title_edit_product">Edit Product</string>
+    <string name="title_product_details">Product Details</string>
+    <string name="product_name">Product Name</string>
+    <string name="product_code">Product Code</string>
+    <string name="product_barcode">Barcode</string>
+    <string name="product_price">Product Price</string>
+    <string name="product_cost_price">Cost Price</string>
+    <string name="product_stock">Stock</string>
+    <string name="product_min_stock">Minimum Stock</string>
+    <string name="product_category">Category</string>
+    <string name="product_unit">Unit</string>
+    <string name="product_supplier">Supplier</string>
+    <string name="product_image">Product Image</string>
+    <string name="product_variant">Variant</string>
+
+    <!-- ================================================== -->
+    <!-- CATEGORIES -->
+    <!-- ================================================== -->
+    <string name="title_categories">Categories</string>
+    <string name="title_add_category">Add Category</string>
+    <string name="title_edit_category">Edit Category</string>
+    <string name="category_name">Category Name</string>
+
+    <!-- ================================================== -->
+    <!-- UNITS -->
+    <!-- ================================================== -->
+    <string name="title_units">Units</string>
+    <string name="title_add_unit">Add Unit</string>
+    <string name="title_edit_unit">Edit Unit</string>
+    <string name="unit_name">Unit Name</string>
+
+    <string name="title_customers">Customers</string>
+    <string name="title_add_customer">Add Customer</string>
+    <string name="customer_details">Customer Details</string>
+    <string name="title_edit_customer">Edit Customer</string>
+    <string name="customer_name">Customer Name</string>
+    <string name="customer_phone">Customer Phone</string>
+    <string name="customer_email">Customer Email</string>
+    <string name="customer_address">Customer Address</string>
+    <string name="customer_points">Customer Points</string>
+
+    <string name="customer_dialog_name">Name *</string>
+    <string name="customer_dialog_cell">Cell *</string>
+    <string name="customer_dialog_email">Email</string>
+    <string name="customer_dialog_address">Address</string>
+
+    <string name="title_suppliers">Suppliers</string>
+    <string name="title_add_supplier">Add Supplier</string>
+    <string name="title_add_details">Detail Supplier</string>
+    <string name="title_edit_supplier">Edit Supplier</string>
+    <string name="supplier_name">Supplier Name</string>
+    <string name="supplier_phone">Supplier Phone</string>
+    <string name="supplier_email">Supplier Email</string>
+    <string name="supplier_address">Supplier Address</string>
+
+    <string name="supplier_dialog_name">Name *</string>
+    <string name="supplier_dialog_contact">Contact Person *</string>
+    <string name="supplier_dialog_phone">Phone</string>
+    <string name="supplier_dialog_email">Email</string>
+    <string name="supplier_dialog_address">Address</string>
+
+    <!-- ================================================== -->
+    <!-- ORDERS / SALES -->
+    <!-- ================================================== -->
+    <string name="title_orders">Orders</string>
+    <string name="title_order_details">Order Details</string>
+    <string name="label_order_history">Transaction History</string>
+    <string name="label_order_total">Order Total</string>
+    <string name="label_order_date">Order Date</string>
+    <string name="label_order_status">Order Status</string>
+
+    <!-- ================================================== -->
+    <!-- PURCHASES -->
+    <!-- ================================================== -->
+    <string name="title_purchases">Purchases</string>
+    <string name="title_add_purchase">Add Purchase</string>
+    <string name="title_add_upplier">Supplier</string>
+    <string name="title_edit_purchase">Edit Purchase</string>
+    <string name="title_purchase_details">Purchase Details</string>
+    <string name="purchase_date">Purchase Date</string>
+    <string name="purchase_total">Total Purchase</string>
+    <string name="purchase_items">Purchase Items</string>
+    <string name="title_product_items">Product</string>
+    <string name="expired_date">Expired Date (Optional)</string>
+    <string name="title_add_item">Add Item</string>
+    <string name="batch_code">Batch Code</string>
+
+    <!-- ================================================== -->
+    <!-- POS -->
+    <!-- ================================================== -->
+    <string name="title_pos">POS</string>
+    <string name="pos_search_products">Search products</string>
+    <string name="pos_add_to_cart">Add to Cart</string>
+    <string name="pos_checkout">Checkout</string>
+    <string name="pos_payment">Payment</string>
+    <string name="pos_cash">Cash</string>
+    <string name="pos_change">Change</string>
+    <string name="pos_total">Total</string>
+    <string name="pos_subtotal">Subtotal</string>
+    <string name="pos_discount">Discount</string>
+    <string name="pos_tax">Tax</string>
+    <string name="pos_customer">Customer</string>
+    <string name="pos_table_number">Table Number</string>
+    <string name="pos_dine_in">Dine In</string>
+    <string name="pos_take_away">Take Away</string>
+    <string name="pos_delivery">Delivery</string>
+
+    <!-- ================================================== -->
+    <!-- PAYMENT -->
+    <!-- ================================================== -->
+    <string name="title_payment_methods">Payment Methods</string>
+    <string name="payment_cash">Cash</string>
+    <string name="payment_qris">QR Payment</string>
+    <string name="payment_bank_transfer">Bank Transfer</string>
+    <string name="payment_select_method">Select payment method</string>
+    <string name="payment_proof">Payment Proof</string>
+    <string name="payment_reference">Payment Reference</string>
+
+    <!-- ================================================== -->
+    <!-- EXPENSES -->
+    <!-- ================================================== -->
+    <string name="title_expenses">Expenses</string>
+    <string name="title_add_expense">Add Expense</string>
+    <string name="title_edit_expense">Edit Expense</string>
+    <string name="expense_name">Expense Name</string>
+    <string name="expense_amount">Expense Amount</string>
+    <string name="expense_note">Expense Note</string>
+    <string name="expense_date">Expense Date</string>
+    <string name="btn_cancel">Kansela</string>
+    <string name="btn_save">Rai</string>
+    <string name="btn_create">Kria</string>
+
+    <!-- ================================================== -->
+    <!-- INVENTORY -->
+    <!-- ================================================== -->
+    <string name="title_inventory_counts">Inventory Counts</string>
+    <string name="title_stock_adjustments">Stock Adjustments</string>
+    <string name="title_stock_movements">Stock Movements</string>
+    <string name="inventory_count">Inventory Count</string>
+    <string name="stock_adjustment">Stock Adjustment</string>
+    <string name="stock_movement">Stock Movement</string>
+    <string name="stock_count">Stock Count</string>
+    <string name="stock_in">Stock In</string>
+    <string name="stock_out">Stock Out</string>
+    <string name="low_stock">Low Stock</string>
+    <string name="out_of_stock">Out of Stock</string>
+    <string name="available_stock">Available Stock</string>
+
+    <!-- ================================================== -->
+    <!-- RETURNS -->
+    <!-- ================================================== -->
+    <string name="title_product_returns">Product Returns</string>
+    <string name="product_return">Product Return</string>
+    <string name="return_quantity">Return Quantity</string>
+    <string name="return_reason">Return Reason</string>
+    <string name="return_date">Return Date</string>
+
+    <!-- ================================================== -->
+    <!-- REPORTS -->
+    <!-- ================================================== -->
+    <string name="title_reports">Reports</string>
+    <string name="sales_report">Sales Report</string>
+    <string name="expense_report">Expense Report</string>
+    <string name="transaction_report">Transaction Report</string>
+    <string name="daily_sales">Daily Sales</string>
+    <string name="monthly_sales">Monthly Sales</string>
+    <string name="gross_sales">Gross Sales</string>
+    <string name="net_sales">Net Sales</string>
+    <string name="best_selling_products">Best Selling Products</string>
+
+    <!-- ================================================== -->
+    <!-- BANK / FINANCE -->
+    <!-- ================================================== -->
+    <string name="title_bank_accounts">Bank Accounts</string>
+    <string name="title_add_bank_account">Add Bank Account</string>
+    <string name="bank_name">Bank Name</string>
+    <string name="bank_account_name">Account Name</string>
+    <string name="bank_account_number">Account Number</string>
+
+    <!-- ================================================== -->
+    <!-- SHIFT -->
+    <!-- ================================================== -->
+    <string name="title_shifts">Shifts</string>
+    <string name="shift_open">Open Shift</string>
+    <string name="shift_close">Close Shift</string>
+    <string name="shift_opening_cash">Opening Cash</string>
+    <string name="shift_closing_cash">Closing Cash</string>
+    <string name="shift_summary">Shift Summary</string>
+
+    <!-- ================================================== -->
+    <!-- USERS / ROLES -->
+    <!-- ================================================== -->
+    <string name="title_users">Users</string>
+    <string name="title_add_user">Add User</string>
+    <string name="title_edit_user">Edit User</string>
+    <string name="role_owner">Owner</string>
+    <string name="role_manager">Manager</string>
+    <string name="role_cashier">Cashier</string>
+
+    <!-- ================================================== -->
+    <!-- SETTINGS -->
+    <!-- ================================================== -->
+    <string name="title_settings">Settings</string>
+    <string name="settings_store_profile">Store Profile</string>
+    <string name="settings_printer">Printer Settings</string>
+    <string name="settings_customer_display">Customer Display</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_currency">Currency</string>
+    <string name="settings_backup">Backup</string>
+    <string name="settings_restore">Restore</string>
+    <string name="settings_dark_mode">Dark Mode</string>
+    <string name="settings_notifications">Notifications</string>
+
+    <!-- ================================================== -->
+    <!-- PRINTER / RECEIPT -->
+    <!-- ================================================== -->
+    <string name="title_printer_settings">Settings</string>
+    <string name="paper_width">Paper Width</string>
+    <string name="paper_width_58mm">58mm</string>
+    <string name="paper_width_80mm">80mm</string>
+    <string name="print_receipt">Print Receipt</string>
+    <string name="reprint_receipt">Reprint Receipt</string>
+    <string name="receipt">Receipt</string>
+    <string name="receipt_footer">Thank you for your purchase</string>
+    <string name="receipt_order_no">Order No</string>
+    <string name="receipt_cashier">Cashier</string>
+    <string name="receipt_date">Date</string>
+
+    <!-- ================================================== -->
+    <!-- SETTINGS FRAGMENT -->
+    <!-- ================================================== -->
+    <string name="settings_shop_settings">Shop Settings</string>
+    <string name="settings_server">Server</string>
+    <string name="settings_printer_title">Printer</string>
+    <string name="settings_branding">Branding</string>
+    <string name="settings_shop_profile">Shop Profile</string>
+    <string name="settings_shop_logo">Shop Logo</string>
+    <string name="settings_logo_preview">Logo preview</string>
+    <string name="settings_choose_logo">Choose Logo</string>
+    <string name="settings_save_server">Save Server</string>
+    <string name="settings_test_print">Test Print</string>
+    <string name="settings_auto_print_after_payment">Auto print after payment</string>
+    <string name="settings_selected_printer">Selected printer: %1$s (%2$s)</string>
+    <string name="settings_selected_printer_empty">Selected printer: -</string>
+    <string name="settings_printer_connected">Connected</string>
+    <string name="settings_printer_not_connected">Not connected</string>
+    <string name="settings_base_url_hint">Base URL (ex: https://valdker.onrender.com/)</string>
+    <string name="settings_name_required_hint">Name *</string>
+    <string name="settings_address_required_hint">Address *</string>
+    <string name="settings_phone_required_hint">Phone *</string>
+    <string name="settings_email_hint">Email</string>
+    <string name="settings_save_changes">Save Changes</string>
+    <string name="settings_printer_ok">Printer OK</string>
+
+    <!-- ================================================== -->
+    <!-- SETTINGS MESSAGES -->
+    <!-- ================================================== -->
+    <string name="msg_base_url_empty">Base URL cannot be empty</string>
+    <string name="msg_base_url_invalid_scheme">URL must start with http:// or https://</string>
+    <string name="msg_bluetooth_permission_required">Bluetooth permission is not granted yet. Please allow Bluetooth permission first.</string>
+    <string name="msg_paper_width_set_80">Paper width set to 80mm</string>
+    <string name="msg_paper_width_set_58">Paper width set to 58mm</string>
+    <string name="msg_test_print_success">Test printed</string>
+    <string name="msg_test_print_failed">Test print failed: %1$s</string>
+    <string name="msg_missing_token_login_again">Missing token. Please login again.</string>
+    <string name="msg_no_shop_found_server">No shop found on server.</string>
+    <string name="msg_failed_load_shop">Failed to load shop: %1$s</string>
+    <string name="msg_shop_not_loaded">Shop is not loaded yet.</string>
+    <string name="msg_name_address_phone_required">Name, Address, and Phone are required.</string>
+    <string name="msg_shop_saved">Shop saved</string>
+    <string name="msg_save_failed_with_code">Save failed (%1$d): %2$s</string>
+
+    <!-- ================================================== -->
+    <!-- BACKUP / RESTORE -->
+    <!-- ================================================== -->
+    <string name="title_backup">Backup</string>
+    <string name="title_restore">Restore</string>
+    <string name="backup_database">Backup Database</string>
+    <string name="restore_database">Restore Database</string>
+    <string name="export_excel">Export to Excel</string>
+    <string name="export_pdf">Export to PDF</string>
+    <string name="import_data">Import Data</string>
+    <string name="orders_titles">Orders</string>
+
 </resources>

@@ -210,6 +210,14 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         paymentAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spPaymentMethod.setAdapter(paymentAdapter);
 
+        int defaultIndex = 0;
+        for (int i = 0; i < paymentOptions.size(); i++) {
+            if ("CASH".equalsIgnoreCase(paymentOptions.get(i).code)) {
+                defaultIndex = i;
+                break;
+            }
+        }
+        spPaymentMethod.setSelection(defaultIndex);
         ArrayAdapter<BankAccountOption> bankAdapter = new ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_spinner_item,
@@ -233,8 +241,16 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
 
             if (isCash && tvChange != null && etCash != null) {
                 double cash = parseMoney(safe(etCash.getText()));
-                double change = Math.max(0.0, cash - totalNow);
-                tvChange.setText("Change: " + usd.format(change));
+
+                if (cash <= 0) {
+                    tvChange.setText("Change: " + usd.format(0.0));
+                } else if (cash < totalNow) {
+                    double shortage = totalNow - cash;
+                    tvChange.setText("Shortage: " + usd.format(shortage));
+                } else {
+                    double change = cash - totalNow;
+                    tvChange.setText("Change: " + usd.format(change));
+                }
             }
         };
 
@@ -341,6 +357,15 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                         if (etCash != null) {
                             etCash.setError("Cash received is required.");
                             etCash.requestFocus();
+                        }
+                        return;
+                    }
+
+                    if (cashReceived < totalNow) {
+                        if (etCash != null) {
+                            etCash.setError("Cash received cannot be less than total.");
+                            etCash.requestFocus();
+                            etCash.setSelection(etCash.getText().length());
                         }
                         return;
                     }

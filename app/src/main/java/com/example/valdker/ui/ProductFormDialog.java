@@ -104,6 +104,8 @@ public class ProductFormDialog extends DialogFragment {
         View itemTypeBlock = v.findViewById(R.id.blockItemType);
         MaterialSwitch swProdActive = v.findViewById(R.id.swProdActive);
 
+        MaterialSwitch swTrackStock = v.findViewById(R.id.swTrackStock);
+
         tilProdSku = v.findViewById(R.id.tilProdSku);
         tilProdCode = v.findViewById(R.id.tilProdCode);
         etProdSku = v.findViewById(R.id.etProdSku);
@@ -184,6 +186,10 @@ public class ProductFormDialog extends DialogFragment {
             swProdActive.setChecked(true);
         }
 
+        if (swTrackStock != null) {
+            swTrackStock.setChecked(true);
+        }
+
         if (isEdit && editing != null) {
             etName.setText(editing.name);
             if (etSku != null) etSku.setText(editing.sku != null ? editing.sku : "");
@@ -208,6 +214,15 @@ public class ProductFormDialog extends DialogFragment {
                 swProdActive.setChecked(active);
             }
 
+            if (swTrackStock != null) {
+                boolean trackStock = true;
+                try {
+                    trackStock = editing.trackStock;
+                } catch (Exception ignored) {
+                }
+                swTrackStock.setChecked(trackStock);
+            }
+
             if (showItemType) {
                 String editItemType = defaultItemType;
                 try {
@@ -223,6 +238,14 @@ public class ProductFormDialog extends DialogFragment {
             etStock.setFocusable(true);
             etStock.setClickable(true);
             etStock.setLongClickable(true);
+
+            if (swProdActive != null) {
+                swProdActive.setChecked(true);
+            }
+
+            if (swTrackStock != null) {
+                swTrackStock.setChecked(true);
+            }
 
             if (showItemType) {
                 selectStringSpinner(spItemType, itemTypes, defaultItemType);
@@ -383,6 +406,7 @@ public class ProductFormDialog extends DialogFragment {
                         }
 
                         boolean isActive = swProdActive != null && swProdActive.isChecked();
+                        boolean trackStock = swTrackStock != null && swTrackStock.isChecked();
 
                         SessionManager session2 = new SessionManager(requireContext());
                         String token2 = session2.getToken();
@@ -425,6 +449,7 @@ public class ProductFormDialog extends DialogFragment {
                                     sup.id,
                                     itemType,
                                     isActive,
+                                    trackStock,
                                     selectedImageUri,
                                     new ProductRepository.ItemCallback() {
                                         @Override
@@ -458,6 +483,7 @@ public class ProductFormDialog extends DialogFragment {
                                     sup.id,
                                     itemType,
                                     isActive,
+                                    trackStock,
                                     selectedImageUri,
                                     new ProductRepository.ItemCallback() {
                                         @Override
@@ -477,7 +503,7 @@ public class ProductFormDialog extends DialogFragment {
                             );
                         }
                     });
-        });
+            });
 
         return dialog;
     }

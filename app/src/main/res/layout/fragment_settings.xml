@@ -31,7 +31,7 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Back"
+                android:contentDescription="@string/action_back"
                 android:padding="8dp"
                 android:src="@drawable/ic_arrow_back"
                 android:tint="@android:color/white" />
@@ -45,7 +45,7 @@
                 android:maxLines="1"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
-                android:text="Settings"
+                android:text="@string/title_settings"
                 android:textColor="@android:color/white"
                 android:textSize="20sp"
                 android:textStyle="bold" />
@@ -55,7 +55,7 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Refresh"
+                android:contentDescription="@string/action_refresh"
                 android:padding="8dp"
                 android:src="@android:drawable/ic_popup_sync"
                 android:tint="@android:color/white" />
@@ -102,7 +102,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Shop Settings"
+                            android:text="@string/settings_shop_settings"
                             android:textColor="#111827"
                             android:textSize="22sp"
                             android:textStyle="bold" />
@@ -115,6 +115,51 @@
 
                     </LinearLayout>
 
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- LANGUAGE -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardLanguage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardCornerRadius="22dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#E5E7EB"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="18dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_language"
+                            android:textColor="#111827"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="@string/settings_language_desc"
+                            android:textColor="#6B7280"
+                            android:textSize="12sp" />
+
+                        <Spinner
+                            android:id="@+id/spinnerLanguage"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:background="@drawable/bg_spinner_rounded"
+                            android:padding="12dp" />
+
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- SERVER -->
@@ -138,7 +183,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Server"
+                            android:text="@string/settings_server"
                             android:textColor="#111827"
                             android:textSize="14sp"
                             android:textStyle="bold" />
@@ -160,7 +205,7 @@
                                 android:id="@+id/etBaseUrl"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:hint="Base URL (ex: https://valdker.onrender.com/)"
+                                android:hint="@string/settings_base_url_hint"
                                 android:inputType="textUri"
                                 android:paddingHorizontal="14dp"
                                 android:paddingVertical="14dp" />
@@ -175,7 +220,7 @@
                             android:backgroundTint="#FFFFFF"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
-                            android:text="Save Server"
+                            android:text="@string/settings_save_server"
                             android:textAllCaps="false"
                             android:textColor="#111827"
                             app:cornerRadius="14dp"
@@ -214,7 +259,7 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="Printer"
+                                android:text="@string/settings_printer_title"
                                 android:textColor="#111827"
                                 android:textSize="14sp"
                                 android:textStyle="bold" />
@@ -230,7 +275,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
-                                android:text="Not connected"
+                                android:text="@string/settings_printer_not_connected"
                                 android:textColor="#6B7280"
                                 android:textSize="12sp" />
                         </LinearLayout>
@@ -240,7 +285,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
-                            android:text="Selected printer: -"
+                            android:text="@string/settings_selected_printer_empty"
                             android:textColor="#111827"
                             android:textSize="12sp" />
 
@@ -259,7 +304,7 @@
                                 android:backgroundTint="#FFFFFF"
                                 android:insetTop="0dp"
                                 android:insetBottom="0dp"
-                                android:text="Settings"
+                                android:text="@string/title_printer_settings"
                                 android:textAllCaps="false"
                                 android:textColor="#111827"
                                 app:cornerRadius="14dp"
@@ -279,7 +324,7 @@
                                 android:backgroundTint="#FFFFFF"
                                 android:insetTop="0dp"
                                 android:insetBottom="0dp"
-                                android:text="Test Print"
+                                android:text="@string/settings_test_print"
                                 android:textAllCaps="false"
                                 android:textColor="#111827"
                                 app:cornerRadius="14dp"
@@ -292,14 +337,14 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
-                            android:text="Auto print after payment"
+                            android:text="@string/settings_auto_print_after_payment"
                             android:textColor="#111827" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="14dp"
-                            android:text="Paper Width"
+                            android:text="@string/label_paper_width"
                             android:textColor="#111827"
                             android:textSize="12sp"
                             android:textStyle="bold" />
@@ -320,7 +365,7 @@
                                 android:layout_height="wrap_content"
                                 android:checkable="true"
                                 android:clickable="true"
-                                android:text="58mm"
+                                android:text="@string/paper_width_58mm"
                                 android:textColor="#111827"
                                 app:checkedIconVisible="false"
                                 app:chipBackgroundColor="@color/chip_paper_bg_selector"
@@ -334,7 +379,7 @@
                                 android:layout_height="wrap_content"
                                 android:checkable="true"
                                 android:clickable="true"
-                                android:text="80mm"
+                                android:text="@string/paper_width_80mm"
                                 android:textColor="#111827"
                                 app:checkedIconVisible="false"
                                 app:chipBackgroundColor="@color/chip_paper_bg_selector"
@@ -369,7 +414,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Branding"
+                            android:text="@string/settings_branding"
                             android:textColor="#111827"
                             android:textSize="14sp"
                             android:textStyle="bold" />
@@ -378,7 +423,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="14dp"
-                            android:text="Shop Logo"
+                            android:text="@string/settings_shop_logo"
                             android:textColor="#6B7280"
                             android:textSize="12sp" />
 
@@ -396,7 +441,7 @@
                                 android:id="@+id/imgLogoPreview"
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
-                                android:contentDescription="Logo preview"
+                                android:contentDescription="@string/settings_logo_preview"
                                 android:scaleType="centerCrop"
                                 android:src="@drawable/ic_store" />
                         </com.google.android.material.card.MaterialCardView>
@@ -410,7 +455,7 @@
                             android:backgroundTint="#FFFFFF"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
-                            android:text="Choose Logo"
+                            android:text="@string/settings_choose_logo"
                             android:textAllCaps="false"
                             android:textColor="#111827"
                             app:cornerRadius="14dp"
@@ -441,7 +486,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Shop Profile"
+                            android:text="@string/settings_shop_profile"
                             android:textColor="#111827"
                             android:textSize="14sp"
                             android:textStyle="bold" />
@@ -463,7 +508,7 @@
                                 android:id="@+id/etShopName"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:hint="Name *"
+                                android:hint="@string/settings_name_required_hint"
                                 android:paddingHorizontal="14dp"
                                 android:paddingVertical="14dp" />
                         </com.google.android.material.textfield.TextInputLayout>
@@ -485,7 +530,7 @@
                                 android:id="@+id/etShopAddress"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:hint="Address *"
+                                android:hint="@string/settings_address_required_hint"
                                 android:paddingHorizontal="14dp"
                                 android:paddingVertical="14dp" />
                         </com.google.android.material.textfield.TextInputLayout>
@@ -507,7 +552,7 @@
                                 android:id="@+id/etShopPhone"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:hint="Phone *"
+                                android:hint="@string/settings_phone_required_hint"
                                 android:inputType="phone"
                                 android:paddingHorizontal="14dp"
                                 android:paddingVertical="14dp" />
@@ -530,7 +575,7 @@
                                 android:id="@+id/etShopEmail"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:hint="Email"
+                                android:hint="@string/settings_email_hint"
                                 android:inputType="textEmailAddress"
                                 android:paddingHorizontal="14dp"
                                 android:paddingVertical="14dp" />
@@ -544,7 +589,7 @@
                             android:backgroundTint="#16A34A"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
-                            android:text="Save Changes"
+                            android:text="@string/settings_save_changes"
                             android:textAllCaps="false"
                             android:textColor="@android:color/white"
                             android:textStyle="bold"

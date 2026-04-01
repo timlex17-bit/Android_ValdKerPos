@@ -91,10 +91,6 @@ public class ProductsManageFragment extends BaseFragment {
         btnBack = view.findViewById(R.id.btnBack);
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
 
-        if (tvTitle != null) {
-            tvTitle.setText("Manage Products");
-        }
-
         if (swipe == null) Log.w(TAG, "swipeRefreshManage not found.");
         if (rv == null) Log.w(TAG, "rvProductsManage not found.");
         if (progress == null) Log.w(TAG, "progressManage not found.");

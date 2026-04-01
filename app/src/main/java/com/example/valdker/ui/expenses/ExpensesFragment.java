@@ -82,10 +82,6 @@ public class ExpensesFragment extends BaseFragment {
         btnBack = view.findViewById(R.id.btnBack);
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
 
-        if (tvTitle != null) {
-            tvTitle.setText("Expense");
-        }
-
         InsetsHelper.applyRecyclerBottomInsets(view, rv, "EXPENSES");
         applyFabBottomInset(fabAdd, 56);
 
@@ -340,17 +336,20 @@ public class ExpensesFragment extends BaseFragment {
                     cal.get(Calendar.MINUTE)));
         }
 
-        AlertDialog dialog = new AlertDialog.Builder(requireContext())
-                .setTitle(isEdit ? "Edit Expense" : "Add Expense")
-                .setView(form)
-                .setNegativeButton("Cancel", (d, w) -> d.dismiss())
-                .setPositiveButton(isEdit ? "Save" : "Create", null)
-                .create();
+        int titleRes = isEdit
+                ? R.string.title_edit_expense
+                : R.string.title_add_expense;
 
-        dialog.setOnDismissListener(d -> {
-            isFormShowing = false;
-            setFabEnabled(true);
-        });
+        int positiveRes = isEdit
+                ? R.string.btn_save
+                : R.string.btn_create;
+
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setTitle(getString(titleRes))
+                .setView(form)
+                .setNegativeButton(getString(R.string.btn_cancel), (d, w) -> d.dismiss())
+                .setPositiveButton(getString(positiveRes), null)
+                .create();
 
         dialog.setOnShowListener(d -> {
             View positiveBtn = dialog.getButton(AlertDialog.BUTTON_POSITIVE);

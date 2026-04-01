@@ -33,6 +33,7 @@ public class Product {
 
     public String itemType = "";
     public boolean isActive = true;
+    public boolean trackStock = true;
 
     public Product() {}
 

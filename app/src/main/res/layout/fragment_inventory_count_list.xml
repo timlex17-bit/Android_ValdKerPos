@@ -51,7 +51,7 @@
                     android:maxLines="1"
                     android:paddingStart="8dp"
                     android:paddingEnd="8dp"
-                    android:text="Inventory Counts"
+                    android:text="@string/menu_inventory_counts"
                     android:textColor="@android:color/white"
                     android:textSize="20sp"
                     android:textStyle="bold" />

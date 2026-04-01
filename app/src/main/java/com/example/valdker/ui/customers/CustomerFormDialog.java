@@ -77,7 +77,11 @@ public class CustomerFormDialog extends DialogFragment {
         final String mode = args != null ? args.getString(ARG_MODE, MODE_ADD) : MODE_ADD;
         final boolean isEdit = MODE_EDIT.equals(mode);
 
-        tvTitle.setText(isEdit ? "Edit Customer" : "Add Customer");
+        tvTitle.setText(
+                isEdit
+                        ? getString(R.string.title_edit_customer)
+                        : getString(R.string.title_add_customer)
+        );
 
         if (isEdit && args != null) {
             etName.setText(valueOrEmpty(args.getString(ARG_NAME)));

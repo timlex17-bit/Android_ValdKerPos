@@ -72,10 +72,6 @@ public class PurchasesFragment extends BaseFragment {
         btnBack = view.findViewById(R.id.btnBack);
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
 
-        if (tvTitle != null) {
-            tvTitle.setText("Purchases");
-        }
-
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(requireContext()));
             rv.setHasFixedSize(false);

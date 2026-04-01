@@ -102,10 +102,6 @@ public class UnitsFragment extends BaseFragment {
         tvTitle = view.findViewById(R.id.tvTitle);
         etSearch = view.findViewById(R.id.etSearch);
 
-        if (tvTitle != null) {
-            tvTitle.setText("Units");
-        }
-
         if (btnBack != null) {
             btnBack.setOnClickListener(v ->
                     requireActivity().getOnBackPressedDispatcher().onBackPressed()

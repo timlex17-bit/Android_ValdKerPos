@@ -49,7 +49,7 @@
                     android:maxLines="1"
                     android:paddingStart="8dp"
                     android:paddingEnd="8dp"
-                    android:text="Stock Movements"
+                    android:text="@string/menu_stock_movements"
                     android:textColor="@android:color/white"
                     android:textSize="20sp"
                     android:textStyle="bold" />
@@ -63,6 +63,7 @@
                     android:padding="8dp"
                     android:src="@android:drawable/ic_popup_sync"
                     android:tint="@android:color/white" />
+
             </LinearLayout>
 
             <ProgressBar

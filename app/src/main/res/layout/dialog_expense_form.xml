@@ -13,20 +13,20 @@
             android:id="@+id/etName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Name *"/>
+            android:hint="@string/expense_name"/>
 
         <EditText
             android:id="@+id/etNote"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Note"
+            android:hint="@string/expense_note"
             android:layout_marginTop="10dp"/>
 
         <EditText
             android:id="@+id/etAmount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Amount *"
+            android:hint="@string/expense_amount"
             android:inputType="numberDecimal"
             android:layout_marginTop="10dp"/>
 

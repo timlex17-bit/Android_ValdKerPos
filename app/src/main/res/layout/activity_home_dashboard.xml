@@ -31,7 +31,7 @@
                 android:id="@+id/tvAppBrand"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="ValdKerPOS"
+                android:text="@string/app_name"
                 android:textStyle="bold"
                 android:textSize="17sp"
                 android:textColor="#FFFFFF"
@@ -49,7 +49,7 @@
                 android:minWidth="0dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="Logout"
+                android:text="@string/logout"
                 android:textAllCaps="false"
                 android:textStyle="bold"
                 android:textSize="12sp"
@@ -84,7 +84,7 @@
                     android:padding="11dp"
                     android:scaleType="centerInside"
                     android:src="@drawable/ic_logovaldker"
-                    android:contentDescription="Logo"/>
+                    android:contentDescription="@string/app_logo"/>
             </com.google.android.material.card.MaterialCardView>
 
             <TextView
@@ -92,7 +92,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
-                android:text="Ola"
+                android:text="@string/dashboard_hello"
                 android:textStyle="bold"
                 android:textSize="22sp"
                 android:textColor="#FFFFFF"
@@ -108,7 +108,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
                 android:layout_marginTop="4dp"
-                android:text="Hili módulu atu kontinua servisu"
+                android:text="@string/select_a_module_to_continue"
                 android:textSize="13sp"
                 android:textColor="#EAF0FF"
                 android:maxLines="2"
@@ -147,7 +147,7 @@
                             android:id="@+id/tvRevenueTitle"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:text="Rendimentu Ohin"
+                            android:text="@string/today_sales"
                             android:textSize="11sp"
                             android:textColor="#EAF0FF"
                             android:maxLines="1"
@@ -189,7 +189,7 @@
                             android:id="@+id/tvExpenseTitle"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:text="Despeza Ohin"
+                            android:text="@string/today_expenses"
                             android:textSize="11sp"
                             android:textColor="#EAF0FF"
                             android:gravity="center"
@@ -219,7 +219,7 @@
                             android:id="@+id/tvNetTitle"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:text="Lukru Líkiu"
+                            android:text="@string/net_profit"
                             android:textSize="11sp"
                             android:textColor="#EAF0FF"
                             android:gravity="end"
@@ -260,7 +260,7 @@
                             android:id="@+id/tvSumTitle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Shift Today"
+                            android:text="@string/shift_today"
                             android:textStyle="bold"
                             android:textSize="14sp"
                             android:textColor="#FFFFFF"
@@ -284,7 +284,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="Total activities recorded today"
+                            android:text="@string/shift_summary_hint"
                             android:textSize="12sp"
                             android:textColor="#EAF0FF"
                             android:maxLines="1"
@@ -292,9 +292,11 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toBottomOf="@id/tvSumValue"/>
+
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
                 </FrameLayout>
+
             </com.google.android.material.card.MaterialCardView>
 
         </androidx.constraintlayout.widget.ConstraintLayout>

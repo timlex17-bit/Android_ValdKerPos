@@ -141,6 +141,7 @@ public class ProductRepository {
                               int supplierId,
                               @NonNull String itemType,
                               boolean isActive,
+                              boolean trackStock,
                               @Nullable Uri imageUri,
                               @NonNull ItemCallback cb) {
 
@@ -205,6 +206,7 @@ public class ProductRepository {
 
                 params.put("item_type", safe(itemType));
                 params.put("is_active", String.valueOf(isActive));
+                params.put("track_stock", String.valueOf(trackStock));
 
                 Log.d(TAG, "CREATE params="
                         + " name=" + name
@@ -213,7 +215,8 @@ public class ProductRepository {
                         + ", unit_id=" + unitId
                         + ", supplier_id=" + supplierId
                         + ", item_type=" + itemType
-                        + ", is_active=" + isActive);
+                        + ", is_active=" + isActive
+                        + ", track_stock=" + trackStock);
 
                 return params;
             }
@@ -269,6 +272,7 @@ public class ProductRepository {
                               int supplierId,
                               @NonNull String itemType,
                               boolean isActive,
+                              boolean trackStock,
                               @Nullable Uri imageUri,
                               @NonNull ItemCallback cb) {
 
@@ -332,6 +336,7 @@ public class ProductRepository {
 
                 params.put("item_type", safe(itemType));
                 params.put("is_active", String.valueOf(isActive));
+                params.put("track_stock", String.valueOf(trackStock));
 
                 Log.d(TAG, "UPDATE params="
                         + " productId=" + productId
@@ -340,7 +345,8 @@ public class ProductRepository {
                         + ", unit_id=" + unitId
                         + ", supplier_id=" + supplierId
                         + ", item_type=" + itemType
-                        + ", is_active=" + isActive);
+                        + ", is_active=" + isActive
+                        + ", track_stock=" + trackStock);
 
                 return params;
             }

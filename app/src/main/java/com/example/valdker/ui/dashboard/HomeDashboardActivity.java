@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,16 +18,17 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
+import androidx.core.os.LocaleListCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.core.view.WindowCompat;
-import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -41,13 +43,12 @@ import com.example.valdker.network.ApiClient;
 import com.example.valdker.network.ApiConfig;
 import com.example.valdker.repositories.ShopRepository;
 import com.example.valdker.shop.ShopEvents;
+import com.example.valdker.ui.BankAccountActivity;
 import com.example.valdker.ui.expenses.ExpensesFragment;
 import com.example.valdker.ui.inventorycount.InventoryCountsFragment;
 import com.example.valdker.ui.orders.OrdersFragment;
 import com.example.valdker.ui.ownerchat.OwnerChatActivity;
 import com.example.valdker.ui.reports.ReportsFragment;
-import com.example.valdker.ui.BankAccountActivity;
-import com.example.valdker.utils.DeviceUtil;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 
@@ -80,12 +81,10 @@ public class HomeDashboardActivity extends AppCompatActivity {
     private static final String BS_STOCK_ADJUSTMENTS = "stock_adjustments";
     private static final String BS_STOCK_MOVEMENTS = "stock_movements";
     private static final String BS_BANK_ACCOUNTS = "bank_accounts";
+    private static final String BS_PURCHASES = "purchases";
 
-    private static final String ENDPOINT_NET_INCOME_TODAY =
-            "api/reports/net-income-today/";
-
-    private static final String ENDPOINT_SHIFTS =
-            "api/shifts/";
+    private static final String ENDPOINT_NET_INCOME_TODAY = "api/reports/net-income-today/";
+    private static final String ENDPOINT_SHIFTS = "api/shifts/";
 
     private final NumberFormat usd = NumberFormat.getCurrencyInstance(Locale.US);
 
@@ -127,8 +126,6 @@ public class HomeDashboardActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             logd("Shop updated broadcast received. Refreshing header.");
-//            loadShopHeader();
-
             if (session != null && session.canViewReports()) {
                 loadTodayNetIncome();
             }
@@ -196,6 +193,13 @@ public class HomeDashboardActivity extends AppCompatActivity {
         });
     }
 
+    private void applySavedLanguageCompat() {
+        SharedPreferences prefs = getSharedPreferences("app_settings", MODE_PRIVATE);
+        String languageCode = prefs.getString("app_language", "tet");
+        LocaleListCompat locales = LocaleListCompat.forLanguageTags(languageCode);
+        AppCompatDelegate.setApplicationLocales(locales);
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -212,7 +216,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
 
         if (controller != null) {
             controller.show(WindowInsetsCompat.Type.statusBars());
-            controller.setAppearanceLightStatusBars(false); // icon putih
+            controller.setAppearanceLightStatusBars(false);
         }
 
         getWindow().setStatusBarColor(Color.TRANSPARENT);
@@ -224,7 +228,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
 
         if (controller != null) {
             controller.show(WindowInsetsCompat.Type.statusBars());
-            controller.setAppearanceLightStatusBars(false); // tetap putih, cocok utk header biru/cyan fragment
+            controller.setAppearanceLightStatusBars(false);
         }
 
         getWindow().setStatusBarColor(Color.TRANSPARENT);
@@ -238,7 +242,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
 
         if (controller != null) {
             controller.show(WindowInsetsCompat.Type.statusBars());
-            controller.setAppearanceLightStatusBars(false); // icon putih
+            controller.setAppearanceLightStatusBars(false);
         }
 
         getWindow().setStatusBarColor(Color.TRANSPARENT);
@@ -404,10 +408,9 @@ public class HomeDashboardActivity extends AppCompatActivity {
         String username = session.getUsername();
         if (username == null) username = "";
         username = username.trim();
-        if (username.isEmpty()) username = "User";
+        if (username.isEmpty()) username = getString(R.string.label_user);
 
-        String text = String.format(Locale.US, "Ola, %s", username);
-        tvHello.setText(text);
+        tvHello.setText(getString(R.string.dashboard_welcome_user, username));
     }
 
     private void loadShopHeader() {
@@ -420,7 +423,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
                 if (tvBrand != null) {
                     String title = (shop.name != null && !shop.name.trim().isEmpty())
                             ? shop.name.trim()
-                            : "ValdKer POS";
+                            : getString(R.string.app_name);
                     tvBrand.setText(title);
                 }
 
@@ -488,7 +491,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
         String token = session.getToken();
         if (token == null || token.trim().isEmpty()) return;
 
-        if (tvSumHint != null) tvSumHint.setText("Opening Cash");
+        if (tvSumHint != null) tvSumHint.setText(R.string.label_opening_cash);
         if (tvSumValue != null) tvSumValue.setText("…");
 
         String shiftsUrl = ApiConfig.url(session, ENDPOINT_SHIFTS);
@@ -568,7 +571,11 @@ public class HomeDashboardActivity extends AppCompatActivity {
                 err -> {
                     logw("net-income error: " + err);
                     setSummaryUnavailable();
-                    Toast.makeText(this, "Owner summary not accessible (401/403)", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(
+                            this,
+                            getString(R.string.msg_owner_summary_not_accessible),
+                            Toast.LENGTH_SHORT
+                    ).show();
                 }
         ) {
             @Override
@@ -601,7 +608,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
             }
 
             if (tvSumHint != null) {
-                tvSumHint.setText("Opening Cash");
+                tvSumHint.setText(R.string.label_opening_cash);
             }
         } else {
             if (layoutOwnerSummary != null) {
@@ -666,17 +673,16 @@ public class HomeDashboardActivity extends AppCompatActivity {
         logd("Menu clicked: " + item.title + " (id=" + item.id + ")");
 
         if (item.id == DashboardItem.ID_REPORTS && !session.canViewReports()) {
-            Toast.makeText(this, "Access denied", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.msg_permission_denied), Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (item.id == DashboardItem.ID_SETTINGS && !session.canManageSettings()) {
-            Toast.makeText(this, "Access denied", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.msg_permission_denied), Toast.LENGTH_SHORT).show();
             return;
         }
 
         switch (item.id) {
-
             case DashboardItem.ID_POS:
                 openPos();
                 break;
@@ -698,7 +704,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
                 break;
 
             case DashboardItem.ID_PURCHASES:
-                openFragmentSafe(new com.example.valdker.ui.purchases.PurchasesFragment(), "BS_PURCHASES");
+                openFragmentSafe(new com.example.valdker.ui.purchases.PurchasesFragment(), BS_PURCHASES);
                 break;
 
             case DashboardItem.ID_CATEGORIES:
@@ -767,7 +773,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
 
     private void openFragmentSafe(@NonNull Fragment fragment, @NonNull String backstackTag) {
         if (fragmentContainer == null) {
-            Toast.makeText(this, "UI container missing in layout", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.msg_ui_container_missing), Toast.LENGTH_SHORT).show();
             logw("Cannot open fragment. fragmentContainer is null.");
             return;
         }
@@ -945,49 +951,49 @@ public class HomeDashboardActivity extends AppCompatActivity {
         List<DashboardItem> out = new ArrayList<>();
 
         if (owner) {
-            out.add(new DashboardItem(DashboardItem.ID_REPORTS, "RELATÓRIU", "Analiza rendimentu", R.drawable.ic_report));
-            out.add(new DashboardItem(DashboardItem.ID_STOCK_MOVEMENTS, "MOVIMENTU STOK", "Movimentu stok", R.drawable.ic_stockmovement));
-            out.add(new DashboardItem(DashboardItem.ID_INVENTORY_COUNTS, "KONTÁJEN STOK", "Stock opname", R.drawable.ic_report));
-            out.add(new DashboardItem(DashboardItem.ID_SETTINGS, "KONFIGURASAUN", "Atu regula aplikasaun", R.drawable.ic_settings));
-            out.add(new DashboardItem(DashboardItem.ID_BANK_ACCOUNTS, "BANKU", "Jere konta bank loja", R.drawable.ic_bank));
-            out.add(new DashboardItem(DashboardItem.ID_ORDERS, "ORDEM", "Haree istória tranzasaun", R.drawable.ic_receipt));
-            out.add(new DashboardItem(DashboardItem.ID_EXPENSE, "DESPEZA", "Rejistu gastu negósiu", R.drawable.ic_expense));
-            out.add(new DashboardItem(DashboardItem.ID_CUSTOMERS, "KLIENTE", "Jere no haree dadus kliente", R.drawable.ic_people));
-            out.add(new DashboardItem(DashboardItem.ID_SUPPLIERS, "FORNESEDÓR", "Lista no jere fornesedór", R.drawable.ic_store));
-            out.add(new DashboardItem(DashboardItem.ID_PURCHASES, "KOMPRA", "Rejistu sosa husi fornesedór", R.drawable.ic_purchase));
-            out.add(new DashboardItem(DashboardItem.ID_PRODUCTS, "PRODUTU", "Stok, presu no detallu produtu", R.drawable.ic_box));
-            out.add(new DashboardItem(DashboardItem.ID_CATEGORIES, "KATEGORIA", "Jere kategoria produtu", R.drawable.ic_categories));
-            out.add(new DashboardItem(DashboardItem.ID_UNITS, "UNIDADE", "Jere unidade produtu", R.drawable.ic_units));
-            out.add(new DashboardItem(DashboardItem.ID_PRODUCT_RETURNS, "RETORNU PRODUTU", "Return produtu", R.drawable.ic_return));
-            out.add(new DashboardItem(DashboardItem.ID_STOCK_ADJUSTMENTS, "AJUSTA STOK", "Ajusta stok manual", R.drawable.ic_report));
+            out.add(new DashboardItem(DashboardItem.ID_REPORTS, getString(R.string.menu_reports), getString(R.string.menu_reports_desc), R.drawable.ic_report));
+            out.add(new DashboardItem(DashboardItem.ID_STOCK_MOVEMENTS, getString(R.string.menu_stock_movements), getString(R.string.menu_stock_movements_desc), R.drawable.ic_stockmovement));
+            out.add(new DashboardItem(DashboardItem.ID_INVENTORY_COUNTS, getString(R.string.menu_inventory_counts), getString(R.string.menu_inventory_counts_desc), R.drawable.ic_report));
+            out.add(new DashboardItem(DashboardItem.ID_SETTINGS, getString(R.string.menu_settings), getString(R.string.menu_settings_desc), R.drawable.ic_settings));
+            out.add(new DashboardItem(DashboardItem.ID_BANK_ACCOUNTS, getString(R.string.menu_bank_accounts), getString(R.string.menu_bank_accounts_desc), R.drawable.ic_bank));
+            out.add(new DashboardItem(DashboardItem.ID_ORDERS, getString(R.string.menu_orders), getString(R.string.menu_orders_desc), R.drawable.ic_receipt));
+            out.add(new DashboardItem(DashboardItem.ID_EXPENSE, getString(R.string.menu_expenses), getString(R.string.menu_expenses_desc), R.drawable.ic_expense));
+            out.add(new DashboardItem(DashboardItem.ID_CUSTOMERS, getString(R.string.menu_customers), getString(R.string.menu_customers_desc), R.drawable.ic_people));
+            out.add(new DashboardItem(DashboardItem.ID_SUPPLIERS, getString(R.string.menu_suppliers), getString(R.string.menu_suppliers_desc), R.drawable.ic_store));
+            out.add(new DashboardItem(DashboardItem.ID_PURCHASES, getString(R.string.menu_purchases), getString(R.string.menu_purchases_desc), R.drawable.ic_purchase));
+            out.add(new DashboardItem(DashboardItem.ID_PRODUCTS, getString(R.string.menu_products), getString(R.string.menu_products_desc), R.drawable.ic_box));
+            out.add(new DashboardItem(DashboardItem.ID_CATEGORIES, getString(R.string.menu_categories), getString(R.string.menu_categories_desc), R.drawable.ic_categories));
+            out.add(new DashboardItem(DashboardItem.ID_UNITS, getString(R.string.menu_units), getString(R.string.menu_units_desc), R.drawable.ic_units));
+            out.add(new DashboardItem(DashboardItem.ID_PRODUCT_RETURNS, getString(R.string.menu_product_returns), getString(R.string.menu_product_returns_desc), R.drawable.ic_return));
+            out.add(new DashboardItem(DashboardItem.ID_STOCK_ADJUSTMENTS, getString(R.string.menu_stock_adjustments), getString(R.string.menu_stock_adjustments_desc), R.drawable.ic_report));
             return out;
         }
 
         if (manager) {
-            out.add(new DashboardItem(DashboardItem.ID_CUSTOMERS, "KLIENTE", "Jere no haree dadus kliente", R.drawable.ic_people));
-            out.add(new DashboardItem(DashboardItem.ID_SUPPLIERS, "FORNESEDÓR", "Lista no jere fornesedór", R.drawable.ic_store));
-            out.add(new DashboardItem(DashboardItem.ID_PURCHASES, "KOMPRA", "Rejistu sosa husi fornesedór", R.drawable.ic_purchase));
-            out.add(new DashboardItem(DashboardItem.ID_PRODUCTS, "PRODUTU", "Stok, presu no detallu produtu", R.drawable.ic_box));
-            out.add(new DashboardItem(DashboardItem.ID_CATEGORIES, "KATEGORIA", "Jere kategoria produtu", R.drawable.ic_categories));
-            out.add(new DashboardItem(DashboardItem.ID_UNITS, "UNIDADE", "Jere unidade produtu", R.drawable.ic_units));
-            out.add(new DashboardItem(DashboardItem.ID_POS, "POS", "Tranzasaun fa'an agora", R.drawable.ic_pos));
-            out.add(new DashboardItem(DashboardItem.ID_EXPENSE, "DESPEZA", "Rejistu gastu negósiu", R.drawable.ic_expense));
-            out.add(new DashboardItem(DashboardItem.ID_ORDERS, "ORDEM", "Haree istória tranzasaun", R.drawable.ic_receipt));
-            out.add(new DashboardItem(DashboardItem.ID_PRODUCT_RETURNS, "RETORNU PRODUTU", "Return produtu", R.drawable.ic_return));
-            out.add(new DashboardItem(DashboardItem.ID_INVENTORY_COUNTS, "KONTÁJEN STOK", "Stock opname", R.drawable.ic_report));
-            out.add(new DashboardItem(DashboardItem.ID_STOCK_ADJUSTMENTS, "AJUSTA STOK", "Ajusta stok manual", R.drawable.ic_report));
-            out.add(new DashboardItem(DashboardItem.ID_STOCK_MOVEMENTS, "MOVIMENTU STOK", "Movimentu stok", R.drawable.ic_stockmovement));
+            out.add(new DashboardItem(DashboardItem.ID_CUSTOMERS, getString(R.string.menu_customers), getString(R.string.menu_customers_desc), R.drawable.ic_people));
+            out.add(new DashboardItem(DashboardItem.ID_SUPPLIERS, getString(R.string.menu_suppliers), getString(R.string.menu_suppliers_desc), R.drawable.ic_store));
+            out.add(new DashboardItem(DashboardItem.ID_PURCHASES, getString(R.string.menu_purchases), getString(R.string.menu_purchases_desc), R.drawable.ic_purchase));
+            out.add(new DashboardItem(DashboardItem.ID_PRODUCTS, getString(R.string.menu_products), getString(R.string.menu_products_desc), R.drawable.ic_box));
+            out.add(new DashboardItem(DashboardItem.ID_CATEGORIES, getString(R.string.menu_categories), getString(R.string.menu_categories_desc), R.drawable.ic_categories));
+            out.add(new DashboardItem(DashboardItem.ID_UNITS, getString(R.string.menu_units), getString(R.string.menu_units_desc), R.drawable.ic_units));
+            out.add(new DashboardItem(DashboardItem.ID_POS, getString(R.string.menu_pos), getString(R.string.menu_pos_desc), R.drawable.ic_pos));
+            out.add(new DashboardItem(DashboardItem.ID_EXPENSE, getString(R.string.menu_expenses), getString(R.string.menu_expenses_desc), R.drawable.ic_expense));
+            out.add(new DashboardItem(DashboardItem.ID_ORDERS, getString(R.string.menu_orders), getString(R.string.menu_orders_desc), R.drawable.ic_receipt));
+            out.add(new DashboardItem(DashboardItem.ID_PRODUCT_RETURNS, getString(R.string.menu_product_returns), getString(R.string.menu_product_returns_desc), R.drawable.ic_return));
+            out.add(new DashboardItem(DashboardItem.ID_INVENTORY_COUNTS, getString(R.string.menu_inventory_counts), getString(R.string.menu_inventory_counts_desc), R.drawable.ic_report));
+            out.add(new DashboardItem(DashboardItem.ID_STOCK_ADJUSTMENTS, getString(R.string.menu_stock_adjustments), getString(R.string.menu_stock_adjustments_desc), R.drawable.ic_report));
+            out.add(new DashboardItem(DashboardItem.ID_STOCK_MOVEMENTS, getString(R.string.menu_stock_movements), getString(R.string.menu_stock_movements_desc), R.drawable.ic_stockmovement));
 
             if (session.canViewReports()) {
-                out.add(new DashboardItem(DashboardItem.ID_REPORTS, "RELATÓRIU", "Analiza rendimentu negósiu", R.drawable.ic_report));
+                out.add(new DashboardItem(DashboardItem.ID_REPORTS, getString(R.string.menu_reports), getString(R.string.menu_reports_desc), R.drawable.ic_report));
             }
 
             return out;
         }
 
-        out.add(new DashboardItem(DashboardItem.ID_POS, "POS", "Tranzasaun fa'an agora", R.drawable.ic_pos));
-        out.add(new DashboardItem(DashboardItem.ID_ORDERS, "ORDEM", "Haree istória tranzasaun", R.drawable.ic_receipt));
-        out.add(new DashboardItem(DashboardItem.ID_CUSTOMERS, "KLIENTE", "Jere no haree dadus kliente", R.drawable.ic_people));
+        out.add(new DashboardItem(DashboardItem.ID_POS, getString(R.string.menu_pos), getString(R.string.menu_pos_desc), R.drawable.ic_pos));
+        out.add(new DashboardItem(DashboardItem.ID_ORDERS, getString(R.string.menu_orders), getString(R.string.menu_orders_desc), R.drawable.ic_receipt));
+        out.add(new DashboardItem(DashboardItem.ID_CUSTOMERS, getString(R.string.menu_customers), getString(R.string.menu_customers_desc), R.drawable.ic_people));
         return out;
     }
 

@@ -200,10 +200,6 @@ public class CategoriesFragment extends BaseFragment {
         tvTitle = view.findViewById(R.id.tvTitle);
         etSearch = view.findViewById(R.id.etSearch);
 
-        if (tvTitle != null) {
-            tvTitle.setText("Categories");
-        }
-
         InsetsHelper.applyRecyclerBottomInsets(view, rv, TAG);
         applyFabBottomInset(fabAdd, 56);
 

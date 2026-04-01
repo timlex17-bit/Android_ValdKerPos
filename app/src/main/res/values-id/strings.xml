@@ -1,0 +1,657 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="settings_language_desc">Pilih bahasa aplikasi untuk pengujian</string>
+
+    <string name="language_tetun">Tetun</string>
+    <string name="language_english">Bahasa Inggris</string>
+    <string name="language_indonesia">Bahasa Indonesia</string>
+    <string name="language_mandarin">Bahasa Mandarin</string>
+
+    <string name="msg_language_changed">Bahasa berhasil diubah</string>
+
+    <string name="msg_owner_summary_not_accessible">Ringkasan owner tidak dapat diakses (401/403)</string>
+    <string name="msg_ui_container_missing">Container UI tidak ditemukan di layout</string>
+
+    <!-- ================================================== -->
+    <!-- APP -->
+    <!-- ================================================== -->
+    <string name="app_name">ValdKerPOS</string>
+    <string name="app_tagline">Sistem POS untuk bisnis modern</string>
+    <string name="app_version">Versi</string>
+    <string name="app_powered_by">Didukung oleh ValdKer</string>
+    <string name="app_brand">ValdKerPOS</string>
+    <string name="app_logo">Logo aplikasi</string>
+    <string name="welcome">Selamat datang</string>
+    <string name="welcome_back">Selamat datang kembali</string>
+    <string name="logout">Keluar</string>
+    <string name="profile">Profil</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="home">Beranda</string>
+
+    <!-- ================================================== -->
+    <!-- AUTH / LOGIN -->
+    <!-- ================================================== -->
+    <string name="login_welcome">Selamat datang kembali</string>
+    <string name="login_btn">Masuk</string>
+    <string name="login_help_text">Masuk menggunakan kode toko, username, dan password untuk mengakses toko yang benar.</string>
+    <string name="login_title">Masuk ke toko Anda</string>
+    <string name="login_subtitle">Gunakan kode toko, username, dan password untuk melanjutkan</string>
+    <string name="login_multi_tenant">Multi-Tenant</string>
+    <string name="login_shop_code">Kode Toko</string>
+    <string name="login_username">Username</string>
+    <string name="login_password">Password</string>
+    <string name="login_button">Masuk</string>
+    <string name="login_demo">Isi Data Demo</string>
+    <string name="login_remember_me">Ingat saya</string>
+    <string name="login_forgot_password">Lupa password?</string>
+    <string name="login_invalid_credentials">Data login tidak valid</string>
+    <string name="login_failed">Login gagal</string>
+    <string name="login_success">Login berhasil</string>
+    <string name="hint_shop_code">Contoh: WFOUR</string>
+    <string name="hint_username">Masukkan username</string>
+    <string name="hint_password">Masukkan password</string>
+    <string name="show_password">Tampilkan password</string>
+    <string name="hide_password">Sembunyikan password</string>
+
+    <!-- ================================================== -->
+    <!-- DASHBOARD EXTRA -->
+    <!-- ================================================== -->
+    <string name="dashboard_hello">Halo</string>
+    <string name="dashboard_welcome_user">Halo, %1$s</string>
+    <string name="dashboard_subtitle">Pilih modul untuk melanjutkan</string>
+    <string name="select_a_module_to_continue">Pilih modul untuk melanjutkan</string>
+    <string name="today_sales">Penjualan Hari Ini</string>
+    <string name="today_expenses">Pengeluaran Hari Ini</string>
+    <string name="net_profit">Laba Bersih</string>
+    <string name="shift_today">Shift Hari Ini</string>
+    <string name="shift_summary_hint">Total aktivitas yang tercatat hari ini</string>
+    <string name="dashboard_summary">Ringkasan</string>
+    <string name="dashboard_quick_access">Akses Cepat</string>
+    <string name="dashboard_overview">Ikhtisar</string>
+    <string name="dashboard_no_modules">Tidak ada modul tersedia</string>
+    <string name="dashboard_loading_modules">Memuat modul dashboard...</string>
+    <string name="view_all">Lihat Semua</string>
+    <string name="see_more">Lihat Selengkapnya</string>
+
+    <!-- ================================================== -->
+    <!-- DASHBOARD TILE / CARD -->
+    <!-- ================================================== -->
+    <string name="tile_open_module">Buka modul</string>
+    <string name="tile_module_icon">Ikon modul</string>
+    <string name="tile_reports">Laporan</string>
+    <string name="tile_inventory">Inventori</string>
+    <string name="tile_sales">Penjualan</string>
+    <string name="tile_finance">Keuangan</string>
+
+    <!-- ================================================== -->
+    <!-- BOTTOM NAVIGATION -->
+    <!-- ================================================== -->
+    <string name="nav_home">Beranda</string>
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_pos">Kasir</string>
+    <string name="nav_orders">Pesanan</string>
+    <string name="nav_profile">Profil</string>
+    <string name="nav_settings">Pengaturan</string>
+    <string name="nav_more">Lainnya</string>
+
+    <!-- ================================================== -->
+    <!-- DASHBOARD FILTER / STATE -->
+    <!-- ================================================== -->
+    <string name="filter_today">Hari ini</string>
+    <string name="filter_this_week">Minggu ini</string>
+    <string name="filter_this_month">Bulan ini</string>
+    <string name="filter_custom_range">Rentang khusus</string>
+    <string name="state_online">Online</string>
+    <string name="state_offline">Offline</string>
+    <string name="state_syncing">Sinkronisasi...</string>
+    <string name="state_last_updated">Terakhir diperbarui</string>
+
+    <!-- ================================================== -->
+    <!-- DASHBOARD QUICK INFO -->
+    <!-- ================================================== -->
+    <string name="info_total_sales">Total Penjualan</string>
+    <string name="info_total_expenses">Total Pengeluaran</string>
+    <string name="info_total_orders">Total Pesanan</string>
+    <string name="info_total_customers">Total Pelanggan</string>
+    <string name="info_total_products">Total Produk</string>
+    <string name="info_total_profit">Total Laba</string>
+
+    <!-- ================================================== -->
+    <!-- CONTENT DESCRIPTIONS -->
+    <!-- ================================================== -->
+    <string name="cd_logout">Keluar</string>
+    <string name="cd_dashboard_logo">Logo dashboard</string>
+    <string name="cd_dashboard_summary">Ringkasan dashboard</string>
+    <string name="cd_bottom_navigation">Navigasi bawah</string>
+    <string name="cd_dashboard_list">Daftar modul dashboard</string>
+
+    <!-- ================================================== -->
+    <!-- COMMON ACTIONS -->
+    <!-- ================================================== -->
+    <string name="action_add">Tambah</string>
+    <string name="action_create">Buat</string>
+    <string name="action_save">Simpan</string>
+    <string name="action_update">Perbarui</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_delete">Hapus</string>
+    <string name="action_remove">Hapus</string>
+    <string name="action_cancel">Batal</string>
+    <string name="action_close">Tutup</string>
+    <string name="action_back">Kembali</string>
+    <string name="action_next">Berikutnya</string>
+    <string name="action_done">Selesai</string>
+    <string name="action_search">Cari</string>
+    <string name="action_filter">Filter</string>
+    <string name="action_reset">Reset</string>
+    <string name="action_clear">Bersihkan</string>
+    <string name="action_refresh">Muat ulang</string>
+    <string name="action_confirm">Konfirmasi</string>
+    <string name="action_submit">Kirim</string>
+    <string name="action_retry">Coba lagi</string>
+    <string name="action_yes">Ya</string>
+    <string name="action_no">Tidak</string>
+    <string name="action_print">Cetak</string>
+    <string name="action_reprint">Cetak ulang</string>
+    <string name="action_checkout">Checkout</string>
+    <string name="action_pay">Bayar</string>
+    <string name="action_scan">Scan</string>
+    <string name="action_upload">Unggah</string>
+    <string name="action_download">Unduh</string>
+    <string name="action_export">Ekspor</string>
+    <string name="action_import">Impor</string>
+    <string name="action_view">Lihat</string>
+    <string name="action_open">Buka</string>
+    <string name="action_apply">Terapkan</string>
+    <string name="action_continue">Lanjutkan</string>
+
+    <!-- ================================================== -->
+    <!-- COMMON LABELS -->
+    <!-- ================================================== -->
+    <string name="label_name">Nama</string>
+    <string name="label_title">Judul</string>
+    <string name="label_code">Kode</string>
+    <string name="label_sku">SKU</string>
+    <string name="label_barcode">Barcode</string>
+    <string name="label_phone">Telepon</string>
+    <string name="label_email">Email</string>
+    <string name="label_address">Alamat</string>
+    <string name="label_date">Tanggal</string>
+    <string name="label_time">Waktu</string>
+    <string name="label_status">Status</string>
+    <string name="label_note">Catatan</string>
+    <string name="label_notes">Catatan</string>
+    <string name="label_description">Deskripsi</string>
+    <string name="label_total">Total</string>
+    <string name="label_subtotal">Subtotal</string>
+    <string name="label_discount">Diskon</string>
+    <string name="label_tax">Pajak</string>
+    <string name="label_price">Harga</string>
+    <string name="label_cost_price">Harga Modal</string>
+    <string name="label_selling_price">Harga Jual</string>
+    <string name="label_quantity">Jumlah</string>
+    <string name="label_stock">Stok</string>
+    <string name="label_old_stock">Stok Lama</string>
+    <string name="label_new_stock">Stok Baru</string>
+    <string name="label_min_stock">Stok Minimum</string>
+    <string name="label_category">Kategori</string>
+    <string name="label_unit">Satuan</string>
+    <string name="label_supplier">Supplier</string>
+    <string name="label_customer">Pelanggan</string>
+    <string name="label_product">Produk</string>
+    <string name="label_products">Produk</string>
+    <string name="label_payment_method">Metode Pembayaran</string>
+    <string name="label_invoice">Faktur</string>
+    <string name="label_invoice_id">ID Faktur</string>
+    <string name="label_reason">Alasan</string>
+    <string name="label_role">Peran</string>
+    <string name="label_shop">Toko</string>
+    <string name="label_store">Toko</string>
+    <string name="label_search">Cari</string>
+    <string name="label_from">Dari</string>
+    <string name="label_to">Sampai</string>
+    <string name="label_amount">Jumlah</string>
+    <string name="label_type">Tipe</string>
+    <string name="label_method">Metode</string>
+    <string name="label_cashier">Kasir</string>
+    <string name="label_user">Pengguna</string>
+    <string name="label_username">Username</string>
+    <string name="label_password">Password</string>
+    <string name="label_location">Lokasi</string>
+    <string name="label_store_name">Nama Toko</string>
+    <string name="label_store_address">Alamat Toko</string>
+    <string name="label_currency">Mata Uang</string>
+    <string name="label_language">Bahasa</string>
+    <string name="label_paper_width">Lebar Kertas</string>
+    <string name="label_opening_cash">Kas Awal</string>
+    <string name="label_closing_cash">Kas Akhir</string>
+    <string name="label_expected_cash">Kas Seharusnya</string>
+    <string name="label_difference">Selisih</string>
+    <string name="label_received">Diterima</string>
+    <string name="label_change">Kembalian</string>
+    <string name="label_cart">Keranjang</string>
+    <string name="label_items">Item</string>
+    <string name="label_actions">Aksi</string>
+
+    <!-- ================================================== -->
+    <!-- HINTS -->
+    <!-- ================================================== -->
+    <string name="hint_search_here">Cari di sini...</string>
+    <string name="hint_search_product">Cari produk...</string>
+    <string name="hint_search_customer">Cari pelanggan...</string>
+    <string name="hint_search_supplier">Cari supplier...</string>
+    <string name="hint_search_order">Cari pesanan...</string>
+    <string name="hint_search_purchase">Cari pembelian...</string>
+    <string name="hint_search_inventory">Cari data inventaris...</string>
+    <string name="hint_product_name">Masukkan nama produk</string>
+    <string name="hint_product_code">Masukkan kode produk</string>
+    <string name="hint_product_barcode">Masukkan barcode</string>
+    <string name="hint_customer_name">Masukkan nama pelanggan</string>
+    <string name="hint_supplier_name">Masukkan nama supplier</string>
+    <string name="hint_note">Masukkan catatan</string>
+    <string name="hint_amount">Masukkan jumlah</string>
+    <string name="hint_reason">Masukkan alasan</string>
+
+    <!-- ================================================== -->
+    <!-- STATUS -->
+    <!-- ================================================== -->
+    <string name="status_active">Aktif</string>
+    <string name="status_inactive">Tidak aktif</string>
+    <string name="status_pending">Menunggu</string>
+    <string name="status_completed">Selesai</string>
+    <string name="status_cancelled">Dibatalkan</string>
+    <string name="status_paid">Lunas</string>
+    <string name="status_unpaid">Belum lunas</string>
+    <string name="status_draft">Draft</string>
+    <string name="status_open">Terbuka</string>
+    <string name="status_closed">Ditutup</string>
+    <string name="status_success">Berhasil</string>
+    <string name="status_failed">Gagal</string>
+
+    <!-- ================================================== -->
+    <!-- MESSAGES -->
+    <!-- ================================================== -->
+    <string name="msg_loading">Memuat...</string>
+    <string name="msg_no_data">Data tidak ditemukan</string>
+    <string name="msg_empty_list">Daftar kosong</string>
+    <string name="msg_save_success">Data berhasil disimpan</string>
+    <string name="msg_update_success">Data berhasil diperbarui</string>
+    <string name="msg_delete_success">Data berhasil dihapus</string>
+    <string name="msg_create_success">Data berhasil dibuat</string>
+    <string name="msg_action_failed">Operasi gagal</string>
+    <string name="msg_network_error">Masalah koneksi internet</string>
+    <string name="msg_server_error">Kesalahan server</string>
+    <string name="msg_timeout_error">Koneksi timeout</string>
+    <string name="msg_confirm_delete">Apakah Anda yakin ingin menghapus data ini?</string>
+    <string name="msg_required_field">Silakan isi semua field yang wajib</string>
+    <string name="msg_form_invalid">Silakan periksa kembali field formulir</string>
+    <string name="msg_data_not_found">Data tidak ditemukan</string>
+    <string name="msg_feature_coming_soon">Fitur ini akan segera tersedia</string>
+    <string name="msg_permission_denied">Anda tidak memiliki izin untuk mengakses fitur ini</string>
+    <string name="msg_session_expired">Sesi Anda telah berakhir. Silakan login kembali</string>
+    <string name="msg_no_internet">Tidak ada koneksi internet</string>
+    <string name="msg_try_again">Silakan coba lagi</string>
+    <string name="msg_select_item">Silakan pilih item</string>
+    <string name="msg_select_customer">Silakan pilih pelanggan</string>
+    <string name="msg_select_supplier">Silakan pilih supplier</string>
+    <string name="msg_select_product">Silakan pilih produk</string>
+    <string name="msg_cart_empty">Keranjang kosong</string>
+    <string name="msg_checkout_success">Checkout berhasil</string>
+    <string name="msg_payment_success">Pembayaran berhasil</string>
+    <string name="msg_payment_failed">Pembayaran gagal</string>
+    <string name="msg_backup_success">Backup berhasil diselesaikan</string>
+    <string name="msg_restore_success">Restore berhasil diselesaikan</string>
+    <string name="msg_import_success">Import berhasil diselesaikan</string>
+    <string name="msg_export_success">Export berhasil diselesaikan</string>
+
+    <!-- ================================================== -->
+    <!-- VALIDATION / ERRORS -->
+    <!-- ================================================== -->
+    <string name="error_required">Field ini wajib diisi</string>
+    <string name="error_invalid_email">Alamat email tidak valid</string>
+    <string name="error_invalid_phone">Nomor telepon tidak valid</string>
+    <string name="error_invalid_price">Harga tidak valid</string>
+    <string name="error_invalid_stock">Nilai stok tidak valid</string>
+    <string name="error_invalid_quantity">Jumlah tidak valid</string>
+    <string name="error_invalid_amount">Jumlah tidak valid</string>
+    <string name="error_password_too_short">Password terlalu pendek</string>
+    <string name="error_shop_code_required">Kode toko wajib diisi</string>
+    <string name="error_username_required">Username wajib diisi</string>
+    <string name="error_password_required">Password wajib diisi</string>
+
+    <!-- ================================================== -->
+    <!-- DASHBOARD MENU -->
+    <!-- ================================================== -->
+    <string name="title_dashboard">Dashboard</string>
+    <string name="menu_pos">Kasir (POS)</string>
+    <string name="menu_pos_desc">Buat transaksi penjualan</string>
+    <string name="menu_reports">Laporan</string>
+    <string name="menu_reports_desc">Analisis kinerja bisnis</string>
+    <string name="menu_stock_movements">Pergerakan Stok</string>
+    <string name="menu_stock_movements_desc">Lihat riwayat pergerakan stok</string>
+    <string name="menu_inventory_counts">Stok Opname</string>
+    <string name="menu_inventory_counts_desc">Lakukan perhitungan stok</string>
+    <string name="menu_settings">Pengaturan</string>
+    <string name="menu_settings_desc">Konfigurasi aplikasi</string>
+    <string name="menu_bank_accounts">Rekening Bank</string>
+    <string name="menu_bank_accounts_desc">Kelola rekening bank toko</string>
+    <string name="menu_orders">Transaksi</string>
+    <string name="menu_orders_desc">Lihat riwayat transaksi</string>
+    <string name="menu_expenses">Pengeluaran</string>
+    <string name="menu_expenses_desc">Catat pengeluaran bisnis</string>
+    <string name="menu_customers">Pelanggan</string>
+    <string name="menu_customers_desc">Kelola dan lihat data pelanggan</string>
+    <string name="menu_suppliers">Supplier</string>
+    <string name="menu_suppliers_desc">Daftar dan kelola supplier</string>
+    <string name="menu_purchases">Pembelian</string>
+    <string name="menu_purchases_desc">Catat pembelian dari supplier</string>
+    <string name="menu_products">Produk</string>
+    <string name="menu_products_desc">Kelola stok, harga, dan detail produk</string>
+    <string name="menu_categories">Kategori</string>
+    <string name="menu_categories_desc">Kelola kategori produk</string>
+    <string name="menu_units">Satuan</string>
+    <string name="menu_units_desc">Kelola satuan produk</string>
+    <string name="menu_product_returns">Retur Produk</string>
+    <string name="menu_product_returns_desc">Kelola produk yang diretur</string>
+    <string name="menu_stock_adjustments">Penyesuaian Stok</string>
+    <string name="menu_stock_adjustments_desc">Sesuaikan stok secara manual</string>
+    <string name="menu_users">Pengguna</string>
+    <string name="menu_users_desc">Kelola akun staf</string>
+    <string name="menu_shift">Shift</string>
+    <string name="menu_shift_desc">Kelola shift kasir</string>
+
+    <!-- ================================================== -->
+    <!-- PRODUCTS -->
+    <!-- ================================================== -->
+    <string name="title_products">Produk</string>
+    <string name="title_add_product">Tambah Produk</string>
+    <string name="title_edit_product">Edit Produk</string>
+    <string name="title_product_details">Detail Produk</string>
+    <string name="product_name">Nama Produk</string>
+    <string name="product_code">Kode Produk</string>
+    <string name="product_barcode">Barcode</string>
+    <string name="product_price">Harga Produk</string>
+    <string name="product_cost_price">Harga Modal</string>
+    <string name="product_stock">Stok</string>
+    <string name="product_min_stock">Stok Minimum</string>
+    <string name="product_category">Kategori</string>
+    <string name="product_unit">Satuan</string>
+    <string name="product_supplier">Supplier</string>
+    <string name="product_image">Gambar Produk</string>
+    <string name="product_variant">Varian</string>
+
+    <!-- ================================================== -->
+    <!-- CATEGORIES -->
+    <!-- ================================================== -->
+    <string name="title_categories">Kategori</string>
+    <string name="title_add_category">Tambah Kategori</string>
+    <string name="title_edit_category">Edit Kategori</string>
+    <string name="category_name">Nama Kategori</string>
+
+    <!-- ================================================== -->
+    <!-- UNITS -->
+    <!-- ================================================== -->
+    <string name="title_units">Satuan</string>
+    <string name="title_add_unit">Tambah Satuan</string>
+    <string name="title_edit_unit">Edit Satuan</string>
+    <string name="unit_name">Nama Satuan</string>
+
+    <!-- ================================================== -->
+    <!-- CUSTOMERS -->
+    <!-- ================================================== -->
+    <string name="title_customers">Pelanggan</string>
+    <string name="title_add_customer">Tambah Pelanggan</string>
+    <string name="title_edit_customer">Edit Pelanggan</string>
+    <string name="customer_name">Nama Pelanggan</string>
+    <string name="customer_phone">Nomor Telepon Pelanggan</string>
+    <string name="customer_email">Email Pelanggan</string>
+    <string name="customer_address">Alamat Pelanggan</string>
+    <string name="customer_points">Poin Pelanggan</string>
+    <string name="customer_details">Detail Pelanggan</string>
+
+    <!-- ================================================== -->
+    <!-- CUSTOMERS DIALOG -->
+    <!-- ================================================== -->
+    <string name="customer_dialog_name">Nama *</string>
+    <string name="customer_dialog_cell">Nomor HP *</string>
+    <string name="customer_dialog_email">Email</string>
+    <string name="customer_dialog_address">Alamat</string>
+
+    <!-- ================================================== -->
+    <!-- SUPPLIERS -->
+    <!-- ================================================== -->
+    <string name="title_suppliers">Supplier</string>
+    <string name="title_add_supplier">Tambah Supplier</string>
+    <string name="title_edit_supplier">Edit Supplier</string>
+    <string name="supplier_name">Nama Supplier</string>
+    <string name="supplier_phone">Nomor Telepon Supplier</string>
+    <string name="supplier_email">Email Supplier</string>
+    <string name="supplier_address">Alamat Supplier</string>
+
+    <!-- ================================================== -->
+    <!-- SUPPLIERS DIALOG -->
+    <!-- ================================================== -->
+    <string name="supplier_dialog_name">Nama *</string>
+    <string name="supplier_dialog_contact">Nama Kontak *</string>
+    <string name="supplier_dialog_phone">Nomor HP</string>
+    <string name="supplier_dialog_email">Email</string>
+    <string name="supplier_dialog_address">Alamat</string>
+
+    <!-- ================================================== -->
+    <!-- ORDERS / SALES -->
+    <!-- ================================================== -->
+    <string name="title_orders">Transaksi</string>
+    <string name="title_order_details">Detail Transaksi</string>
+    <string name="label_order_history">Riwayat Transaksi</string>
+    <string name="label_order_total">Total Transaksi</string>
+    <string name="label_order_date">Tanggal Transaksi</string>
+    <string name="label_order_status">Status Transaksi</string>
+
+    <!-- ================================================== -->
+    <!-- PURCHASES -->
+    <!-- ================================================== -->
+    <string name="title_purchases">Pembelian</string>
+    <string name="title_add_purchase">Tambah Pembelian</string>
+    <string name="title_edit_purchase">Edit Pembelian</string>
+    <string name="title_purchase_details">Detail Pembelian</string>
+    <string name="purchase_date">Tanggal Pembelian</string>
+    <string name="purchase_total">Total Pembelian</string>
+    <string name="purchase_items">Item Pembelian</string>
+    <string name="expired_date">Tanggal Kedaluwarsa</string>
+    <string name="batch_code">Kode Batch</string>
+
+    <!-- ================================================== -->
+    <!-- POS -->
+    <!-- ================================================== -->
+    <string name="title_pos">Kasir (POS)</string>
+    <string name="pos_search_products">Cari produk</string>
+    <string name="pos_add_to_cart">Tambah ke Keranjang</string>
+    <string name="pos_checkout">Checkout</string>
+    <string name="pos_payment">Pembayaran</string>
+    <string name="pos_cash">Tunai</string>
+    <string name="pos_change">Kembalian</string>
+    <string name="pos_total">Total</string>
+    <string name="pos_subtotal">Subtotal</string>
+    <string name="pos_discount">Diskon</string>
+    <string name="pos_tax">Pajak</string>
+    <string name="pos_customer">Pelanggan</string>
+    <string name="pos_table_number">Nomor Meja</string>
+    <string name="pos_dine_in">Makan di Tempat</string>
+    <string name="pos_take_away">Bawa Pulang</string>
+    <string name="pos_delivery">Pengantaran</string>
+
+    <!-- ================================================== -->
+    <!-- PAYMENT -->
+    <!-- ================================================== -->
+    <string name="title_payment_methods">Metode Pembayaran</string>
+    <string name="payment_cash">Tunai</string>
+    <string name="payment_qris">Pembayaran QR</string>
+    <string name="payment_bank_transfer">Transfer Bank</string>
+    <string name="payment_select_method">Pilih metode pembayaran</string>
+    <string name="payment_proof">Bukti Pembayaran</string>
+    <string name="payment_reference">Referensi Pembayaran</string>
+
+    <!-- ================================================== -->
+    <!-- EXPENSES -->
+    <!-- ================================================== -->
+    <string name="title_expenses">Pengeluaran</string>
+    <string name="title_add_expense">Tambah Pengeluaran</string>
+    <string name="title_edit_expense">Edit Pengeluaran</string>
+    <string name="expense_name">Nama Pengeluaran</string>
+    <string name="expense_amount">Jumlah Pengeluaran</string>
+    <string name="expense_note">Catatan Pengeluaran</string>
+    <string name="expense_date">Tanggal Pengeluaran</string>
+
+    <!-- ================================================== -->
+    <!-- INVENTORY -->
+    <!-- ================================================== -->
+    <string name="title_inventory_counts">Stok Opname</string>
+    <string name="title_stock_adjustments">Penyesuaian Stok</string>
+    <string name="title_stock_movements">Pergerakan Stok</string>
+    <string name="inventory_count">Perhitungan Stok</string>
+    <string name="stock_adjustment">Penyesuaian Stok</string>
+    <string name="stock_movement">Pergerakan Stok</string>
+    <string name="stock_count">Jumlah Stok</string>
+    <string name="stock_in">Stok Masuk</string>
+    <string name="stock_out">Stok Keluar</string>
+    <string name="low_stock">Stok Menipis</string>
+    <string name="out_of_stock">Stok Habis</string>
+    <string name="available_stock">Stok Tersedia</string>
+
+    <!-- ================================================== -->
+    <!-- RETURNS -->
+    <!-- ================================================== -->
+    <string name="title_product_returns">Retur Produk</string>
+    <string name="product_return">Retur Produk</string>
+    <string name="return_quantity">Jumlah Retur</string>
+    <string name="return_reason">Alasan Retur</string>
+    <string name="return_date">Tanggal Retur</string>
+
+    <!-- ================================================== -->
+    <!-- REPORTS -->
+    <!-- ================================================== -->
+    <string name="title_reports">Laporan</string>
+    <string name="sales_report">Laporan Penjualan</string>
+    <string name="expense_report">Laporan Pengeluaran</string>
+    <string name="transaction_report">Laporan Transaksi</string>
+    <string name="daily_sales">Penjualan Harian</string>
+    <string name="monthly_sales">Penjualan Bulanan</string>
+    <string name="gross_sales">Penjualan Kotor</string>
+    <string name="net_sales">Penjualan Bersih</string>
+    <string name="best_selling_products">Produk Terlaris</string>
+
+    <!-- ================================================== -->
+    <!-- BANK / FINANCE -->
+    <!-- ================================================== -->
+    <string name="title_bank_accounts">Rekening Bank</string>
+    <string name="title_add_bank_account">Tambah Rekening Bank</string>
+    <string name="bank_name">Nama Bank</string>
+    <string name="bank_account_name">Nama Rekening</string>
+    <string name="bank_account_number">Nomor Rekening</string>
+
+    <!-- ================================================== -->
+    <!-- SHIFT -->
+    <!-- ================================================== -->
+    <string name="title_shifts">Shift</string>
+    <string name="shift_open">Buka Shift</string>
+    <string name="shift_close">Tutup Shift</string>
+    <string name="shift_opening_cash">Kas Awal</string>
+    <string name="shift_closing_cash">Kas Akhir</string>
+    <string name="shift_summary">Ringkasan Shift</string>
+
+    <!-- ================================================== -->
+    <!-- USERS / ROLES -->
+    <!-- ================================================== -->
+    <string name="title_users">Pengguna</string>
+    <string name="title_add_user">Tambah Pengguna</string>
+    <string name="title_edit_user">Edit Pengguna</string>
+    <string name="role_owner">Pemilik</string>
+    <string name="role_manager">Manajer</string>
+    <string name="role_cashier">Kasir</string>
+
+    <!-- ================================================== -->
+    <!-- SETTINGS -->
+    <!-- ================================================== -->
+    <string name="title_settings">Pengaturan</string>
+    <string name="settings_store_profile">Profil Toko</string>
+    <string name="settings_printer">Pengaturan Printer</string>
+    <string name="settings_customer_display">Layar Pelanggan</string>
+    <string name="settings_language">Bahasa</string>
+    <string name="settings_currency">Mata Uang</string>
+    <string name="settings_backup">Backup</string>
+    <string name="settings_restore">Restore</string>
+    <string name="settings_dark_mode">Mode Gelap</string>
+    <string name="settings_notifications">Notifikasi</string>
+
+    <!-- ================================================== -->
+    <!-- PRINTER / RECEIPT -->
+    <!-- ================================================== -->
+    <string name="title_printer_settings">Pengaturan</string>
+    <string name="paper_width">Lebar Kertas</string>
+    <string name="paper_width_58mm">58mm</string>
+    <string name="paper_width_80mm">80mm</string>
+    <string name="print_receipt">Cetak Struk</string>
+    <string name="reprint_receipt">Cetak Ulang Struk</string>
+    <string name="receipt">Struk</string>
+    <string name="receipt_footer">Terima kasih atas pembelian Anda</string>
+    <string name="receipt_order_no">No. Transaksi</string>
+    <string name="receipt_cashier">Kasir</string>
+    <string name="receipt_date">Tanggal</string>
+
+    <!-- ================================================== -->
+    <!-- SETTINGS FRAGMENT -->
+    <!-- ================================================== -->
+    <string name="settings_shop_settings">Pengaturan Toko</string>
+    <string name="settings_server">Server</string>
+    <string name="settings_printer_title">Printer</string>
+    <string name="settings_branding">Branding</string>
+    <string name="settings_shop_profile">Profil Toko</string>
+    <string name="settings_shop_logo">Logo Toko</string>
+    <string name="settings_logo_preview">Preview logo</string>
+    <string name="settings_choose_logo">Pilih Logo</string>
+    <string name="settings_save_server">Simpan Server</string>
+    <string name="settings_test_print">Tes Cetak</string>
+    <string name="settings_auto_print_after_payment">Cetak otomatis setelah pembayaran</string>
+    <string name="settings_selected_printer">Printer terpilih: %1$s (%2$s)</string>
+    <string name="settings_selected_printer_empty">Printer terpilih: -</string>
+    <string name="settings_printer_connected">Terhubung</string>
+    <string name="settings_printer_not_connected">Tidak terhubung</string>
+    <string name="settings_base_url_hint">Base URL (contoh: https://valdker.onrender.com/)</string>
+    <string name="settings_name_required_hint">Nama *</string>
+    <string name="settings_address_required_hint">Alamat *</string>
+    <string name="settings_phone_required_hint">Telepon *</string>
+    <string name="settings_email_hint">Email</string>
+    <string name="settings_save_changes">Simpan Perubahan</string>
+    <string name="settings_printer_ok">Printer siap</string>
+
+    <!-- ================================================== -->
+    <!-- SETTINGS MESSAGES -->
+    <!-- ================================================== -->
+    <string name="msg_base_url_empty">Base URL tidak boleh kosong</string>
+    <string name="msg_base_url_invalid_scheme">URL harus diawali dengan http:// atau https://</string>
+    <string name="msg_bluetooth_permission_required">Izin Bluetooth belum diberikan. Silakan izinkan terlebih dahulu.</string>
+    <string name="msg_paper_width_set_80">Lebar kertas diatur ke 80mm</string>
+    <string name="msg_paper_width_set_58">Lebar kertas diatur ke 58mm</string>
+    <string name="msg_test_print_success">Tes cetak berhasil</string>
+    <string name="msg_test_print_failed">Tes cetak gagal: %1$s</string>
+    <string name="msg_missing_token_login_again">Token tidak ditemukan. Silakan login kembali.</string>
+    <string name="msg_no_shop_found_server">Toko tidak ditemukan di server.</string>
+    <string name="msg_failed_load_shop">Gagal memuat toko: %1$s</string>
+    <string name="msg_shop_not_loaded">Data toko belum dimuat.</string>
+    <string name="msg_name_address_phone_required">Nama, alamat, dan telepon wajib diisi.</string>
+    <string name="msg_shop_saved">Data toko berhasil disimpan</string>
+    <string name="msg_save_failed_with_code">Gagal menyimpan (%1$d): %2$s</string>
+
+    <!-- ================================================== -->
+    <!-- BACKUP / RESTORE -->
+    <!-- ================================================== -->
+    <string name="title_backup">Backup</string>
+    <string name="title_restore">Restore</string>
+    <string name="backup_database">Backup Database</string>
+    <string name="restore_database">Restore Database</string>
+    <string name="export_excel">Ekspor ke Excel</string>
+    <string name="export_pdf">Ekspor ke PDF</string>
+    <string name="import_data">Impor Data</string>
+    <string name="orders_titles">Transaksi</string>
+
+</resources>

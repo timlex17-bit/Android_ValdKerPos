@@ -49,6 +49,12 @@ import com.example.valdker.workshop.WorkshopPOSFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.zxing.integration.android.IntentIntegrator;
 
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+
+import java.util.Locale;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -490,6 +496,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        applySavedLanguage();
         super.onCreate(savedInstanceState);
 
         session = new SessionManager(this);
@@ -534,6 +541,35 @@ public class MainActivity extends AppCompatActivity
         refreshCartBadge();
 
         ensureShiftOpenOrBlock();
+    }
+
+    private void applySavedLanguage() {
+        SharedPreferences prefs = getSharedPreferences("app_settings", MODE_PRIVATE);
+        String languageCode = prefs.getString("app_language", "tet");
+
+        Locale locale;
+        switch (languageCode) {
+            case "en":
+                locale = Locale.ENGLISH;
+                break;
+            case "id":
+                locale = new Locale("id");
+                break;
+            case "zh":
+                locale = Locale.SIMPLIFIED_CHINESE;
+                break;
+            case "tet":
+            default:
+                locale = new Locale("tet");
+                break;
+        }
+
+        Locale.setDefault(locale);
+
+        Resources resources = getResources();
+        Configuration config = new Configuration(resources.getConfiguration());
+        config.setLocale(locale);
+        resources.updateConfiguration(config, resources.getDisplayMetrics());
     }
 
     private void applyBusinessTypeUi() {
