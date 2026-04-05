@@ -13,6 +13,7 @@ import com.example.valdker.R;
 import com.example.valdker.models.Customer;
 
 import java.util.List;
+import java.util.Locale;
 
 public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.VH> {
 
@@ -41,11 +42,14 @@ public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.VH> {
     public void onBindViewHolder(@NonNull VH h, int position) {
         Customer c = data.get(position);
 
-        h.tvName.setText(c.name);
-        h.tvCell.setText(c.cell);
+        h.tvName.setText(safe(c.name));
+        h.tvCell.setText(safeOrDash(c.cell));
+        h.tvPoints.setText(String.format(Locale.US, "Points: %d", c.points));
 
         String meta = "";
-        if (c.email != null && !c.email.trim().isEmpty()) meta += c.email.trim();
+        if (c.email != null && !c.email.trim().isEmpty()) {
+            meta += c.email.trim();
+        }
         if (c.address != null && !c.address.trim().isEmpty()) {
             if (!meta.isEmpty()) meta += " • ";
             meta += c.address.trim();
@@ -54,7 +58,6 @@ public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.VH> {
 
         h.btnEdit.setOnClickListener(v -> listener.onEdit(c));
         h.btnDelete.setOnClickListener(v -> listener.onDelete(c));
-
         h.itemView.setOnClickListener(v -> listener.onEdit(c));
     }
 
@@ -63,13 +66,23 @@ public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.VH> {
         return data.size();
     }
 
+    private String safe(String s) {
+        return s == null ? "" : s;
+    }
+
+    private String safeOrDash(String s) {
+        if (s == null || s.trim().isEmpty()) return "-";
+        return s.trim();
+    }
+
     static class VH extends RecyclerView.ViewHolder {
-        TextView tvName, tvCell, tvMeta;
+        TextView tvName, tvPoints, tvCell, tvMeta;
         ImageButton btnEdit, btnDelete;
 
         VH(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvCustomerName);
+            tvPoints = itemView.findViewById(R.id.tvCustomerPoints);
             tvCell = itemView.findViewById(R.id.tvCustomerCell);
             tvMeta = itemView.findViewById(R.id.tvCustomerMeta);
             btnEdit = itemView.findViewById(R.id.btnCustomerEdit);

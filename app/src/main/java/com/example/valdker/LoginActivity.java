@@ -1,6 +1,8 @@
 package com.example.valdker;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.InputType;
@@ -15,6 +17,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.os.LocaleListCompat;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
@@ -23,6 +27,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.valdker.network.ApiClient;
 import com.example.valdker.network.ApiConfig;
 import com.example.valdker.cart.CartManager;
+import com.example.valdker.utils.LocaleHelper;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -33,6 +38,11 @@ import java.util.Locale;
 import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(LocaleHelper.applyAppLocale(newBase));
+    }
 
     private static final String TAG = "LOGIN";
     private static final String ENDPOINT_LOGIN = "api/auth/login/";
@@ -53,6 +63,7 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        applySavedLanguageCompat();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
@@ -71,6 +82,13 @@ public class LoginActivity extends AppCompatActivity {
         btnTogglePwd = findViewById(R.id.btnTogglePwd);
         btnLogin = findViewById(R.id.btnLogin);
         btnDemo = findViewById(R.id.btnDemo);
+    }
+
+    private void applySavedLanguageCompat() {
+        SharedPreferences prefs = getSharedPreferences("app_settings", MODE_PRIVATE);
+        String languageCode = prefs.getString("app_language", "id");
+        LocaleListCompat locales = LocaleListCompat.forLanguageTags(languageCode);
+        AppCompatDelegate.setApplicationLocales(locales);
     }
 
     private void setupInputs() {

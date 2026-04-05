@@ -1,11 +1,10 @@
 <resources>
 
-    <string name="settings_language_desc">Choose app language for testing</string>
+    <string name="settings_language_desc">Choose app language</string>
 
     <string name="language_tetun">Tetun</string>
     <string name="language_english">English</string>
     <string name="language_indonesia">Indonesia</string>
-    <string name="language_mandarin">Mandarin</string>
 
     <string name="msg_language_changed">Language changed</string>
 
@@ -164,6 +163,21 @@
     <string name="action_apply">Apply</string>
     <string name="action_continue">Continue</string>
 
+    <string name="msg_token_missing_login_again">Token is missing. Please login again.</string>
+    <string name="msg_name_required">Name is required</string>
+    <string name="msg_unit_created">Unit created</string>
+    <string name="msg_unit_updated">Unit updated</string>
+    <string name="msg_unit_deleted">Unit deleted</string>
+    <string name="msg_fetch_units_failed">Fetch units failed</string>
+    <string name="msg_create_unit_failed">Create unit failed</string>
+    <string name="msg_update_unit_failed">Update unit failed</string>
+    <string name="msg_delete_unit_failed">Delete unit failed</string>
+    <string name="title_delete_unit">Delete Unit</string>
+    <string name="msg_delete_unit_confirm">Delete "%1$s"?</string>
+    <string name="msg_no_units_yet">No units yet</string>
+    <string name="msg_no_matching_units">No matching units</string>
+    <string name="label_default_dash">-</string>
+
     <!-- ================================================== -->
     <!-- COMMON LABELS -->
     <!-- ================================================== -->
@@ -237,10 +251,15 @@
     <!-- ================================================== -->
     <string name="hint_search_here">Search here...</string>
     <string name="hint_search_product">Search product...</string>
+    <string name="hint_search_category">Search category</string>
+    <string name="hint_search_units">Search unit...</string>
+    <string name="hit_add_units">Name *</string>
+    <string name="hint_search_expense">Search expense...</string>
     <string name="hint_search_customer">Search customer...</string>
     <string name="hint_search_supplier">Search supplier...</string>
     <string name="hint_search_order">Search order...</string>
     <string name="hint_search_purchase">Search purchase...</string>
+    <string name="hint_search_invoice">Search invoice...</string>
     <string name="hint_search_inventory">Search inventory data...</string>
     <string name="hint_product_name">Enter product name</string>
     <string name="hint_product_code">Enter product code</string>
@@ -492,9 +511,9 @@
     <string name="expense_amount">Expense Amount</string>
     <string name="expense_note">Expense Note</string>
     <string name="expense_date">Expense Date</string>
-    <string name="btn_cancel">Kansela</string>
-    <string name="btn_save">Rai</string>
-    <string name="btn_create">Kria</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_save">Save</string>
+    <string name="btn_create">Create</string>
 
     <!-- ================================================== -->
     <!-- INVENTORY -->
@@ -502,6 +521,7 @@
     <string name="title_inventory_counts">Inventory Counts</string>
     <string name="title_stock_adjustments">Stock Adjustments</string>
     <string name="title_stock_movements">Stock Movements</string>
+
     <string name="inventory_count">Inventory Count</string>
     <string name="stock_adjustment">Stock Adjustment</string>
     <string name="stock_movement">Stock Movement</string>
@@ -511,6 +531,42 @@
     <string name="low_stock">Low Stock</string>
     <string name="out_of_stock">Out of Stock</string>
     <string name="available_stock">Available Stock</string>
+    <string name="name">Name</string>
+
+    <!-- Stock movement placeholders -->
+    <string name="stock_movement_item_name_placeholder">Nasi Goreng</string>
+    <string name="stock_movement_meta_placeholder">SKU: 832... • Code: 564...</string>
+    <string name="stock_movement_date_placeholder">20/02/2026 10:45</string>
+    <string name="stock_movement_type_placeholder">Type: SALE</string>
+    <string name="stock_movement_qty_placeholder">Quantity Δ: -10</string>
+    <string name="stock_movement_qty_short_placeholder">Δ -10</string>
+    <string name="stock_movement_stock_placeholder">Stock: 49 → 39</string>
+    <string name="stock_movement_ref_placeholder">Ref: Order #22</string>
+
+    <!-- Dynamic labels -->
+    <string name="label_type_value">Type: %1$s</string>
+    <string name="label_quantity_delta_value">Quantity Δ: %1$s</string>
+    <string name="label_sku_and_code">SKU: %1$s • Code: %2$s</string>
+    <string name="label_stock_range">Stock: %1$d → %2$d</string>
+    <string name="label_ref_value">Ref: %1$s</string>
+    <string name="label_delta_short_value">Δ %1$s</string>
+    <string name="label_product_with_id">Product #%1$d</string>
+
+    <!-- Movement type mapping -->
+    <string name="movement_type_sale">Sale</string>
+    <string name="movement_type_purchase">Purchase</string>
+    <string name="movement_type_adjustment">Adjustment</string>
+    <string name="movement_type_return">Return</string>
+    <string name="movement_type_opening">Opening</string>
+    <string name="movement_type_stock_in">Stock In</string>
+    <string name="movement_type_stock_out">Stock Out</string>
+    <string name="movement_type_count">Count</string>
+    <string name="movement_type_transfer">Transfer</string>
+
+    <!-- Messages -->
+    <string name="msg_no_stock_movements">No stock movements</string>
+    <string name="msg_failed_load_stock_movements">Failed to load stock movements</string>
+    <string name="msg_parse_error">Parse error: %1$s</string>
 
     <!-- ================================================== -->
     <!-- RETURNS -->
@@ -533,15 +589,67 @@
     <string name="gross_sales">Gross Sales</string>
     <string name="net_sales">Net Sales</string>
     <string name="best_selling_products">Best Selling Products</string>
+    <string name="daily_profit_report">Daily Profit Report</string>
+    <string name="report_description">Choose range, then fetch report to refresh charts and list.</string>
+    <string name="quick_range">Quick Range</string>
+    <string name="today">Today</string>
+    <string name="seven_days">7 Days</string>
+    <string name="this_month">This Month</string>
+    <string name="custom_date_range">Custom Date Range</string>
+    <string name="start_date_hint">Start (YYYY-MM-DD)</string>
+    <string name="end_date_hint">End (YYYY-MM-DD)</string>
+    <string name="fetch_report">Fetch Report</string>
+    <string name="sales">Sales</string>
+    <string name="expense">Expense</string>
+    <string name="profit">Profit</string>
+    <string name="trend">Trend</string>
+    <string name="breakdown">Breakdown</string>
+    <string name="rows">Rows</string>
+    <string name="back">Back</string>
+    <string name="refresh">Refresh</string>
+
 
     <!-- ================================================== -->
     <!-- BANK / FINANCE -->
     <!-- ================================================== -->
     <string name="title_bank_accounts">Bank Accounts</string>
     <string name="title_add_bank_account">Add Bank Account</string>
+    <string name="title_edit_bank_account">Edit Bank Account</string>
     <string name="bank_name">Bank Name</string>
     <string name="bank_account_name">Account Name</string>
     <string name="bank_account_number">Account Number</string>
+    <string name="bank_account_holder">Account Holder</string>
+    <string name="bank_account_type">Account Type</string>
+    <string name="bank_opening_balance">Opening Balance</string>
+    <string name="bank_current_balance">Current Balance</string>
+    <string name="bank_note">Note</string>
+    <string name="bank_active_status">Active Status</string>
+    <string name="bank_status_active">ACTIVE</string>
+    <string name="bank_status_inactive">INACTIVE</string>
+    <string name="bank_label_account_number">Account Number: %1$s</string>
+    <string name="bank_label_account_holder">Account Holder: %1$s</string>
+    <string name="bank_label_account_type">Type: %1$s</string>
+    <string name="bank_label_opening_balance">Opening: %1$s</string>
+    <string name="bank_label_current_balance">Current Balance: %1$s</string>
+    <string name="bank_label_note">Note: %1$s</string>
+    <string name="hint_account_holder">Account holder</string>
+    <string name="hint_account_name">Account name</string>
+    <string name="hint_bank_name">Bank name</string>
+    <string name="hint_account_number">Account number</string>
+    <string name="hint_opening_balance">Opening balance</string>
+    <string name="hint_bank_note">Note</string>
+    <string name="error_no_access_bank">Only the owner can access bank accounts</string>
+    <string name="search_bank_account">Search bank account...</string>
+    <string name="bank_create_success">Bank account created successfully</string>
+    <string name="bank_update_success">Bank account updated successfully</string>
+    <string name="bank_delete_success">Bank account deleted successfully</string>
+    <string name="bank_delete_title">Delete Bank Account</string>
+    <string name="bank_delete_message">Are you sure you want to delete "%1$s - %2$s"?</string>
+    <string name="error_name_required">Name is required</string>
+    <string name="error_bank_name_required">Bank name is required</string>
+    <string name="error_create_request">Failed to create request</string>
+    <string name="error_network">Network error occurred</string>
+    <string name="bank_ledger_coming_soon">Bank Ledger page coming soon: %1$s</string>
 
     <!-- ================================================== -->
     <!-- SHIFT -->

@@ -21,7 +21,9 @@ import com.example.valdker.R;
 import com.example.valdker.SessionManager;
 import com.example.valdker.cart.CartManager;
 import com.example.valdker.models.CartItem;
+import com.example.valdker.models.Customer;
 import com.example.valdker.repositories.CheckoutConfigRepository;
+import com.example.valdker.repositories.CustomerRepository;
 import com.example.valdker.repositories.OrderRepository;
 import com.example.valdker.ui.checkout.BankAccountItem;
 import com.example.valdker.ui.checkout.NativeCheckoutDialogFragment;
@@ -371,16 +373,79 @@ public class CartFragment extends Fragment {
                             );
                         }
 
-                        dialog.setPaymentOptions(methodOptions);
-                        dialog.setBankOptions(bankOptions);
-                        dialog.setBankListener(new NativeCheckoutDialogFragment.BankListener() {
+                        CustomerRepository customerRepo = new CustomerRepository(appCtx);
+                        customerRepo.fetchCustomers(token, new CustomerRepository.ListCallback() {
                             @Override
-                            public void onConfirmBank(@NonNull NativeCheckoutDialogFragment.BankCheckoutResult result) {
-                                CartFragment.this.submitCheckout(result);
+                            public void onSuccess(@NonNull List<Customer> customers) {
+                                if (!isAdded()) return;
+
+                                List<NativeCheckoutDialogFragment.CustomerOption> customerOptions = new ArrayList<>();
+
+                                // optional walk-in
+                                customerOptions.add(
+                                        new NativeCheckoutDialogFragment.CustomerOption(
+                                                0,
+                                                "Walk-in Customer",
+                                                0L
+                                        )
+                                );
+
+                                for (Customer c : customers) {
+                                    customerOptions.add(
+                                            new NativeCheckoutDialogFragment.CustomerOption(
+                                                    c.id,
+                                                    c.name != null && !c.name.trim().isEmpty()
+                                                            ? c.name
+                                                            : "Customer #" + c.id,
+                                                    c.points
+                                            )
+                                    );
+                                }
+
+                                dialog.setCustomerOptions(customerOptions);
+                                dialog.setPaymentOptions(methodOptions);
+                                dialog.setBankOptions(bankOptions);
+                                dialog.setBankListener(new NativeCheckoutDialogFragment.BankListener() {
+                                    @Override
+                                    public void onConfirmBank(@NonNull NativeCheckoutDialogFragment.BankCheckoutResult result) {
+                                        CartFragment.this.submitCheckout(result);
+                                    }
+                                });
+
+                                dialog.show(requireActivity().getSupportFragmentManager(), TAG_NATIVE_CHECKOUT);
+                            }
+
+                            @Override
+                            public void onError(int statusCode, @NonNull String message) {
+                                if (!isAdded()) return;
+
+                                Toast.makeText(requireContext(),
+                                        "Failed to load customers: " + message,
+                                        Toast.LENGTH_LONG).show();
+
+                                // tetap buka dialog walau customer gagal dimuat
+                                List<NativeCheckoutDialogFragment.CustomerOption> fallbackCustomers = new ArrayList<>();
+                                fallbackCustomers.add(
+                                        new NativeCheckoutDialogFragment.CustomerOption(
+                                                0,
+                                                "Walk-in Customer",
+                                                0L
+                                        )
+                                );
+
+                                dialog.setCustomerOptions(fallbackCustomers);
+                                dialog.setPaymentOptions(methodOptions);
+                                dialog.setBankOptions(bankOptions);
+                                dialog.setBankListener(new NativeCheckoutDialogFragment.BankListener() {
+                                    @Override
+                                    public void onConfirmBank(@NonNull NativeCheckoutDialogFragment.BankCheckoutResult result) {
+                                        CartFragment.this.submitCheckout(result);
+                                    }
+                                });
+
+                                dialog.show(requireActivity().getSupportFragmentManager(), TAG_NATIVE_CHECKOUT);
                             }
                         });
-
-                        dialog.show(requireActivity().getSupportFragmentManager(), TAG_NATIVE_CHECKOUT);
                     }
 
                     @Override
@@ -479,7 +544,11 @@ public class CartFragment extends Fragment {
         final JSONArray paymentsArr = new JSONArray();
 
         try {
-            payload.put("customer", JSONObject.NULL);
+            if (result.customerId != null && result.customerId > 0) {
+                payload.put("customer", result.customerId);
+            } else {
+                payload.put("customer", JSONObject.NULL);
+            }
             payload.put("payment_method", paymentCodeFinal);
             payload.put("subtotal", String.format(Locale.US, "%.2f", subtotalFinal));
             payload.put("discount", "0.00");

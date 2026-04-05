@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="settings_language_desc">Hili lian aplikasaun ba teste</string>
+    <string name="settings_language_desc">Hili lian aplikasaun</string>
 
     <string name="language_tetun">Tetun</string>
-    <string name="language_english">Ingles</string>
+    <string name="language_english">English</string>
     <string name="language_indonesia">Indonesia</string>
-    <string name="language_mandarin">Mandarin</string>
 
     <string name="msg_language_changed">Lian troka ona</string>
+
+    <string name="msg_owner_summary_not_accessible">Sumáriu na\'in nian la asesivel (401/403)</string>
+    <string name="msg_ui_container_missing">Kontentór UI laiha iha layout</string>
 
     <!-- ================================================== -->
     <!-- APP -->
@@ -57,7 +59,7 @@
     <string name="dashboard_hello">Olá</string>
     <string name="dashboard_welcome_user">Olá, %1$s</string>
     <string name="dashboard_subtitle">Hili módulu ida atu kontinua</string>
-    <string name="select_a_module_to_continue">Hili módulu ida atu kontinua</string>
+    <string name="select_a_module_to_continue">Hili modulu atu kontinua</string>
     <string name="today_sales">Venda ohin</string>
     <string name="today_expenses">Despeza ohin</string>
     <string name="net_profit">Lucro Líquidu</string>
@@ -127,10 +129,10 @@
     <!-- COMMON ACTIONS -->
     <!-- ================================================== -->
     <string name="action_add">Aumenta</string>
-    <string name="action_create">Kriau</string>
+    <string name="action_create">Kria</string>
     <string name="action_save">Rai</string>
     <string name="action_update">Atualiza</string>
-    <string name="action_edit">Edita</string>
+    <string name="action_edit">Edit</string>
     <string name="action_delete">Apaga</string>
     <string name="action_remove">Hasai</string>
     <string name="action_cancel">Kansela</string>
@@ -161,6 +163,21 @@
     <string name="action_open">Loke</string>
     <string name="action_apply">Aplika</string>
     <string name="action_continue">Kontinua</string>
+
+    <string name="msg_token_missing_login_again">Token la iha. Favór login fali.</string>
+    <string name="msg_name_required">Naran tenke iha.</string>
+    <string name="msg_unit_created">Unidade konsege kria ona.</string>
+    <string name="msg_unit_updated">Unidade konsege atualiza ona.</string>
+    <string name="msg_unit_deleted">Unidade konsege hamoos ona.</string>
+    <string name="msg_fetch_units_failed">La konsege foti dadus unidade.</string>
+    <string name="msg_create_unit_failed">La konsege kria unidade.</string>
+    <string name="msg_update_unit_failed">La konsege atualiza unidade.</string>
+    <string name="msg_delete_unit_failed">La konsege hamoos unidade.</string>
+    <string name="title_delete_unit">Hasai unidade</string>
+    <string name="msg_delete_unit_confirm">Hakarak hasai unidade &quot;%1$s&quot;?</string>
+    <string name="msg_no_units_yet">Seidauk iha unidade.</string>
+    <string name="msg_no_matching_units">La iha unidade ne\'ebé hanesan.</string>
+    <string name="label_default_dash">-</string>
 
     <!-- ================================================== -->
     <!-- COMMON LABELS -->
@@ -235,10 +252,15 @@
     <!-- ================================================== -->
     <string name="hint_search_here">Buka iha ne’e...</string>
     <string name="hint_search_product">Buka produtu...</string>
+    <string name="hint_search_category">Buka kategoria</string>
+    <string name="hint_search_units">Buka unidade...</string>
+    <string name="hit_add_units">Naran *</string>
+    <string name="hint_search_expense">Buka despeza...</string>
     <string name="hint_search_customer">Buka kliente...</string>
     <string name="hint_search_supplier">Buka fornesedór...</string>
     <string name="hint_search_order">Buka ordem...</string>
     <string name="hint_search_purchase">Buka kompra...</string>
+    <string name="hint_search_invoice">Buka invoice...</string>
     <string name="hint_search_inventory">Buka dadus inventóriu...</string>
     <string name="hint_product_name">Hatama naran produtu</string>
     <string name="hint_product_code">Hatama kode produtu</string>
@@ -389,8 +411,8 @@
     <!-- UNITS -->
     <!-- ================================================== -->
     <string name="title_units">Jere Unidade</string>
-    <string name="title_add_unit">Aumenta Unidade</string>
-    <string name="title_edit_unit">Edita Unidade</string>
+    <string name="title_add_unit">Kria Unidade</string>
+    <string name="title_edit_unit">Edit Unidade</string>
     <string name="unit_name">Naran Unidade</string>
 
     <string name="title_customers">Jere Kliente</string>
@@ -422,6 +444,7 @@
     <string name="supplier_dialog_phone">Telemovel</string>
     <string name="supplier_dialog_email">Email</string>
     <string name="supplier_dialog_address">Enderesu</string>
+
     <!-- ================================================== -->
     <!-- ORDERS / SALES -->
     <!-- ================================================== -->
@@ -489,6 +512,9 @@
     <string name="expense_amount">Montante Despeza</string>
     <string name="expense_note">Nota Despeza</string>
     <string name="expense_date">Data Despeza</string>
+    <string name="btn_cancel">Kansela</string>
+    <string name="btn_save">Rai</string>
+    <string name="btn_create">Kria</string>
 
     <!-- ================================================== -->
     <!-- INVENTORY -->
@@ -496,6 +522,7 @@
     <string name="title_inventory_counts">Kontájen Inventóriu</string>
     <string name="title_stock_adjustments">Ajusta Stok</string>
     <string name="title_stock_movements">Movimentu Stok</string>
+
     <string name="inventory_count">Kontájen Inventóriu</string>
     <string name="stock_adjustment">Ajusta Stok</string>
     <string name="stock_movement">Movimentu Stok</string>
@@ -505,6 +532,42 @@
     <string name="low_stock">Stok Ki’ik</string>
     <string name="out_of_stock">Stok Hotu</string>
     <string name="available_stock">Stok Disponível</string>
+    <string name="name">Naran</string>
+
+    <!-- Stock movement placeholders -->
+    <string name="stock_movement_item_name_placeholder">Nasi Goreng</string>
+    <string name="stock_movement_meta_placeholder">SKU: 832... • Kódigu: 564...</string>
+    <string name="stock_movement_date_placeholder">20/02/2026 10:45</string>
+    <string name="stock_movement_type_placeholder">Tipu: SALE</string>
+    <string name="stock_movement_qty_placeholder">Quantidade Δ: -10</string>
+    <string name="stock_movement_qty_short_placeholder">Δ -10</string>
+    <string name="stock_movement_stock_placeholder">Stock: 49 → 39</string>
+    <string name="stock_movement_ref_placeholder">Ref: Order #22</string>
+
+    <!-- Dynamic labels -->
+    <string name="label_type_value">Tipu: %1$s</string>
+    <string name="label_quantity_delta_value">Quantidade Δ: %1$s</string>
+    <string name="label_sku_and_code">SKU: %1$s • Kódigu: %2$s</string>
+    <string name="label_stock_range">Stock: %1$d → %2$d</string>
+    <string name="label_ref_value">Ref: %1$s</string>
+    <string name="label_delta_short_value">Δ %1$s</string>
+    <string name="label_product_with_id">Produtu #%1$d</string>
+
+    <!-- Movement type mapping -->
+    <string name="movement_type_sale">Fa’an</string>
+    <string name="movement_type_purchase">Kompra</string>
+    <string name="movement_type_adjustment">Ajuste</string>
+    <string name="movement_type_return">Devolve</string>
+    <string name="movement_type_opening">Abertura</string>
+    <string name="movement_type_stock_in">Stock Tama</string>
+    <string name="movement_type_stock_out">Stock Sai</string>
+    <string name="movement_type_count">Kontajen</string>
+    <string name="movement_type_transfer">Transferénsia</string>
+
+    <!-- Messages -->
+    <string name="msg_no_stock_movements">La iha stock movement.</string>
+    <string name="msg_failed_load_stock_movements">La konsege karrega stock movements.</string>
+    <string name="msg_parse_error">Sala iha parse: %1$s</string>
 
     <!-- ================================================== -->
     <!-- RETURNS -->
@@ -518,24 +581,82 @@
     <!-- ================================================== -->
     <!-- REPORTS -->
     <!-- ================================================== -->
-    <string name="title_reports">Relatóriu sira</string>
-    <string name="sales_report">Relatóriu Fa’an</string>
-    <string name="expense_report">Relatóriu Despeza</string>
-    <string name="transaction_report">Relatóriu Tranzasaun</string>
-    <string name="daily_sales">Fa’an Loron-loron</string>
-    <string name="monthly_sales">Fa’an Fulán-fulán</string>
-    <string name="gross_sales">Fa’an Brutu</string>
-    <string name="net_sales">Fa’an Líquidu</string>
-    <string name="best_selling_products">Produtu sira ne’ebé Fa’an Barak Liu</string>
+    <string name="title_reports">Relatoriu sira</string>
+    <string name="sales_report">Relatoriu vendas</string>
+    <string name="expense_report">Relatoriu despeza</string>
+    <string name="transaction_report">Relatoriu tranzasaun</string>
+    <string name="daily_sales">Vendas loron-loron</string>
+    <string name="monthly_sales">Vendas fulan-fulan</string>
+    <string name="gross_sales">Total vendas brutu</string>
+    <string name="net_sales">Total vendas likidu</string>
+    <string name="best_selling_products">Produtu sira ne\'ebe faan diak liu</string>
+
+    <!-- REPORT DETAIL -->
+    <string name="daily_profit_report">Relatoriu lukru loron-loron</string>
+    <string name="report_description">Hili intervalu tempu, depois foti relatoriu hodi aktualiza grafiku no lista.</string>
+
+    <string name="quick_range">Hili Intervalu</string>
+    <string name="today">Loron ohin</string>
+    <string name="seven_days">Loron 7</string>
+    <string name="this_month">Fulan</string>
+
+    <string name="custom_date_range">Intervalu data personalizadu</string>
+    <string name="start_date_hint">Hahu (YYYY-MM-DD)</string>
+    <string name="end_date_hint">Remata (YYYY-MM-DD)</string>
+    <string name="fetch_report">Foti relatoriu</string>
+
+    <string name="sales">Vendas</string>
+    <string name="expense">Despeza</string>
+    <string name="profit">Lukru</string>
+
+    <string name="trend">Tendénsia</string>
+    <string name="breakdown">Detallu</string>
+    <string name="rows">Linha</string>
+
+    <string name="back">Fila</string>
+    <string name="refresh">Aktualiza</string>
 
     <!-- ================================================== -->
     <!-- BANK / FINANCE -->
     <!-- ================================================== -->
-    <string name="title_bank_accounts">Konta Banku sira</string>
-    <string name="title_add_bank_account">Aumenta Konta Banku</string>
+    <string name="title_bank_accounts">Konta Bankaria</string>
+    <string name="title_add_bank_account">Aumenta Konta Bankaria</string>
+    <string name="title_edit_bank_account">Edita Konta Bankaria</string>
     <string name="bank_name">Naran Banku</string>
     <string name="bank_account_name">Naran Konta</string>
     <string name="bank_account_number">Numeru Konta</string>
+    <string name="bank_account_holder"> Konta Nain</string>
+    <string name="bank_account_type">Tipu Konta</string>
+    <string name="bank_opening_balance">Saldo Inisiu</string>
+    <string name="bank_current_balance">Saldo Agora</string>
+    <string name="bank_note">Nota</string>
+    <string name="bank_active_status">Estadu Ativu</string>
+    <string name="bank_status_active">ATIVU</string>
+    <string name="bank_status_inactive">LA ATIVU</string>
+    <string name="bank_label_account_number">Numeru Konta: %1$s</string>
+    <string name="bank_label_account_holder">Konta Nain: %1$s</string>
+    <string name="bank_label_account_type">Tipu: %1$s</string>
+    <string name="bank_label_opening_balance">Saldo Inisiu: %1$s</string>
+    <string name="bank_label_current_balance">Saldo Agora: %1$s</string>
+    <string name="bank_label_note">Nota: %1$s</string>
+    <string name="hint_account_name">Naran konta</string>
+    <string name="hint_bank_name">Naran banku</string>
+    <string name="hint_account_number">Numeru konta</string>
+    <string name="hint_account_holder">Konta nain</string>
+    <string name="hint_opening_balance">Saldo inisiu</string>
+    <string name="hint_bank_note">Nota</string>
+    <string name="error_no_access_bank">Só proprietáriu mak bele asesu konta bankária</string>
+    <string name="search_bank_account">Buka konta bankária...</string>
+    <string name="bank_create_success">Konta bankária kria ho susesu</string>
+    <string name="bank_update_success">Konta bankária atualiza ho susesu</string>
+    <string name="bank_delete_success">Konta bankária apaga ho susesu</string>
+    <string name="bank_delete_title">Delete Bank Account</string>
+    <string name="bank_delete_message">Are you sure you want to delete "%1$s - %2$s"?</string>
+    <string name="error_name_required">Name is required</string>
+    <string name="error_bank_name_required">Bank name is required</string>
+    <string name="error_create_request">Failed to create request</string>
+    <string name="error_network">Network error occurred</string>
+    <string name="bank_ledger_coming_soon">Bank Ledger page coming soon: %1$s</string>
 
     <!-- ================================================== -->
     <!-- SHIFT -->
@@ -642,6 +763,5 @@
     <string name="export_pdf">Exporta ba PDF</string>
     <string name="import_data">Importa Dadus</string>
     <string name="orders_titles">Pedidu</string>
-    <string name="name">Name *</string>
 
 </resources>

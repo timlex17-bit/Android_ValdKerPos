@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="settings_language_desc">Pilih bahasa aplikasi untuk pengujian</string>
+    <string name="settings_language_desc">Pilih bahasa aplikasi</string>
 
     <string name="language_tetun">Tetun</string>
-    <string name="language_english">Bahasa Inggris</string>
-    <string name="language_indonesia">Bahasa Indonesia</string>
-    <string name="language_mandarin">Bahasa Mandarin</string>
+    <string name="language_english">English</string>
+    <string name="language_indonesia">Indonesia</string>
 
     <string name="msg_language_changed">Bahasa berhasil diubah</string>
 
@@ -61,8 +60,8 @@
     <string name="dashboard_welcome_user">Halo, %1$s</string>
     <string name="dashboard_subtitle">Pilih modul untuk melanjutkan</string>
     <string name="select_a_module_to_continue">Pilih modul untuk melanjutkan</string>
-    <string name="today_sales">Penjualan Hari Ini</string>
-    <string name="today_expenses">Pengeluaran Hari Ini</string>
+    <string name="today_sales">Penjualan</string>
+    <string name="today_expenses">Pengeluaran</string>
     <string name="net_profit">Laba Bersih</string>
     <string name="shift_today">Shift Hari Ini</string>
     <string name="shift_summary_hint">Total aktivitas yang tercatat hari ini</string>
@@ -165,6 +164,21 @@
     <string name="action_apply">Terapkan</string>
     <string name="action_continue">Lanjutkan</string>
 
+    <string name="msg_token_missing_login_again">Token tidak ada. Silakan login kembali.</string>
+    <string name="msg_name_required">Nama wajib diisi</string>
+    <string name="msg_unit_created">Unit berhasil dibuat</string>
+    <string name="msg_unit_updated">Unit berhasil diperbarui</string>
+    <string name="msg_unit_deleted">Unit berhasil dihapus</string>
+    <string name="msg_fetch_units_failed">Gagal mengambil data unit</string>
+    <string name="msg_create_unit_failed">Gagal membuat unit</string>
+    <string name="msg_update_unit_failed">Gagal memperbarui unit</string>
+    <string name="msg_delete_unit_failed">Gagal menghapus unit</string>
+    <string name="title_delete_unit">Hapus Unit</string>
+    <string name="msg_delete_unit_confirm">Hapus "%1$s"?</string>
+    <string name="msg_no_units_yet">Belum ada unit</string>
+    <string name="msg_no_matching_units">Tidak ada unit yang cocok</string>
+    <string name="label_default_dash">-</string>
+
     <!-- ================================================== -->
     <!-- COMMON LABELS -->
     <!-- ================================================== -->
@@ -238,10 +252,15 @@
     <!-- ================================================== -->
     <string name="hint_search_here">Cari di sini...</string>
     <string name="hint_search_product">Cari produk...</string>
+    <string name="hint_search_category">Cari kategori</string>
+    <string name="hint_search_units">Cari unit</string>
+    <string name="hit_add_units">Nama *</string>
+    <string name="hint_search_expense">Cari pengeluaran...</string>
     <string name="hint_search_customer">Cari pelanggan...</string>
     <string name="hint_search_supplier">Cari supplier...</string>
     <string name="hint_search_order">Cari pesanan...</string>
     <string name="hint_search_purchase">Cari pembelian...</string>
+    <string name="hint_search_invoice">Cari faktur...</string>
     <string name="hint_search_inventory">Cari data inventaris...</string>
     <string name="hint_product_name">Masukkan nama produk</string>
     <string name="hint_product_code">Masukkan kode produk</string>
@@ -427,6 +446,7 @@
     <string name="supplier_phone">Nomor Telepon Supplier</string>
     <string name="supplier_email">Email Supplier</string>
     <string name="supplier_address">Alamat Supplier</string>
+    <string name="title_add_details">Detail Pemasok</string>
 
     <!-- ================================================== -->
     <!-- SUPPLIERS DIALOG -->
@@ -452,12 +472,15 @@
     <!-- ================================================== -->
     <string name="title_purchases">Pembelian</string>
     <string name="title_add_purchase">Tambah Pembelian</string>
+    <string name="title_add_upplier">Pemasok</string>
     <string name="title_edit_purchase">Edit Pembelian</string>
     <string name="title_purchase_details">Detail Pembelian</string>
     <string name="purchase_date">Tanggal Pembelian</string>
     <string name="purchase_total">Total Pembelian</string>
-    <string name="purchase_items">Item Pembelian</string>
+    <string name="purchase_items">Pembelian Item </string>
+    <string name="title_product_items">Produk</string>
     <string name="expired_date">Tanggal Kedaluwarsa</string>
+    <string name="title_add_item">Tambahkan Item</string>
     <string name="batch_code">Kode Batch</string>
 
     <!-- ================================================== -->
@@ -501,6 +524,9 @@
     <string name="expense_amount">Jumlah Pengeluaran</string>
     <string name="expense_note">Catatan Pengeluaran</string>
     <string name="expense_date">Tanggal Pengeluaran</string>
+    <string name="btn_cancel">Batal</string>
+    <string name="btn_save">Simpan</string>
+    <string name="btn_create">Buat</string>
 
     <!-- ================================================== -->
     <!-- INVENTORY -->
@@ -508,15 +534,52 @@
     <string name="title_inventory_counts">Stok Opname</string>
     <string name="title_stock_adjustments">Penyesuaian Stok</string>
     <string name="title_stock_movements">Pergerakan Stok</string>
-    <string name="inventory_count">Perhitungan Stok</string>
+
+    <string name="inventory_count">Stok Opname</string>
     <string name="stock_adjustment">Penyesuaian Stok</string>
     <string name="stock_movement">Pergerakan Stok</string>
-    <string name="stock_count">Jumlah Stok</string>
+    <string name="stock_count">Hitung Stok</string>
     <string name="stock_in">Stok Masuk</string>
     <string name="stock_out">Stok Keluar</string>
-    <string name="low_stock">Stok Menipis</string>
+    <string name="low_stock">Stok Rendah</string>
     <string name="out_of_stock">Stok Habis</string>
     <string name="available_stock">Stok Tersedia</string>
+    <string name="name">Nama</string>
+
+    <!-- Stock movement placeholders -->
+    <string name="stock_movement_item_name_placeholder">Nasi Goreng</string>
+    <string name="stock_movement_meta_placeholder">SKU: 832... • Kode: 564...</string>
+    <string name="stock_movement_date_placeholder">20/02/2026 10:45</string>
+    <string name="stock_movement_type_placeholder">Tipe: SALE</string>
+    <string name="stock_movement_qty_placeholder">Jumlah Δ: -10</string>
+    <string name="stock_movement_qty_short_placeholder">Δ -10</string>
+    <string name="stock_movement_stock_placeholder">Stok: 49 → 39</string>
+    <string name="stock_movement_ref_placeholder">Ref: Order #22</string>
+
+    <!-- Dynamic labels -->
+    <string name="label_type_value">Tipe: %1$s</string>
+    <string name="label_quantity_delta_value">Jumlah Δ: %1$s</string>
+    <string name="label_sku_and_code">SKU: %1$s • Kode: %2$s</string>
+    <string name="label_stock_range">Stok: %1$d → %2$d</string>
+    <string name="label_ref_value">Ref: %1$s</string>
+    <string name="label_delta_short_value">Δ %1$s</string>
+    <string name="label_product_with_id">Produk #%1$d</string>
+
+    <!-- Movement type mapping -->
+    <string name="movement_type_sale">Penjualan</string>
+    <string name="movement_type_purchase">Pembelian</string>
+    <string name="movement_type_adjustment">Penyesuaian</string>
+    <string name="movement_type_return">Retur</string>
+    <string name="movement_type_opening">Pembukaan</string>
+    <string name="movement_type_stock_in">Stok Masuk</string>
+    <string name="movement_type_stock_out">Stok Keluar</string>
+    <string name="movement_type_count">Perhitungan</string>
+    <string name="movement_type_transfer">Transfer</string>
+
+    <!-- Messages -->
+    <string name="msg_no_stock_movements">Tidak ada pergerakan stok</string>
+    <string name="msg_failed_load_stock_movements">Gagal memuat pergerakan stok</string>
+    <string name="msg_parse_error">Terjadi kesalahan saat parse: %1$s</string>
 
     <!-- ================================================== -->
     <!-- RETURNS -->
@@ -527,9 +590,6 @@
     <string name="return_reason">Alasan Retur</string>
     <string name="return_date">Tanggal Retur</string>
 
-    <!-- ================================================== -->
-    <!-- REPORTS -->
-    <!-- ================================================== -->
     <string name="title_reports">Laporan</string>
     <string name="sales_report">Laporan Penjualan</string>
     <string name="expense_report">Laporan Pengeluaran</string>
@@ -540,14 +600,76 @@
     <string name="net_sales">Penjualan Bersih</string>
     <string name="best_selling_products">Produk Terlaris</string>
 
+    <!-- REPORT DETAIL -->
+    <string name="daily_profit_report">Laporan Laba Harian</string>
+    <string name="report_description">Pilih rentang tanggal, lalu ambil laporan untuk memperbarui grafik dan daftar.</string>
+
+    <string name="quick_range">Rentang Cepat</string>
+    <string name="today">Hari Ini</string>
+    <string name="seven_days">7 Hari</string>
+    <string name="this_month">Bulan Ini</string>
+
+    <string name="custom_date_range">Rentang Tanggal Kustom</string>
+    <string name="start_date_hint">Mulai (YYYY-MM-DD)</string>
+    <string name="end_date_hint">Selesai (YYYY-MM-DD)</string>
+    <string name="fetch_report">Ambil Laporan</string>
+
+    <string name="sales">Penjualan</string>
+    <string name="expense">Pengeluaran</string>
+    <string name="profit">Laba</string>
+
+    <string name="trend">Tren</string>
+    <string name="breakdown">Rincian</string>
+    <string name="rows">Baris</string>
+
+    <string name="back">Kembali</string>
+    <string name="refresh">Muat Ulang</string>
+
     <!-- ================================================== -->
     <!-- BANK / FINANCE -->
     <!-- ================================================== -->
     <string name="title_bank_accounts">Rekening Bank</string>
     <string name="title_add_bank_account">Tambah Rekening Bank</string>
+    <string name="title_edit_bank_account">Edit Rekening Bank</string>
     <string name="bank_name">Nama Bank</string>
     <string name="bank_account_name">Nama Rekening</string>
     <string name="bank_account_number">Nomor Rekening</string>
+    <string name="bank_account_holder">Pemilik Rekening</string>
+    <string name="bank_account_type">Jenis Rekening</string>
+    <string name="bank_opening_balance">Saldo Awal</string>
+    <string name="bank_current_balance">Saldo Saat Ini</string>
+    <string name="bank_note">Catatan</string>
+    <string name="bank_active_status">Status Aktif</string>
+    <string name="bank_status_active">AKTIF</string>
+    <string name="bank_status_inactive">TIDAK AKTIF</string>
+    <string name="bank_label_account_number">Nomor Rekening: %1$s</string>
+    <string name="bank_label_account_holder">Pemilik Rekening: %1$s</string>
+    <string name="bank_label_account_type">Jenis: %1$s</string>
+    <string name="bank_label_opening_balance">Saldo Awal: %1$s</string>
+    <string name="bank_label_current_balance">Saldo Saat Ini: %1$s</string>
+    <string name="bank_label_note">Catatan: %1$s</string>
+    <string name="hint_account_holder">Nama pemilik rekening</string>
+    <string name="hint_account_name">Nama rekening</string>
+    <string name="hint_bank_name">Nama bank</string>
+    <string name="hint_account_number">Nomor rekening</string>
+    <string name="hint_opening_balance">Saldo awal</string>
+    <string name="hint_bank_note">Catatan</string>
+    <string name="error_no_access_bank">Hanya owner yang dapat mengakses rekening bank</string>
+    <string name="search_bank_account">Cari rekening bank...</string>
+    <string name="bank_create_success">Rekening bank berhasil dibuat</string>
+    <string name="bank_update_success">Rekening bank berhasil diperbarui</string>
+    <string name="bank_delete_success">Rekening bank berhasil dihapus</string>
+
+    <string name="bank_delete_title">Hapus Rekening Bank</string>
+    <string name="bank_delete_message">Apakah Anda yakin ingin menghapus "%1$s - %2$s"?</string>
+
+    <string name="error_name_required">Nama wajib diisi</string>
+    <string name="error_bank_name_required">Nama bank wajib diisi</string>
+
+    <string name="error_create_request">Gagal membuat permintaan</string>
+    <string name="error_network">Terjadi kesalahan jaringan</string>
+
+    <string name="bank_ledger_coming_soon">Halaman Bank Ledger segera hadir: %1$s</string>
 
     <!-- ================================================== -->
     <!-- SHIFT -->

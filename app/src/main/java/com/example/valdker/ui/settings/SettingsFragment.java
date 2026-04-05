@@ -91,9 +91,6 @@ public class SettingsFragment extends BaseFragment {
         applyTopInset(view.findViewById(R.id.topBar));
 
         rootSettings = view.findViewById(R.id.rootSettings);
-        if (rootSettings != null) {
-            InsetsHelper.applyScrollInsets(rootSettings);
-        }
 
         btnBack = view.findViewById(R.id.btnBack);
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
@@ -161,15 +158,13 @@ public class SettingsFragment extends BaseFragment {
         String[] labels = new String[]{
                 getString(R.string.language_tetun),
                 getString(R.string.language_english),
-                getString(R.string.language_indonesia),
-                getString(R.string.language_mandarin)
+                getString(R.string.language_indonesia)
         };
 
         String[] codes = new String[]{
                 "tet",
                 "en",
-                "id",
-                "zh"
+                "id"
         };
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
@@ -189,6 +184,64 @@ public class SettingsFragment extends BaseFragment {
                 break;
             }
         }
+
+        isBindingLanguageSpinner = true;
+        spinnerLanguage.setSelection(selectedIndex, false);
+        isBindingLanguageSpinner = false;
+
+        spinnerLanguage.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (!isAdded()) return;
+                if (isBindingLanguageSpinner) return;
+                if (isLanguageChanging) return;
+                if (position < 0 || position >= codes.length) return;
+
+                String selectedCode = codes[position];
+                String currentCode = getSavedLanguageCode();
+
+                if (selectedCode.equalsIgnoreCase(currentCode)) {
+                    return;
+                }
+
+                applyLanguageChange(selectedCode);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+
+        spinnerLanguage.setSelection(selectedIndex, false);
+
+        spinnerLanguage.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            boolean firstLoad = true;
+
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (firstLoad) {
+                    firstLoad = false;
+                    return;
+                }
+
+                String selectedCode = codes[position];
+                String currentCode = getSavedLanguageCode();
+
+                if (!selectedCode.equalsIgnoreCase(currentCode)) {
+                    saveLanguageCode(selectedCode);
+                    applyLocale(selectedCode);
+
+                    Intent intent = new Intent(requireActivity(), LoginActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    requireActivity().finish();
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
 
         isBindingLanguageSpinner = true;
         spinnerLanguage.setSelection(selectedIndex, false);

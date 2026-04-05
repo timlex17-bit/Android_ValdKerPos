@@ -52,25 +52,43 @@ public class BankAccountAdapter extends RecyclerView.Adapter<BankAccountAdapter.
         String accNo = item.getAccountNumber() == null || item.getAccountNumber().trim().isEmpty()
                 ? "-"
                 : item.getAccountNumber();
-        holder.tvAccountNumber.setText("No. Rekening: " + accNo);
+        holder.tvAccountNumber.setText(
+                holder.itemView.getContext().getString(R.string.bank_label_account_number, accNo)
+        );
 
         String holderName = item.getAccountHolder() == null || item.getAccountHolder().trim().isEmpty()
                 ? "-"
                 : item.getAccountHolder();
-        holder.tvAccountHolder.setText("Atas Nama: " + holderName);
+        holder.tvAccountHolder.setText(
+                holder.itemView.getContext().getString(R.string.bank_label_account_holder, holderName)
+        );
 
-        holder.tvAccountType.setText("Tipe: " + item.getAccountType());
-        holder.tvOpeningBalance.setText("Opening: " + formatCurrency(item.getOpeningBalance()));
-        holder.tvCurrentBalance.setText("Saldo Sekarang: " + formatCurrency(item.getCurrentBalance()));
-        holder.tvStatus.setText(item.isActive() ? "ACTIVE" : "INACTIVE");
+        holder.tvAccountType.setText(
+                holder.itemView.getContext().getString(R.string.bank_label_account_type, item.getAccountType())
+        );
+
+        holder.tvOpeningBalance.setText(
+                holder.itemView.getContext().getString(R.string.bank_label_opening_balance, formatCurrency(item.getOpeningBalance()))
+        );
+
+        holder.tvCurrentBalance.setText(
+                holder.itemView.getContext().getString(R.string.bank_label_current_balance, formatCurrency(item.getCurrentBalance()))
+        );
+
+        holder.tvStatus.setText(
+                item.isActive()
+                        ? holder.itemView.getContext().getString(R.string.bank_status_active)
+                        : holder.itemView.getContext().getString(R.string.bank_status_inactive)
+        );
 
         holder.tvStatus.setBackgroundResource(
                 item.isActive() ? R.drawable.bg_status_active : R.drawable.bg_status_inactive
         );
 
         String note = item.getNote() == null || item.getNote().trim().isEmpty()
-                ? "Catatan: -"
-                : "Catatan: " + item.getNote();
+                ? holder.itemView.getContext().getString(R.string.bank_label_note, "-")
+                : holder.itemView.getContext().getString(R.string.bank_label_note, item.getNote());
+
         holder.tvNote.setText(note);
 
         holder.btnEdit.setOnClickListener(v -> {

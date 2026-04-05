@@ -85,7 +85,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
-                    android:hint="Search purchase..."
+                    android:hint="@string/hint_search_purchase"
                     android:imeOptions="actionSearch"
                     android:inputType="text"
                     android:maxLines="1"

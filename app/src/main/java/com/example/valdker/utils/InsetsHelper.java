@@ -267,4 +267,26 @@ public final class InsetsHelper {
 
         ViewCompat.requestApplyInsets(scrollView);
     }
+
+    private void applyTopInset(View target) {
+        if (target == null) return;
+
+        final int initialLeft = target.getPaddingLeft();
+        final int initialTop = target.getPaddingTop();
+        final int initialRight = target.getPaddingRight();
+        final int initialBottom = target.getPaddingBottom();
+
+        ViewCompat.setOnApplyWindowInsetsListener(target, (v, insets) -> {
+            int topInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+            v.setPadding(
+                    initialLeft,
+                    initialTop + topInset,
+                    initialRight,
+                    initialBottom
+            );
+            return insets;
+        });
+
+        ViewCompat.requestApplyInsets(target);
+    }
 }

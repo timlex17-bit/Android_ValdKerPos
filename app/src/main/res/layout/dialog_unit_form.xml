@@ -19,7 +19,7 @@
             android:id="@+id/etUnitName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Name *" />
+            android:hint="@string/hit_add_units" />
     </com.google.android.material.textfield.TextInputLayout>
 
 </LinearLayout>

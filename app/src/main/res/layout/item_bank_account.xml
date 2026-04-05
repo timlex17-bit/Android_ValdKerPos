@@ -6,9 +6,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="10dp"
+    app:cardBackgroundColor="@android:color/white"
     app:cardCornerRadius="18dp"
-    app:cardElevation="3dp"
-    app:cardBackgroundColor="@android:color/white">
+    app:cardElevation="3dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -46,7 +46,7 @@
                     android:paddingTop="4dp"
                     android:paddingEnd="10dp"
                     android:paddingBottom="4dp"
-                    android:text="ACTIVE"
+                    android:text="@string/bank_status_active"
                     android:textColor="@android:color/white"
                     android:textSize="11sp"
                     android:textStyle="bold" />
@@ -54,22 +54,21 @@
 
             <ImageButton
                 android:id="@+id/btnEdit"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                android:layout_marginEnd="6dp"
-                android:background="@drawable/bg_circle_light"
-                android:padding="8dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="0dp"
+                android:background="@android:color/transparent"
                 android:src="@android:drawable/ic_menu_edit"
-                android:tint="#2563EB" />
+                android:contentDescription="@string/action_edit" />
 
             <ImageButton
                 android:id="@+id/btnDelete"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                android:background="@drawable/bg_circle_light"
-                android:padding="8dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@android:color/transparent"
                 android:src="@android:drawable/ic_menu_delete"
-                android:tint="#DC2626" />
+                android:contentDescription="@string/action_delete" />
+
         </LinearLayout>
 
         <TextView
@@ -77,7 +76,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="14dp"
-            android:text="No. Rekening: 123456"
+            android:text="Account Number: 123456"
             android:textColor="#334155"
             android:textSize="14sp" />
 
@@ -86,7 +85,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:text="Atas Nama: Wfour Mart"
+            android:text="Account Holder: Wfour Mart"
             android:textColor="#334155"
             android:textSize="14sp" />
 
@@ -95,7 +94,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:text="Tipe: BANK"
+            android:text="Type: BANK"
             android:textColor="#334155"
             android:textSize="14sp" />
 
@@ -113,7 +112,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Saldo Sekarang: $30.00"
+            android:text="Current Balance: $30.00"
             android:textColor="#059669"
             android:textSize="15sp"
             android:textStyle="bold" />
@@ -123,7 +122,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Catatan: -"
+            android:text="Note: -"
             android:textColor="#64748B"
             android:textSize="13sp" />
 

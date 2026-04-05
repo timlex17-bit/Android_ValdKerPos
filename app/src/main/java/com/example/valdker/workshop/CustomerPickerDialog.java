@@ -90,7 +90,8 @@ public class CustomerPickerDialog extends DialogFragment {
                                 "Walk-in Customer",
                                 "",
                                 null,
-                                null
+                                null,
+                                0L
                         ));
                     }
                 })

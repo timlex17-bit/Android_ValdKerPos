@@ -82,7 +82,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
-                    android:hint="Search unit..."
+                    android:hint="@string/hint_search_units"
                     android:imeOptions="actionSearch"
                     android:inputType="text"
                     android:maxLines="1"

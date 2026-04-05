@@ -56,25 +56,27 @@ public class OwnerChatActivity extends AppCompatActivity {
 
         // mensajen (opsional)
         addBotMessage(
-                "Halo Owner 👋\n"
-                        + "Hau prontu atu ajuda ita hodi analiza dadus loja no esplika oinsá uza feature POS.\n\n"
+                "Ola Rivaldo 👋\n"
+                        + "Hau asistente Alexan hau prontu atu ajuda ita hodi analiza dadus loja no esplika oinsá uza karakterístika ValdKerPOS.\n\n"
+
+                        + "Hau mos bele ezekuta kualker servisu exemplo halo diskontu,aumenta produtu, halakon produtu no seluk tan.\n\n"
                         + "Ita bele husu hanesan:\n"
                         + "• reseita ohin\n"
                         + "• vendas fulan ida ne'e\n"
                         + "• despeza fulan ida ne'e\n"
-                        + "• lukru ohin\n"
-                        + "• hira tranzasaun ohin\n"
+                        + "• lukru ohin nian\n"
+                        + "• total tranzasaun ohin\n"
                         + "• produtu ne'ebé fa'an barak liu fulan ida ne'e\n"
-                        + "• stok ki'ik hela\n"
-                        + "• produtu hotu ona\n"
-                        + "• stok mie goreng\n"
+                        + "• stok komesa tun\n"
+                        + "• produtu nebe hotu ona\n"
+                        + "• stok produtu hotu-hotu\n"
                         + "• movimentu stok ohin\n"
-                        + "• rekomendasaun promo fulan ida ne'e\n"
+                        + "• rekomendasaun promosaun fulan ida ne'e\n"
                         + "• tanba sa lukru tun fulan ida ne'e\n"
                         + "• oinsá aumenta produtu\n"
-                        + "• oinsá halo retur sasán\n"
+                        + "• oinsá halo retornu sasán\n"
                         + "• oinsá halo stok opname\n"
-                        + "• oinsá hatama sosa\n"
+                        + "• oinsá halo kompra\n"
                         + "• oinsá imprime resibu"
         );
 

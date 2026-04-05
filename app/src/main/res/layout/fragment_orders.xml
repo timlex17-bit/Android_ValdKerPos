@@ -104,7 +104,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
                         android:background="@android:color/transparent"
-                        android:hint="Search invoice..."
+                        android:hint="@string/hint_search_invoice"
                         android:imeOptions="actionSearch"
                         android:inputType="text"
                         android:maxLines="1"
@@ -115,6 +115,7 @@
                         android:textColorHint="#9CA3AF"
                         android:textSize="14sp" />
                 </LinearLayout>
+
             </com.google.android.material.card.MaterialCardView>
 
             <ProgressBar

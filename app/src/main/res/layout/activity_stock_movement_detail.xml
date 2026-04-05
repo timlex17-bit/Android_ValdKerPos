@@ -10,7 +10,7 @@
         android:id="@+id/tvTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Nasi Goreng"
+        android:text="@string/stock_movement_item_name_placeholder"
         android:textSize="18sp"
         android:textStyle="bold"/>
 
@@ -18,7 +18,7 @@
         android:id="@+id/tvMeta"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="SKU: ... • Code: ..."
+        android:text="@string/stock_movement_meta_placeholder"
         android:textSize="12sp"
         android:alpha="0.75"
         android:layout_marginTop="4dp"/>
@@ -27,35 +27,44 @@
         android:id="@+id/tvType"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Type: SALE • 2026-02-20T10:45:12Z"
+        android:text="@string/stock_movement_type_placeholder"
         android:textStyle="bold"
         android:layout_marginTop="14dp"/>
+
+    <TextView
+        android:id="@+id/tvDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/stock_movement_date_placeholder"
+        android:textSize="12sp"
+        android:alpha="0.75"
+        android:layout_marginTop="4dp"/>
 
     <TextView
         android:id="@+id/tvQty"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Quantity Δ: -10"
+        android:text="@string/stock_movement_qty_placeholder"
         android:layout_marginTop="10dp"/>
 
     <TextView
         android:id="@+id/tvStock"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Stock: 49 → 39"
+        android:text="@string/stock_movement_stock_placeholder"
         android:layout_marginTop="6dp"/>
 
     <TextView
         android:id="@+id/tvRef"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Ref: Order #22"
+        android:text="@string/stock_movement_ref_placeholder"
         android:layout_marginTop="6dp"/>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Note"
+        android:text="@string/label_note"
         android:textStyle="bold"
         android:layout_marginTop="14dp"/>
 
@@ -63,6 +72,6 @@
         android:id="@+id/tvNote"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="-"
+        android:text="@string/label_default_dash"
         android:layout_marginTop="6dp"/>
 </LinearLayout>

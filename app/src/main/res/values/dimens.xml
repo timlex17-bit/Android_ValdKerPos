@@ -21,4 +21,11 @@
     <dimen name="workspace_button_small_text_size">12sp</dimen>
     <dimen name="workspace_action_text_size">13sp</dimen>
     <dimen name="workspace_checkout_text_size">15sp</dimen>
+
+    <dimen name="space_xs">4dp</dimen>
+    <dimen name="space_sm">8dp</dimen>
+    <dimen name="space_md">12dp</dimen>
+    <dimen name="space_lg">16dp</dimen>
+    <dimen name="space_xl">20dp</dimen>
+
 </resources>

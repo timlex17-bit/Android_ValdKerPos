@@ -227,7 +227,7 @@ public class UnitsFragment extends BaseFragment {
         if (token == null || token.trim().isEmpty()) {
             setLoading(false);
             setEmpty(true);
-            toast("Token is missing. Please login again.");
+            toast(getString(R.string.msg_token_missing_login_again));
             return;
         }
 
@@ -272,7 +272,7 @@ public class UnitsFragment extends BaseFragment {
 
                     setLoading(false);
                     setEmpty(items.isEmpty());
-                    toastVolleyError("Fetch units failed", err);
+                    toastVolleyError(getString(R.string.msg_fetch_units_failed), err);
                 }
         ) {
             @Override
@@ -302,10 +302,14 @@ public class UnitsFragment extends BaseFragment {
         }
 
         AlertDialog dialog = new AlertDialog.Builder(requireContext())
-                .setTitle(edit == null ? "Add Unit" : "Edit Unit")
+                .setTitle(edit == null
+                        ? getString(R.string.title_add_unit)
+                        : getString(R.string.title_edit_unit))
                 .setView(content)
-                .setNegativeButton("Cancel", (d, w) -> d.dismiss())
-                .setPositiveButton(edit == null ? "Create" : "Save", null)
+                .setNegativeButton(getString(R.string.action_cancel), (d, w) -> d.dismiss())
+                .setPositiveButton(edit == null
+                        ? getString(R.string.action_create)
+                        : getString(R.string.action_save), null)
                 .create();
 
         dialog.setOnDismissListener(d -> {
@@ -322,7 +326,7 @@ public class UnitsFragment extends BaseFragment {
 
                 if (name.isEmpty()) {
                     if (etName != null) {
-                        etName.setError("Name is required");
+                        etName.setError(getString(R.string.msg_name_required));
                         etName.requestFocus();
                     }
                     return;
@@ -370,7 +374,7 @@ public class UnitsFragment extends BaseFragment {
 
                     setLoading(false);
                     dialog.dismiss();
-                    toast("Unit created");
+                    toast(getString(R.string.msg_unit_created));
                     fetch();
                 },
                 err -> {
@@ -378,7 +382,7 @@ public class UnitsFragment extends BaseFragment {
 
                     setLoading(false);
                     positiveBtn.setEnabled(true);
-                    toastVolleyError("Create unit failed", err);
+                    toastVolleyError(getString(R.string.msg_create_unit_failed), err);
                 }
         ) {
             @Override
@@ -420,7 +424,7 @@ public class UnitsFragment extends BaseFragment {
 
                     setLoading(false);
                     dialog.dismiss();
-                    toast("Unit updated");
+                    toast(getString(R.string.msg_unit_updated));
                     fetch();
                 },
                 err -> {
@@ -428,7 +432,7 @@ public class UnitsFragment extends BaseFragment {
 
                     setLoading(false);
                     positiveBtn.setEnabled(true);
-                    toastVolleyError("Update unit failed", err);
+                    toastVolleyError(getString(R.string.msg_update_unit_failed), err);
                 }
         ) {
             @Override
@@ -446,10 +450,10 @@ public class UnitsFragment extends BaseFragment {
         if (isDeleteRunning) return;
 
         new AlertDialog.Builder(requireContext())
-                .setTitle("Delete Unit")
-                .setMessage("Delete \"" + safeText(u.name) + "\"?")
-                .setNegativeButton("Cancel", (d, w) -> d.dismiss())
-                .setPositiveButton("Delete", (d, w) -> deleteUnit(u.id))
+                .setTitle(getString(R.string.title_delete_unit))
+                .setMessage(getString(R.string.msg_delete_unit_confirm, safeText(u.name)))
+                .setNegativeButton(getString(R.string.action_cancel), (d, w) -> d.dismiss())
+                .setPositiveButton(getString(R.string.action_delete), (d, w) -> deleteUnit(u.id))
                 .show();
     }
 
@@ -476,7 +480,7 @@ public class UnitsFragment extends BaseFragment {
                     if (!isAdded()) return;
 
                     setLoading(false);
-                    toast("Unit deleted");
+                    toast(getString(R.string.msg_unit_deleted));
                     fetch();
                 },
                 err -> {
@@ -484,7 +488,7 @@ public class UnitsFragment extends BaseFragment {
                     if (!isAdded()) return;
 
                     setLoading(false);
-                    toastVolleyError("Delete unit failed", err);
+                    toastVolleyError(getString(R.string.msg_delete_unit_failed), err);
                 }
         ) {
             @Override
@@ -520,8 +524,8 @@ public class UnitsFragment extends BaseFragment {
             tvEmpty.setVisibility(empty ? View.VISIBLE : View.GONE);
             if (empty) {
                 tvEmpty.setText(currentQuery == null || currentQuery.trim().isEmpty()
-                        ? "No units yet"
-                        : "No matching units");
+                        ? getString(R.string.msg_no_units_yet)
+                        : getString(R.string.msg_no_matching_units));
             }
         }
         if (rv != null) {
@@ -537,9 +541,9 @@ public class UnitsFragment extends BaseFragment {
 
     @NonNull
     private String safeText(@Nullable String text) {
-        if (text == null) return "-";
+        if (text == null) return getString(R.string.label_default_dash);
         String trimmed = text.trim();
-        return trimmed.isEmpty() ? "-" : trimmed;
+        return trimmed.isEmpty() ? getString(R.string.label_default_dash) : trimmed;
     }
 
     @NonNull

@@ -169,7 +169,7 @@ public class StockMovementsFragment extends BaseFragment {
                 }
 
                 if (tvEmpty != null) {
-                    tvEmpty.setText("No stock movements");
+                    tvEmpty.setText(getString(R.string.msg_no_stock_movements));
                     tvEmpty.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
                 }
             }
@@ -186,13 +186,13 @@ public class StockMovementsFragment extends BaseFragment {
                 Toast.makeText(
                         requireContext(),
                         message == null || message.trim().isEmpty()
-                                ? "Failed to load stock movements"
+                                ? getString(R.string.msg_failed_load_stock_movements)
                                 : message,
                         Toast.LENGTH_LONG
                 ).show();
 
                 if (tvEmpty != null) {
-                    tvEmpty.setText("No stock movements");
+                    tvEmpty.setText(getString(R.string.msg_no_stock_movements));
                     tvEmpty.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
                 }
             }

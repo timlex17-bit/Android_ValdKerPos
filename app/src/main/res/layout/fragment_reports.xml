@@ -29,7 +29,7 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Back"
+                android:contentDescription="@string/back"
                 android:padding="8dp"
                 android:src="@drawable/ic_arrow_back"
                 android:tint="@android:color/white" />
@@ -43,7 +43,7 @@
                 android:maxLines="1"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
-                android:text="@string/tile_reports"
+                android:text="@string/title_reports"
                 android:textColor="@android:color/white"
                 android:textSize="20sp"
                 android:textStyle="bold" />
@@ -53,7 +53,7 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Refresh"
+                android:contentDescription="@string/refresh"
                 android:padding="8dp"
                 android:src="@android:drawable/ic_popup_sync"
                 android:tint="@android:color/white" />
@@ -93,7 +93,7 @@
                             android:id="@+id/tvTitle"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Daily Profit Report"
+                            android:text="@string/daily_profit_report"
                             android:textColor="#111827"
                             android:textSize="20sp"
                             android:textStyle="bold" />
@@ -102,7 +102,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
-                            android:text="Choose range, then fetch report to refresh charts and list."
+                            android:text="@string/report_description"
                             android:textColor="#6B7280"
                             android:textSize="12sp" />
 
@@ -129,7 +129,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Quick Range"
+                            android:text="@string/quick_range"
                             android:textColor="#111827"
                             android:textSize="13sp"
                             android:textStyle="bold" />
@@ -147,7 +147,7 @@
                                 android:id="@+id/btnToday"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Today"
+                                android:text="@string/today"
                                 app:chipBackgroundColor="#FFFFFF"
                                 app:chipCornerRadius="16dp"
                                 app:chipStrokeColor="#E5E7EB"
@@ -157,7 +157,7 @@
                                 android:id="@+id/btn7Days"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="7 Days"
+                                android:text="@string/seven_days"
                                 app:chipBackgroundColor="#FFFFFF"
                                 app:chipCornerRadius="16dp"
                                 app:chipStrokeColor="#E5E7EB"
@@ -167,7 +167,7 @@
                                 android:id="@+id/btnThisMonth"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="This Month"
+                                android:text="@string/this_month"
                                 app:chipBackgroundColor="#FFFFFF"
                                 app:chipCornerRadius="16dp"
                                 app:chipStrokeColor="#E5E7EB"
@@ -197,7 +197,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Custom Date Range"
+                            android:text="@string/custom_date_range"
                             android:textColor="#111827"
                             android:textSize="13sp"
                             android:textStyle="bold" />
@@ -227,7 +227,7 @@
                                     android:layout_height="wrap_content"
                                     android:clickable="true"
                                     android:focusable="false"
-                                    android:hint="Start (YYYY-MM-DD)"
+                                    android:hint="@string/start_date_hint"
                                     android:paddingHorizontal="14dp"
                                     android:paddingVertical="14dp" />
                             </com.google.android.material.textfield.TextInputLayout>
@@ -255,7 +255,7 @@
                                     android:layout_height="wrap_content"
                                     android:clickable="true"
                                     android:focusable="false"
-                                    android:hint="End (YYYY-MM-DD)"
+                                    android:hint="@string/end_date_hint"
                                     android:paddingHorizontal="14dp"
                                     android:paddingVertical="14dp" />
                             </com.google.android.material.textfield.TextInputLayout>
@@ -269,7 +269,7 @@
                             android:backgroundTint="#22C55E"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
-                            android:text="Fetch Report"
+                            android:text="@string/fetch_report"
                             android:textAllCaps="false"
                             android:textColor="@android:color/white"
                             android:textStyle="bold"
@@ -285,116 +285,112 @@
                     android:layout_marginTop="12dp"
                     android:orientation="horizontal">
 
+                    <!-- SALES -->
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         app:cardBackgroundColor="#FFFFFF"
                         app:cardCornerRadius="18dp"
-                        app:cardElevation="0dp"
                         app:strokeColor="#E5E7EB"
                         app:strokeWidth="1dp">
 
                         <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:padding="14dp"
                             android:orientation="vertical"
-                            android:padding="14dp">
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
 
                             <TextView
+                                android:text="@string/sales"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Sales"
                                 android:textColor="#6B7280"
-                                android:textSize="11sp" />
+                                android:textSize="11sp"/>
 
                             <TextView
                                 android:id="@+id/tvSales"
+                                android:text="$0.00"
+                                android:layout_marginTop="6dp"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="6dp"
-                                android:text="$0.00"
                                 android:textColor="#111827"
                                 android:textSize="18sp"
-                                android:textStyle="bold" />
+                                android:textStyle="bold"/>
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
-                    <Space
-                        android:layout_width="12dp"
-                        android:layout_height="0dp" />
+                    <Space android:layout_width="12dp" android:layout_height="0dp"/>
 
+                    <!-- EXPENSE -->
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         app:cardBackgroundColor="#FFFFFF"
                         app:cardCornerRadius="18dp"
-                        app:cardElevation="0dp"
                         app:strokeColor="#E5E7EB"
                         app:strokeWidth="1dp">
 
                         <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:padding="14dp"
                             android:orientation="vertical"
-                            android:padding="14dp">
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
 
                             <TextView
+                                android:text="@string/expense"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Expense"
                                 android:textColor="#6B7280"
-                                android:textSize="11sp" />
+                                android:textSize="11sp"/>
 
                             <TextView
                                 android:id="@+id/tvExpense"
+                                android:text="$0.00"
+                                android:layout_marginTop="6dp"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="6dp"
-                                android:text="$0.00"
                                 android:textColor="#111827"
                                 android:textSize="18sp"
-                                android:textStyle="bold" />
+                                android:textStyle="bold"/>
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
-                    <Space
-                        android:layout_width="12dp"
-                        android:layout_height="0dp" />
+                    <Space android:layout_width="12dp" android:layout_height="0dp"/>
 
+                    <!-- PROFIT -->
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         app:cardBackgroundColor="#FFFFFF"
                         app:cardCornerRadius="18dp"
-                        app:cardElevation="0dp"
                         app:strokeColor="#E5E7EB"
                         app:strokeWidth="1dp">
 
                         <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:padding="14dp"
                             android:orientation="vertical"
-                            android:padding="14dp">
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
 
                             <TextView
+                                android:text="@string/profit"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Profit"
                                 android:textColor="#6B7280"
-                                android:textSize="11sp" />
+                                android:textSize="11sp"/>
 
                             <TextView
                                 android:id="@+id/tvProfit"
+                                android:text="$0.00"
+                                android:layout_marginTop="6dp"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="6dp"
-                                android:text="$0.00"
                                 android:textColor="#111827"
                                 android:textSize="18sp"
-                                android:textStyle="bold" />
+                                android:textStyle="bold"/>
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
@@ -415,29 +411,28 @@
                     android:layout_marginTop="14dp"
                     app:cardBackgroundColor="#FFFFFF"
                     app:cardCornerRadius="22dp"
-                    app:cardElevation="0dp"
                     app:strokeColor="#E5E7EB"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:padding="14dp"
                         android:orientation="vertical"
-                        android:padding="14dp">
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
 
                         <TextView
+                            android:text="@string/trend"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Trend"
                             android:textColor="#111827"
                             android:textSize="13sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"/>
 
                         <com.github.mikephil.charting.charts.LineChart
                             android:id="@+id/lineChart"
                             android:layout_width="match_parent"
                             android:layout_height="220dp"
-                            android:layout_marginTop="10dp" />
+                            android:layout_marginTop="10dp"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -448,29 +443,28 @@
                     android:layout_marginTop="12dp"
                     app:cardBackgroundColor="#FFFFFF"
                     app:cardCornerRadius="22dp"
-                    app:cardElevation="0dp"
                     app:strokeColor="#E5E7EB"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:padding="14dp"
                         android:orientation="vertical"
-                        android:padding="14dp">
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
 
                         <TextView
+                            android:text="@string/breakdown"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Breakdown"
                             android:textColor="#111827"
                             android:textSize="13sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"/>
 
                         <com.github.mikephil.charting.charts.BarChart
                             android:id="@+id/barChart"
                             android:layout_width="match_parent"
                             android:layout_height="220dp"
-                            android:layout_marginTop="10dp" />
+                            android:layout_marginTop="10dp"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -481,23 +475,22 @@
                     android:layout_marginTop="12dp"
                     app:cardBackgroundColor="#FFFFFF"
                     app:cardCornerRadius="22dp"
-                    app:cardElevation="0dp"
                     app:strokeColor="#E5E7EB"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:padding="14dp"
                         android:orientation="vertical"
-                        android:padding="14dp">
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
 
                         <TextView
+                            android:text="@string/rows"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Rows"
                             android:textColor="#111827"
                             android:textSize="13sp"
-                            android:textStyle="bold" />
+                            android:textStyle="bold"/>
 
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/rvRows"
@@ -505,8 +498,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
                             android:nestedScrollingEnabled="false"
-                            android:overScrollMode="never" />
-
+                            android:overScrollMode="never"/>
                     </LinearLayout>
 
                 </com.google.android.material.card.MaterialCardView>

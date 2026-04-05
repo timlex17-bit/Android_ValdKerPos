@@ -13,6 +13,11 @@ import com.example.valdker.models.StockMovement;
 
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
 public class StockMovementDetailActivity extends AppCompatActivity {
 
     private static final String EXTRA_JSON = "extra_json";
@@ -38,7 +43,8 @@ public class StockMovementDetailActivity extends AppCompatActivity {
             Intent i = new Intent(ctx, StockMovementDetailActivity.class);
             i.putExtra(EXTRA_JSON, o.toString());
             ctx.startActivity(i);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     @Override
@@ -49,6 +55,7 @@ public class StockMovementDetailActivity extends AppCompatActivity {
         TextView tvTitle = findViewById(R.id.tvTitle);
         TextView tvMeta = findViewById(R.id.tvMeta);
         TextView tvType = findViewById(R.id.tvType);
+        TextView tvDate = findViewById(R.id.tvDate);
         TextView tvQty = findViewById(R.id.tvQty);
         TextView tvStock = findViewById(R.id.tvStock);
         TextView tvRef = findViewById(R.id.tvRef);
@@ -60,31 +67,125 @@ public class StockMovementDetailActivity extends AppCompatActivity {
                 JSONObject o = new JSONObject(json);
 
                 String name = o.optString("product_name");
-                if (name == null || name.trim().isEmpty()) name = "Product #" + o.optInt("product");
+                if (name == null || name.trim().isEmpty()) {
+                    name = getString(R.string.label_product_with_id, o.optInt("product"));
+                }
 
                 tvTitle.setText(name);
-                tvMeta.setText("SKU: " + o.optString("product_sku", "-") +
-                        " • Code: " + o.optString("product_code", "-"));
 
-                tvType.setText("Type: " + o.optString("movement_type", "-") +
-                        " • " + o.optString("created_at", "-"));
+                String sku = safeValue(o.optString("product_sku", ""));
+                String code = safeValue(o.optString("product_code", ""));
+                tvMeta.setText(getString(R.string.label_sku_and_code, sku, code));
+
+                String movementType = mapMovementType(o.optString("movement_type", ""));
+                tvType.setText(getString(R.string.label_type_value, movementType));
+
+                tvDate.setText(formatDateTime(o.optString("created_at", "")));
 
                 int delta = o.optInt("quantity_delta");
-                tvQty.setText("Quantity Δ: " + (delta > 0 ? "+" : "") + delta);
+                tvQty.setText(getString(
+                        R.string.label_quantity_delta_value,
+                        (delta > 0 ? "+" : "") + delta
+                ));
 
-                tvStock.setText("Stock: " + o.optInt("before_stock") +
-                        " → " + o.optInt("after_stock"));
+                tvStock.setText(getString(
+                        R.string.label_stock_range,
+                        o.optInt("before_stock"),
+                        o.optInt("after_stock")
+                ));
 
                 String refModel = o.optString("ref_model", "");
                 int refId = o.optInt("ref_id", 0);
-                tvRef.setText("Ref: " + (refModel.isEmpty() || refId == 0 ? "-" : (refModel + " #" + refId)));
+                String refValue = (refModel == null || refModel.trim().isEmpty() || refId == 0)
+                        ? getString(R.string.label_default_dash)
+                        : refModel + " #" + refId;
+                tvRef.setText(getString(R.string.label_ref_value, refValue));
 
                 String note = o.optString("note");
-                tvNote.setText(note == null || note.trim().isEmpty() ? "-" : note);
+                tvNote.setText(note == null || note.trim().isEmpty()
+                        ? getString(R.string.label_default_dash)
+                        : note);
 
             } catch (Exception e) {
-                tvNote.setText("Parse error: " + e.getMessage());
+                tvNote.setText(getString(R.string.msg_parse_error, e.getMessage()));
             }
+        }
+    }
+
+    private String formatDateTime(String isoDate) {
+        if (isoDate == null || isoDate.trim().isEmpty()) {
+            return getString(R.string.label_default_dash);
+        }
+
+        String[] inputPatterns = new String[]{
+                "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+                "yyyy-MM-dd'T'HH:mm:ssXXX",
+                "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
+        };
+
+        for (String pattern : inputPatterns) {
+            try {
+                SimpleDateFormat inputFormat = new SimpleDateFormat(pattern, Locale.getDefault());
+                inputFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+                Date date = inputFormat.parse(isoDate);
+                if (date != null) {
+                    SimpleDateFormat outputFormat =
+                            new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+                    return outputFormat.format(date);
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
+        return isoDate;
+    }
+
+    private String safeValue(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return getString(R.string.label_default_dash);
+        }
+        return value.trim();
+    }
+
+    private String mapMovementType(String rawType) {
+        if (rawType == null || rawType.trim().isEmpty()) {
+            return getString(R.string.label_default_dash);
+        }
+
+        String normalized = rawType.trim().toUpperCase(Locale.US);
+
+        switch (normalized) {
+            case "SALE":
+                return getString(R.string.movement_type_sale);
+
+            case "PURCHASE":
+                return getString(R.string.movement_type_purchase);
+
+            case "ADJUSTMENT":
+                return getString(R.string.movement_type_adjustment);
+
+            case "RETURN":
+                return getString(R.string.movement_type_return);
+
+            case "OPENING":
+                return getString(R.string.movement_type_opening);
+
+            case "STOCK_IN":
+                return getString(R.string.movement_type_stock_in);
+
+            case "STOCK_OUT":
+                return getString(R.string.movement_type_stock_out);
+
+            case "COUNT":
+                return getString(R.string.movement_type_count);
+
+            case "TRANSFER":
+                return getString(R.string.movement_type_transfer);
+
+            default:
+                return rawType.trim();
         }
     }
 }

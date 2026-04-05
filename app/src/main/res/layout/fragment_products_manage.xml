@@ -87,7 +87,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:background="@android:color/transparent"
-                    android:hint="Search product..."
+                    android:hint="@string/hint_search_product"
                     android:imeOptions="actionSearch"
                     android:inputType="text"
                     android:maxLines="1"
@@ -103,6 +103,7 @@
                     android:src="@android:drawable/ic_menu_search"
                     app:tint="#22C55E" />
             </LinearLayout>
+
         </com.google.android.material.card.MaterialCardView>
 
         <!-- Content -->

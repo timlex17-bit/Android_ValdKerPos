@@ -19,7 +19,7 @@
             android:id="@+id/tvName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Nasi Goreng"
+            android:text="@string/stock_movement_item_name_placeholder"
             android:textStyle="bold"
             android:textSize="16sp"/>
 
@@ -27,7 +27,7 @@
             android:id="@+id/tvMeta"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="SKU: 832... • Code: 564..."
+            android:text="@string/stock_movement_meta_placeholder"
             android:textSize="12sp"
             android:alpha="0.75"
             android:layout_marginTop="4dp"/>
@@ -36,7 +36,7 @@
             android:id="@+id/tvDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="20/02/2026 10:45"
+            android:text="@string/stock_movement_date_placeholder"
             android:textSize="12sp"
             android:alpha="0.75"
             android:layout_marginTop="4dp"/>
@@ -45,7 +45,7 @@
             android:id="@+id/tvType"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Type: SALE"
+            android:text="@string/stock_movement_type_placeholder"
             android:layout_marginTop="8dp"/>
 
         <LinearLayout
@@ -59,21 +59,21 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Δ -10"
+                android:text="@string/stock_movement_qty_short_placeholder"
                 android:textStyle="bold"/>
 
             <TextView
                 android:id="@+id/tvStock"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Stock: 49 → 39"/>
+                android:text="@string/stock_movement_stock_placeholder"/>
         </LinearLayout>
 
         <TextView
             android:id="@+id/tvRef"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Ref: Order #22"
+            android:text="@string/stock_movement_ref_placeholder"
             android:layout_marginTop="6dp"
             android:alpha="0.9"/>
 

@@ -58,7 +58,7 @@
                     android:id="@+id/tvTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Owner Assistant"
+                    android:text="Asistente Alexan"
                     android:textColor="#111827"
                     android:textSize="17sp"
                     android:textStyle="bold" />
@@ -68,7 +68,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Online • Tanya stok, sales, dan performa toko"
+                    android:text="Online • Husu kona-ba stok, vendas, no dezempeñu loja nian"
                     android:textColor="#6B7280"
                     android:textSize="12sp"
                     android:maxLines="1"

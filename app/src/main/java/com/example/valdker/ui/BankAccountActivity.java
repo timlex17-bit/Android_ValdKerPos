@@ -2,15 +2,19 @@ package com.example.valdker.ui;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Switch;
@@ -19,8 +23,13 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
@@ -33,13 +42,16 @@ import com.example.valdker.adapters.BankAccountAdapter;
 import com.example.valdker.models.BankAccount;
 import com.example.valdker.network.ApiClient;
 import com.example.valdker.network.ApiConfig;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import com.example.valdker.utils.InsetsHelper;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class BankAccountActivity extends AppCompatActivity implements BankAccountAdapter.OnBankActionListener {
@@ -47,11 +59,16 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private TextView tvEmpty;
-    private Button btnAddBank;
-    private ImageButton btnBack;
+    private EditText etSearchBank;
+    private ImageView btnBack;
+    private ImageView ivHeaderAction;
+    private FloatingActionButton fabAddBank;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     private SessionManager sessionManager;
+
     private final ArrayList<BankAccount> bankList = new ArrayList<>();
+    private final ArrayList<BankAccount> filteredBankList = new ArrayList<>();
     private BankAccountAdapter adapter;
 
     private static final String ENDPOINT_BANK_ACCOUNTS = "api/bank-accounts/";
@@ -61,6 +78,18 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bank_account);
+
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setStatusBarColor(Color.parseColor("#22C55E"));
+        }
+
+        WindowInsetsControllerCompat controller =
+                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        if (controller != null) {
+            controller.setAppearanceLightStatusBars(false);
+        }
 
         sessionManager = new SessionManager(this);
 
@@ -72,32 +101,80 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
         }
 
         initViews();
+        applyTopInset(findViewById(R.id.topBar));
         setupRecycler();
         setupActions();
         loadBankAccounts();
+    }
+
+    private void applyTopInset(View target) {
+        if (target == null) return;
+
+        final int initialLeft = target.getPaddingLeft();
+        final int initialTop = target.getPaddingTop();
+        final int initialRight = target.getPaddingRight();
+        final int initialBottom = target.getPaddingBottom();
+
+        ViewCompat.setOnApplyWindowInsetsListener(target, (v, insets) -> {
+            int topInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+            v.setPadding(
+                    initialLeft,
+                    initialTop + topInset,
+                    initialRight,
+                    initialBottom
+            );
+            return insets;
+        });
+
+        ViewCompat.requestApplyInsets(target);
     }
 
     private void initViews() {
         recyclerView = findViewById(R.id.recyclerBankAccounts);
         progressBar = findViewById(R.id.progressBar);
         tvEmpty = findViewById(R.id.tvEmpty);
-        btnAddBank = findViewById(R.id.btnAddBank);
+        etSearchBank = findViewById(R.id.etSearchBank);
         btnBack = findViewById(R.id.btnBack);
+        ivHeaderAction = findViewById(R.id.ivHeaderAction);
+        fabAddBank = findViewById(R.id.fabAddBank);
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshBankAccounts);
     }
 
     private void setupRecycler() {
-        adapter = new BankAccountAdapter(this, bankList, this);
+        adapter = new BankAccountAdapter(this, filteredBankList, this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
     }
 
     private void setupActions() {
         btnBack.setOnClickListener(v -> finish());
-        btnAddBank.setOnClickListener(v -> showBankDialog(null));
+
+        ivHeaderAction.setOnClickListener(v -> loadBankAccounts());
+
+        fabAddBank.setOnClickListener(v -> showBankDialog(null));
+
+        swipeRefreshLayout.setOnRefreshListener(this::loadBankAccounts);
+
+        etSearchBank.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterBankAccounts(s != null ? s.toString() : "");
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
     }
 
     private void loadBankAccounts() {
-        progressBar.setVisibility(View.VISIBLE);
+        if (!swipeRefreshLayout.isRefreshing()) {
+            progressBar.setVisibility(View.VISIBLE);
+        }
         tvEmpty.setVisibility(View.GONE);
 
         String url = ApiConfig.url(sessionManager, ENDPOINT_BANK_ACCOUNTS);
@@ -108,6 +185,8 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
                 null,
                 response -> {
                     progressBar.setVisibility(View.GONE);
+                    swipeRefreshLayout.setRefreshing(false);
+
                     bankList.clear();
 
                     for (int i = 0; i < response.length(); i++) {
@@ -117,11 +196,11 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
                         }
                     }
 
-                    adapter.notifyDataSetChanged();
-                    tvEmpty.setVisibility(bankList.isEmpty() ? View.VISIBLE : View.GONE);
+                    filterBankAccounts(etSearchBank.getText() != null ? etSearchBank.getText().toString() : "");
                 },
                 error -> {
                     progressBar.setVisibility(View.GONE);
+                    swipeRefreshLayout.setRefreshing(false);
                     tvEmpty.setVisibility(bankList.isEmpty() ? View.VISIBLE : View.GONE);
                     Toast.makeText(this, parseVolleyError(error), Toast.LENGTH_LONG).show();
                 }
@@ -132,13 +211,41 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
             }
         };
 
-        request.setRetryPolicy(new DefaultRetryPolicy(
-                TIMEOUT_MS,
-                1,
-                1.0f
-        ));
-
+        request.setRetryPolicy(new DefaultRetryPolicy(TIMEOUT_MS, 1, 1.0f));
         ApiClient.getInstance(this).add(request);
+    }
+
+    private void filterBankAccounts(String keyword) {
+        filteredBankList.clear();
+
+        String query = keyword == null ? "" : keyword.trim().toLowerCase(Locale.ROOT);
+
+        if (query.isEmpty()) {
+            filteredBankList.addAll(bankList);
+        } else {
+            for (BankAccount item : bankList) {
+                String name = safe(item.getName());
+                String bankName = safe(item.getBankName());
+                String accountNumber = safe(item.getAccountNumber());
+                String accountHolder = safe(item.getAccountHolder());
+                String accountType = safe(item.getAccountType());
+
+                if (name.contains(query)
+                        || bankName.contains(query)
+                        || accountNumber.contains(query)
+                        || accountHolder.contains(query)
+                        || accountType.contains(query)) {
+                    filteredBankList.add(item);
+                }
+            }
+        }
+
+        adapter.notifyDataSetChanged();
+        tvEmpty.setVisibility(filteredBankList.isEmpty() ? View.VISIBLE : View.GONE);
+    }
+
+    private String safe(String value) {
+        return value == null ? "" : value.toLowerCase(Locale.ROOT);
     }
 
     private void createBankAccount(JSONObject body, Dialog dialog) {
@@ -149,7 +256,7 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
                 url,
                 body,
                 response -> {
-                    Toast.makeText(this, "Konta bankária aumenta ho susesu", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getString(R.string.bank_create_success), Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
                     loadBankAccounts();
                 },
@@ -237,7 +344,7 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
         Button btnCancel = view.findViewById(R.id.btnCancel);
         Button btnSave = view.findViewById(R.id.btnSave);
 
-        String[] accountTypes = {"BANKU", "EWALLET", "QRIS"};
+        String[] accountTypes = {"BANK", "EWALLET", "QRIS"};
         ArrayAdapter<String> typeAdapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_dropdown_item,
@@ -282,13 +389,13 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
             String note = etNote.getText().toString().trim();
 
             if (TextUtils.isEmpty(name)) {
-                etName.setError("Presiza naran");
+                etName.setError(getString(R.string.error_name_required));
                 etName.requestFocus();
                 return;
             }
 
             if (TextUtils.isEmpty(bankName)) {
-                etBankName.setError("Naran banku presiza");
+                etBankName.setError(getString(R.string.error_bank_name_required));
                 etBankName.requestFocus();
                 return;
             }
@@ -315,7 +422,7 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
                 }
 
             } catch (JSONException e) {
-                Toast.makeText(this, "La konsege kria pedidu", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.error_create_request), Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -351,7 +458,7 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
             return error.getMessage();
         }
 
-        return "Akontese erru iha rede";
+        return getString(R.string.error_network);
     }
 
     @Override

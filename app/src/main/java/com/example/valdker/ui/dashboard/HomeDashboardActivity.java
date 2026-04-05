@@ -17,6 +17,7 @@ import android.widget.Toast;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import com.example.valdker.utils.LocaleHelper;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
@@ -60,6 +61,11 @@ import java.util.List;
 import java.util.Locale;
 
 public class HomeDashboardActivity extends AppCompatActivity {
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(LocaleHelper.applyAppLocale(newBase));
+    }
 
     private static final String TAG = "DASHBOARD";
 
@@ -134,6 +140,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        applySavedLanguageCompat();
         super.onCreate(savedInstanceState);
 
         session = new SessionManager(this);
@@ -195,7 +202,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
 
     private void applySavedLanguageCompat() {
         SharedPreferences prefs = getSharedPreferences("app_settings", MODE_PRIVATE);
-        String languageCode = prefs.getString("app_language", "tet");
+        String languageCode = prefs.getString("app_language", "id");
         LocaleListCompat locales = LocaleListCompat.forLanguageTags(languageCode);
         AppCompatDelegate.setApplicationLocales(locales);
     }

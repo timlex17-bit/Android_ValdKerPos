@@ -277,7 +277,9 @@ public class CustomerRepository {
         String cell = o.optString("cell", "");
         String email = o.isNull("email") ? null : o.optString("email", null);
         String address = o.isNull("address") ? null : o.optString("address", null);
-        return new Customer(id, name, cell, email, address);
+        long points = o.optLong("points", 0L);
+
+        return new Customer(id, name, cell, email, address, points);
     }
 
     private static String buildVolleyErrorMessage(@Nullable NetworkResponse nr, @NonNull Exception fallbackErr) {

@@ -5,9 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="10dp"
+    android:backgroundTint="@android:color/white"
     app:cardCornerRadius="18dp"
     app:cardElevation="2dp"
-    android:backgroundTint="@android:color/white">
+    app:strokeColor="#E5E7EB"
+    app:strokeWidth="1dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -18,60 +20,85 @@
             android:id="@+id/tvCustomerName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
             android:text="Alexander"
-            android:textStyle="bold"
-            android:textSize="16sp"
             android:textColor="#111827"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/layoutCustomerActions"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/btnCustomerEdit"
-            android:layout_marginEnd="10dp"/>
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tvCustomerPoints"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_customer_points_badge"
+            android:paddingStart="10dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="5dp"
+            android:text="Points: 120"
+            android:textColor="#065F46"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@id/tvCustomerName"
+            app:layout_constraintTop_toBottomOf="@id/tvCustomerName" />
 
         <TextView
             android:id="@+id/tvCustomerCell"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:text="77383299"
-            android:textSize="13sp"
             android:textColor="#374151"
-            android:layout_marginTop="4dp"
+            android:textSize="13sp"
+            app:layout_constraintEnd_toEndOf="@id/tvCustomerName"
             app:layout_constraintStart_toStartOf="@id/tvCustomerName"
-            app:layout_constraintTop_toBottomOf="@id/tvCustomerName"
-            app:layout_constraintEnd_toEndOf="@id/tvCustomerName"/>
+            app:layout_constraintTop_toBottomOf="@id/tvCustomerPoints" />
 
         <TextView
             android:id="@+id/tvCustomerMeta"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="alexander25@gmail.com • Bemori Centro"
-            android:textSize="12sp"
-            android:textColor="#6B7280"
             android:layout_marginTop="4dp"
-            android:maxLines="2"
             android:ellipsize="end"
+            android:maxLines="2"
+            android:text="alexander25@gmail.com • Bemori Centro"
+            android:textColor="#6B7280"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="@id/tvCustomerName"
             app:layout_constraintStart_toStartOf="@id/tvCustomerName"
-            app:layout_constraintTop_toBottomOf="@id/tvCustomerCell"
-            app:layout_constraintEnd_toEndOf="@id/tvCustomerName"/>
+            app:layout_constraintTop_toBottomOf="@id/tvCustomerCell" />
 
-        <ImageButton
-            android:id="@+id/btnCustomerEdit"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@android:color/transparent"
-            android:src="@android:drawable/ic_menu_edit"
-            android:contentDescription="Edit"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/btnCustomerDelete"/>
+        <LinearLayout
+            android:id="@+id/layoutCustomerActions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-        <ImageButton
-            android:id="@+id/btnCustomerDelete"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@android:color/transparent"
-            android:src="@android:drawable/ic_menu_delete"
-            android:contentDescription="Delete"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            <ImageButton
+                android:id="@+id/btnCustomerEdit"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="Edit"
+                android:padding="8dp"
+                android:src="@android:drawable/ic_menu_edit" />
+
+            <ImageButton
+                android:id="@+id/btnCustomerDelete"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="Delete"
+                android:padding="8dp"
+                android:src="@android:drawable/ic_menu_delete" />
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

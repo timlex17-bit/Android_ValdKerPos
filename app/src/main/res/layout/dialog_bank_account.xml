@@ -22,7 +22,7 @@
                 android:id="@+id/tvDialogTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tambah Bank Account"
+                android:text="@string/title_add_bank_account"
                 android:textColor="#0F172A"
                 android:textSize="20sp"
                 android:textStyle="bold" />
@@ -33,7 +33,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
                 android:background="@drawable/bg_input_modern"
-                android:hint="Nama account"
+                android:hint="@string/hint_account_name"
                 android:padding="14dp"
                 android:textColor="#0F172A"
                 android:textColorHint="#94A3B8" />
@@ -44,7 +44,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:background="@drawable/bg_input_modern"
-                android:hint="Nama bank"
+                android:hint="@string/hint_bank_name"
                 android:padding="14dp"
                 android:textColor="#0F172A"
                 android:textColorHint="#94A3B8" />
@@ -55,7 +55,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:background="@drawable/bg_input_modern"
-                android:hint="Nomor rekening"
+                android:hint="@string/hint_account_number"
                 android:inputType="text"
                 android:padding="14dp"
                 android:textColor="#0F172A"
@@ -67,7 +67,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:background="@drawable/bg_input_modern"
-                android:hint="Atas nama"
+                android:hint="@string/hint_account_holder"
                 android:padding="14dp"
                 android:textColor="#0F172A"
                 android:textColorHint="#94A3B8" />
@@ -86,7 +86,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:background="@drawable/bg_input_modern"
-                android:hint="Opening balance"
+                android:hint="@string/hint_opening_balance"
                 android:inputType="numberDecimal"
                 android:padding="14dp"
                 android:textColor="#0F172A"
@@ -105,7 +105,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Status aktif"
+                    android:text="@string/bank_active_status"
                     android:textColor="#334155"
                     android:textSize="15sp" />
 
@@ -122,7 +122,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_input_modern"
                 android:gravity="top"
-                android:hint="Catatan"
+                android:hint="@string/hint_bank_note"
                 android:padding="14dp"
                 android:textColor="#0F172A"
                 android:textColorHint="#94A3B8" />
@@ -138,20 +138,20 @@
                     android:id="@+id/btnCancel"
                     android:layout_width="wrap_content"
                     android:layout_height="44dp"
-                    android:text="Batal"
+                    android:background="@drawable/bg_button_secondary"
+                    android:text="@string/action_cancel"
                     android:textAllCaps="false"
-                    android:textColor="#334155"
-                    android:background="@drawable/bg_button_secondary" />
+                    android:textColor="#334155" />
 
                 <Button
                     android:id="@+id/btnSave"
                     android:layout_width="wrap_content"
                     android:layout_height="44dp"
                     android:layout_marginStart="10dp"
-                    android:text="Simpan"
+                    android:background="@drawable/bg_button_primary"
+                    android:text="@string/action_save"
                     android:textAllCaps="false"
-                    android:textColor="@android:color/white"
-                    android:background="@drawable/bg_button_primary" />
+                    android:textColor="@android:color/white" />
             </LinearLayout>
 
         </LinearLayout>

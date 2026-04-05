@@ -35,17 +35,41 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                        double changeAmount,
                        @NonNull String tableNumber,
                        @NonNull String deliveryAddress,
-                       double deliveryFee);
+                       double deliveryFee,
+                       @Nullable Integer customerId,
+                       @NonNull String customerName,
+                       long customerPoints);
     }
 
     public interface BankListener {
         void onConfirmBank(@NonNull BankCheckoutResult result);
     }
 
+    public static class CustomerOption {
+        public final int id;
+        @NonNull public final String name;
+        public final long points;
+
+        public CustomerOption(int id, @NonNull String name, long points) {
+            this.id = id;
+            this.name = name;
+            this.points = points;
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
     public static class BankCheckoutResult {
         @NonNull public String paymentMethodCode;
         @Nullable public Integer paymentMethodId;
         @Nullable public Integer bankAccountId;
+        @Nullable public Integer customerId;
+        @NonNull public String customerName;
+        public long customerPoints;
         @NonNull public String bankAccountLabel;
         @NonNull public String referenceNumber;
         @NonNull public String paymentNote;
@@ -62,6 +86,9 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         public BankCheckoutResult(@NonNull String paymentMethodCode,
                                   @Nullable Integer paymentMethodId,
                                   @Nullable Integer bankAccountId,
+                                  @Nullable Integer customerId,
+                                  @NonNull String customerName,
+                                  long customerPoints,
                                   @NonNull String bankAccountLabel,
                                   @NonNull String referenceNumber,
                                   @NonNull String paymentNote,
@@ -75,6 +102,9 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
             this.paymentMethodCode = paymentMethodCode;
             this.paymentMethodId = paymentMethodId;
             this.bankAccountId = bankAccountId;
+            this.customerId = customerId;
+            this.customerName = customerName;
+            this.customerPoints = customerPoints;
             this.bankAccountLabel = bankAccountLabel;
             this.referenceNumber = referenceNumber;
             this.paymentNote = paymentNote;
@@ -154,8 +184,14 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         this.bankListener = l;
     }
 
+    private final List<CustomerOption> customerOptions = new ArrayList<>();
     private final List<PaymentMethodOption> paymentOptions = new ArrayList<>();
     private final List<BankAccountOption> bankOptions = new ArrayList<>();
+
+    public void setCustomerOptions(@Nullable List<CustomerOption> items) {
+        customerOptions.clear();
+        if (items != null) customerOptions.addAll(items);
+    }
 
     public void setPaymentOptions(@Nullable List<PaymentMethodOption> items) {
         paymentOptions.clear();
@@ -184,6 +220,9 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
 
         TextView tvTotal = view.findViewById(R.id.tvTotalAmount);
 
+        Spinner spCustomer = view.findViewById(R.id.spCustomer);
+        TextView tvCustomerPointsInfo = view.findViewById(R.id.tvCustomerPointsInfo);
+
         Spinner spPaymentMethod = view.findViewById(R.id.spPaymentMethod);
         TextView tvBankLabel = view.findViewById(R.id.tvBankLabel);
         Spinner spBankAccount = view.findViewById(R.id.spBankAccount);
@@ -202,6 +241,14 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         if (etAddr != null) etAddr.setVisibility(needDelivery ? View.VISIBLE : View.GONE);
         if (etFee != null) etFee.setVisibility(needDelivery ? View.VISIBLE : View.GONE);
 
+        ArrayAdapter<CustomerOption> customerAdapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_item,
+                customerOptions
+        );
+        customerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spCustomer.setAdapter(customerAdapter);
+
         ArrayAdapter<PaymentMethodOption> paymentAdapter = new ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_spinner_item,
@@ -218,6 +265,7 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
             }
         }
         spPaymentMethod.setSelection(defaultIndex);
+
         ArrayAdapter<BankAccountOption> bankAdapter = new ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_spinner_item,
@@ -225,6 +273,17 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         );
         bankAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spBankAccount.setAdapter(bankAdapter);
+
+        final Runnable updateCustomerInfo = () -> {
+            CustomerOption customer = getSelectedCustomer(spCustomer);
+            if (tvCustomerPointsInfo != null) {
+                if (customer != null) {
+                    tvCustomerPointsInfo.setText("Points: " + customer.points);
+                } else {
+                    tvCustomerPointsInfo.setText("Points: 0");
+                }
+            }
+        };
 
         final Runnable updateTotals = () -> {
             double fee = (needDelivery && etFee != null) ? parseMoney(safe(etFee.getText())) : 0.0;
@@ -270,6 +329,18 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
             updateTotals.run();
         };
 
+        spCustomer.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view1, int position, long id) {
+                updateCustomerInfo.run();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                updateCustomerInfo.run();
+            }
+        });
+
         spPaymentMethod.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view1, int position, long id) {
@@ -301,6 +372,7 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         }
 
         if (tvTotal != null) tvTotal.setText(usd.format(baseSubtotal));
+        updateCustomerInfo.run();
         applyPaymentUi.run();
 
         androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
@@ -313,6 +385,7 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         dialog.setOnShowListener(dlg -> {
             dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
 
+                CustomerOption selectedCustomer = getSelectedCustomer(spCustomer);
                 PaymentMethodOption selectedMethod = getSelectedPaymentMethod(spPaymentMethod);
                 BankAccountOption selectedBank = getSelectedBankAccount(spBankAccount);
 
@@ -385,6 +458,10 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                     }
                 }
 
+                Integer customerId = selectedCustomer != null ? selectedCustomer.id : null;
+                String customerName = selectedCustomer != null ? selectedCustomer.name : "";
+                long customerPoints = selectedCustomer != null ? selectedCustomer.points : 0L;
+
                 if (listener != null) {
                     listener.onConfirm(
                             selectedMethod.code,
@@ -392,7 +469,10 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                             changeAmount,
                             table,
                             addr,
-                            deliveryFee
+                            deliveryFee,
+                            customerId,
+                            customerName,
+                            customerPoints
                     );
                 }
 
@@ -401,6 +481,9 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                             selectedMethod.code,
                             selectedMethod.id,
                             selectedMethod.requiresBankAccount && selectedBank != null ? selectedBank.id : null,
+                            customerId,
+                            customerName,
+                            customerPoints,
                             selectedMethod.requiresBankAccount && selectedBank != null ? selectedBank.label : "",
                             referenceNumber,
                             paymentNote,
@@ -420,6 +503,14 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         });
 
         return dialog;
+    }
+
+    @Nullable
+    private CustomerOption getSelectedCustomer(@Nullable Spinner spinner) {
+        if (spinner == null || spinner.getSelectedItem() == null) return null;
+        Object obj = spinner.getSelectedItem();
+        if (obj instanceof CustomerOption) return (CustomerOption) obj;
+        return null;
     }
 
     @Nullable
