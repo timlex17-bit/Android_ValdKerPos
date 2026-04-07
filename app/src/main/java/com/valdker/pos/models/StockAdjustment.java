@@ -1,0 +1,22 @@
+package com.valdker.pos.models;
+
+public class StockAdjustment {
+    public int id;
+
+    public int old_stock;
+    public int new_stock;
+
+    public String reason;   // LOST, DAMAGE, FOUND,
+    public String note;
+
+    public String adjusted_at; // ISO string
+    public int product;        // product id
+    public String product_name; // product name from API
+
+    public int adjusted_by;     // user id
+    public String adjusted_by_name; // user display/username from API
+
+    public int diff() {
+        return new_stock - old_stock;
+    }
+}

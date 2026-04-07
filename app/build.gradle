@@ -3,13 +3,13 @@ plugins {
 }
 
 android {
-    namespace 'com.example.valdker'
+    namespace 'com.valdker.pos'
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId "com.example.valdker"
+        applicationId "com.valdker.pos"
         minSdk 24
         targetSdk 36
         versionCode 1
@@ -43,35 +43,18 @@ android {
 
 dependencies {
 
-    // Room
     implementation "androidx.room:room-runtime:2.6.1"
     annotationProcessor "androidx.room:room-compiler:2.6.1"
 
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
-
-    // Room annotations
     implementation "androidx.annotation:annotation:1.7.1"
-
     implementation 'com.android.volley:volley:1.2.1'
-
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
-
     implementation "androidx.appcompat:appcompat:1.6.1"
-
-    // Room
-    implementation "androidx.room:room-runtime:2.6.1"
-    annotationProcessor "androidx.room:room-compiler:2.6.1"
-
-    // WorkManager
     implementation "androidx.work:work-runtime:2.9.1"
-
-    // Gson (Untuk Payload JSON)
     implementation "com.google.code.gson:gson:2.10.1"
-
     implementation 'com.github.DantSu:ESCPOS-ThermalPrinter-Android:3.3.0'
-
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
-
     implementation 'com.github.bumptech.glide:glide:4.16.0'
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
     annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'

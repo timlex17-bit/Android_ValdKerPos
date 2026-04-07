@@ -63,20 +63,22 @@
 
             <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="36dp"
+                android:layout_height="wrap_content"
                 android:background="#F3F4F6"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingLeft="4dp"
-                android:paddingRight="4dp">
+                android:padding="4dp">
 
                 <ImageButton
                     android:id="@+id/btnMinus"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:background="@android:color/transparent"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:background="@drawable/bg_qty_btn_outline"
                     android:contentDescription="Minus"
-                    android:src="@android:drawable/ic_media_previous" />
+                    android:padding="9dp"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_remove"
+                    android:tint="#111827" />
 
                 <TextView
                     android:id="@+id/txtQty"
@@ -90,11 +92,15 @@
 
                 <ImageButton
                     android:id="@+id/btnPlus"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:background="@android:color/transparent"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:background="@drawable/bg_qty_btn_outline"
                     android:contentDescription="Plus"
-                    android:src="@android:drawable/ic_input_add" />
+                    android:padding="9dp"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_add"
+                    android:tint="#111827" />
+
             </LinearLayout>
 
             <TextView
