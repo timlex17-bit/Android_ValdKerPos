@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -18,6 +19,7 @@ import com.valdker.pos.network.ApiConfig;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,19 +39,20 @@ public class ProductReturnRepository {
     }
 
     public static void fetchAll(@NonNull Context ctx, @NonNull ListCallback cb) {
-
         String url = ApiConfig.url(new SessionManager(ctx), ENDPOINT);
 
         JsonArrayRequest req = new JsonArrayRequest(
                 Request.Method.GET,
                 url,
                 null,
-                (JSONArray response) -> {
+                response -> {
                     try {
                         List<ProductReturn> out = new ArrayList<>();
                         for (int i = 0; i < response.length(); i++) {
                             JSONObject o = response.optJSONObject(i);
-                            if (o != null) out.add(ProductReturn.fromJson(o));
+                            if (o != null) {
+                                out.add(ProductReturn.fromJson(o));
+                            }
                         }
                         cb.onSuccess(out);
                     } catch (Exception e) {
@@ -58,10 +61,8 @@ public class ProductReturnRepository {
                     }
                 },
                 error -> {
-                    String msg = "Request failed.";
-                    if (error.networkResponse != null) {
-                        msg = "Request failed (" + error.networkResponse.statusCode + ").";
-                    }
+                    String msg = buildVolleyErrorMessage("Request failed.", error.networkResponse);
+                    logErrorBody("Fetch list error body", error.networkResponse);
                     Log.e(TAG, msg, error);
                     cb.onError(msg);
                 }
@@ -92,16 +93,16 @@ public class ProductReturnRepository {
     /**
      * Create Product Return (POST /api/productreturns/)
      *
-     * @param orderId   required
-     * @param customerId required
-     * @param note      optional
-     * @param returnedAtIso optional (example: "2026-02-21T13:13:17+09:00"), can be null
-     * @param items     required minimal 1 item
+     * Supports:
+     * - invoice return: orderId != null
+     * - manual return: orderId == null
+     *
+     * customerId is optional.
      */
     public static void create(
             @NonNull Context ctx,
-            int orderId,
-            int customerId,
+            @Nullable Integer orderId,
+            @Nullable Integer customerId,
             @Nullable String note,
             @Nullable String returnedAtIso,
             @NonNull List<CreateItem> items,
@@ -114,14 +115,27 @@ public class ProductReturnRepository {
             }
 
             JSONObject body = new JSONObject();
-            body.put("order", orderId);
 
-            if (customerId > 0) {
+            if (orderId != null && orderId > 0) {
+                body.put("order", orderId);
+            }
+
+            if (customerId != null && customerId > 0) {
                 body.put("customer_id", customerId);
             }
 
             if (note != null) {
-                body.put("note", note);
+                String trimmed = note.trim();
+                if (!trimmed.isEmpty()) {
+                    body.put("note", trimmed);
+                }
+            }
+
+            if (returnedAtIso != null) {
+                String trimmedReturnedAt = returnedAtIso.trim();
+                if (!trimmedReturnedAt.isEmpty()) {
+                    body.put("returned_at", trimmedReturnedAt);
+                }
             }
 
             JSONArray arr = new JSONArray();
@@ -134,7 +148,7 @@ public class ProductReturnRepository {
             }
             body.put("items", arr);
 
-            Log.d(TAG, "POST body: " + body.toString());
+            Log.d(TAG, "POST body: " + body);
 
             String url = ApiConfig.url(new SessionManager(ctx), ENDPOINT);
 
@@ -142,7 +156,7 @@ public class ProductReturnRepository {
                     Request.Method.POST,
                     url,
                     body,
-                    (JSONObject response) -> {
+                    response -> {
                         try {
                             ProductReturn created = ProductReturn.fromJson(response);
                             cb.onSuccess(created);
@@ -152,16 +166,8 @@ public class ProductReturnRepository {
                         }
                     },
                     error -> {
-                        String msg = "Create failed.";
-                        if (error.networkResponse != null) {
-                            msg = "Create failed (" + error.networkResponse.statusCode + ").";
-                            try {
-                                if (error.networkResponse.data != null) {
-                                    String raw = new String(error.networkResponse.data);
-                                    Log.e(TAG, "Create error body: " + raw);
-                                }
-                            } catch (Exception ignored) {}
-                        }
+                        String msg = buildVolleyErrorMessage("Create failed.", error.networkResponse);
+                        logErrorBody("Create error body", error.networkResponse);
                         Log.e(TAG, msg, error);
                         cb.onError(msg);
                     }
@@ -191,7 +197,8 @@ public class ProductReturnRepository {
     public static class CreateItem {
         public final int productId;
         public final int quantity;
-        @NonNull public final String unitPrice;
+        @NonNull
+        public final String unitPrice;
 
         public CreateItem(int productId, int quantity, @NonNull String unitPrice) {
             this.productId = productId;
@@ -208,36 +215,21 @@ public class ProductReturnRepository {
         void onError(@NonNull String message);
     }
 
-    /**
-     * Delete Product Return (DELETE /api/productreturns/{id}/)
-     */
     public static void delete(
             @NonNull Context ctx,
             int productReturnId,
             @NonNull DeleteCallback cb
     ) {
-
         String url = ApiConfig.url(new SessionManager(ctx), ENDPOINT + productReturnId + "/");
 
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.DELETE,
                 url,
                 null,
-                response -> {
-                    // biasanya DELETE 204 no content, volley bisa return empty object
-                    cb.onSuccess();
-                },
+                response -> cb.onSuccess(),
                 error -> {
-                    String msg = "Delete failed.";
-                    if (error.networkResponse != null) {
-                        msg = "Delete failed (" + error.networkResponse.statusCode + ").";
-                        try {
-                            if (error.networkResponse.data != null) {
-                                String raw = new String(error.networkResponse.data);
-                                Log.e(TAG, "Delete error body: " + raw);
-                            }
-                        } catch (Exception ignored) {}
-                    }
+                    String msg = buildVolleyErrorMessage("Delete failed.", error.networkResponse);
+                    logErrorBody("Delete error body", error.networkResponse);
                     Log.e(TAG, msg, error);
                     cb.onError(msg);
                 }
@@ -258,17 +250,53 @@ public class ProductReturnRepository {
     }
 
     // =======================
-    // Helpers
+    // HELPERS
     // =======================
     private static Map<String, String> buildHeaders(@NonNull Context ctx) {
         Map<String, String> h = new HashMap<>();
         h.put("Accept", "application/json");
 
-        // Token Auth
         String token = new SessionManager(ctx).getToken();
         if (token != null && !token.trim().isEmpty()) {
             h.put("Authorization", "Token " + token);
         }
         return h;
+    }
+
+    @NonNull
+    private static String buildVolleyErrorMessage(
+            @NonNull String fallback,
+            @Nullable NetworkResponse networkResponse
+    ) {
+        if (networkResponse == null) {
+            return fallback;
+        }
+
+        String message = fallback + " (" + networkResponse.statusCode + ").";
+
+        try {
+            if (networkResponse.data != null && networkResponse.data.length > 0) {
+                String raw = new String(networkResponse.data, StandardCharsets.UTF_8).trim();
+                if (!raw.isEmpty()) {
+                    message += " " + raw;
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        return message;
+    }
+
+    private static void logErrorBody(
+            @NonNull String prefix,
+            @Nullable NetworkResponse networkResponse
+    ) {
+        try {
+            if (networkResponse != null && networkResponse.data != null) {
+                String raw = new String(networkResponse.data, StandardCharsets.UTF_8);
+                Log.e(TAG, prefix + ": " + raw);
+            }
+        } catch (Exception ignored) {
+        }
     }
 }

@@ -40,6 +40,7 @@ public class CustomersFragment extends BaseFragment {
     private SwipeRefreshLayout swipe;
     private RecyclerView rv;
     private ProgressBar progress;
+    private View layoutEmpty;
     private TextView tvEmpty;
     private FloatingActionButton fabAdd;
 
@@ -68,6 +69,9 @@ public class CustomersFragment extends BaseFragment {
 
         session = new SessionManager(requireContext());
         repo = new CustomerRepository(requireContext());
+
+        layoutEmpty = view.findViewById(R.id.layoutEmptyCustomers);
+        tvEmpty = view.findViewById(R.id.tvEmptyCustomers);
 
         swipe = view.findViewById(R.id.swipeRefreshCustomers);
         rv = view.findViewById(R.id.rvCustomers);
@@ -298,7 +302,7 @@ public class CustomersFragment extends BaseFragment {
                 }
 
                 if (items.isEmpty()) {
-                    showEmpty("No customers");
+                    showEmpty();
                 } else {
                     showList();
                 }
@@ -358,7 +362,7 @@ public class CustomersFragment extends BaseFragment {
                 }
 
                 if (items.isEmpty()) {
-                    showEmpty("No customers");
+                    showEmpty();
                 } else {
                     showList();
                 }
@@ -399,23 +403,29 @@ public class CustomersFragment extends BaseFragment {
 
     private void showLoading() {
         if (progress != null) progress.setVisibility(View.VISIBLE);
-        if (tvEmpty != null) tvEmpty.setVisibility(View.GONE);
-        if (rv != null) rv.setVisibility(View.GONE);
+        if (layoutEmpty != null) layoutEmpty.setVisibility(View.GONE);
+        if (swipe != null) swipe.setVisibility(View.GONE);
+    }
+
+    private void showEmpty() {
+        if (progress != null) progress.setVisibility(View.GONE);
+        if (layoutEmpty != null) layoutEmpty.setVisibility(View.VISIBLE);
+        if (swipe != null) swipe.setVisibility(View.GONE);
     }
 
     private void showEmpty(@NonNull String msg) {
         if (progress != null) progress.setVisibility(View.GONE);
+        if (layoutEmpty != null) layoutEmpty.setVisibility(View.VISIBLE);
         if (tvEmpty != null) {
-            tvEmpty.setVisibility(View.VISIBLE);
             tvEmpty.setText(msg);
         }
-        if (rv != null) rv.setVisibility(View.GONE);
+        if (swipe != null) swipe.setVisibility(View.GONE);
     }
 
     private void showList() {
         if (progress != null) progress.setVisibility(View.GONE);
-        if (tvEmpty != null) tvEmpty.setVisibility(View.GONE);
-        if (rv != null) rv.setVisibility(View.VISIBLE);
+        if (layoutEmpty != null) layoutEmpty.setVisibility(View.GONE);
+        if (swipe != null) swipe.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -424,6 +434,7 @@ public class CustomersFragment extends BaseFragment {
         swipe = null;
         rv = null;
         progress = null;
+        layoutEmpty = null;
         tvEmpty = null;
         fabAdd = null;
     }

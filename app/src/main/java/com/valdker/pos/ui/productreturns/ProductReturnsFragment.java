@@ -4,6 +4,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.View;
+import android.widget.EditText;
+import android.text.Editable;
+import android.text.TextWatcher;
+import java.lang.reflect.Field;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -42,11 +46,15 @@ public class ProductReturnsFragment extends BaseFragment {
     private RecyclerView rv;
     private FloatingActionButton fabAdd;
     private ImageView btnBack;
+    private View layoutEmpty;
+    private TextView tvEmptySub;
     private ImageView ivHeaderAction;
 
     private final List<OrderLite> ordersLite = new ArrayList<>();
     private final List<CustomerLite> customersLite = new ArrayList<>();
     private final List<ProductLite> productsLite = new ArrayList<>();
+    private EditText etSearch;
+    private final List<ProductReturn> allData = new ArrayList<>();
 
     private final List<ProductReturn> data = new ArrayList<>();
     private ProductReturnAdapter adapter;
@@ -75,9 +83,75 @@ public class ProductReturnsFragment extends BaseFragment {
         setupRecycler();
         setupFab();
         setupSwipe();
+        setupSearch();
 
         load();
         preloadLiteData();
+    }
+
+    private void setupSearch() {
+        if (etSearch == null) return;
+
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                applySearch(s != null ? s.toString() : "");
+            }
+        });
+    }
+
+    private void applySearch(@NonNull String keyword) {
+        String q = keyword.trim().toLowerCase();
+
+        data.clear();
+
+        if (q.isEmpty()) {
+            data.addAll(allData);
+        } else {
+            for (ProductReturn item : allData) {
+                if (item == null) continue;
+
+                String haystack =
+                        (
+                                getFieldValue(item, "invoice_number") + " " +
+                                        getFieldValue(item, "invoice_id") + " " +
+                                        getFieldValue(item, "invoice_title") + " " +
+                                        getFieldValue(item, "note") + " " +
+                                        getFieldValue(item, "customer_name") + " " +
+                                        getFieldValue(item, "returned_by") + " " +
+                                        getFieldValue(item, "order_reference")
+                        ).toLowerCase();
+
+                if (haystack.contains(q)) {
+                    data.add(item);
+                }
+            }
+        }
+
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
+
+        updateEmptyDefault();
+    }
+
+    @NonNull
+    private String getFieldValue(@NonNull ProductReturn item, @NonNull String fieldName) {
+        try {
+            Field field = item.getClass().getField(fieldName);
+            Object value = field.get(item);
+            return value == null ? "" : String.valueOf(value);
+        } catch (Exception ignored) {
+            return "";
+        }
     }
 
     private void bindViews(@NonNull View view) {
@@ -88,6 +162,10 @@ public class ProductReturnsFragment extends BaseFragment {
         fabAdd = view.findViewById(R.id.fabAdd);
         btnBack = view.findViewById(R.id.btnBack);
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
+        layoutEmpty = view.findViewById(R.id.layoutEmpty);
+        tvEmpty = view.findViewById(R.id.tvEmpty);
+        tvEmptySub = view.findViewById(R.id.tvEmptySub);
+        etSearch = view.findViewById(R.id.etSearch);
     }
 
     private void applyInsets(@NonNull View root) {
@@ -326,14 +404,12 @@ public class ProductReturnsFragment extends BaseFragment {
                 isLoadingList = false;
                 showLoading(false);
 
-                data.clear();
-                data.addAll(items);
+                allData.clear();
+                allData.addAll(items);
 
-                if (adapter != null) {
-                    adapter.notifyDataSetChanged();
-                }
-
-                updateEmptyDefault();
+                applySearch(etSearch != null && etSearch.getText() != null
+                        ? etSearch.getText().toString()
+                        : "");
             }
 
             @Override
@@ -343,12 +419,16 @@ public class ProductReturnsFragment extends BaseFragment {
                 isLoadingList = false;
                 showLoading(false);
 
+                allData.clear();
                 data.clear();
+
                 if (adapter != null) {
                     adapter.notifyDataSetChanged();
                 }
 
-                if (tvEmpty != null) {
+                updateEmptyDefault();
+
+                if (tvEmpty != null && layoutEmpty == null) {
                     tvEmpty.setText(message == null || message.trim().isEmpty()
                             ? "Failed to load product returns."
                             : message);
@@ -385,13 +465,14 @@ public class ProductReturnsFragment extends BaseFragment {
     }
 
     private void updateEmptyDefault() {
-        if (tvEmpty == null) return;
+        if (layoutEmpty == null || tvEmpty == null || tvEmptySub == null) return;
 
         if (data.isEmpty()) {
             tvEmpty.setText("No product returns yet.");
-            tvEmpty.setVisibility(View.VISIBLE);
+            tvEmptySub.setText("Tap + to create a new product return.");
+            layoutEmpty.setVisibility(View.VISIBLE);
         } else {
-            tvEmpty.setVisibility(View.GONE);
+            layoutEmpty.setVisibility(View.GONE);
         }
     }
 
@@ -425,7 +506,8 @@ public class ProductReturnsFragment extends BaseFragment {
         btnBack = null;
         ivHeaderAction = null;
         adapter = null;
-
+        etSearch = null;
+        allData.clear();
         isLoadingList = false;
         isPreloadingLite = false;
         isDialogOpening = false;

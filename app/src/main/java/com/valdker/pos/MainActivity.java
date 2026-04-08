@@ -1720,8 +1720,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onRetailAddToCartRequested(@NonNull RetailCartItem item) {
-        // Retail scan-only checkout tidak lagi bergantung pada CartFragment.
-        // Payload order diambil langsung dari scannedProducts milik RetailPOSFragment.
         Log.d(TAG, "Retail local scan item: " + item.name);
     }
 }

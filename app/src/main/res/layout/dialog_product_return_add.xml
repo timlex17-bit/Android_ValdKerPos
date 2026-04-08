@@ -30,6 +30,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <!-- Main Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -53,157 +54,301 @@
                         android:textSize="16sp"
                         android:textColor="#111827" />
 
+                    <!-- Return Mode -->
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:text="Invoice"
+                        android:text="Return Type"
                         android:textColor="#6B7280"
                         android:textSize="12sp"
                         android:textStyle="bold" />
 
-                    <com.google.android.material.card.MaterialCardView
+                    <RadioGroup
+                        android:id="@+id/rgReturnMode"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:backgroundTint="#FFFFFF"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="0dp"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="#D1D5DB">
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
 
-                        <Spinner
-                            android:id="@+id/spOrder"
-                            android:layout_width="match_parent"
-                            android:layout_height="54dp"
-                            android:background="@android:color/transparent"
-                            android:paddingStart="14dp"
-                            android:paddingEnd="14dp" />
-                    </com.google.android.material.card.MaterialCardView>
+                        <RadioButton
+                            android:id="@+id/rbByInvoice"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:buttonTint="#22C55E"
+                            android:checked="true"
+                            android:text="By Invoice"
+                            android:textColor="#111827"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
 
-                    <TextView
-                        android:id="@+id/tvCustomerAuto"
+                        <RadioButton
+                            android:id="@+id/rbManual"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:buttonTint="#22C55E"
+                            android:text="Manual"
+                            android:textColor="#111827"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+                    </RadioGroup>
+
+                    <!-- Invoice Section -->
+                    <LinearLayout
+                        android:id="@+id/layoutInvoiceSection"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="14dp"
-                        android:text="Customer: -"
-                        android:textColor="#111827"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
+                        android:layout_marginTop="6dp"
+                        android:orientation="vertical">
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="14dp"
-                        android:text="Item in Invoice"
-                        android:textColor="#6B7280"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:backgroundTint="#FFFFFF"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="0dp"
-                        app:strokeWidth="1dp"
-                        app:strokeColor="#D1D5DB">
-
-                        <Spinner
-                            android:id="@+id/spOrderItem"
-                            android:layout_width="match_parent"
-                            android:layout_height="54dp"
-                            android:background="@android:color/transparent"
-                            android:paddingStart="14dp"
-                            android:paddingEnd="14dp" />
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="14dp"
-                        android:hint="Qty Return"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="#FFFFFF"
-                        app:boxStrokeColor="#D1D5DB"
-                        app:boxCornerRadiusTopStart="16dp"
-                        app:boxCornerRadiusTopEnd="16dp"
-                        app:boxCornerRadiusBottomStart="16dp"
-                        app:boxCornerRadiusBottomEnd="16dp"
-                        app:hintTextColor="#6B7280">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etQty"
+                        <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Qty"
-                            android:inputType="number"
-                            android:textColor="#111827"
-                            android:textColorHint="#9CA3AF" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                            android:layout_marginTop="14dp"
+                            android:text="Invoice"
+                            android:textColor="#6B7280"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:hint="Unit Price"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="#FFFFFF"
-                        app:boxStrokeColor="#D1D5DB"
-                        app:boxCornerRadiusTopStart="16dp"
-                        app:boxCornerRadiusTopEnd="16dp"
-                        app:boxCornerRadiusBottomStart="16dp"
-                        app:boxCornerRadiusBottomEnd="16dp"
-                        app:hintTextColor="#6B7280"/>
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:hint="Unit Price"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="#FFFFFF"
-                        app:boxStrokeColor="#D1D5DB"
-                        app:boxCornerRadiusTopStart="16dp"
-                        app:boxCornerRadiusTopEnd="16dp"
-                        app:boxCornerRadiusBottomStart="16dp"
-                        app:boxCornerRadiusBottomEnd="16dp"
-                        app:hintTextColor="#6B7280">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etUnitPrice"
+                        <com.google.android.material.card.MaterialCardView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:clickable="false"
-                            android:enabled="false"
-                            android:focusable="false"
-                            android:importantForAutofill="no"
-                            android:inputType="none"
-                            android:longClickable="false"
+                            android:layout_marginTop="8dp"
+                            android:backgroundTint="#FFFFFF"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="#D1D5DB">
+
+                            <Spinner
+                                android:id="@+id/spOrder"
+                                android:layout_width="match_parent"
+                                android:layout_height="54dp"
+                                android:background="@android:color/transparent"
+                                android:paddingStart="14dp"
+                                android:paddingEnd="14dp" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <TextView
+                            android:id="@+id/tvCustomerAuto"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:text="Customer: -"
                             android:textColor="#111827"
-                            android:textIsSelectable="false"/>
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
 
-                    </com.google.android.material.textfield.TextInputLayout>
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:text="Item in Invoice"
+                            android:textColor="#6B7280"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
 
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:backgroundTint="#FFFFFF"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="#D1D5DB">
+
+                            <Spinner
+                                android:id="@+id/spOrderItem"
+                                android:layout_width="match_parent"
+                                android:layout_height="54dp"
+                                android:background="@android:color/transparent"
+                                android:paddingStart="14dp"
+                                android:paddingEnd="14dp" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:hint="Qty Return"
+                            app:boxBackgroundMode="outline"
+                            app:boxBackgroundColor="#FFFFFF"
+                            app:boxStrokeColor="#D1D5DB"
+                            app:boxCornerRadiusTopStart="16dp"
+                            app:boxCornerRadiusTopEnd="16dp"
+                            app:boxCornerRadiusBottomStart="16dp"
+                            app:boxCornerRadiusBottomEnd="16dp"
+                            app:hintTextColor="#6B7280">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etQty"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Qty"
+                                android:inputType="number"
+                                android:textColor="#111827"
+                                android:textColorHint="#9CA3AF" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:hint="Unit Price"
+                            app:boxBackgroundMode="outline"
+                            app:boxBackgroundColor="#FFFFFF"
+                            app:boxStrokeColor="#D1D5DB"
+                            app:boxCornerRadiusTopStart="16dp"
+                            app:boxCornerRadiusTopEnd="16dp"
+                            app:boxCornerRadiusBottomStart="16dp"
+                            app:boxCornerRadiusBottomEnd="16dp"
+                            app:hintTextColor="#6B7280">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etUnitPrice"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:clickable="false"
+                                android:enabled="false"
+                                android:focusable="false"
+                                android:importantForAutofill="no"
+                                android:inputType="none"
+                                android:longClickable="false"
+                                android:textColor="#111827"
+                                android:textIsSelectable="false" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnAddItem"
+                            style="@style/Widget.MaterialComponents.Button"
+                            android:layout_width="match_parent"
+                            android:layout_height="54dp"
+                            android:layout_marginTop="16dp"
+                            android:backgroundTint="#22C55E"
+                            android:text="Add Invoice Item"
+                            android:textAllCaps="false"
+                            android:textColor="#FFFFFF"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="16dp" />
+                    </LinearLayout>
+
+                    <!-- Manual Section -->
+                    <LinearLayout
+                        android:id="@+id/layoutManualSection"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/tvManualHint"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:text="Manual return does not require invoice or customer."
+                            android:textColor="#6B7280"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:text="Product"
+                            android:textColor="#6B7280"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:backgroundTint="#FFFFFF"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="#D1D5DB">
+
+                            <Spinner
+                                android:id="@+id/spManualProduct"
+                                android:layout_width="match_parent"
+                                android:layout_height="54dp"
+                                android:background="@android:color/transparent"
+                                android:paddingStart="14dp"
+                                android:paddingEnd="14dp" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:hint="Qty Return"
+                            app:boxBackgroundMode="outline"
+                            app:boxBackgroundColor="#FFFFFF"
+                            app:boxStrokeColor="#D1D5DB"
+                            app:boxCornerRadiusTopStart="16dp"
+                            app:boxCornerRadiusTopEnd="16dp"
+                            app:boxCornerRadiusBottomStart="16dp"
+                            app:boxCornerRadiusBottomEnd="16dp"
+                            app:hintTextColor="#6B7280">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etManualQty"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Qty"
+                                android:inputType="number"
+                                android:textColor="#111827"
+                                android:textColorHint="#9CA3AF" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:hint="Unit Price"
+                            app:boxBackgroundMode="outline"
+                            app:boxBackgroundColor="#FFFFFF"
+                            app:boxStrokeColor="#D1D5DB"
+                            app:boxCornerRadiusTopStart="16dp"
+                            app:boxCornerRadiusTopEnd="16dp"
+                            app:boxCornerRadiusBottomStart="16dp"
+                            app:boxCornerRadiusBottomEnd="16dp"
+                            app:hintTextColor="#6B7280">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etManualUnitPrice"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="numberDecimal"
+                                android:textColor="#111827"
+                                android:textColorHint="#9CA3AF" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnAddManualItem"
+                            style="@style/Widget.MaterialComponents.Button"
+                            android:layout_width="match_parent"
+                            android:layout_height="54dp"
+                            android:layout_marginTop="16dp"
+                            android:backgroundTint="#22C55E"
+                            android:text="Add Manual Item"
+                            android:textAllCaps="false"
+                            android:textColor="#FFFFFF"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="16dp" />
+                    </LinearLayout>
+
+                    <!-- Shared Note -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:hint="Note"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="#FFFFFF"
-                        app:boxStrokeColor="#D1D5DB"
-                        app:boxCornerRadiusTopStart="16dp"
-                        app:boxCornerRadiusTopEnd="16dp"
-                        app:boxCornerRadiusBottomStart="16dp"
-                        app:boxCornerRadiusBottomEnd="16dp"
-                        app:hintTextColor="#6B7280"/>
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="14dp"
                         android:hint="Reason / note"
                         app:boxBackgroundMode="outline"
                         app:boxBackgroundColor="#FFFFFF"
@@ -222,27 +367,13 @@
                             android:inputType="textMultiLine"
                             android:minLines="2"
                             android:textColor="#111827"
-                            android:textColorHint="#9CA3AF"/>
-
+                            android:textColorHint="#9CA3AF" />
                     </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnAddItem"
-                        style="@style/Widget.MaterialComponents.Button"
-                        android:layout_width="match_parent"
-                        android:layout_height="54dp"
-                        android:layout_marginTop="16dp"
-                        android:backgroundTint="#22C55E"
-                        android:text="Add Item"
-                        android:textAllCaps="false"
-                        android:textColor="#FFFFFF"
-                        android:textSize="15sp"
-                        android:textStyle="bold"
-                        app:cornerRadius="16dp" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Preview Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -290,7 +421,6 @@
                         android:layout_height="wrap_content"
                         android:text=""
                         android:visibility="gone" />
-
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

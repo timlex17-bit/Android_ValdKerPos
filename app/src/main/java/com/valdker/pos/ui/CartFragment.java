@@ -423,7 +423,6 @@ public class CartFragment extends Fragment {
                                         "Failed to load customers: " + message,
                                         Toast.LENGTH_LONG).show();
 
-                                // tetap buka dialog walau customer gagal dimuat
                                 List<NativeCheckoutDialogFragment.CustomerOption> fallbackCustomers = new ArrayList<>();
                                 fallbackCustomers.add(
                                         new NativeCheckoutDialogFragment.CustomerOption(
@@ -488,7 +487,7 @@ public class CartFragment extends Fragment {
 
         if (!cartManager.belongsToShop(activeShopId)) {
             Toast.makeText(requireContext(),
-                    "Cart tidak cocok dengan toko aktif. Cart akan dibersihkan, silakan pilih produk lagi.",
+                    "The cart does not match any active stores. The cart will be cleared. Please select the product again.",
                     Toast.LENGTH_LONG).show();
             cartManager.clear();
             if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
@@ -614,7 +613,7 @@ public class CartFragment extends Fragment {
             }
 
             if (itemsArr.length() == 0) {
-                Toast.makeText(requireContext(), "Checkout gagal: items kosong.", Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), "Checkout failed: items empty.", Toast.LENGTH_LONG).show();
                 Log.e(TAG, "Checkout aborted because itemsArr is empty. snapshot size=" + snapshot.size());
                 if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
                 return;
@@ -717,7 +716,7 @@ public class CartFragment extends Fragment {
         if (!com.valdker.pos.print.PrinterService.hasBtPermission(appCtx)) {
             Log.w(TAG, "Bluetooth permission not granted -> skip auto print");
             mainHandler.post(() ->
-                    Toast.makeText(appCtx, "Bluetooth permission belum di-allow. Print dibatalkan.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(appCtx, "Bluetooth permission has not been allowed. Print canceled.", Toast.LENGTH_LONG).show()
             );
             return;
         }
@@ -726,7 +725,7 @@ public class CartFragment extends Fragment {
         if (mac == null || mac.trim().isEmpty()) {
             Log.w(TAG, "No printer selected -> skip auto print");
             mainHandler.post(() ->
-                    Toast.makeText(appCtx, "Printer belum dipilih. Pilih dulu di Settings > Printer.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(appCtx, "The printer isn't selected. Select it first in Settings > Printer.", Toast.LENGTH_LONG).show()
             );
             return;
         }

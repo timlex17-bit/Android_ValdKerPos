@@ -89,23 +89,6 @@
                     android:paddingLeft="12dp"
                     android:paddingRight="12dp">
 
-                    <!--                    <View-->
-                    <!--                        android:id="@+id/dotStatus"-->
-                    <!--                        android:layout_width="9dp"-->
-                    <!--                        android:layout_height="9dp"-->
-                    <!--                        android:layout_marginEnd="8dp"-->
-                    <!--                        android:background="@drawable/bg_status_dot" />-->
-
-                    <!-- Status -->
-                    <!--                    <TextView-->
-                    <!--                        android:id="@+id/tvStatus"-->
-                    <!--                        android:layout_width="wrap_content"-->
-                    <!--                        android:layout_height="wrap_content"-->
-                    <!--                        android:text="Offline"-->
-                    <!--                        android:textStyle="bold"-->
-                    <!--                        android:textSize="13sp"-->
-                    <!--                        android:textColor="#374151" />-->
-
                     <!-- Cart Icon -->
                     <ImageButton
                         android:id="@+id/btnCart"

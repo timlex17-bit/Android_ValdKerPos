@@ -129,18 +129,35 @@
                     android:paddingBottom="16dp" />
             </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-            <TextView
-                android:id="@+id/tvEmptyCustomers"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:id="@+id/layoutEmptyCustomers"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:gravity="center"
+                android:orientation="vertical"
                 android:padding="24dp"
-                android:text="No customers yet."
-                android:textColor="#6B7280"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                android:visibility="gone" />
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tvEmptyCustomers"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="No customers found"
+                    android:textColor="#6B7280"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvEmptyCustomersSub"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center"
+                    android:text="Tap + to create a new customer."
+                    android:textColor="#9CA3AF"
+                    android:textSize="13sp" />
+            </LinearLayout>
 
             <ProgressBar
                 android:id="@+id/progressCustomers"
