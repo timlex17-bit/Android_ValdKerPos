@@ -1,83 +1,172 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@android:color/white"
     android:orientation="vertical"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp"
-    android:paddingTop="14dp"
-    android:paddingBottom="14dp"
-    android:background="@android:color/white">
+    android:paddingStart="14dp"
+    android:paddingTop="12dp"
+    android:paddingEnd="14dp"
+    android:paddingBottom="12dp">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/tvName"
+        <!-- PRODUCT INFO -->
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_toStartOf="@id/tvPrice"
-            android:layout_marginEnd="12dp"
-            android:ellipsize="end"
-            android:maxLines="2"
-            android:text="Oli Mesin Castrol"
-            android:textColor="#111827"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingEnd="10dp">
 
-        <TextView
-            android:id="@+id/tvPrice"
+            <TextView
+                android:id="@+id/tvName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:text="Oli Mesin Castrol"
+                android:textColor="#111827"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvSku"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="SKU: OL-001"
+                android:textColor="#64748B"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tvStock"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="Stock: 24"
+                android:textColor="#64748B"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- PRICE + QTY CONTROL -->
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:text="$12.00"
-            android:textColor="#111827"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:gravity="end"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tvSku"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/tvName"
-            android:layout_marginTop="6dp"
-            android:text="SKU: OL-001"
-            android:textColor="#6B7280"
-            android:textSize="13sp" />
+            <TextView
+                android:id="@+id/tvPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="$12.00"
+                android:textColor="#16A34A"
+                android:textSize="15sp"
+                android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/tvStock"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/tvSku"
-            android:layout_marginTop="6dp"
-            android:text="Stock: 24"
-            android:textColor="#6B7280"
-            android:textSize="13sp" />
+            <LinearLayout
+                android:id="@+id/layoutQtyControl"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginTop="10dp"
+                android:background="#F8FAFC"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp">
 
-        <!-- tetap ada supaya ProductAdapter tidak crash,
-             tapi disembunyikan -->
-        <ImageView
-            android:id="@+id/imgProduct"
-            android:layout_width="1dp"
-            android:layout_height="1dp"
-            android:visibility="gone"
-            android:contentDescription="hidden product image" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnMinus"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:insetLeft="0dp"
+                    android:insetTop="0dp"
+                    android:insetRight="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp"
+                    android:text="-"
+                    android:textAllCaps="false"
+                    android:textColor="#EF4444"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:backgroundTint="#FFFFFF"
+                    app:cornerRadius="12dp"
+                    app:elevation="0dp"
+                    app:strokeColor="#FECACA"
+                    app:strokeWidth="1dp" />
 
-        <Button
-            android:id="@+id/btnAdd"
-            android:layout_width="1dp"
-            android:layout_height="1dp"
-            android:visibility="gone"
-            android:text="Add" />
-    </RelativeLayout>
+                <TextView
+                    android:id="@+id/tvQty"
+                    android:layout_width="38dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="1"
+                    android:textColor="#111827"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnPlus"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:insetLeft="0dp"
+                    android:insetTop="0dp"
+                    android:insetRight="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp"
+                    android:text="+"
+                    android:textAllCaps="false"
+                    android:textColor="#16A34A"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:backgroundTint="#FFFFFF"
+                    app:cornerRadius="12dp"
+                    app:elevation="0dp"
+                    app:strokeColor="#BBF7D0"
+                    app:strokeWidth="1dp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Hidden views: tetap ada supaya adapter lama tidak crash -->
+    <ImageView
+        android:id="@+id/imgProduct"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:contentDescription="hidden product image"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/btnAdd"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:text="Add"
+        android:visibility="gone" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="14dp"
-        android:background="#ECECEC" />
+        android:layout_marginTop="12dp"
+        android:background="#EEF2F7" />
 
 </LinearLayout>

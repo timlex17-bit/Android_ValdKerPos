@@ -8,20 +8,28 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.ErrorHandler;
+import com.valdker.pos.utils.NetworkUtils;
+import com.valdker.pos.utils.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -29,20 +37,33 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.bumptech.glide.Glide;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.valdker.pos.adapters.CategoryAdapter;
 import com.valdker.pos.auth.AuthEvents;
 import com.valdker.pos.cart.CartManager;
+import com.valdker.pos.drafts.PosDraftEntity;
+import com.valdker.pos.drafts.PosDraftItemEntity;
+import com.valdker.pos.drafts.PosDraftMapper;
+import com.valdker.pos.drafts.PosDraftRepository;
+import com.valdker.pos.drafts.PosDraftSnapshot;
+import com.valdker.pos.models.CartItem;
 import com.valdker.pos.models.Category;
 import com.valdker.pos.models.Customer;
 import com.valdker.pos.models.Shop;
@@ -50,8 +71,11 @@ import com.valdker.pos.network.ApiClient;
 import com.valdker.pos.network.ApiConfig;
 import com.valdker.pos.repositories.CheckoutConfigRepository;
 import com.valdker.pos.repositories.CustomerRepository;
+import com.valdker.pos.repositories.MasterDataRepository;
+import com.valdker.pos.repositories.OfflineOrderRepository;
 import com.valdker.pos.repositories.ShiftRepository;
 import com.valdker.pos.repositories.ShopRepository;
+import com.valdker.pos.ui.CartFragment;
 import com.valdker.pos.ui.ProductsFragment;
 import com.valdker.pos.ui.checkout.BankAccountItem;
 import com.valdker.pos.ui.checkout.NativeCheckoutDialogFragment;
@@ -64,29 +88,46 @@ import com.valdker.pos.workshop.WorkshopPOSFragment;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings("deprecation")
 public class MainActivity extends AppCompatActivity
         implements WorkshopPOSFragment.WorkshopHostActions,
-        RetailPOSFragment.RetailHostActions {
+        RetailPOSFragment.RetailHostActions,
+        CartFragment.DraftLifecycleHost {
+
+    private interface ReceiptPrintCallback {
+        void onComplete(@NonNull com.valdker.pos.print.BluetoothPrinterManager.PrintResult result);
+    }
 
     private static final String TAG = "MAIN_NATIVE";
     private static final String TAG_SHIFT_DIALOG = "SHIFT_OPEN_DIALOG";
     private static final String TAG_BARCODE_DIALOG = "BARCODE_DIALOG";
     private static final String TAG_RETAIL_ORDER_CREATE = "RETAIL_ORDER_CREATE";
+    private static final String TAG_NATIVE_CHECKOUT_DIALOG = "native_checkout";
+    private static final String POS_TYPE_RESTAURANT = "restaurant";
+    private static final String POS_TYPE_RETAIL = "retail";
 
     private static final int CAMERA_REQUEST = 100;
+    private static final long BARCODE_DEBOUNCE_MS = 700L;
 
     private volatile boolean barcodeDispatchRunning = false;
     @Nullable
     private String pendingBarcode = null;
+    @Nullable
+    private String lastBarcodeInput = null;
+    private long lastBarcodeInputAt = 0L;
 
     private String businessType = "retail";
     private boolean useGridPosLayout = false;
@@ -99,23 +140,40 @@ public class MainActivity extends AppCompatActivity
     private boolean enableSplitPayment = false;
 
     private volatile boolean shiftGateRunning = false;
-    private volatile boolean shiftDialogShowing = false;
+    private volatile boolean isCheckingShift = false;
+    private volatile boolean shiftGateAlreadyPassed = false;
+    private volatile boolean isShiftDialogShowing = false;
 
     private volatile boolean closeShiftFlowRunning = false;
     private volatile boolean logoutFlowRunning = false;
     private volatile boolean retailOrderSubmitting = false;
+    private volatile boolean retailCheckoutDialogOpening = false;
 
     private volatile boolean categoriesAppliedFromOnline = false;
 
     private TextView tvCartBadge;
     private PopupWindow userPopup;
-    private ImageButton btnUser;
 
     private View btnBarcode;
     private EditText etSearch;
     private String allIconUrl = null;
     private CategoryAdapter categoryAdapter;
     private final List<Category> categoryList = new ArrayList<>();
+
+    private Chip chipDraftA;
+    private Chip chipDraftB;
+    private Chip chipDraftC;
+    private Chip chipAddDraft;
+    private ChipGroup chipGroupDrafts;
+    @Nullable
+    private PosDraftRepository posDraftRepository;
+    private final ExecutorService draftExecutor = Executors.newSingleThreadExecutor();
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private final List<PosDraftEntity> posDrafts = new ArrayList<>();
+    private final Map<Long, Integer> draftItemCounts = new HashMap<>();
+    private long activeDraftId = 0L;
+    private boolean loadingDraftFromRoom = false;
+    private boolean initialDraftLoadPending = true;
 
     private SessionManager session;
     private String cachedUsername = "admin";
@@ -124,7 +182,7 @@ public class MainActivity extends AppCompatActivity
     private ImageView imgLogo;
     private TextView tvShopAddress;
 
-    private final CartManager.Listener cartListener = this::refreshCartBadge;
+    private final CartManager.Listener cartListener = this::onMainCartChanged;
 
     private boolean isActivityAlive() {
         return !isFinishing() && !isDestroyed();
@@ -177,42 +235,47 @@ public class MainActivity extends AppCompatActivity
     };
 
     private void ensureShiftOpenOrBlock() {
-        if (shiftGateRunning) return;
-        shiftGateRunning = true;
+        if (BuildConfig.DEBUG) Log.d(TAG, "SHIFT_GATE: ensureShiftOpenOrBlock called");
+
+        if (shiftGateAlreadyPassed) {
+            if (BuildConfig.DEBUG) Log.d(TAG, "SHIFT_GATE: skip because gate already passed");
+            return;
+        }
+
+        if (isCheckingShift || shiftGateRunning) {
+            if (BuildConfig.DEBUG) Log.d(TAG, "SHIFT_GATE: skip because checking already in progress");
+            return;
+        }
 
         final SessionManager sm = session;
         final ShiftRepository repo = new ShiftRepository(MainActivity.this, sm);
 
-        try {
-            boolean sessionOpen = sm.isShiftOpen();
-            long sid = sm.getShiftId();
-            if (sessionOpen && sid > 0) {
-                Log.i(TAG, "SHIFT_GATE: session says OPEN (sid=" + sid + ") -> skip");
-                shiftGateRunning = false;
-                return;
-            }
-        } catch (Exception ignored) {
-        }
-
-        if (!isNetworkAvailable()) {
-            shiftGateRunning = false;
-            safeUi(() -> {
-                Toast.makeText(
-                        MainActivity.this,
-                        "Internet is required to check/open a shift.",
-                        Toast.LENGTH_LONG
-                ).show();
-                showShiftDialogOnce(repo, sm);
-            });
+        if (isLocalShiftOpen(sm)) {
+            shiftGateAlreadyPassed = true;
+            if (BuildConfig.DEBUG) Log.d(TAG, "SHIFT_GATE: skip because local shift is already open");
             return;
         }
 
+        if (isShiftDialogShowing) {
+            if (BuildConfig.DEBUG) Log.d(TAG, "SHIFT_GATE: skip because dialog already showing");
+            return;
+        }
+
+        if (!isNetworkAvailable()) {
+            safeUi(() -> ErrorHandler.showNoInternet(MainActivity.this, null));
+            return;
+        }
+
+        shiftGateRunning = true;
+        isCheckingShift = true;
+
         safeUi(() -> {
-            Log.i(TAG, "SHIFT_GATE: checking /shifts/current/ (ONLINE ONLY) ...");
+            if (BuildConfig.DEBUG) Log.d(TAG, "SHIFT_GATE: checking backend current shift...");
 
             final android.os.Handler h = new android.os.Handler(android.os.Looper.getMainLooper());
             final Runnable timeout = () -> {
-                Log.w(TAG, "SHIFT_GATE: getCurrent timeout -> show dialog");
+                if (BuildConfig.DEBUG) Log.d(TAG, "SHIFT_GATE: backend current shift check timeout");
+                isCheckingShift = false;
                 shiftGateRunning = false;
                 showShiftDialogOnce(repo, sm);
             };
@@ -223,20 +286,18 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onSuccess(boolean open, com.valdker.pos.models.Shift shift) {
                     h.removeCallbacks(timeout);
+                    isCheckingShift = false;
 
-                    Log.i(TAG, "SHIFT_GATE: getCurrent success open=" + open
-                            + " shift=" + (shift != null ? shift.id : "null"));
+                    if (BuildConfig.DEBUG) {
+                        Log.d(TAG, "SHIFT_GATE: backend shift open=" + open
+                                + " id=" + (shift != null ? shift.id : 0));
+                    }
 
-                    if (open && shift != null) {
-                        sm.setShiftOpen(true);
-                        sm.setShiftId(shift.id);
-                        sm.setOpeningCash(
-                                (shift.opening_cash == null || shift.opening_cash.trim().isEmpty())
-                                        ? "0.00"
-                                        : shift.opening_cash
-                        );
-
-                        Log.i(TAG, "SHIFT_GATE: already OPEN (ONLINE) id=" + shift.id);
+                    if (open && shift != null && shift.id > 0) {
+                        persistOpenShift(sm, shift);
+                        if (BuildConfig.DEBUG) {
+                            Log.d(TAG, "SHIFT_GATE: current shift found, saved locally id=" + shift.id);
+                        }
                         shiftGateRunning = false;
                         return;
                     }
@@ -248,8 +309,8 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onError(@NonNull String message) {
                     h.removeCallbacks(timeout);
-                    Log.e(TAG, "SHIFT_GATE: getCurrent error: " + message);
-
+                    if (BuildConfig.DEBUG) Log.d(TAG, "SHIFT_GATE: backend current shift check error: " + message);
+                    isCheckingShift = false;
                     shiftGateRunning = false;
                     showShiftDialogOnce(repo, sm);
                 }
@@ -258,25 +319,31 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showShiftDialogOnce(@NonNull ShiftRepository repo, @NonNull SessionManager sm) {
+        if (shiftGateAlreadyPassed || isLocalShiftOpen(sm)) {
+            shiftGateAlreadyPassed = true;
+            if (BuildConfig.DEBUG) Log.d(TAG, "SHIFT_GATE: skip dialog because shift is already open");
+            return;
+        }
+
         if (!isActivityAlive()) {
-            shiftDialogShowing = false;
+            isShiftDialogShowing = false;
             return;
         }
 
         Fragment existing = getSupportFragmentManager().findFragmentByTag(TAG_SHIFT_DIALOG);
         if (existing != null) {
-            Log.i(TAG, "SHIFT_GATE: dialog already shown (fragment exists) -> skip");
-            shiftDialogShowing = true;
+            if (BuildConfig.DEBUG) Log.d(TAG, "SHIFT_GATE: dialog already shown (fragment exists)");
+            isShiftDialogShowing = true;
             return;
         }
 
-        if (shiftDialogShowing) {
-            Log.i(TAG, "SHIFT_GATE: dialog already showing (flag) -> skip");
+        if (isShiftDialogShowing) {
+            if (BuildConfig.DEBUG) Log.d(TAG, "SHIFT_GATE: skip because dialog already showing");
             return;
         }
 
-        shiftDialogShowing = true;
-        Log.i(TAG, "SHIFT_GATE: showing ShiftOpenDialog...");
+        isShiftDialogShowing = true;
+        if (BuildConfig.DEBUG) Log.d(TAG, "SHIFT_GATE: showing Open Shift dialog");
 
         ShiftOpenDialogFragment dlg = new ShiftOpenDialogFragment();
         dlg.setCancelable(false);
@@ -295,8 +362,8 @@ public class MainActivity extends AppCompatActivity
                              @NonNull ShiftOpenDialogFragment dlg) {
 
         if (!isNetworkAvailable()) {
-            shiftDialogShowing = false;
-            Toast.makeText(MainActivity.this, "Internet is required to open a shift.", Toast.LENGTH_LONG).show();
+            isShiftDialogShowing = false;
+            ErrorHandler.showNoInternet(MainActivity.this, null);
             return;
         }
 
@@ -304,19 +371,13 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onSuccess(@NonNull com.valdker.pos.models.Shift shift) {
-                shiftDialogShowing = false;
+                persistOpenShift(sm, shift);
+                if (BuildConfig.DEBUG) Log.d(TAG, "SHIFT_GATE: open shift success, saved locally id=" + shift.id);
 
-                Log.i(TAG, "SHIFT_GATE: opened OK (ONLINE) id=" + shift.id);
-
-                sm.setShiftOpen(true);
-                sm.setShiftId(shift.id);
-                sm.setOpeningCash(
-                        (shift.opening_cash == null || shift.opening_cash.trim().isEmpty())
-                                ? "0.00"
-                                : shift.opening_cash
-                );
-
-                safeUi(() -> dlg.dismissAllowingStateLoss());
+                safeUi(() -> {
+                    isShiftDialogShowing = false;
+                    dlg.dismissAllowingStateLoss();
+                });
             }
 
             @Override
@@ -327,22 +388,19 @@ public class MainActivity extends AppCompatActivity
                     repo.getCurrent(new ShiftRepository.CurrentCallback() {
                         @Override
                         public void onSuccess(boolean open, com.valdker.pos.models.Shift shift) {
-                            shiftDialogShowing = false;
-                            safeUi(() -> dlg.dismissAllowingStateLoss());
-
-                            if (open && shift != null) {
-                                sm.setShiftOpen(true);
-                                sm.setShiftId(shift.id);
-                                sm.setOpeningCash(
-                                        (shift.opening_cash == null || shift.opening_cash.trim().isEmpty())
-                                                ? "0.00"
-                                                : shift.opening_cash
-                                );
-                                Log.i(TAG, "SHIFT_GATE: 409 but current says OPEN id=" + shift.id);
+                            if (open && shift != null && shift.id > 0) {
+                                persistOpenShift(sm, shift);
+                                if (BuildConfig.DEBUG) {
+                                    Log.d(TAG, "SHIFT_GATE: 409 current shift found, saved locally id=" + shift.id);
+                                }
+                                safeUi(() -> {
+                                    isShiftDialogShowing = false;
+                                    dlg.dismissAllowingStateLoss();
+                                });
                             } else {
                                 safeUi(() -> Toast.makeText(
                                         MainActivity.this,
-                                        "Shift is already open, but failed to load shift details.",
+                                        getString(R.string.msg_shift_open_load_failed),
                                         Toast.LENGTH_LONG
                                 ).show());
                             }
@@ -350,39 +408,60 @@ public class MainActivity extends AppCompatActivity
 
                         @Override
                         public void onError(@NonNull String msg) {
-                            shiftDialogShowing = false;
-                            safeUi(() -> Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show());
+                            isShiftDialogShowing = false;
+                            safeUi(() -> ErrorHandler.handleApiError(MainActivity.this, msg));
                         }
                     });
                     return;
                 }
 
-                shiftDialogShowing = false;
-                safeUi(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show());
+                isShiftDialogShowing = false;
+                safeUi(() -> ErrorHandler.handleApiError(MainActivity.this, message));
             }
         });
     }
 
-    private boolean isNetworkAvailable() {
-        try {
-            android.net.ConnectivityManager cm =
-                    (android.net.ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-            if (cm == null) return false;
-
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                android.net.Network nw = cm.getActiveNetwork();
-                if (nw == null) return false;
-                android.net.NetworkCapabilities caps = cm.getNetworkCapabilities(nw);
-                return caps != null && (caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI)
-                        || caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_CELLULAR)
-                        || caps.hasTransport(android.net.NetworkCapabilities.TRANSPORT_ETHERNET));
-            } else {
-                android.net.NetworkInfo ni = cm.getActiveNetworkInfo();
-                return ni != null && ni.isConnected();
-            }
-        } catch (Exception e) {
-            return false;
+    private void persistOpenShift(@NonNull SessionManager sm, @NonNull com.valdker.pos.models.Shift shift) {
+        String openingCash = (shift.opening_cash == null || shift.opening_cash.trim().isEmpty())
+                ? "0.00"
+                : shift.opening_cash;
+        sm.saveOpenShift(shift.id, shift.status, openingCash);
+        shiftGateAlreadyPassed = true;
+        isCheckingShift = false;
+        shiftGateRunning = false;
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "SHIFT_GATE: saving shift id=" + shift.id
+                    + " status=" + shift.status
+                    + " opening_cash=" + openingCash);
         }
+    }
+
+    private boolean isLocalShiftOpen(@NonNull SessionManager sm) {
+        boolean sessionOpen = false;
+        int sid = 0;
+        String status = "";
+
+        try {
+            sessionOpen = sm.isShiftOpen();
+            sid = sm.getShiftId();
+            status = sm.getShiftStatus();
+        } catch (Exception ignored) {
+        }
+
+        boolean open = sid > 0 && (sessionOpen || "OPEN".equalsIgnoreCase(status != null ? status.trim() : ""));
+
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "SHIFT_GATE: local shift open=" + open
+                    + " flag=" + sessionOpen
+                    + " id=" + sid
+                    + " status=" + status);
+        }
+
+        return open;
+    }
+
+    private boolean isNetworkAvailable() {
+        return NetworkUtils.isNetworkAvailable(this);
     }
 
     private void loadBusinessConfig() {
@@ -482,6 +561,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         applySavedLanguage();
         super.onCreate(savedInstanceState);
+        setupPosSystemBars();
 
         session = new SessionManager(this);
 
@@ -492,9 +572,9 @@ public class MainActivity extends AppCompatActivity
 
         loadBusinessConfig();
         setContentView(R.layout.activity_main);
+        applyPosSystemBarInsets();
 
         tvCartBadge = findViewById(R.id.tvCartBadge);
-        btnUser = findViewById(R.id.btnUser);
         btnBarcode = findViewById(R.id.btnBarcode);
 
         View vSearch = findViewById(R.id.tvSearchHint);
@@ -504,6 +584,11 @@ public class MainActivity extends AppCompatActivity
 
         imgLogo = findViewById(R.id.imgLogo);
         tvShopAddress = findViewById(R.id.tvShopAddress);
+        chipDraftA = findViewById(R.id.chipDraftA);
+        chipDraftB = findViewById(R.id.chipDraftB);
+        chipDraftC = findViewById(R.id.chipDraftC);
+        chipAddDraft = findViewById(R.id.chipAddDraft);
+        chipGroupDrafts = findViewById(R.id.chipGroupDrafts);
 
         cachedUsername = safe(session.getUsername(), "admin");
         cachedRole = safe(session.getRole(), "cashier");
@@ -513,6 +598,8 @@ public class MainActivity extends AppCompatActivity
         setupNativeButtons();
 
         if (!isWorkshopBusiness() && !isRetailBusiness()) {
+            setupDraftChips();
+            initDraftStorage();
             setupCategories();
         }
 
@@ -525,6 +612,139 @@ public class MainActivity extends AppCompatActivity
         refreshCartBadge();
 
         ensureShiftOpenOrBlock();
+        syncPendingOrdersIfOnline();
+    }
+
+    private void setupPosSystemBars() {
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+        View decor = getWindow().getDecorView();
+        int flags = decor.getSystemUiVisibility();
+        flags &= ~View.SYSTEM_UI_FLAG_FULLSCREEN;
+        flags &= ~View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+        flags &= ~View.SYSTEM_UI_FLAG_IMMERSIVE;
+        flags &= ~View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        flags &= ~View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+        flags &= ~View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+        flags &= ~View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+        decor.setSystemUiVisibility(flags);
+
+        getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.status_bar_green));
+        getWindow().setNavigationBarColor(Color.WHITE);
+
+        WindowInsetsControllerCompat controller =
+                WindowCompat.getInsetsController(getWindow(), decor);
+
+        if (controller != null) {
+            controller.show(WindowInsetsCompat.Type.statusBars() | WindowInsetsCompat.Type.navigationBars());
+            controller.setAppearanceLightStatusBars(true);
+            controller.setAppearanceLightNavigationBars(true);
+        }
+
+        if (BuildConfig.DEBUG) {
+            Log.d("STATUS_BAR_THEME", "screen=MainActivity color=status_bar_green icons=dark");
+            Log.d(TAG, "STATUS_BAR: visible=true, color=status_bar_green, lightIcons=false");
+        }
+    }
+
+    private void applyPosSystemBarInsets() {
+        View root = findViewById(R.id.root);
+        View statusBarScrim = findViewById(R.id.statusBarScrim);
+        View nativeHeader = findViewById(R.id.nativeHeader);
+        View fragmentContainer = findViewById(R.id.fragmentContainer);
+        View bottomCategoryBar = findViewById(R.id.bottomCategoryBar);
+        View overlayContainer = findViewById(R.id.overlayContainer);
+
+        if (root == null || nativeHeader == null) return;
+
+        final int rootStartLeft = root.getPaddingLeft();
+        final int rootStartTop = root.getPaddingTop();
+        final int rootStartRight = root.getPaddingRight();
+        final int rootStartBottom = root.getPaddingBottom();
+
+        final ViewGroup.MarginLayoutParams headerLp =
+                nativeHeader.getLayoutParams() instanceof ViewGroup.MarginLayoutParams
+                        ? (ViewGroup.MarginLayoutParams) nativeHeader.getLayoutParams()
+                        : null;
+        final int headerStartTopMargin = headerLp != null ? headerLp.topMargin : 0;
+
+        final int fragmentStartBottomPadding =
+                fragmentContainer != null ? fragmentContainer.getPaddingBottom() : 0;
+        final ViewGroup.MarginLayoutParams bottomBarLp =
+                bottomCategoryBar != null
+                        && bottomCategoryBar.getLayoutParams() instanceof ViewGroup.MarginLayoutParams
+                        ? (ViewGroup.MarginLayoutParams) bottomCategoryBar.getLayoutParams()
+                        : null;
+        final int bottomBarStartBottomMargin = bottomBarLp != null ? bottomBarLp.bottomMargin : 0;
+        final int overlayStartBottomPadding =
+                overlayContainer != null ? overlayContainer.getPaddingBottom() : 0;
+        final int overlayStartTopPadding =
+                overlayContainer != null ? overlayContainer.getPaddingTop() : 0;
+
+        ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
+            Insets statusBars = insets.getInsets(WindowInsetsCompat.Type.statusBars());
+            Insets navigationBars = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
+
+            v.setPadding(
+                    rootStartLeft,
+                    rootStartTop,
+                    rootStartRight,
+                    rootStartBottom
+            );
+
+            if (headerLp != null) {
+                headerLp.topMargin = headerStartTopMargin + statusBars.top;
+                nativeHeader.setLayoutParams(headerLp);
+            }
+
+            if (statusBarScrim != null) {
+                ViewGroup.LayoutParams scrimLp = statusBarScrim.getLayoutParams();
+                if (scrimLp != null && scrimLp.height != statusBars.top) {
+                    scrimLp.height = statusBars.top;
+                    statusBarScrim.setLayoutParams(scrimLp);
+                }
+            }
+
+            if (fragmentContainer != null) {
+                fragmentContainer.setPadding(
+                        fragmentContainer.getPaddingLeft(),
+                        fragmentContainer.getPaddingTop(),
+                        fragmentContainer.getPaddingRight(),
+                        fragmentStartBottomPadding
+                );
+            }
+
+            if (bottomBarLp != null && bottomCategoryBar != null
+                    && bottomCategoryBar.getVisibility() != View.GONE) {
+                bottomBarLp.bottomMargin = bottomBarStartBottomMargin + navigationBars.bottom;
+                bottomCategoryBar.setLayoutParams(bottomBarLp);
+            }
+
+            if (overlayContainer != null) {
+                overlayContainer.setPadding(
+                        overlayContainer.getPaddingLeft(),
+                        overlayStartTopPadding + statusBars.top,
+                        overlayContainer.getPaddingRight(),
+                        overlayStartBottomPadding + navigationBars.bottom
+                );
+            }
+
+            if (BuildConfig.DEBUG) {
+                Log.d(TAG, "POS_INSETS: statusTop=" + statusBars.top
+                        + " navBottom=" + navigationBars.bottom
+                        + " headerTopMargin=" + (headerStartTopMargin + statusBars.top)
+                        + " rootPaddingTop=" + rootStartTop
+                        + " bottomBarMargin=" + (bottomBarStartBottomMargin + navigationBars.bottom));
+            }
+
+            return insets;
+        });
+
+        ViewCompat.requestApplyInsets(root);
     }
 
     private void applySavedLanguage() {
@@ -558,17 +778,22 @@ public class MainActivity extends AppCompatActivity
 
     private void applyBusinessTypeUi() {
         View nativeHeader = findViewById(R.id.nativeHeader);
+        View bottomCategoryBar = findViewById(R.id.bottomCategoryBar);
         View btnBarcodeView = findViewById(R.id.btnBarcode);
         View btnCartView = findViewById(R.id.btnCart);
         View rvCategories = findViewById(R.id.rvCategories);
         View searchView = findViewById(R.id.tvSearchHint);
+        View fragmentContainer = findViewById(R.id.fragmentContainer);
+
+        if (fragmentContainer == null) return;
 
         androidx.constraintlayout.widget.ConstraintLayout.LayoutParams lp =
                 (androidx.constraintlayout.widget.ConstraintLayout.LayoutParams)
-                        findViewById(R.id.fragmentContainer).getLayoutParams();
+                        fragmentContainer.getLayoutParams();
 
         if (isWorkshopBusiness() || isRetailBusiness()) {
             if (nativeHeader != null) nativeHeader.setVisibility(View.GONE);
+            if (bottomCategoryBar != null) bottomCategoryBar.setVisibility(View.GONE);
             if (btnBarcodeView != null) btnBarcodeView.setVisibility(View.GONE);
             if (btnCartView != null) btnCartView.setVisibility(View.GONE);
             if (rvCategories != null) rvCategories.setVisibility(View.GONE);
@@ -576,28 +801,28 @@ public class MainActivity extends AppCompatActivity
 
             lp.topToTop = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID;
             lp.topToBottom = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET;
-            findViewById(R.id.fragmentContainer).setLayoutParams(lp);
+
+            lp.bottomToBottom = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID;
+            lp.bottomToTop = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET;
+
+            fragmentContainer.setLayoutParams(lp);
             return;
         }
 
         if (nativeHeader != null) nativeHeader.setVisibility(View.VISIBLE);
+        if (bottomCategoryBar != null) bottomCategoryBar.setVisibility(View.VISIBLE);
         if (btnBarcodeView != null) btnBarcodeView.setVisibility(enableBarcodeScan ? View.VISIBLE : View.GONE);
-
-        if (btnCartView != null) {
-            btnCartView.setVisibility(isRetailBusiness() ? View.GONE : View.VISIBLE);
-        }
-
-        if (rvCategories != null) {
-            rvCategories.setVisibility(isRetailBusiness() ? View.GONE : View.VISIBLE);
-        }
-
-        if (searchView != null) {
-            searchView.setVisibility(View.VISIBLE);
-        }
+        if (btnCartView != null) btnCartView.setVisibility(View.VISIBLE);
+        if (rvCategories != null) rvCategories.setVisibility(View.VISIBLE);
+        if (searchView != null) searchView.setVisibility(View.VISIBLE);
 
         lp.topToTop = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET;
         lp.topToBottom = R.id.nativeHeader;
-        findViewById(R.id.fragmentContainer).setLayoutParams(lp);
+
+        lp.bottomToBottom = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET;
+        lp.bottomToTop = R.id.bottomCategoryBar;
+
+        fragmentContainer.setLayoutParams(lp);
     }
 
     private void setupSearchBox() {
@@ -621,11 +846,15 @@ public class MainActivity extends AppCompatActivity
             Fragment f = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
 
             if (f instanceof RetailPOSFragment) {
+                Log.i(TAG, "SCANNER: input received barcode=" + keyword);
                 ((RetailPOSFragment) f).onManualSearch(keyword);
             } else if (f instanceof ProductsFragment) {
+                Log.i(TAG, "SCANNER: input received barcode=" + keyword);
                 ((ProductsFragment) f).onManualSearch(keyword);
             }
 
+            v.setText("");
+            v.requestFocus();
             return true;
         });
     }
@@ -635,6 +864,15 @@ public class MainActivity extends AppCompatActivity
         if (clean.isEmpty()) {
             return;
         }
+
+        long now = System.currentTimeMillis();
+        if (clean.equals(lastBarcodeInput) && now - lastBarcodeInputAt < BARCODE_DEBOUNCE_MS) {
+            Log.i(TAG, "SCANNER: duplicate ignored barcode=" + clean);
+            return;
+        }
+        lastBarcodeInput = clean;
+        lastBarcodeInputAt = now;
+        Log.i(TAG, "SCANNER: input received barcode=" + clean);
 
         pendingBarcode = clean;
         dispatchPendingBarcodeToActivePosFragment();
@@ -683,7 +921,7 @@ public class MainActivity extends AppCompatActivity
                     }
                 } catch (Exception e) {
                     Log.e(TAG, "Failed dispatch barcode: " + e.getMessage(), e);
-                    Toast.makeText(MainActivity.this, "Failed to process barcode", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, getString(R.string.msg_failed_process_barcode), Toast.LENGTH_SHORT).show();
                     barcodeDispatchRunning = false;
                     return;
                 }
@@ -693,7 +931,7 @@ public class MainActivity extends AppCompatActivity
                     handler.postDelayed(this, 100);
                 } else {
                     barcodeDispatchRunning = false;
-                    Toast.makeText(MainActivity.this, "POS screen not ready.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, getString(R.string.msg_pos_screen_not_ready), Toast.LENGTH_SHORT).show();
                 }
             }
         };
@@ -751,7 +989,7 @@ public class MainActivity extends AppCompatActivity
             } else {
                 Toast.makeText(
                         this,
-                        "Camera permission required to scan barcode",
+                        getString(R.string.msg_camera_permission_barcode),
                         Toast.LENGTH_LONG
                 ).show();
             }
@@ -768,7 +1006,7 @@ public class MainActivity extends AppCompatActivity
                 String barcode = result.getContents();
                 sendBarcodeToActivePosFragment(barcode);
             } else {
-                Toast.makeText(this, "Scan cancelled", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.msg_scan_cancelled), Toast.LENGTH_SHORT).show();
             }
             return;
         }
@@ -794,6 +1032,17 @@ public class MainActivity extends AppCompatActivity
         loadShopHeader();
 
         ensureShiftOpenOrBlock();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setupPosSystemBars();
+
+        View root = findViewById(R.id.root);
+        if (root != null) {
+            ViewCompat.requestApplyInsets(root);
+        }
     }
 
     @Override
@@ -862,15 +1111,314 @@ public class MainActivity extends AppCompatActivity
             btnBarcode.setOnClickListener(v -> onBarcodeClick());
         }
 
-        if (btnUser != null) {
-            btnUser.setOnClickListener(this::showUserMenu);
+        if (imgLogo != null) {
+            imgLogo.setClickable(true);
+            imgLogo.setFocusable(true);
+            imgLogo.setOnClickListener(this::showUserMenu);
         }
+    }
+
+    private void setupDraftChips() {
+        if (chipDraftA == null && chipDraftB == null && chipDraftC == null && chipAddDraft == null) {
+            return;
+        }
+
+        if (chipDraftA != null) {
+            chipDraftA.setOnClickListener(v -> activateDraftByName("A"));
+        }
+        if (chipDraftB != null) {
+            chipDraftB.setOnClickListener(v -> activateDraftByName("B"));
+        }
+        if (chipDraftC != null) {
+            chipDraftC.setOnClickListener(v -> activateDraftByName("C"));
+        }
+        if (chipAddDraft != null) {
+            styleAddDraftChip(chipAddDraft);
+            chipAddDraft.setText("+");
+            chipAddDraft.setOnClickListener(v -> createAndActivateDraft());
+        }
+    }
+
+    private void initDraftStorage() {
+        posDraftRepository = new PosDraftRepository(this);
+        loadDraftsFromRoom(true, null);
+    }
+
+    private void loadDraftsFromRoom(boolean loadItems, @Nullable String toastMessage) {
+        PosDraftRepository repository = posDraftRepository;
+        if (repository == null) return;
+
+        draftExecutor.execute(() -> {
+            try {
+                PosDraftSnapshot snapshot = repository.loadSnapshot(POS_TYPE_RESTAURANT, loadItems);
+                mainHandler.post(() -> {
+                    if (!isActivityAlive()) return;
+                    applyDraftSnapshot(snapshot, loadItems);
+                    if (!TextUtils.isEmpty(toastMessage)) {
+                        Toast.makeText(MainActivity.this, toastMessage, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to load main POS drafts", e);
+            }
+        });
+    }
+
+    private void applyDraftSnapshot(@NonNull PosDraftSnapshot snapshot, boolean loadItems) {
+        posDrafts.clear();
+        posDrafts.addAll(snapshot.drafts);
+        draftItemCounts.clear();
+        draftItemCounts.putAll(snapshot.itemCounts);
+        activeDraftId = snapshot.activeDraft != null ? snapshot.activeDraft.id : 0L;
+
+        renderDraftChips();
+
+        if (loadItems) {
+            if (initialDraftLoadPending) {
+                initialDraftLoadPending = false;
+                if ((snapshot.items == null || snapshot.items.isEmpty())
+                        && CartManager.getInstance(this).getTotalQty() > 0) {
+                    persistCurrentCartToActiveDraft();
+                    return;
+                }
+            }
+            loadCartFromDraftItems(snapshot.items);
+        }
+    }
+
+    private void renderDraftChips() {
+        if (chipGroupDrafts == null) return;
+
+        chipGroupDrafts.removeAllViews();
+        for (int i = 0; i < posDrafts.size(); i++) {
+            PosDraftEntity draft = posDrafts.get(i);
+            if (draft == null) continue;
+
+            Chip chip = createDraftChip();
+            if (i == 0) chip.setId(R.id.chipDraftA);
+            else if (i == 1) chip.setId(R.id.chipDraftB);
+            else if (i == 2) chip.setId(R.id.chipDraftC);
+
+            boolean active = draft.id == activeDraftId;
+            int count = draftItemCounts.containsKey(draft.id) ? draftItemCounts.get(draft.id) : 0;
+            applyDraftChipStyle(chip, active, draft.name, count);
+            chip.setOnClickListener(v -> activateDraft(draft.id, "Draft " + draft.name + " aktif"));
+            chipGroupDrafts.addView(chip);
+        }
+
+        if (chipAddDraft != null) {
+            chipAddDraft.setText("+");
+            styleAddDraftChip(chipAddDraft);
+            chipAddDraft.setOnClickListener(v -> createAndActivateDraft());
+        }
+    }
+
+    @NonNull
+    private Chip createDraftChip() {
+        Chip chip = new Chip(this);
+        chip.setCheckable(true);
+        chip.setClickable(true);
+        chip.setSingleLine(true);
+        chip.setEllipsize(TextUtils.TruncateAt.END);
+        chip.setTextSize(12f);
+        chip.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        chip.setChipMinHeight(dp(32));
+        chip.setMinHeight(dp(32));
+        chip.setHeight(dp(32));
+        chip.setChipCornerRadius(dp(16));
+        chip.setChipStrokeWidth(dp(1));
+        chip.setCheckedIconVisible(false);
+        chip.setEnsureMinTouchTargetSize(false);
+        return chip;
+    }
+
+    private void applyDraftChipStyle(@NonNull Chip chip, boolean active, @NonNull String name, int count) {
+        chip.setChecked(active);
+        chip.setText((active ? "\u25CF " : "") + safe(name, "A") + " \u2022 " + Math.max(0, count));
+        chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor(active ? "#DCFCE7" : "#FFFFFF")));
+        chip.setChipStrokeColor(ColorStateList.valueOf(Color.parseColor(active ? "#86EFAC" : "#E2E8F0")));
+        chip.setTextColor(Color.parseColor(active ? "#166534" : "#334155"));
+        chip.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+    }
+
+    private void styleAddDraftChip(@NonNull Chip chip) {
+        chip.setChecked(false);
+        chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor("#22C55E")));
+        chip.setTextColor(Color.WHITE);
+        chip.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        chip.setEnsureMinTouchTargetSize(false);
+    }
+
+    private void activateDraftByName(@NonNull String name) {
+        for (PosDraftEntity draft : posDrafts) {
+            if (draft != null && name.equalsIgnoreCase(safeTrim(draft.name))) {
+                activateDraft(draft.id, "Draft " + draft.name + " aktif");
+                return;
+            }
+        }
+    }
+
+    private void activateDraft(long draftId, @NonNull String toastMessage) {
+        PosDraftRepository repository = posDraftRepository;
+        if (repository == null || draftId <= 0L || draftId == activeDraftId) return;
+
+        final long oldDraftId = activeDraftId;
+        final List<CartItem> currentItems = CartManager.getInstance(this).getItems();
+
+        draftExecutor.execute(() -> {
+            try {
+                PosDraftSnapshot snapshot = repository.activateDraftSavingCurrent(
+                        POS_TYPE_RESTAURANT,
+                        oldDraftId,
+                        draftId,
+                        currentItems
+                );
+                mainHandler.post(() -> {
+                    if (!isActivityAlive()) return;
+                    applyDraftSnapshot(snapshot, true);
+                    Toast.makeText(MainActivity.this, toastMessage, Toast.LENGTH_SHORT).show();
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to activate main POS draft", e);
+            }
+        });
+    }
+
+    private void createAndActivateDraft() {
+        PosDraftRepository repository = posDraftRepository;
+        if (repository == null) return;
+
+        final long oldDraftId = activeDraftId;
+        final List<CartItem> currentItems = CartManager.getInstance(this).getItems();
+
+        draftExecutor.execute(() -> {
+            try {
+                PosDraftRepository.CreatedDraftResult result = repository.createAndActivateDraftSavingCurrent(
+                        POS_TYPE_RESTAURANT,
+                        oldDraftId,
+                        currentItems
+                );
+                mainHandler.post(() -> {
+                    if (!isActivityAlive()) return;
+                    applyDraftSnapshot(result.snapshot, true);
+                    Toast.makeText(MainActivity.this, "Draft " + result.draftName + " aktif", Toast.LENGTH_SHORT).show();
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to create main POS draft", e);
+            }
+        });
+    }
+
+    private void loadCartFromDraftItems(@Nullable List<PosDraftItemEntity> items) {
+        loadingDraftFromRoom = true;
+        CartManager cart = CartManager.getInstance(this);
+        cart.clear();
+
+        if (items != null) {
+            for (PosDraftItemEntity item : items) {
+                CartItem cartItem = toCartItem(item);
+                if (cartItem != null) {
+                    cart.add(cartItem);
+                }
+            }
+        }
+
+        refreshCartBadge();
+        mainHandler.post(() -> loadingDraftFromRoom = false);
+    }
+
+    @Nullable
+    private CartItem toCartItem(@Nullable PosDraftItemEntity item) {
+        return PosDraftMapper.toCartItem(item);
+    }
+
+    private void onMainCartChanged() {
+        refreshCartBadge();
+
+        if (isWorkshopBusiness() || isRetailBusiness()) return;
+        if (loadingDraftFromRoom) return;
+
+        persistCurrentCartToActiveDraft();
+    }
+
+    private void persistCurrentCartToActiveDraft() {
+        PosDraftRepository repository = posDraftRepository;
+        long draftId = activeDraftId;
+        if (repository == null || draftId <= 0L) return;
+
+        final List<CartItem> items = CartManager.getInstance(this).getItems();
+        draftExecutor.execute(() -> {
+            try {
+                repository.replaceDraftItems(draftId, items);
+                PosDraftSnapshot snapshot = repository.loadSnapshot(POS_TYPE_RESTAURANT, false);
+                mainHandler.post(() -> {
+                    if (!isActivityAlive()) return;
+                    applyDraftSnapshot(snapshot, false);
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to persist main POS draft", e);
+            }
+        });
+    }
+
+    @Override
+    public void onCartOrderFinished() {
+        if (isWorkshopBusiness() || isRetailBusiness()) {
+            CartManager.getInstance(this).clear();
+            Log.i(TAG, "cart cleanup success pos=" + safeTrim(businessType) + " reason=cart_order_finished");
+            return;
+        }
+
+        cleanupActiveMainDraftAfterCheckout("cart_order_finished");
+    }
+
+    private void deleteActiveDraftAndStartFresh() {
+        cleanupActiveMainDraftAfterCheckout("delete_active_draft");
+    }
+
+    private void cleanupActiveMainDraftAfterCheckout(@NonNull String reason) {
+        PosDraftRepository repository = posDraftRepository;
+        long draftId = activeDraftId;
+        Context appCtx = getApplicationContext();
+
+        Log.i(TAG, "checkout cleanup started pos=restaurant draftId=" + draftId + " reason=" + reason);
+
+        loadingDraftFromRoom = true;
+
+        if (repository == null || draftId <= 0L) {
+            CartManager.getInstance(appCtx).clear();
+            refreshCartBadge();
+            Log.i(TAG, "draft cleanup success pos=restaurant draftId=" + draftId + " reason=no_active_draft");
+            Log.i(TAG, "cart cleanup success pos=restaurant reason=" + reason);
+            mainHandler.post(() -> loadingDraftFromRoom = false);
+            return;
+        }
+
+        draftExecutor.execute(() -> {
+            try {
+                PosDraftSnapshot snapshot = repository.cleanupActiveDraftAfterCheckout(POS_TYPE_RESTAURANT, draftId);
+                Log.i(TAG, "draft cleanup success pos=restaurant draftId=" + draftId + " reason=" + reason);
+                mainHandler.post(() -> {
+                    CartManager.getInstance(appCtx).clear();
+                    Log.i(TAG, "cart cleanup success pos=restaurant reason=" + reason);
+                    if (isActivityAlive()) {
+                        refreshCartBadge();
+                        applyDraftSnapshot(snapshot, true);
+                    } else {
+                        loadingDraftFromRoom = false;
+                    }
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "cleanup failed with error pos=restaurant draftId=" + draftId + " reason=" + reason, e);
+                mainHandler.post(() -> loadingDraftFromRoom = false);
+            }
+        });
     }
 
     private void openRetailNativeCheckout() {
         Fragment f = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
         if (!(f instanceof RetailPOSFragment)) {
-            Toast.makeText(this, "Retail POS not ready", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.msg_retail_pos_not_ready), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -879,21 +1427,28 @@ public class MainActivity extends AppCompatActivity
         double totalAmount = retailFragment.getGrandTotalAmount();
 
         if (totalItems <= 0 || totalAmount <= 0) {
-            Toast.makeText(this, "No items scanned yet", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.msg_no_items_scanned), Toast.LENGTH_SHORT).show();
             return;
         }
 
         final String token = session != null ? safeTrim(session.getToken()) : "";
         if (token.isEmpty()) {
-            Toast.makeText(this, "Token missing. Please login again.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.msg_token_missing_login_again), Toast.LENGTH_LONG).show();
             return;
         }
+
+        if (retailCheckoutDialogOpening
+                || getSupportFragmentManager().findFragmentByTag(TAG_NATIVE_CHECKOUT_DIALOG) != null) {
+            return;
+        }
+        retailCheckoutDialogOpening = true;
 
         boolean needTable = enableTableNumber;
         boolean needDelivery = enableDelivery;
 
         NativeCheckoutDialogFragment dialog =
                 NativeCheckoutDialogFragment.newInstance(totalAmount, needTable, needDelivery);
+        dialog.setOnDismissCallback(() -> retailCheckoutDialogOpening = false);
 
         List<NativeCheckoutDialogFragment.CheckoutItem> checkoutItems = new ArrayList<>();
         for (RetailProductItem item : retailFragment.getScannedProducts()) {
@@ -917,140 +1472,142 @@ public class MainActivity extends AppCompatActivity
         dialog.setCheckoutItems(checkoutItems);
 
         final Context appCtx = getApplicationContext();
-        CheckoutConfigRepository repo = new CheckoutConfigRepository(appCtx);
+        MasterDataRepository masterDataRepository = new MasterDataRepository(appCtx);
+        final boolean[] dialogShown = {false};
+        final boolean[] offlineNoticeShown = {false};
+        final boolean[] noLocalDataNoticeShown = {false};
 
-        repo.fetchPaymentMethods(token, new CheckoutConfigRepository.PaymentMethodsCallback() {
+        masterDataRepository.loadCheckoutDataRoomFirst(token, new MasterDataRepository.CheckoutDataCallback() {
             @Override
-            public void onSuccess(@NonNull List<PaymentMethodItem> paymentItems) {
-                repo.fetchBankAccounts(token, new CheckoutConfigRepository.BankAccountsCallback() {
-                    @Override
-                    public void onSuccess(@NonNull List<BankAccountItem> bankItems) {
-                        CustomerRepository customerRepo = new CustomerRepository(appCtx);
-                        customerRepo.fetchCustomers(token, new CustomerRepository.ListCallback() {
-                            @Override
-                            public void onSuccess(@NonNull List<Customer> customers) {
-                                if (isFinishing() || isDestroyed()) return;
+            public void onLocalCheckoutData(@NonNull List<Customer> customers,
+                                            @NonNull List<PaymentMethodItem> paymentItems,
+                                            @NonNull List<BankAccountItem> bankItems) {
+                if (!isActivityAlive()) return;
+                if (!paymentItems.isEmpty()) {
+                    showOrUpdateRetailCheckoutDialog(dialog, dialogShown, customers, paymentItems, bankItems);
+                }
+            }
 
-                                List<NativeCheckoutDialogFragment.PaymentMethodOption> methodOptions = new ArrayList<>();
-                                for (PaymentMethodItem item : paymentItems) {
-                                    methodOptions.add(
-                                            new NativeCheckoutDialogFragment.PaymentMethodOption(
-                                                    item.id,
-                                                    item.code != null ? item.code : "",
-                                                    item.name != null ? item.name : "",
-                                                    item.requires_bank_account
-                                            )
-                                    );
-                                }
+            @Override
+            public void onRemoteCheckoutData(@NonNull List<Customer> customers,
+                                             @NonNull List<PaymentMethodItem> paymentItems,
+                                             @NonNull List<BankAccountItem> bankItems) {
+                if (!isActivityAlive()) return;
+                showOrUpdateRetailCheckoutDialog(dialog, dialogShown, customers, paymentItems, bankItems);
+            }
 
-                                List<NativeCheckoutDialogFragment.BankAccountOption> bankOptions = new ArrayList<>();
-                                for (BankAccountItem item : bankItems) {
-                                    String label =
-                                            (item.bank_name != null ? item.bank_name : "") +
-                                                    " - " +
-                                                    (item.name != null ? item.name : "");
-
-                                    bankOptions.add(
-                                            new NativeCheckoutDialogFragment.BankAccountOption(
-                                                    item.id,
-                                                    label
-                                            )
-                                    );
-                                }
-
-                                List<NativeCheckoutDialogFragment.CustomerOption> customerOptions = new ArrayList<>();
-                                customerOptions.add(
-                                        new NativeCheckoutDialogFragment.CustomerOption(
-                                                0,
-                                                "Walk-in Customer",
-                                                0L
-                                        )
-                                );
-
-                                for (Customer c : customers) {
-                                    customerOptions.add(
-                                            new NativeCheckoutDialogFragment.CustomerOption(
-                                                    c.id,
-                                                    c.name != null && !c.name.trim().isEmpty()
-                                                            ? c.name
-                                                            : "Customer #" + c.id,
-                                                    c.points
-                                            )
-                                    );
-                                }
-
-                                dialog.setCustomerOptions(customerOptions);
-                                dialog.setPaymentOptions(methodOptions);
-                                dialog.setBankOptions(bankOptions);
-                                dialog.setBankListener(result -> submitRetailOrder(result));
-                                dialog.show(getSupportFragmentManager(), "native_checkout");
-                            }
-
-                            @Override
-                            public void onError(int statusCode, @NonNull String message) {
-                                if (isFinishing() || isDestroyed()) return;
-
-                                List<NativeCheckoutDialogFragment.PaymentMethodOption> methodOptions = new ArrayList<>();
-                                for (PaymentMethodItem item : paymentItems) {
-                                    methodOptions.add(
-                                            new NativeCheckoutDialogFragment.PaymentMethodOption(
-                                                    item.id,
-                                                    item.code != null ? item.code : "",
-                                                    item.name != null ? item.name : "",
-                                                    item.requires_bank_account
-                                            )
-                                    );
-                                }
-
-                                List<NativeCheckoutDialogFragment.BankAccountOption> bankOptions = new ArrayList<>();
-                                for (BankAccountItem item : bankItems) {
-                                    String label =
-                                            (item.bank_name != null ? item.bank_name : "") +
-                                                    " - " +
-                                                    (item.name != null ? item.name : "");
-
-                                    bankOptions.add(
-                                            new NativeCheckoutDialogFragment.BankAccountOption(
-                                                    item.id,
-                                                    label
-                                            )
-                                    );
-                                }
-
-                                List<NativeCheckoutDialogFragment.CustomerOption> fallbackCustomers = new ArrayList<>();
-                                fallbackCustomers.add(
-                                        new NativeCheckoutDialogFragment.CustomerOption(
-                                                0,
-                                                "Walk-in Customer",
-                                                0L
-                                        )
-                                );
-
-                                dialog.setCustomerOptions(fallbackCustomers);
-                                dialog.setPaymentOptions(methodOptions);
-                                dialog.setBankOptions(bankOptions);
-                                dialog.setBankListener(result -> submitRetailOrder(result));
-                                dialog.show(getSupportFragmentManager(), "native_checkout");
-                            }
-                        });
+            @Override
+            public void onNoInternet(@NonNull List<Customer> customers,
+                                     @NonNull List<PaymentMethodItem> paymentItems,
+                                     @NonNull List<BankAccountItem> bankItems) {
+                if (!isActivityAlive()) return;
+                if (paymentItems.isEmpty()) {
+                    if (!noLocalDataNoticeShown[0]) {
+                        noLocalDataNoticeShown[0] = true;
+                        Toast.makeText(MainActivity.this, MasterDataRepository.MESSAGE_NO_LOCAL_POS_DATA, Toast.LENGTH_SHORT).show();
                     }
-
-                    @Override
-                    public void onError(int statusCode, @NonNull String message) {
-                        Toast.makeText(MainActivity.this,
-                                "Failed to load bank accounts: " + message,
-                                Toast.LENGTH_LONG).show();
-                    }
-                });
+                    retailCheckoutDialogOpening = false;
+                    return;
+                }
+                if (!offlineNoticeShown[0]) {
+                    offlineNoticeShown[0] = true;
+                    Toast.makeText(MainActivity.this, MasterDataRepository.MESSAGE_NO_INTERNET_SHOWING_LOCAL, Toast.LENGTH_SHORT).show();
+                }
+                if (!dialogShown[0]) {
+                    showOrUpdateRetailCheckoutDialog(dialog, dialogShown, customers, paymentItems, bankItems);
+                }
             }
 
             @Override
             public void onError(int statusCode, @NonNull String message) {
-                Toast.makeText(MainActivity.this,
-                        "Failed to load payment methods: " + message,
-                        Toast.LENGTH_LONG).show();
+                if (!isActivityAlive()) return;
+                if (!dialogShown[0]) {
+                    retailCheckoutDialogOpening = false;
+                    ErrorHandler.handleApiError(MainActivity.this,
+                            getString(R.string.msg_failed_load_payment_methods, message));
+                }
             }
         });
+    }
+
+    private void showOrUpdateRetailCheckoutDialog(@NonNull NativeCheckoutDialogFragment dialog,
+                                                  @NonNull boolean[] dialogShown,
+                                                  @NonNull List<Customer> customers,
+                                                  @NonNull List<PaymentMethodItem> paymentItems,
+                                                  @NonNull List<BankAccountItem> bankItems) {
+        dialog.setCustomerOptions(toCustomerOptions(customers));
+        dialog.setPaymentOptions(toPaymentOptions(paymentItems));
+        dialog.setBankOptions(toBankOptions(bankItems));
+        dialog.setBankListener(result -> submitRetailOrder(result));
+
+        if (!dialogShown[0]) {
+            dialogShown[0] = true;
+            showRetailCheckoutDialog(dialog);
+        }
+    }
+
+    @NonNull
+    private List<NativeCheckoutDialogFragment.CustomerOption> toCustomerOptions(@NonNull List<Customer> customers) {
+        List<NativeCheckoutDialogFragment.CustomerOption> options = new ArrayList<>();
+        options.add(new NativeCheckoutDialogFragment.CustomerOption(
+                0,
+                getString(R.string.workshop_walk_in_customer),
+                0L
+        ));
+        for (Customer c : customers) {
+            if (c == null) continue;
+            options.add(new NativeCheckoutDialogFragment.CustomerOption(
+                    c.id,
+                    c.name != null && !c.name.trim().isEmpty()
+                            ? c.name
+                            : getString(R.string.customer_fallback_name_format, c.id),
+                    c.points
+            ));
+        }
+        return options;
+    }
+
+    @NonNull
+    private List<NativeCheckoutDialogFragment.PaymentMethodOption> toPaymentOptions(@NonNull List<PaymentMethodItem> paymentItems) {
+        List<NativeCheckoutDialogFragment.PaymentMethodOption> options = new ArrayList<>();
+        for (PaymentMethodItem item : paymentItems) {
+            if (item == null || !item.is_active) continue;
+            options.add(new NativeCheckoutDialogFragment.PaymentMethodOption(
+                    item.id,
+                    item.code != null ? item.code : "",
+                    item.name != null ? item.name : "",
+                    item.requires_bank_account
+            ));
+        }
+        return options;
+    }
+
+    @NonNull
+    private List<NativeCheckoutDialogFragment.BankAccountOption> toBankOptions(@NonNull List<BankAccountItem> bankItems) {
+        List<NativeCheckoutDialogFragment.BankAccountOption> options = new ArrayList<>();
+        for (BankAccountItem item : bankItems) {
+            if (item == null || !item.is_active) continue;
+            String label =
+                    (item.bank_name != null ? item.bank_name : "") +
+                            " - " +
+                            (item.name != null ? item.name : "");
+            options.add(new NativeCheckoutDialogFragment.BankAccountOption(item.id, label));
+        }
+        return options;
+    }
+
+    private void showRetailCheckoutDialog(@NonNull NativeCheckoutDialogFragment dialog) {
+        if (!isActivityAlive() || getSupportFragmentManager().isStateSaved()) {
+            retailCheckoutDialogOpening = false;
+            return;
+        }
+
+        if (getSupportFragmentManager().findFragmentByTag(TAG_NATIVE_CHECKOUT_DIALOG) != null) {
+            retailCheckoutDialogOpening = false;
+            return;
+        }
+
+        dialog.show(getSupportFragmentManager(), TAG_NATIVE_CHECKOUT_DIALOG);
     }
 
     @NonNull
@@ -1062,33 +1619,39 @@ public class MainActivity extends AppCompatActivity
 
     private void submitRetailOrder(@NonNull NativeCheckoutDialogFragment.BankCheckoutResult result) {
         if (retailOrderSubmitting) {
-            Toast.makeText(this, "Order is being submitted...", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (!isNetworkAvailable()) {
-            Toast.makeText(this, "Internet is required to submit order.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.msg_order_submitting), Toast.LENGTH_SHORT).show();
             return;
         }
 
         final String token = session != null ? safeTrim(session.getToken()) : "";
         if (token.isEmpty()) {
-            Toast.makeText(this, "Token missing. Please login again.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.msg_token_missing_login_again), Toast.LENGTH_LONG).show();
             return;
         }
-
-        final String url = ApiConfig.url(session, "api/orders/");
 
         final JSONObject payload;
         try {
             payload = buildRetailOrderPayload(result);
-            Log.d(TAG, "Retail order payload: " + payload.toString());
+            Log.d(TAG, "Retail order payload ready items=" + result.items.size()
+                    + " total=" + result.totalAmount
+                    + " device_time=" + payload.optString("device_time", ""));
         } catch (Exception e) {
-            Toast.makeText(this, "Failed to build order payload: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.msg_failed_build_order_payload, e.getMessage()), Toast.LENGTH_LONG).show();
             return;
         }
 
         retailOrderSubmitting = true;
+        final String clientOrderId = OfflineOrderRepository.newClientOrderId(getApplicationContext());
+        OfflineOrderRepository.ensureClientOrderId(payload, clientOrderId);
+        final String localOrderId = clientOrderId;
+        Log.i(TAG, "Retail order submit client_order_id=" + clientOrderId);
+
+        if (!isNetworkAvailable()) {
+            saveRetailOrderOffline(localOrderId, payload, result);
+            return;
+        }
+
+        final String url = ApiConfig.url(session, "api/orders/");
 
         JsonObjectRequest req = new JsonObjectRequest(
                 Request.Method.POST,
@@ -1096,6 +1659,7 @@ public class MainActivity extends AppCompatActivity
                 payload,
                 response -> {
                     retailOrderSubmitting = false;
+                    syncPendingOrdersIfOnline();
 
                     String invoice = response.optString("invoice_number", "");
                     if (invoice.isEmpty()) {
@@ -1104,24 +1668,39 @@ public class MainActivity extends AppCompatActivity
                     if (invoice.isEmpty()) {
                         invoice = response.optString("id", "");
                     }
+                    if (invoice.isEmpty()) {
+                        invoice = "INV-" + System.currentTimeMillis();
+                    }
 
                     String message = invoice.isEmpty()
-                            ? "Retail order saved successfully."
-                            : "Retail order saved: " + invoice;
+                            ? getString(R.string.msg_retail_order_saved)
+                            : getString(R.string.msg_retail_order_saved_invoice, invoice);
 
                     Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
-                    Log.d(TAG, "Retail order success: " + response);
-
-                    Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
-                    if (current instanceof RetailPOSFragment) {
-                        ((RetailPOSFragment) current).clearAfterCheckout();
-                    }
+                    Log.d(TAG, "Retail order success invoice=" + invoice);
+                    tryAutoPrintRetailReceipt(result, invoice);
+                    cleanupRetailAfterCheckout("online_success");
                 },
                 error -> {
                     retailOrderSubmitting = false;
                     String detail = extractVolleyErrorMessage(error);
-                    Log.e(TAG, "Retail order failed: " + detail, error);
-                    Toast.makeText(MainActivity.this, detail, Toast.LENGTH_LONG).show();
+                    int statusCode = error != null && error.networkResponse != null
+                            ? error.networkResponse.statusCode
+                            : -1;
+                    String body = extractVolleyErrorBody(error);
+                    Log.e(TAG, "Retail order failed status_code=" + statusCode
+                            + " detail=" + safeLogDetail(body), error);
+                    if (ErrorHandler.isDeviceTimeValidationError(statusCode, body)
+                            || ErrorHandler.isDeviceTimeValidationError(statusCode, detail)) {
+                        ErrorHandler.showDeviceTimeDialog(MainActivity.this);
+                        return;
+                    }
+                    if (OfflineOrderRepository.shouldSaveOffline(MainActivity.this, error)) {
+                        saveRetailOrderOffline(localOrderId, payload, result);
+                        return;
+                    }
+                    Log.i(TAG, "cleanup skipped because save/submit failed pos=retail statusCode=" + statusCode);
+                    ErrorHandler.handleApiError(MainActivity.this, error);
                 }
         ) {
             @Override
@@ -1138,13 +1717,365 @@ public class MainActivity extends AppCompatActivity
         ApiClient.getInstance(this).add(req);
     }
 
+    private void saveRetailOrderOffline(@NonNull String localOrderId,
+                                        @NonNull JSONObject payload,
+                                        @NonNull NativeCheckoutDialogFragment.BankCheckoutResult result) {
+        new OfflineOrderRepository(getApplicationContext()).savePendingOrder(
+                localOrderId,
+                payload,
+                "retail",
+                new OfflineOrderRepository.SaveCallback() {
+                    @Override
+                    public void onSuccess(@NonNull String savedLocalOrderId, boolean inserted) {
+                        retailOrderSubmitting = false;
+                        tryAutoPrintOfflineRetailReceipt(
+                                result,
+                                offlineReceiptNumber(savedLocalOrderId, payload),
+                                payload.optString("device_time", ""),
+                                result -> showOfflineReceiptResult(result)
+                        );
+                        cleanupRetailAfterCheckout("offline_save_success");
+                    }
+
+                    @Override
+                    public void onError(@NonNull String message) {
+                        retailOrderSubmitting = false;
+                        Log.i(TAG, "cleanup skipped because save/submit failed pos=retail local_save_error=" + message);
+                        Toast.makeText(MainActivity.this,
+                                "Failed to save local order: " + message,
+                                Toast.LENGTH_LONG).show();
+                    }
+                }
+        );
+    }
+
+    private void clearRetailAfterOfflineSave() {
+        cleanupRetailAfterCheckout("offline_save_success");
+    }
+
+    private void cleanupRetailAfterCheckout(@NonNull String reason) {
+        Log.i(TAG, "checkout cleanup started pos=retail reason=" + reason);
+        Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
+        if (current instanceof RetailPOSFragment) {
+            ((RetailPOSFragment) current).clearAfterCheckout();
+            Log.i(TAG, "draft cleanup success pos=retail reason=" + reason + " via=attached_fragment_scheduled");
+            return;
+        }
+
+        Context appCtx = getApplicationContext();
+        PosDraftRepository repository = posDraftRepository != null
+                ? posDraftRepository
+                : new PosDraftRepository(appCtx);
+
+        draftExecutor.execute(() -> {
+            try {
+                PosDraftSnapshot currentSnapshot = repository.loadSnapshot(POS_TYPE_RETAIL, false);
+                long draftId = currentSnapshot.activeDraft != null ? currentSnapshot.activeDraft.id : 0L;
+                if (draftId > 0L) {
+                    repository.cleanupActiveDraftAfterCheckout(POS_TYPE_RETAIL, draftId);
+                    Log.i(TAG, "draft cleanup success pos=retail draftId=" + draftId + " reason=" + reason);
+                } else {
+                    repository.loadSnapshot(POS_TYPE_RETAIL, true);
+                    Log.i(TAG, "draft cleanup success pos=retail reason=no_active_draft");
+                }
+                Log.i(TAG, "cart cleanup success pos=retail reason=" + reason + " via=repository_fallback");
+            } catch (Exception e) {
+                Log.e(TAG, "cleanup failed with error pos=retail reason=" + reason, e);
+            }
+        });
+    }
+
+    private void syncPendingOrdersIfOnline() {
+        String token = session != null ? safeTrim(session.getToken()) : "";
+        new OfflineOrderRepository(getApplicationContext()).syncPendingOrders(token);
+    }
+
+    @NonNull
+    private String offlineReceiptNumber(@NonNull String localOrderId, @NonNull JSONObject payload) {
+        String clientOrderId = payload.optString("client_order_id", "");
+        if (clientOrderId != null && !clientOrderId.trim().isEmpty()) {
+            return clientOrderId.trim();
+        }
+        return localOrderId.trim().isEmpty() ? "OFFLINE-" + System.currentTimeMillis() : localOrderId.trim();
+    }
+
+    private void showOfflineReceiptResult(@NonNull com.valdker.pos.print.BluetoothPrinterManager.PrintResult result) {
+        String message;
+        switch (result) {
+            case SUCCESS:
+                message = "Order saved locally and receipt printed.";
+                break;
+            case SKIPPED:
+                message = "Order saved locally. Receipt printing skipped because auto-print is disabled.";
+                break;
+            case TIMEOUT:
+                message = "Order saved locally. Printer connection timed out. Please check printer and try reprint.";
+                break;
+            case FAILED:
+            default:
+                message = "Order saved locally, but receipt failed to print.";
+                break;
+        }
+        safeUi(() -> Toast.makeText(
+                MainActivity.this,
+                message,
+                Toast.LENGTH_LONG
+        ).show());
+    }
+
+    private void tryAutoPrintRetailReceipt(@NonNull NativeCheckoutDialogFragment.BankCheckoutResult result,
+                                           @NonNull String invoiceNumber) {
+        tryPrintRetailReceipt(result, invoiceNumber, "", "", null);
+    }
+
+    private void tryAutoPrintOfflineRetailReceipt(@NonNull NativeCheckoutDialogFragment.BankCheckoutResult result,
+                                                  @NonNull String receiptNumber,
+                                                  @NonNull String deviceTime,
+                                                  @NonNull ReceiptPrintCallback callback) {
+        Log.i(TAG, "Offline receipt print started order=" + receiptNumber);
+        tryPrintRetailReceipt(result, receiptNumber, "OFFLINE / PENDING SYNC", deviceTime, callback);
+    }
+
+    private void tryPrintRetailReceipt(@NonNull NativeCheckoutDialogFragment.BankCheckoutResult result,
+                                       @NonNull String invoiceNumber,
+                                       @NonNull String receiptStatus,
+                                       @NonNull String deviceTime,
+                                       @Nullable ReceiptPrintCallback callback) {
+        final Context appCtx = getApplicationContext();
+
+        if (!com.valdker.pos.print.PrinterPrefs.isAutoPrintEnabled(appCtx)) {
+            Log.i(TAG, "PRINTER: auto print disabled -> skip printing");
+            if (callback != null) {
+                callback.onComplete(com.valdker.pos.print.BluetoothPrinterManager.PrintResult.SKIPPED);
+            } else {
+                Toast.makeText(appCtx,
+                        "Receipt printing skipped because auto-print is disabled.",
+                        Toast.LENGTH_LONG).show();
+            }
+            return;
+        }
+
+        if (!com.valdker.pos.print.PrinterService.hasBtPermission(appCtx)) {
+            Log.w(TAG, "PRINTER: Bluetooth permission not granted -> skip auto print");
+            if (callback == null) {
+                Toast.makeText(appCtx,
+                        "Bluetooth permission is required to connect printer.",
+                        Toast.LENGTH_LONG).show();
+            } else {
+                callback.onComplete(com.valdker.pos.print.BluetoothPrinterManager.PrintResult.FAILED);
+            }
+            return;
+        }
+
+        String mac = com.valdker.pos.print.PrinterPrefs.getMac(appCtx);
+        if (mac == null || mac.trim().isEmpty()) {
+            Log.w(TAG, "PRINTER: no printer selected -> skip auto print");
+            if (callback == null) {
+                Toast.makeText(appCtx,
+                        "Printer not connected. Please select printer.",
+                        Toast.LENGTH_LONG).show();
+            } else {
+                callback.onComplete(com.valdker.pos.print.BluetoothPrinterManager.PrintResult.FAILED);
+            }
+            return;
+        }
+
+        final String fallbackReceipt = buildRetailReceipt(
+                "VALDKER POS",
+                "",
+                "",
+                result,
+                invoiceNumber,
+                receiptStatus,
+                deviceTime
+        );
+
+        String token = session != null ? safeTrim(session.getToken()) : "";
+        AtomicBoolean receiptPrinted = new AtomicBoolean(false);
+        ShopRepository.getBestShopProfileForReceipt(appCtx, token, new ShopRepository.Callback() {
+            @Override
+            public void onSuccess(Shop shop) {
+                String shopName = shop != null && !safeTrim(shop.name).isEmpty()
+                        ? safeTrim(shop.name)
+                        : "VALDKER POS";
+                String shopAddress = shop != null ? safeTrim(shop.address) : "";
+                String shopPhone = shop != null ? safeTrim(shop.phone) : "";
+
+                printRetailReceiptOnce(buildRetailReceipt(
+                        shopName,
+                        shopAddress,
+                        shopPhone,
+                        result,
+                        invoiceNumber,
+                        receiptStatus,
+                        deviceTime
+                ), receiptPrinted, callback);
+            }
+
+            @Override
+            public void onEmpty() {
+                printRetailReceiptOnce(fallbackReceipt, receiptPrinted, callback);
+            }
+
+            @Override
+            public void onError(@NonNull String message) {
+                printRetailReceiptOnce(fallbackReceipt, receiptPrinted, callback);
+            }
+        });
+    }
+
+    private void printRetailReceiptOnce(@NonNull String receipt,
+                                        @NonNull AtomicBoolean printed,
+                                        @Nullable ReceiptPrintCallback callback) {
+        if (!printed.compareAndSet(false, true)) {
+            Log.w(TAG, callback != null
+                    ? "Offline receipt print skipped: already printed"
+                    : "Receipt print skipped: already printed");
+            return;
+        }
+        printRetailReceiptBestEffort(receipt, callback);
+    }
+
+    private void printRetailReceiptBestEffort(@NonNull String receipt,
+                                              @Nullable ReceiptPrintCallback callback) {
+        com.valdker.pos.print.PrinterService.printTextAsync(
+                getApplicationContext(),
+                receipt,
+                new com.valdker.pos.print.BluetoothPrinterManager.PrintCallback() {
+                    @Override
+                    public void onSuccess() {
+                        if (callback != null) {
+                            Log.i(TAG, "Offline receipt print success");
+                            callback.onComplete(com.valdker.pos.print.BluetoothPrinterManager.PrintResult.SUCCESS);
+                        } else {
+                            Log.i(TAG, "PRINTER: retail receipt print success");
+                        }
+                    }
+
+                    @Override
+                    public void onError(@NonNull String message) {
+                        if (callback != null) {
+                            Log.e(TAG, "Offline receipt print failed: " + message);
+                            callback.onComplete(com.valdker.pos.print.BluetoothPrinterManager.PrintResult.FAILED);
+                        } else {
+                            Log.e(TAG, "PRINTER: retail receipt print failed: " + message);
+                        }
+                        safeUi(() -> showRetailPrintRetry(receipt, message));
+                    }
+
+                    @Override
+                    public void onSkipped(@NonNull String message) {
+                        Log.w(TAG, "PRINTER: retail receipt print skipped: " + message);
+                        if (callback != null) {
+                            Log.w(TAG, "Offline receipt print skipped: " + message);
+                            callback.onComplete(com.valdker.pos.print.BluetoothPrinterManager.PrintResult.SKIPPED);
+                        }
+                    }
+
+                    @Override
+                    public void onTimeout(@NonNull String message) {
+                        if (callback != null) {
+                            Log.e(TAG, "Offline receipt print timed out: " + message);
+                            callback.onComplete(com.valdker.pos.print.BluetoothPrinterManager.PrintResult.TIMEOUT);
+                        } else {
+                            Log.e(TAG, "PRINTER: retail receipt print timed out: " + message);
+                        }
+                        safeUi(() -> showRetailPrintRetry(receipt, message));
+                    }
+                }
+        );
+    }
+
+    private void showRetailPrintRetry(@NonNull String receipt, @NonNull String message) {
+        if (!isActivityAlive()) return;
+
+        androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                .setMessage("Transaction saved, but receipt failed to print. Retry print?")
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton("Retry", null)
+                .show();
+        dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            v.setEnabled(false);
+            printRetailReceiptBestEffort(receipt, null);
+            dialog.dismiss();
+        });
+    }
+
+    @NonNull
+    private String buildRetailReceipt(@NonNull String shopName,
+                                      @NonNull String shopAddress,
+                                      @NonNull String shopPhone,
+                                      @NonNull NativeCheckoutDialogFragment.BankCheckoutResult result,
+                                      @NonNull String invoiceNumber,
+                                      @NonNull String receiptStatus,
+                                      @NonNull String deviceTime) {
+        java.text.SimpleDateFormat dfDate = new java.text.SimpleDateFormat("dd/MM/yy", Locale.US);
+        java.text.SimpleDateFormat dfTime = new java.text.SimpleDateFormat("HH:mm", Locale.US);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("[C]<b>").append(shopName).append("</b>\n");
+        if (!shopAddress.trim().isEmpty()) sb.append("[C]").append(shopAddress.trim()).append("\n");
+        if (!shopPhone.trim().isEmpty()) sb.append("[C]").append(shopPhone.trim()).append("\n");
+        sb.append("[C]--------------------------------\n");
+        if (!receiptStatus.trim().isEmpty()) {
+            sb.append("[C]<b>").append(receiptStatus.trim()).append("</b>\n");
+            sb.append("[C]--------------------------------\n");
+        }
+        sb.append("[L]Order:[R]").append(invoiceNumber).append("\n");
+        if (!safeTrim(cachedUsername).isEmpty()) {
+            sb.append("[L]Cashier:[R]").append(safeTrim(cachedUsername)).append("\n");
+        }
+        if (!safeTrim(result.customerName).isEmpty()
+                && !"Walk-in Customer".equalsIgnoreCase(safeTrim(result.customerName))) {
+            sb.append("[L]Customer:[R]").append(safeTrim(result.customerName)).append("\n");
+        }
+        sb.append("[L]Date:[R]").append(dfDate.format(new java.util.Date())).append("\n");
+        sb.append("[L]Time:[R]").append(dfTime.format(new java.util.Date())).append("\n");
+        if (!deviceTime.trim().isEmpty()) {
+            sb.append("[L]Device Time:[R]").append(deviceTime.trim()).append("\n");
+        }
+        sb.append("[C]--------------------------------\n");
+
+        for (NativeCheckoutDialogFragment.CheckoutItem item : result.items) {
+            if (item == null) continue;
+            sb.append("[L]<b>").append(safeTrim(item.productName)).append("</b>[R]<b>")
+                    .append(String.format(Locale.US, "$%.2f", item.lineTotal))
+                    .append("</b>\n");
+            sb.append("[L]").append(Math.max(0, item.quantity))
+                    .append(" x ")
+                    .append(String.format(Locale.US, "$%.2f", item.unitPrice))
+                    .append("\n\n");
+        }
+
+        sb.append("[C]--------------------------------\n");
+        sb.append("[L]Subtotal[R]").append(String.format(Locale.US, "$%.2f", result.subtotal)).append("\n");
+        sb.append("[L]Discount[R]$0.00\n");
+        sb.append("[L]VAT / Tax[R]$0.00\n");
+        if (result.deliveryFee > 0) {
+            sb.append("[L]Delivery Fee[R]").append(String.format(Locale.US, "$%.2f", result.deliveryFee)).append("\n");
+        }
+        sb.append("[C]--------------------------------\n");
+        sb.append("[L]<b>Total</b>[R]<b>").append(String.format(Locale.US, "$%.2f", result.totalAmount)).append("</b>\n");
+        sb.append("[L]Payment[R]").append(safeTrim(result.paymentMethodCode)).append("\n");
+        if (result.cashReceived > 0) {
+            sb.append("[L]Paid[R]").append(String.format(Locale.US, "$%.2f", result.cashReceived)).append("\n");
+            sb.append("[L]Change[R]").append(String.format(Locale.US, "$%.2f", result.changeAmount)).append("\n");
+        }
+        sb.append("[C]--------------------------------\n");
+        sb.append("[C]Thank you for your purchase\n");
+        sb.append("[C]").append(shopName).append("\n\n\n");
+
+        return sb.toString();
+    }
+
     @NonNull
     private JSONObject buildRetailOrderPayload(@NonNull NativeCheckoutDialogFragment.BankCheckoutResult result) throws Exception {
         if (result.paymentMethodId == null || result.paymentMethodId <= 0) {
-            throw new IllegalStateException("Payment method ID is missing. Please load valid payment methods.");
+            throw new IllegalStateException(getString(R.string.msg_payment_method_missing));
         }
 
         JSONObject body = new JSONObject();
+        body.put("device_time", currentDeviceTimeIso());
 
         if (result.customerId != null && result.customerId > 0) {
             body.put("customer", result.customerId);
@@ -1225,47 +2156,74 @@ public class MainActivity extends AppCompatActivity
     }
 
     @NonNull
+    private static String currentDeviceTimeIso() {
+        return new java.text.SimpleDateFormat(
+                "yyyy-MM-dd'T'HH:mm:ssXXX",
+                Locale.US
+        ).format(new java.util.Date());
+    }
+
+    @NonNull
     private String extractVolleyErrorMessage(@Nullable com.android.volley.VolleyError error) {
         if (error == null) {
-            return "Unknown error";
+            return getString(R.string.msg_unknown_error);
         }
 
         int statusCode = error.networkResponse != null ? error.networkResponse.statusCode : -1;
-        String body = "";
+        String body = extractVolleyErrorBody(error);
+
+        if (!body.trim().isEmpty()) {
+            return getString(R.string.msg_submit_order_failed_body, statusCode, body);
+        }
+
+        if (statusCode > 0) {
+            return getString(R.string.msg_submit_order_failed_code, statusCode);
+        }
+
+        return getString(R.string.msg_submit_order_failed);
+    }
+
+    @NonNull
+    private String extractVolleyErrorBody(@Nullable com.android.volley.VolleyError error) {
+        if (error == null) return "";
 
         try {
             if (error.networkResponse != null && error.networkResponse.data != null) {
-                body = new String(error.networkResponse.data, StandardCharsets.UTF_8);
-            } else if (error.getMessage() != null) {
-                body = error.getMessage();
+                return new String(error.networkResponse.data, StandardCharsets.UTF_8).trim();
+            }
+            if (error.getMessage() != null) {
+                return error.getMessage().trim();
             }
         } catch (Exception ignored) {
         }
 
-        if (!body.trim().isEmpty()) {
-            return "Submit order failed (" + statusCode + "): " + body;
-        }
+        return "";
+    }
 
-        if (statusCode > 0) {
-            return "Submit order failed (" + statusCode + ")";
+    @NonNull
+    private String safeLogDetail(@Nullable String value) {
+        if (value == null) return "";
+        String clean = value.replace('\n', ' ').replace('\r', ' ').trim();
+        String lower = clean.toLowerCase(Locale.US);
+        if (lower.startsWith("<!doctype") || lower.startsWith("<html") || lower.contains("<body")) {
+            return "<html omitted>";
         }
-
-        return "Submit order failed";
+        return clean.length() > 180 ? clean.substring(0, 180).trim() + "..." : clean;
     }
 
     private void onBarcodeClick() {
         if (!enableBarcodeScan) {
-            Toast.makeText(this, "Barcode scan is disabled for this business type.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.msg_barcode_disabled_business), Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (isWorkshopBusiness()) {
-            Toast.makeText(this, "Barcode shortcut is hidden for Workshop POS.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.msg_barcode_hidden_workshop), Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (session != null && !session.isShiftOpen()) {
-            Toast.makeText(this, "Open shift first.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.msg_open_shift_first), Toast.LENGTH_SHORT).show();
             ensureShiftOpenOrBlock();
             return;
         }
@@ -1275,7 +2233,7 @@ public class MainActivity extends AppCompatActivity
 
     private void openCartOverlay() {
         if (isWorkshopBusiness()) {
-            Toast.makeText(this, "Workshop workspace is already the main POS screen.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.msg_workshop_main_screen), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -1321,6 +2279,7 @@ public class MainActivity extends AppCompatActivity
         rv.setAdapter(categoryAdapter);
 
         categoryAdapter.setListener(category -> {
+            Log.i(TAG, "Selected category id=" + category.id + " name=" + safe(category.name, ""));
             Fragment f = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
             if (f instanceof ProductsFragment) {
                 String filter = (category.id == -1) ? "all" : String.valueOf(category.id);
@@ -1328,7 +2287,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        loadCategoriesNoRoom();
+        loadCategoriesRoomFirst();
     }
 
     private void applyCategoriesToUI(@NonNull List<Category> list, @NonNull String source) {
@@ -1339,7 +2298,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         categoryList.clear();
-        categoryList.add(new Category(-1, "All", null));
+        categoryList.add(new Category(-1, getString(R.string.category_all), null));
 
         for (Category c : list) {
             if (c == null) continue;
@@ -1368,12 +2327,12 @@ public class MainActivity extends AppCompatActivity
 
         Log.i(TAG, "loadCategoriesNoRoom: fetching " + url);
 
-        JsonArrayRequest req = new JsonArrayRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.GET,
                 url,
-                null,
-                (JSONArray res) -> {
+                response -> {
                     try {
+                        JSONArray res = extractResultsArray(response);
                         List<Category> out = new ArrayList<>();
 
                         for (int i = 0; i < res.length(); i++) {
@@ -1413,7 +2372,8 @@ public class MainActivity extends AppCompatActivity
                     } catch (Exception ignored) {
                     }
 
-                    Log.w(TAG, "loadCategoriesNoRoom: failed code=" + code + " body=" + body);
+                    Log.w(TAG, "loadCategoriesNoRoom: failed code=" + code
+                            + " detail=" + safeLogDetail(body));
                 }
         ) {
             @Override
@@ -1427,6 +2387,68 @@ public class MainActivity extends AppCompatActivity
 
         req.setTag("CATEGORIES_MAIN");
         ApiClient.getInstance(this).add(req);
+    }
+
+    private void loadCategoriesRoomFirst() {
+        final String token = session != null ? session.getToken() : null;
+        if (token == null || token.trim().isEmpty()) {
+            Log.w(TAG, "loadCategoriesRoomFirst: token empty");
+            applyCategoriesToUI(new ArrayList<>(), "TOKEN_EMPTY_ALL_ONLY");
+            return;
+        }
+
+        MasterDataRepository masterDataRepository = new MasterDataRepository(getApplicationContext());
+        masterDataRepository.loadCategoriesRoomFirst(token, new MasterDataRepository.CategoriesCallback() {
+            @Override
+            public void onLocalCategories(@NonNull List<Category> categories) {
+                if (!isActivityAlive()) return;
+                Log.i(TAG, "Room category count=" + categories.size());
+                applyCategoriesToUI(categories, "ROOM");
+            }
+
+            @Override
+            public void onRemoteCategories(@NonNull List<Category> categories) {
+                if (!isActivityAlive()) return;
+                categoriesAppliedFromOnline = true;
+                Log.i(TAG, "API category count=" + categories.size());
+                applyCategoriesToUI(categories, "ONLINE_API_ROOM_SYNCED");
+            }
+
+            @Override
+            public void onNoInternet(@NonNull List<Category> localCategories) {
+                if (!isActivityAlive()) return;
+                if (localCategories.isEmpty()) {
+                    Toast.makeText(MainActivity.this,
+                            MasterDataRepository.MESSAGE_NO_LOCAL_CATEGORY_DATA,
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Toast.makeText(MainActivity.this,
+                        MasterDataRepository.MESSAGE_NO_INTERNET_SHOWING_LOCAL,
+                        Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onError(@NonNull String message) {
+                if (!isActivityAlive()) return;
+                Log.w(TAG, "loadCategoriesRoomFirst: API failed detail=" + safeLogDetail(message));
+            }
+        });
+    }
+
+    private static JSONArray extractResultsArray(String response) throws Exception {
+        Object parsed = new JSONTokener(response == null ? "[]" : response).nextValue();
+
+        if (parsed instanceof JSONArray) {
+            return (JSONArray) parsed;
+        }
+
+        if (parsed instanceof JSONObject) {
+            JSONArray results = ((JSONObject) parsed).optJSONArray("results");
+            return results != null ? results : new JSONArray();
+        }
+
+        return new JSONArray();
     }
 
     private void setupBackHandling() {
@@ -1459,6 +2481,14 @@ public class MainActivity extends AppCompatActivity
         View btnPrivacy = content.findViewById(R.id.btnPrivacy);
         View btnCloseShift = content.findViewById(R.id.btnCloseShift);
         View btnLogout = content.findViewById(R.id.btnLogout);
+
+        boolean canCloseShift = session != null
+                && session.isShiftOpen()
+                && session.getShiftId() > 0;
+        if (btnCloseShift != null) {
+            btnCloseShift.setEnabled(canCloseShift);
+            btnCloseShift.setAlpha(canCloseShift ? 1f : 0.45f);
+        }
 
         if (btnChangePassword != null) {
             btnChangePassword.setOnClickListener(v -> {
@@ -1496,12 +2526,12 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void openChangePasswordFromUserMenu() {
-        Toast.makeText(this, "Change Password clicked", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.msg_change_password_clicked), Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void openPrivacyPolicyFromUserMenu() {
-        Toast.makeText(this, "Privacy Policy clicked", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.msg_privacy_policy_clicked), Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -1524,11 +2554,7 @@ public class MainActivity extends AppCompatActivity
 
         if (!isNetworkAvailable()) {
             closeShiftFlowRunning = false;
-            safeUi(() -> Toast.makeText(
-                    MainActivity.this,
-                    "Internet is required to close a shift.",
-                    Toast.LENGTH_LONG
-            ).show());
+            safeUi(() -> ErrorHandler.showNoInternet(MainActivity.this, null));
             return;
         }
 
@@ -1540,7 +2566,7 @@ public class MainActivity extends AppCompatActivity
                     safeUi(() -> showCloseShiftDialog(shopId, repo, false));
                 } else {
                     safeUi(() -> Toast.makeText(MainActivity.this,
-                            "There is no open shift.",
+                            getString(R.string.msg_no_open_shift),
                             Toast.LENGTH_SHORT).show());
                 }
             }
@@ -1548,7 +2574,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onError(@NonNull String message) {
                 closeShiftFlowRunning = false;
-                safeUi(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show());
+                safeUi(() -> ErrorHandler.handleApiError(MainActivity.this, message));
             }
         });
     }
@@ -1584,7 +2610,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onError(@NonNull String message) {
                 logoutFlowRunning = false;
-                safeUi(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show());
+                safeUi(() -> ErrorHandler.handleApiError(MainActivity.this, message));
             }
         });
     }
@@ -1594,13 +2620,13 @@ public class MainActivity extends AppCompatActivity
         EditText etClosing = v.findViewById(R.id.etClosingCash);
         EditText etNote = v.findViewById(R.id.etNote);
 
-        String okText = logoutAfter ? "Close Shift & Logout" : "Close Shift";
+        String okText = logoutAfter ? getString(R.string.action_close_shift_logout) : getString(R.string.action_close_shift);
 
         androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(this)
-                .setTitle("Closing Cash")
+                .setTitle(getString(R.string.title_closing_cash))
                 .setView(v)
                 .setCancelable(false)
-                .setNegativeButton("Cancel", (d, w) -> {
+                .setNegativeButton(getString(R.string.action_cancel), (d, w) -> {
                     logoutFlowRunning = false;
                     closeShiftFlowRunning = false;
                     d.dismiss();
@@ -1614,7 +2640,13 @@ public class MainActivity extends AppCompatActivity
                 String note = (etNote.getText() != null) ? etNote.getText().toString().trim() : "";
 
                 if (closingCash.isEmpty()) {
-                    etClosing.setError("Closing cash is required.");
+                    etClosing.setError(getString(R.string.msg_closing_cash_required));
+                    etClosing.requestFocus();
+                    return;
+                }
+
+                if (!isValidMoneyAmount(closingCash)) {
+                    etClosing.setError(getString(R.string.msg_invalid_money_amount));
                     etClosing.requestFocus();
                     return;
                 }
@@ -1637,12 +2669,17 @@ public class MainActivity extends AppCompatActivity
                                 CartManager.getInstance(MainActivity.this).clear();
                                 Toast.makeText(
                                         MainActivity.this,
-                                        "Shift closed. Please open a new shift before making transactions.",
+                                        getString(R.string.msg_shift_closed_open_new),
                                         Toast.LENGTH_LONG
                                 ).show();
 
                                 shiftGateRunning = false;
-                                shiftDialogShowing = false;
+                                isCheckingShift = false;
+                                shiftGateAlreadyPassed = false;
+                                isShiftDialogShowing = false;
+                                if (BuildConfig.DEBUG) {
+                                    Log.d(TAG, "SHIFT_GATE: close shift success, local shift cleared");
+                                }
                                 ensureShiftOpenOrBlock();
                             }
                         });
@@ -1652,7 +2689,7 @@ public class MainActivity extends AppCompatActivity
                     public void onError(@NonNull String message) {
                         safeUi(() -> {
                             dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setEnabled(true);
-                            Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
+                            ErrorHandler.handleApiError(MainActivity.this, message);
                         });
                     }
                 });
@@ -1660,6 +2697,15 @@ public class MainActivity extends AppCompatActivity
         });
 
         dialog.show();
+    }
+
+    private boolean isValidMoneyAmount(@NonNull String value) {
+        try {
+            BigDecimal amount = new BigDecimal(value.trim());
+            return amount.compareTo(BigDecimal.ZERO) >= 0;
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     private void doLogoutNow() {
@@ -1697,6 +2743,8 @@ public class MainActivity extends AppCompatActivity
             userPopup.dismiss();
         }
 
+        draftExecutor.shutdownNow();
+
         ApiClient.getInstance(this).cancelAll("CATEGORIES_MAIN");
         ApiClient.getInstance(this).cancelAll("CAT_CACHE_REPO");
         ApiClient.getInstance(this).cancelAll("SHIFT");
@@ -1722,4 +2770,5 @@ public class MainActivity extends AppCompatActivity
     public void onRetailAddToCartRequested(@NonNull RetailCartItem item) {
         Log.d(TAG, "Retail local scan item: " + item.name);
     }
+
 }

@@ -14,7 +14,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -32,6 +32,7 @@ import com.valdker.pos.repositories.LiteRepository;
 import com.valdker.pos.repositories.OrderDetailRepository;
 import com.valdker.pos.repositories.ProductDetailRepository;
 import com.valdker.pos.repositories.ProductReturnRepository;
+import com.valdker.pos.utils.ErrorHandler;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -378,7 +379,7 @@ public class ProductReturnAddDialog extends DialogFragment {
             public void onError(@NonNull String message) {
                 if (!isAdded()) return;
                 isLoadingManualProducts = false;
-                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+                ErrorHandler.handleApiError(requireContext(), message);
             }
         });
     }
@@ -431,7 +432,7 @@ public class ProductReturnAddDialog extends DialogFragment {
                 if (tvCustomerAuto != null) tvCustomerAuto.setText("Customer: -");
                 if (etUnitPrice != null) etUnitPrice.setText("");
 
-                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+                ErrorHandler.handleApiError(requireContext(), message);
             }
         });
     }
@@ -815,7 +816,7 @@ public class ProductReturnAddDialog extends DialogFragment {
                         @Override
                         public void onError(@NonNull String message) {
                             if (!isAdded()) return;
-                            Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+                            ErrorHandler.handleApiError(requireContext(), message);
                         }
                     }
             );
@@ -841,7 +842,7 @@ public class ProductReturnAddDialog extends DialogFragment {
                     @Override
                     public void onError(@NonNull String message) {
                         if (!isAdded()) return;
-                        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+                        ErrorHandler.handleApiError(requireContext(), message);
                     }
                 }
         );

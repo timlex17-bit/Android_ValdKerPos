@@ -1,11 +1,13 @@
 package com.valdker.pos.ui;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,7 +24,9 @@ import com.valdker.pos.SessionManager;
 import com.valdker.pos.adapters.ProductAdapter;
 import com.valdker.pos.cart.CartManager;
 import com.valdker.pos.models.Product;
+import com.valdker.pos.repositories.MasterDataRepository;
 import com.valdker.pos.repositories.ProductRepository;
+import com.valdker.pos.utils.ErrorHandler;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -34,6 +38,7 @@ public class ProductsFragment extends Fragment {
     private static final String ARG_BUSINESS_TYPE = "business_type";
     private static final String ARG_USE_GRID = "use_grid_pos_layout";
     private static final String ARG_SHOW_IMAGES = "show_product_images_in_pos";
+    private static final String TAG = "ProductsFragment";
 
     private String currentCategoryId = "all";
 
@@ -50,9 +55,12 @@ public class ProductsFragment extends Fragment {
 
     private SessionManager session;
     private ProductRepository repo;
+    private MasterDataRepository masterDataRepository;
 
     private boolean allProductsCacheLoaded = false;
     private boolean allProductsCacheLoading = false;
+    private boolean offlineNoticeShown = false;
+    private boolean noLocalDataNoticeShown = false;
 
     private String businessType = "retail";
     private boolean useGridPosLayout = false;
@@ -82,6 +90,7 @@ public class ProductsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         session = new SessionManager(requireContext());
         repo = new ProductRepository(requireContext());
+        masterDataRepository = new MasterDataRepository(requireContext());
 
         applyBusinessFallbackFromSessionIfNeeded();
 
@@ -163,7 +172,7 @@ public class ProductsFragment extends Fragment {
         if (rv == null) return;
 
         if ("restaurant".equals(businessType) && useGridPosLayout) {
-            int span = 2; // test hardcode
+            int span = getResponsiveProductSpan();
             android.util.Log.i("PRODUCT_UI", "Using GRID layout, span=" + span + ", businessType=" + businessType);
             rv.setLayoutManager(new GridLayoutManager(requireContext(), span));
         } else {
@@ -172,6 +181,28 @@ public class ProductsFragment extends Fragment {
         }
 
         rv.setHasFixedSize(true);
+    }
+
+    private int getResponsiveProductSpan() {
+        int configuredSpan = getResources().getInteger(R.integer.product_grid_span);
+        int widthDp = getResources().getConfiguration().screenWidthDp;
+
+        if (widthDp == Configuration.SCREEN_WIDTH_DP_UNDEFINED) {
+            widthDp = Math.round(
+                    getResources().getDisplayMetrics().widthPixels
+                            / getResources().getDisplayMetrics().density
+            );
+        }
+
+        if (widthDp >= 840) {
+            return Math.max(configuredSpan, 4);
+        }
+
+        if (widthDp >= 600) {
+            return Math.max(configuredSpan, 3);
+        }
+
+        return Math.max(configuredSpan, 2);
     }
 
     private ProductAdapter buildAdapter() {
@@ -280,27 +311,36 @@ public class ProductsFragment extends Fragment {
             showLoading();
         }
 
-        repo.fetchProducts(token, currentCategoryId, new ProductRepository.Callback() {
+        masterDataRepository.loadProductsRoomFirst(token, currentCategoryId, new MasterDataRepository.ProductsCallback() {
 
             @Override
-            public void onSuccess(@NonNull List<Product> products) {
+            public void onLocalProducts(@NonNull List<Product> products) {
                 if (!isAdded() || getView() == null) return;
+                Log.i(TAG, "Local product count after category filter categoryId="
+                        + currentCategoryId + " count=" + products.size());
+                applyProductList(products);
+                stopRefreshing();
+            }
 
-                items.clear();
-                items.addAll(products);
+            @Override
+            public void onRemoteProducts(@NonNull List<Product> products) {
+                if (!isAdded() || getView() == null) return;
+                offlineNoticeShown = false;
+                noLocalDataNoticeShown = false;
+                applyProductList(products);
+                stopRefreshing();
+            }
 
-                if (adapter != null) adapter.notifyDataSetChanged();
-
-                if (items.isEmpty()) {
-                    if (isRetailOrWorkshop()) {
-                        showRetailWorkshopEmptyState();
-                    } else {
-                        showEmpty("No products");
-                    }
+            @Override
+            public void onNoInternet(@NonNull List<Product> localProducts) {
+                if (!isAdded() || getView() == null) return;
+                applyProductList(localProducts);
+                if (localProducts.isEmpty()) {
+                    showEmpty(MasterDataRepository.MESSAGE_NO_LOCAL_POS_DATA);
+                    showNoLocalDataNoticeOnce();
                 } else {
-                    showList();
+                    showOfflineNoticeOnce();
                 }
-
                 stopRefreshing();
             }
 
@@ -318,10 +358,27 @@ public class ProductsFragment extends Fragment {
                     showList();
                 }
 
-                safeToast(message);
+                ErrorHandler.handleApiError(requireContext(), message);
                 stopRefreshing();
             }
         });
+    }
+
+    private void applyProductList(@NonNull List<Product> products) {
+        items.clear();
+        items.addAll(products);
+
+        if (adapter != null) adapter.notifyDataSetChanged();
+
+        if (items.isEmpty()) {
+            if (isRetailOrWorkshop()) {
+                showRetailWorkshopEmptyState();
+            } else {
+                showEmpty("No products");
+            }
+        } else {
+            showList();
+        }
     }
 
     private void preloadAllProductsCacheSilently() {
@@ -333,14 +390,35 @@ public class ProductsFragment extends Fragment {
 
         allProductsCacheLoading = true;
 
-        repo.fetchProducts(token, "all", new ProductRepository.Callback() {
+        masterDataRepository.loadProductsRoomFirst(token, "all", new MasterDataRepository.ProductsCallback() {
             @Override
-            public void onSuccess(@NonNull List<Product> products) {
+            public void onLocalProducts(@NonNull List<Product> products) {
+                allProductsCache.clear();
+                allProductsCache.addAll(products);
+                allProductsCacheLoaded = !products.isEmpty();
+            }
+
+            @Override
+            public void onRemoteProducts(@NonNull List<Product> products) {
                 allProductsCacheLoading = false;
                 allProductsCacheLoaded = true;
+                offlineNoticeShown = false;
+                noLocalDataNoticeShown = false;
 
                 allProductsCache.clear();
                 allProductsCache.addAll(products);
+            }
+
+            @Override
+            public void onNoInternet(@NonNull List<Product> localProducts) {
+                allProductsCacheLoading = false;
+                allProductsCacheLoaded = !allProductsCache.isEmpty();
+                if (allProductsCache.isEmpty() && localProducts.isEmpty()) {
+                    showNoLocalDataNoticeOnce();
+                    return;
+                } else {
+                    showOfflineNoticeOnce();
+                }
             }
 
             @Override
@@ -419,17 +497,26 @@ public class ProductsFragment extends Fragment {
             return;
         }
 
-        if (!allProductsCacheLoaded && !allProductsCacheLoading) {
-            loadAllProductsCacheAndAdd(clean);
-            return;
-        }
+        masterDataRepository.findProductByBarcodeLocal(clean, product -> {
+            if (!isAdded()) return;
+            if (product != null) {
+                addProductToCart(product);
+                showSingleProductResult(product);
+                return;
+            }
 
-        if (allProductsCacheLoading) {
-            safeToast("Searching product...");
-            return;
-        }
+            if (!allProductsCacheLoaded && !allProductsCacheLoading) {
+                loadAllProductsCacheAndAdd(clean);
+                return;
+            }
 
-        safeToast("Product not found: " + clean);
+            if (allProductsCacheLoading) {
+                safeToast("Searching product...");
+                return;
+            }
+
+            safeToast("Product not found: " + clean);
+        });
     }
 
     private void loadAllProductsCacheAndAdd(@NonNull String barcode) {
@@ -441,24 +528,66 @@ public class ProductsFragment extends Fragment {
         }
 
         allProductsCacheLoading = true;
+        final boolean[] productAdded = {false};
 
-        repo.fetchProducts(token, "all", new ProductRepository.Callback() {
+        masterDataRepository.loadProductsRoomFirst(token, "all", new MasterDataRepository.ProductsCallback() {
             @Override
-            public void onSuccess(@NonNull List<Product> products) {
+            public void onLocalProducts(@NonNull List<Product> products) {
+                if (!isAdded()) return;
+                allProductsCache.clear();
+                allProductsCache.addAll(products);
+
+                Product found = findProductByBarcodeInList(allProductsCache, barcode);
+                if (found != null) {
+                    allProductsCacheLoading = false;
+                    allProductsCacheLoaded = true;
+                    productAdded[0] = true;
+                    addProductToCart(found);
+                    showSingleProductResult(found);
+                }
+            }
+
+            @Override
+            public void onRemoteProducts(@NonNull List<Product> products) {
                 if (!isAdded()) return;
 
                 allProductsCacheLoading = false;
                 allProductsCacheLoaded = true;
+                offlineNoticeShown = false;
+                noLocalDataNoticeShown = false;
 
                 allProductsCache.clear();
                 allProductsCache.addAll(products);
 
                 Product found = findProductByBarcodeInList(allProductsCache, barcode);
 
-                if (found != null) {
+                if (found != null && !productAdded[0]) {
+                    productAdded[0] = true;
                     addProductToCart(found);
                     showSingleProductResult(found);
+                } else if (found == null && !productAdded[0]) {
+                    safeToast("Product not found: " + barcode);
+                }
+            }
+
+            @Override
+            public void onNoInternet(@NonNull List<Product> localProducts) {
+                if (!isAdded()) return;
+
+                allProductsCacheLoading = false;
+                allProductsCacheLoaded = !allProductsCache.isEmpty();
+                if (allProductsCache.isEmpty() && localProducts.isEmpty()) {
+                    showNoLocalDataNoticeOnce();
                 } else {
+                    showOfflineNoticeOnce();
+                }
+
+                Product found = findProductByBarcodeInList(allProductsCache, barcode);
+                if (found != null && !productAdded[0]) {
+                    productAdded[0] = true;
+                    addProductToCart(found);
+                    showSingleProductResult(found);
+                } else if (found == null && !productAdded[0]) {
                     safeToast("Product not found: " + barcode);
                 }
             }
@@ -468,7 +597,7 @@ public class ProductsFragment extends Fragment {
                 if (!isAdded()) return;
 
                 allProductsCacheLoading = false;
-                safeToast("Barcode lookup failed: " + message);
+                ErrorHandler.handleApiError(requireContext(), "Barcode lookup failed: " + message);
             }
         });
     }
@@ -479,6 +608,18 @@ public class ProductsFragment extends Fragment {
 
         if (adapter != null) adapter.notifyDataSetChanged();
         showList();
+    }
+
+    private void showOfflineNoticeOnce() {
+        if (offlineNoticeShown) return;
+        offlineNoticeShown = true;
+        safeToast(MasterDataRepository.MESSAGE_NO_INTERNET_SHOWING_LOCAL);
+    }
+
+    private void showNoLocalDataNoticeOnce() {
+        if (noLocalDataNoticeShown) return;
+        noLocalDataNoticeShown = true;
+        safeToast(MasterDataRepository.MESSAGE_NO_LOCAL_POS_DATA);
     }
 
     @Nullable

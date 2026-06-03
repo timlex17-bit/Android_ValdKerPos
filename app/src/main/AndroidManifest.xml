@@ -24,14 +24,16 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30"/>
 
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"/>
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation"/>
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30"/>
 
     <application
         android:name=".ValdkerApp"
-        android:allowBackup="true"
-        android:usesCleartextTraffic="true"
+        android:allowBackup="false"
+        android:usesCleartextTraffic="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -43,7 +45,7 @@
 
         <!-- ✅ LOGIN -->
         <activity
-            android:name=".LoginActivity"
+            android:name=".SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -53,13 +55,22 @@
 
         <!-- ✅ NEW: HOME DASHBOARD -->
         <activity
+            android:name=".LoginActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".ui.dashboard.HomeDashboardActivity"
+            android:windowSoftInputMode="adjustPan"
             android:exported="false" />
 
         <!-- ✅ MAIN -->
         <activity
+            android:name=".ui.offlineorders.PendingOrdersActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".MainActivity"
-            android:exported="true" />
+            android:exported="false" />
 
         <!-- ✅ CHECKOUT WEBVIEW (HYBRID) -->
         <activity
@@ -76,11 +87,21 @@
             android:name=".ui.ownerchat.OwnerChatActivity"
             android:exported="false" />
 
-        <activity android:name=".ui.productreturns.ProductReturnDetailActivity" />
-        <activity android:name=".ui.inventorycount.InventoryCountDetailActivity" />
-        <activity android:name=".ui.stockadjustments.StockAdjustmentDetailActivity" />
-        <activity android:name=".ui.stockmovements.StockMovementDetailActivity" />
-        <activity android:name=".ui.BankAccountActivity" />
+        <activity
+            android:name=".ui.productreturns.ProductReturnDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.inventorycount.InventoryCountDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.stockadjustments.StockAdjustmentDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.stockmovements.StockMovementDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.BankAccountActivity"
+            android:exported="false" />
 
     </application>
 

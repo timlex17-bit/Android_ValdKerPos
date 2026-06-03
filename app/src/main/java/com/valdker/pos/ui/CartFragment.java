@@ -9,7 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,20 +24,33 @@ import com.valdker.pos.models.CartItem;
 import com.valdker.pos.models.Customer;
 import com.valdker.pos.repositories.CheckoutConfigRepository;
 import com.valdker.pos.repositories.CustomerRepository;
+import com.valdker.pos.repositories.MasterDataRepository;
+import com.valdker.pos.repositories.OfflineOrderRepository;
 import com.valdker.pos.repositories.OrderRepository;
 import com.valdker.pos.ui.checkout.BankAccountItem;
 import com.valdker.pos.ui.checkout.NativeCheckoutDialogFragment;
 import com.valdker.pos.ui.checkout.PaymentMethodItem;
+import com.valdker.pos.utils.ErrorHandler;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.text.NumberFormat;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CartFragment extends Fragment {
+
+    public interface DraftLifecycleHost {
+        void onCartOrderFinished();
+    }
+
+    private interface ReceiptPrintCallback {
+        void onComplete(@NonNull com.valdker.pos.print.BluetoothPrinterManager.PrintResult result);
+    }
 
     private static final String TAG = "CART_FRAGMENT";
     private static final String TAG_NATIVE_CHECKOUT = "NATIVE_CHECKOUT";
@@ -61,6 +74,8 @@ public class CartFragment extends Fragment {
 
     private CartManager cart;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    @Nullable
+    private WeakReference<DraftLifecycleHost> draftLifecycleHostRef;
 
     private boolean cancelInProgress = false;
 
@@ -104,12 +119,21 @@ public class CartFragment extends Fragment {
     }
 
     @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (context instanceof DraftLifecycleHost) {
+            draftLifecycleHostRef = new WeakReference<>((DraftLifecycleHost) context);
+        }
+    }
+
+    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         cart = CartManager.getInstance(requireContext());
 
         fallbackConfigFromSession();
+        syncPendingOrdersIfOnline();
 
         rv = view.findViewById(R.id.rvCart);
         tvEmpty = view.findViewById(R.id.tvCartEmpty);
@@ -128,17 +152,17 @@ public class CartFragment extends Fragment {
                 new CartAdapter.Listener() {
                     @Override
                     public void onIncrease(@NonNull CartItem item) {
-                        cart.setQty(item.productId, item.qty + 1);
+                        cart.setQty(item.productId, item.itemType, item.qty + 1);
                     }
 
                     @Override
                     public void onDecrease(@NonNull CartItem item) {
-                        cart.setQty(item.productId, item.qty - 1);
+                        cart.setQty(item.productId, item.itemType, item.qty - 1);
                     }
 
                     @Override
                     public void onRemove(@NonNull CartItem item) {
-                        cart.remove(item.productId);
+                        cart.remove(item.productId, item.itemType);
                     }
 
                     @Override
@@ -147,7 +171,7 @@ public class CartFragment extends Fragment {
                             Toast.makeText(requireContext(), "Order type not allowed for this shop.", Toast.LENGTH_SHORT).show();
                             return;
                         }
-                        cart.setOrderType(item.productId, orderType);
+                        cart.setOrderType(item.productId, item.itemType, orderType);
                     }
                 },
                 businessType,
@@ -253,9 +277,9 @@ public class CartFragment extends Fragment {
             String normalized = normalizeType(item.orderType);
 
             if (!isOrderTypeAllowed(normalized)) {
-                cart.setOrderType(item.productId, getDefaultOrderType());
+                cart.setOrderType(item.productId, item.itemType, getDefaultOrderType());
             } else if (normalized.isEmpty()) {
-                cart.setOrderType(item.productId, getDefaultOrderType());
+                cart.setOrderType(item.productId, item.itemType, getDefaultOrderType());
             }
         }
     }
@@ -294,9 +318,29 @@ public class CartFragment extends Fragment {
 
         Toast.makeText(requireContext(), "Order cancelled", Toast.LENGTH_SHORT).show();
 
-        cart.clear();
+        finishActiveDraftAndClearCart();
 
         mainHandler.post(this::closeOverlaySafely);
+    }
+
+    private void finishActiveDraftAndClearCart() {
+        Log.i(TAG, "checkout cleanup started pos=" + businessType);
+
+        DraftLifecycleHost host = draftLifecycleHostRef != null ? draftLifecycleHostRef.get() : null;
+        if (host == null && getActivity() instanceof DraftLifecycleHost) {
+            host = (DraftLifecycleHost) getActivity();
+        }
+
+        if (host != null) {
+            host.onCartOrderFinished();
+            return;
+        }
+
+        Log.e(TAG, "cleanup failed with error: draft lifecycle host unavailable");
+        if (cart != null) {
+            cart.clear();
+            Log.i(TAG, "cart cleanup success pos=" + businessType + " draft_host_unavailable=true");
+        }
     }
 
     private void openNativeCheckout() {
@@ -330,141 +374,129 @@ public class CartFragment extends Fragment {
         final boolean finalNeedTable = needTable;
         final boolean finalNeedDelivery = needDelivery;
 
-        CheckoutConfigRepository repo = new CheckoutConfigRepository(appCtx);
+        MasterDataRepository masterDataRepository = new MasterDataRepository(appCtx);
+        final NativeCheckoutDialogFragment[] dialogRef = {null};
+        final boolean[] dialogShown = {false};
+        final boolean[] offlineNoticeShown = {false};
+        final boolean[] noLocalDataNoticeShown = {false};
 
-        repo.fetchPaymentMethods(token, new CheckoutConfigRepository.PaymentMethodsCallback() {
+        masterDataRepository.loadCheckoutDataRoomFirst(token, new MasterDataRepository.CheckoutDataCallback() {
             @Override
-            public void onSuccess(@NonNull List<PaymentMethodItem> paymentItems) {
+            public void onLocalCheckoutData(@NonNull List<Customer> customers,
+                                            @NonNull List<PaymentMethodItem> paymentItems,
+                                            @NonNull List<BankAccountItem> bankItems) {
+                if (!isAdded()) return;
+                if (!paymentItems.isEmpty()) {
+                    showOrUpdateCheckoutDialog(dialogRef, dialogShown, subtotal, finalNeedTable, finalNeedDelivery,
+                            customers, paymentItems, bankItems);
+                }
+            }
 
-                repo.fetchBankAccounts(token, new CheckoutConfigRepository.BankAccountsCallback() {
-                    @Override
-                    public void onSuccess(@NonNull List<BankAccountItem> bankItems) {
-                        if (!isAdded()) return;
+            @Override
+            public void onRemoteCheckoutData(@NonNull List<Customer> customers,
+                                             @NonNull List<PaymentMethodItem> paymentItems,
+                                             @NonNull List<BankAccountItem> bankItems) {
+                if (!isAdded()) return;
+                showOrUpdateCheckoutDialog(dialogRef, dialogShown, subtotal, finalNeedTable, finalNeedDelivery,
+                        customers, paymentItems, bankItems);
+            }
 
-                        NativeCheckoutDialogFragment dialog =
-                                NativeCheckoutDialogFragment.newInstance(
-                                        subtotal,
-                                        finalNeedTable,
-                                        finalNeedDelivery
-                                );
-
-                        List<NativeCheckoutDialogFragment.PaymentMethodOption> methodOptions = new ArrayList<>();
-                        for (PaymentMethodItem item : paymentItems) {
-                            methodOptions.add(
-                                    new NativeCheckoutDialogFragment.PaymentMethodOption(
-                                            item.id,
-                                            item.code != null ? item.code : "",
-                                            item.name != null ? item.name : "",
-                                            item.requires_bank_account
-                                    )
-                            );
-                        }
-
-                        List<NativeCheckoutDialogFragment.BankAccountOption> bankOptions = new ArrayList<>();
-                        for (BankAccountItem item : bankItems) {
-                            String label = (item.bank_name != null ? item.bank_name : "") +
-                                    " - " +
-                                    (item.name != null ? item.name : "");
-                            bankOptions.add(
-                                    new NativeCheckoutDialogFragment.BankAccountOption(
-                                            item.id,
-                                            label
-                                    )
-                            );
-                        }
-
-                        CustomerRepository customerRepo = new CustomerRepository(appCtx);
-                        customerRepo.fetchCustomers(token, new CustomerRepository.ListCallback() {
-                            @Override
-                            public void onSuccess(@NonNull List<Customer> customers) {
-                                if (!isAdded()) return;
-
-                                List<NativeCheckoutDialogFragment.CustomerOption> customerOptions = new ArrayList<>();
-
-                                // optional walk-in
-                                customerOptions.add(
-                                        new NativeCheckoutDialogFragment.CustomerOption(
-                                                0,
-                                                "Walk-in Customer",
-                                                0L
-                                        )
-                                );
-
-                                for (Customer c : customers) {
-                                    customerOptions.add(
-                                            new NativeCheckoutDialogFragment.CustomerOption(
-                                                    c.id,
-                                                    c.name != null && !c.name.trim().isEmpty()
-                                                            ? c.name
-                                                            : "Customer #" + c.id,
-                                                    c.points
-                                            )
-                                    );
-                                }
-
-                                dialog.setCustomerOptions(customerOptions);
-                                dialog.setPaymentOptions(methodOptions);
-                                dialog.setBankOptions(bankOptions);
-                                dialog.setBankListener(new NativeCheckoutDialogFragment.BankListener() {
-                                    @Override
-                                    public void onConfirmBank(@NonNull NativeCheckoutDialogFragment.BankCheckoutResult result) {
-                                        CartFragment.this.submitCheckout(result);
-                                    }
-                                });
-
-                                dialog.show(requireActivity().getSupportFragmentManager(), TAG_NATIVE_CHECKOUT);
-                            }
-
-                            @Override
-                            public void onError(int statusCode, @NonNull String message) {
-                                if (!isAdded()) return;
-
-                                Toast.makeText(requireContext(),
-                                        "Failed to load customers: " + message,
-                                        Toast.LENGTH_LONG).show();
-
-                                List<NativeCheckoutDialogFragment.CustomerOption> fallbackCustomers = new ArrayList<>();
-                                fallbackCustomers.add(
-                                        new NativeCheckoutDialogFragment.CustomerOption(
-                                                0,
-                                                "Walk-in Customer",
-                                                0L
-                                        )
-                                );
-
-                                dialog.setCustomerOptions(fallbackCustomers);
-                                dialog.setPaymentOptions(methodOptions);
-                                dialog.setBankOptions(bankOptions);
-                                dialog.setBankListener(new NativeCheckoutDialogFragment.BankListener() {
-                                    @Override
-                                    public void onConfirmBank(@NonNull NativeCheckoutDialogFragment.BankCheckoutResult result) {
-                                        CartFragment.this.submitCheckout(result);
-                                    }
-                                });
-
-                                dialog.show(requireActivity().getSupportFragmentManager(), TAG_NATIVE_CHECKOUT);
-                            }
-                        });
+            @Override
+            public void onNoInternet(@NonNull List<Customer> customers,
+                                     @NonNull List<PaymentMethodItem> paymentItems,
+                                     @NonNull List<BankAccountItem> bankItems) {
+                if (!isAdded()) return;
+                if (paymentItems.isEmpty()) {
+                    if (!noLocalDataNoticeShown[0]) {
+                        noLocalDataNoticeShown[0] = true;
+                        Toast.makeText(requireContext(), MasterDataRepository.MESSAGE_NO_LOCAL_POS_DATA, Toast.LENGTH_SHORT).show();
                     }
-
-                    @Override
-                    public void onError(int statusCode, @NonNull String message) {
-                        if (!isAdded()) return;
-                        Toast.makeText(requireContext(),
-                                "Failed to load bank accounts: " + message,
-                                Toast.LENGTH_LONG).show();
-                    }
-                });
+                    return;
+                }
+                if (!offlineNoticeShown[0]) {
+                    offlineNoticeShown[0] = true;
+                    Toast.makeText(requireContext(), MasterDataRepository.MESSAGE_NO_INTERNET_SHOWING_LOCAL, Toast.LENGTH_SHORT).show();
+                }
+                if (!dialogShown[0]) {
+                    showOrUpdateCheckoutDialog(dialogRef, dialogShown, subtotal, finalNeedTable, finalNeedDelivery,
+                            customers, paymentItems, bankItems);
+                }
             }
 
             @Override
             public void onError(int statusCode, @NonNull String message) {
                 if (!isAdded()) return;
-                Toast.makeText(requireContext(),
-                        "Failed to load payment methods: " + message,
-                        Toast.LENGTH_LONG).show();
+                if (!dialogShown[0]) {
+                    ErrorHandler.handleApiError(requireContext(), "Failed to load payment methods: " + message);
+                }
             }
         });
+    }
+
+    private void showOrUpdateCheckoutDialog(@NonNull NativeCheckoutDialogFragment[] dialogRef,
+                                            @NonNull boolean[] dialogShown,
+                                            double subtotal,
+                                            boolean needTable,
+                                            boolean needDelivery,
+                                            @NonNull List<Customer> customers,
+                                            @NonNull List<PaymentMethodItem> paymentItems,
+                                            @NonNull List<BankAccountItem> bankItems) {
+        NativeCheckoutDialogFragment dialog = dialogRef[0];
+        if (dialog == null) {
+            dialog = NativeCheckoutDialogFragment.newInstance(subtotal, needTable, needDelivery);
+            dialog.setBankListener(result -> CartFragment.this.submitCheckout(result));
+            dialogRef[0] = dialog;
+        }
+
+        dialog.setCustomerOptions(toCustomerOptions(customers));
+        dialog.setPaymentOptions(toPaymentOptions(paymentItems));
+        dialog.setBankOptions(toBankOptions(bankItems));
+
+        if (!dialogShown[0] && isAdded()) {
+            dialogShown[0] = true;
+            dialog.show(requireActivity().getSupportFragmentManager(), TAG_NATIVE_CHECKOUT);
+        }
+    }
+
+    @NonNull
+    private List<NativeCheckoutDialogFragment.CustomerOption> toCustomerOptions(@NonNull List<Customer> customers) {
+        List<NativeCheckoutDialogFragment.CustomerOption> options = new ArrayList<>();
+        options.add(new NativeCheckoutDialogFragment.CustomerOption(0, "Walk-in Customer", 0L));
+        for (Customer c : customers) {
+            if (c == null) continue;
+            options.add(new NativeCheckoutDialogFragment.CustomerOption(
+                    c.id,
+                    c.name != null && !c.name.trim().isEmpty() ? c.name : "Customer #" + c.id,
+                    c.points
+            ));
+        }
+        return options;
+    }
+
+    @NonNull
+    private List<NativeCheckoutDialogFragment.PaymentMethodOption> toPaymentOptions(@NonNull List<PaymentMethodItem> paymentItems) {
+        List<NativeCheckoutDialogFragment.PaymentMethodOption> options = new ArrayList<>();
+        for (PaymentMethodItem item : paymentItems) {
+            if (item == null || !item.is_active) continue;
+            options.add(new NativeCheckoutDialogFragment.PaymentMethodOption(
+                    item.id,
+                    item.code != null ? item.code : "",
+                    item.name != null ? item.name : "",
+                    item.requires_bank_account
+            ));
+        }
+        return options;
+    }
+
+    @NonNull
+    private List<NativeCheckoutDialogFragment.BankAccountOption> toBankOptions(@NonNull List<BankAccountItem> bankItems) {
+        List<NativeCheckoutDialogFragment.BankAccountOption> options = new ArrayList<>();
+        for (BankAccountItem item : bankItems) {
+            if (item == null || !item.is_active) continue;
+            String label = (item.bank_name != null ? item.bank_name : "") + " - " + (item.name != null ? item.name : "");
+            options.add(new NativeCheckoutDialogFragment.BankAccountOption(item.id, label));
+        }
+        return options;
     }
 
     private void submitCheckout(@NonNull NativeCheckoutDialogFragment.BankCheckoutResult result) {
@@ -548,6 +580,7 @@ public class CartFragment extends Fragment {
             } else {
                 payload.put("customer", JSONObject.NULL);
             }
+            payload.put("device_time", currentDeviceTimeIso());
             payload.put("payment_method", paymentCodeFinal);
             payload.put("subtotal", String.format(Locale.US, "%.2f", subtotalFinal));
             payload.put("discount", "0.00");
@@ -646,13 +679,21 @@ public class CartFragment extends Fragment {
             return;
         }
 
+        final String clientOrderId = OfflineOrderRepository.newClientOrderId(appCtx);
+        OfflineOrderRepository.ensureClientOrderId(payload, clientOrderId);
+        final String localOrderId = clientOrderId;
+        Log.i(TAG, "Checkout submit client_order_id=" + clientOrderId);
         OrderRepository repo = new OrderRepository(appCtx);
         repo.createOrder(token, payload, new OrderRepository.CreateCallback() {
             @Override
             public void onSuccess(@NonNull JSONObject response) {
-                mainHandler.post(() ->
-                        Toast.makeText(requireContext(), "Checkout success", Toast.LENGTH_SHORT).show()
-                );
+                new OfflineOrderRepository(appCtx).syncPendingOrders(token);
+                mainHandler.post(() -> {
+                    Context toastContext = getContext();
+                    if (toastContext != null) {
+                        Toast.makeText(toastContext, "Checkout success", Toast.LENGTH_SHORT).show();
+                    }
+                });
 
                 String invoiceFromApi = response.optString("invoice_number", "");
                 String invoiceFinal = (invoiceFromApi != null && !invoiceFromApi.trim().isEmpty())
@@ -669,12 +710,16 @@ public class CartFragment extends Fragment {
                         totalFinal,
                         tableFinal,
                         addrFinal,
-                        invoiceFinal
+                        invoiceFinal,
+                        result.customerName != null ? result.customerName : "",
+                        result.cashReceived,
+                        result.changeAmount
                 );
 
-                cart.clear();
+                finishActiveDraftAndClearCart();
 
                 mainHandler.post(() -> {
+                    if (!isAdded()) return;
                     render();
                     closeOverlaySafely();
                     if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
@@ -683,17 +728,152 @@ public class CartFragment extends Fragment {
 
             @Override
             public void onError(int statusCode, @NonNull String message) {
+                if (OfflineOrderRepository.shouldSaveOffline(appCtx, statusCode, message)
+                        && !ErrorHandler.isDeviceTimeValidationError(statusCode, message)) {
+                    saveCheckoutOffline(
+                            localOrderId,
+                            payload,
+                            appCtx,
+                            snapshot,
+                            paymentCodeFinal,
+                            subtotalFinal,
+                            deliveryFeeFinal,
+                            totalFinal,
+                            tableFinal,
+                            addrFinal,
+                            result.customerName != null ? result.customerName : "",
+                            result.cashReceived,
+                            result.changeAmount
+                    );
+                    return;
+                }
+
+                Log.i(TAG, "cleanup skipped because save/submit failed pos=" + businessType
+                        + " statusCode=" + statusCode);
                 mainHandler.post(() -> {
                     if (!isAdded()) return;
-                    Toast.makeText(requireContext(), "Checkout failed: " + message, Toast.LENGTH_LONG).show();
+                    if (ErrorHandler.isDeviceTimeValidationError(statusCode, message)) {
+                        ErrorHandler.showDeviceTimeDialog(requireContext());
+                        if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
+                        return;
+                    }
+                    ErrorHandler.handleApiError(requireContext(), "Checkout failed: " + message);
                     if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
                 });
             }
         });
     }
 
+    private void saveCheckoutOffline(@NonNull String localOrderId,
+                                     @NonNull JSONObject payload,
+                                     @NonNull Context appCtx,
+                                     @NonNull List<CartItem> snapshot,
+                                     @NonNull String paymentMethod,
+                                     double subtotal,
+                                     double deliveryFee,
+                                     double total,
+                                     @NonNull String tableNumber,
+                                     @NonNull String deliveryAddress,
+                                     @NonNull String customerName,
+                                     double cashReceived,
+                                     double changeAmount) {
+        new OfflineOrderRepository(appCtx).savePendingOrder(
+                localOrderId,
+                payload,
+                businessType,
+                new OfflineOrderRepository.SaveCallback() {
+                    @Override
+                    public void onSuccess(@NonNull String savedLocalOrderId, boolean inserted) {
+                        String offlineReceiptNumber = offlineReceiptNumber(savedLocalOrderId, payload);
+                        tryAutoPrintOfflineReceipt(
+                                appCtx,
+                                new SessionManager(appCtx).getToken(),
+                                snapshot,
+                                paymentMethod,
+                                subtotal,
+                                deliveryFee,
+                                total,
+                                tableNumber,
+                                deliveryAddress,
+                                offlineReceiptNumber,
+                                customerName,
+                                cashReceived,
+                                changeAmount,
+                                payload.optString("device_time", ""),
+                                result -> showOfflineReceiptResult(appCtx, result)
+                        );
+                        finishActiveDraftAndClearCart();
+                        if (isAdded()) {
+                            render();
+                            closeOverlaySafely();
+                        } else {
+                            CartManager.getInstance(appCtx).clear();
+                        }
+                        if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
+                    }
+
+                    @Override
+                    public void onError(@NonNull String message) {
+                        Log.i(TAG, "cleanup skipped because save/submit failed pos=" + businessType
+                                + " local_save_error=" + message);
+                        if (isAdded()) {
+                            Toast.makeText(requireContext(),
+                                    "Failed to save local order: " + message,
+                                    Toast.LENGTH_LONG).show();
+                        }
+                        if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
+                    }
+                }
+        );
+    }
+
+    private void syncPendingOrdersIfOnline() {
+        if (!isAdded()) return;
+        Context appCtx = requireContext().getApplicationContext();
+        String token = new SessionManager(appCtx).getToken();
+        new OfflineOrderRepository(appCtx).syncPendingOrders(token);
+    }
+
     private boolean isRestaurantBusiness() {
         return "restaurant".equalsIgnoreCase(businessType);
+    }
+
+    @NonNull
+    private static String currentDeviceTimeIso() {
+        return new java.text.SimpleDateFormat(
+                "yyyy-MM-dd'T'HH:mm:ssXXX",
+                Locale.US
+        ).format(new java.util.Date());
+    }
+
+    @NonNull
+    private String offlineReceiptNumber(@NonNull String localOrderId, @NonNull JSONObject payload) {
+        String clientOrderId = payload.optString("client_order_id", "");
+        if (clientOrderId != null && !clientOrderId.trim().isEmpty()) {
+            return clientOrderId.trim();
+        }
+        return localOrderId.trim().isEmpty() ? "OFFLINE-" + System.currentTimeMillis() : localOrderId.trim();
+    }
+
+    private void showOfflineReceiptResult(@NonNull Context appCtx,
+                                          @NonNull com.valdker.pos.print.BluetoothPrinterManager.PrintResult result) {
+        String message;
+        switch (result) {
+            case SUCCESS:
+                message = "Order saved locally and receipt printed.";
+                break;
+            case SKIPPED:
+                message = "Order saved locally. Receipt printing skipped because auto-print is disabled.";
+                break;
+            case TIMEOUT:
+                message = "Order saved locally. Printer connection timed out. Please check printer and try reprint.";
+                break;
+            case FAILED:
+            default:
+                message = "Order saved locally, but receipt failed to print.";
+                break;
+        }
+        mainHandler.post(() -> Toast.makeText(appCtx, message, Toast.LENGTH_LONG).show());
     }
 
     private void tryAutoPrintReceipt(@NonNull Context appCtx,
@@ -705,28 +885,124 @@ public class CartFragment extends Fragment {
                                      double total,
                                      @NonNull String tableNumber,
                                      @NonNull String deliveryAddress,
-                                     @NonNull String invoiceNumber) {
+                                     @NonNull String invoiceNumber,
+                                     @NonNull String customerName,
+                                     double cashReceived,
+                                     double changeAmount) {
+        tryPrintReceipt(
+                appCtx,
+                token,
+                items,
+                paymentMethod,
+                subtotal,
+                deliveryFee,
+                total,
+                tableNumber,
+                deliveryAddress,
+                invoiceNumber,
+                customerName,
+                cashReceived,
+                changeAmount,
+                "",
+                "",
+                null,
+                true
+        );
+    }
 
+    private void tryAutoPrintOfflineReceipt(@NonNull Context appCtx,
+                                            @NonNull String token,
+                                            @NonNull List<CartItem> items,
+                                            @NonNull String paymentMethod,
+                                            double subtotal,
+                                            double deliveryFee,
+                                            double total,
+                                            @NonNull String tableNumber,
+                                            @NonNull String deliveryAddress,
+                                            @NonNull String invoiceNumber,
+                                            @NonNull String customerName,
+                                            double cashReceived,
+                                            double changeAmount,
+                                            @NonNull String deviceTime,
+                                            @NonNull ReceiptPrintCallback callback) {
+        Log.i(TAG, "Offline receipt print started order=" + invoiceNumber);
+        tryPrintReceipt(
+                appCtx,
+                token,
+                items,
+                paymentMethod,
+                subtotal,
+                deliveryFee,
+                total,
+                tableNumber,
+                deliveryAddress,
+                invoiceNumber,
+                customerName,
+                cashReceived,
+                changeAmount,
+                "OFFLINE / PENDING SYNC",
+                deviceTime,
+                callback,
+                false
+        );
+    }
+
+    private void tryPrintReceipt(@NonNull Context appCtx,
+                                 @NonNull String token,
+                                 @NonNull List<CartItem> items,
+                                 @NonNull String paymentMethod,
+                                 double subtotal,
+                                 double deliveryFee,
+                                 double total,
+                                 @NonNull String tableNumber,
+                                 @NonNull String deliveryAddress,
+                                 @NonNull String invoiceNumber,
+                                 @NonNull String customerName,
+                                 double cashReceived,
+                                 double changeAmount,
+                                 @NonNull String receiptStatus,
+                                 @NonNull String deviceTime,
+                                 @Nullable ReceiptPrintCallback callback,
+                                 boolean showPreconditionToast) {
         boolean auto = com.valdker.pos.print.PrinterPrefs.isAutoPrintEnabled(appCtx);
         if (!auto) {
-            Log.i(TAG, "Auto print disabled -> skip printing");
+            Log.i(TAG, "PRINTER: auto print disabled -> skip printing");
+            if (callback != null) {
+                callback.onComplete(com.valdker.pos.print.BluetoothPrinterManager.PrintResult.SKIPPED);
+            } else {
+                mainHandler.post(() -> Toast.makeText(
+                        appCtx,
+                        "Receipt printing skipped because auto-print is disabled.",
+                        Toast.LENGTH_LONG
+                ).show());
+            }
             return;
         }
 
         if (!com.valdker.pos.print.PrinterService.hasBtPermission(appCtx)) {
-            Log.w(TAG, "Bluetooth permission not granted -> skip auto print");
-            mainHandler.post(() ->
-                    Toast.makeText(appCtx, "Bluetooth permission has not been allowed. Print canceled.", Toast.LENGTH_LONG).show()
-            );
+            Log.w(TAG, "PRINTER: Bluetooth permission not granted -> skip auto print");
+            if (showPreconditionToast) {
+                mainHandler.post(() ->
+                        Toast.makeText(appCtx, "Bluetooth permission has not been allowed. Print canceled.", Toast.LENGTH_LONG).show()
+                );
+            }
+            if (callback != null) {
+                callback.onComplete(com.valdker.pos.print.BluetoothPrinterManager.PrintResult.FAILED);
+            }
             return;
         }
 
         String mac = com.valdker.pos.print.PrinterPrefs.getMac(appCtx);
         if (mac == null || mac.trim().isEmpty()) {
-            Log.w(TAG, "No printer selected -> skip auto print");
-            mainHandler.post(() ->
-                    Toast.makeText(appCtx, "The printer isn't selected. Select it first in Settings > Printer.", Toast.LENGTH_LONG).show()
-            );
+            Log.w(TAG, "PRINTER: no printer selected -> skip auto print");
+            if (showPreconditionToast) {
+                mainHandler.post(() ->
+                        Toast.makeText(appCtx, "The printer isn't selected. Select it first in Settings > Printer.", Toast.LENGTH_LONG).show()
+                );
+            }
+            if (callback != null) {
+                callback.onComplete(com.valdker.pos.print.BluetoothPrinterManager.PrintResult.FAILED);
+            }
             return;
         }
 
@@ -742,10 +1018,16 @@ public class CartFragment extends Fragment {
                 total,
                 tableNumber,
                 deliveryAddress,
-                invoiceNumber
+                invoiceNumber,
+                customerName,
+                cashReceived,
+                changeAmount,
+                receiptStatus,
+                deviceTime
         );
 
-        com.valdker.pos.repositories.ShopRepository.fetchFirstShop(
+        AtomicBoolean receiptPrinted = new AtomicBoolean(false);
+        com.valdker.pos.repositories.ShopRepository.getBestShopProfileForReceipt(
                 appCtx,
                 token,
                 new com.valdker.pos.repositories.ShopRepository.Callback() {
@@ -769,37 +1051,115 @@ public class CartFragment extends Fragment {
                                 total,
                                 tableNumber,
                                 deliveryAddress,
-                                invoiceNumber
+                                invoiceNumber,
+                                customerName,
+                                cashReceived,
+                                changeAmount,
+                                receiptStatus,
+                                deviceTime
                         );
 
-                        doPrintBestEffort(appCtx, receipt);
+                        printReceiptOnce(appCtx, receipt, receiptPrinted, callback);
                     }
 
                     @Override
                     public void onEmpty() {
-                        doPrintBestEffort(appCtx, fallbackReceipt);
+                        printReceiptOnce(appCtx, fallbackReceipt, receiptPrinted, callback);
                     }
 
                     @Override
                     public void onError(@NonNull String message) {
-                        doPrintBestEffort(appCtx, fallbackReceipt);
+                        printReceiptOnce(appCtx, fallbackReceipt, receiptPrinted, callback);
                     }
                 }
         );
     }
 
-    private void doPrintBestEffort(@NonNull Context appCtx, @NonNull String receipt) {
-        new Thread(() -> {
-            try {
-                com.valdker.pos.print.PrinterService.printText(appCtx, receipt);
-                Log.i(TAG, "Auto print success");
-            } catch (Exception e) {
-                Log.e(TAG, "Auto print failed: " + e.getMessage(), e);
-                mainHandler.post(() ->
-                        Toast.makeText(appCtx, "Print failed: " + e.getMessage(), Toast.LENGTH_LONG).show()
-                );
-            }
-        }).start();
+    private void printReceiptOnce(@NonNull Context appCtx,
+                                  @NonNull String receipt,
+                                  @NonNull AtomicBoolean printed,
+                                  @Nullable ReceiptPrintCallback callback) {
+        if (!printed.compareAndSet(false, true)) {
+            Log.w(TAG, callback != null
+                    ? "Offline receipt print skipped: already printed"
+                    : "Receipt print skipped: already printed");
+            return;
+        }
+        doPrintBestEffort(appCtx, receipt, callback);
+    }
+
+    private void doPrintBestEffort(@NonNull Context appCtx,
+                                   @NonNull String receipt,
+                                   @Nullable ReceiptPrintCallback callback) {
+        com.valdker.pos.print.PrinterService.printTextAsync(
+                appCtx,
+                receipt,
+                new com.valdker.pos.print.BluetoothPrinterManager.PrintCallback() {
+                    @Override
+                    public void onSuccess() {
+                        if (callback != null) {
+                            Log.i(TAG, "Offline receipt print success");
+                            callback.onComplete(com.valdker.pos.print.BluetoothPrinterManager.PrintResult.SUCCESS);
+                        } else {
+                            Log.i(TAG, "PRINTER: auto print success");
+                        }
+                    }
+
+                    @Override
+                    public void onError(@NonNull String message) {
+                        if (callback != null) {
+                            Log.e(TAG, "Offline receipt print failed: " + message);
+                            callback.onComplete(com.valdker.pos.print.BluetoothPrinterManager.PrintResult.FAILED);
+                        } else {
+                            Log.e(TAG, "PRINTER: auto print failed: " + message);
+                        }
+                        showPrintFailureWithRetry(appCtx, receipt, message);
+                    }
+
+                    @Override
+                    public void onSkipped(@NonNull String message) {
+                        if (callback != null) {
+                            Log.w(TAG, "Offline receipt print skipped: " + message);
+                            callback.onComplete(com.valdker.pos.print.BluetoothPrinterManager.PrintResult.SKIPPED);
+                        } else {
+                            Log.w(TAG, "PRINTER: auto print skipped: " + message);
+                        }
+                    }
+
+                    @Override
+                    public void onTimeout(@NonNull String message) {
+                        if (callback != null) {
+                            Log.e(TAG, "Offline receipt print timed out: " + message);
+                            callback.onComplete(com.valdker.pos.print.BluetoothPrinterManager.PrintResult.TIMEOUT);
+                        } else {
+                            Log.e(TAG, "PRINTER: auto print timed out: " + message);
+                        }
+                        showPrintFailureWithRetry(appCtx, receipt, message);
+                    }
+                }
+        );
+    }
+
+    private void showPrintFailureWithRetry(@NonNull Context appCtx,
+                                           @NonNull String receipt,
+                                           @NonNull String message) {
+        if (!isAdded()) {
+            Toast.makeText(appCtx,
+                    "Transaction saved, but receipt failed to print. " + message,
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        androidx.appcompat.app.AlertDialog dialog = new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                .setMessage("Transaction saved, but receipt failed to print. Retry print?")
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton("Retry", null)
+                .show();
+        dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            v.setEnabled(false);
+            doPrintBestEffort(appCtx, receipt, null);
+            dialog.dismiss();
+        });
     }
 
     private String buildReceiptFull(@NonNull Context appCtx,
@@ -813,7 +1173,12 @@ public class CartFragment extends Fragment {
                                     double total,
                                     @NonNull String tableNumber,
                                     @NonNull String deliveryAddress,
-                                    @NonNull String invoiceNumber) {
+                                    @NonNull String invoiceNumber,
+                                    @NonNull String customerName,
+                                    double cashReceived,
+                                    double changeAmount,
+                                    @NonNull String receiptStatus,
+                                    @NonNull String deviceTime) {
 
         String cashier = "";
         try {
@@ -834,11 +1199,21 @@ public class CartFragment extends Fragment {
         if (!shopAddress.trim().isEmpty()) sb.append("[C]").append(shopAddress.trim()).append("\n");
         if (!shopPhone.trim().isEmpty()) sb.append("[C]").append(shopPhone.trim()).append("\n");
         sb.append("[C]--------------------------------\n");
+        if (!receiptStatus.trim().isEmpty()) {
+            sb.append("[C]<b>").append(receiptStatus.trim()).append("</b>\n");
+            sb.append("[C]--------------------------------\n");
+        }
 
         sb.append("[L]Order:[R]").append(invoiceNumber).append("\n");
-        if (!cashier.isEmpty()) sb.append("[L]Kasir:[R]").append(cashier).append("\n");
-        sb.append("[L]Data:[R]").append(date).append("\n");
-        sb.append("[L]Ora:[R]").append(time).append("\n");
+        if (!cashier.isEmpty()) sb.append("[L]Cashier:[R]").append(cashier).append("\n");
+        if (!customerName.trim().isEmpty() && !"Walk-in Customer".equalsIgnoreCase(customerName.trim())) {
+            sb.append("[L]Customer:[R]").append(customerName.trim()).append("\n");
+        }
+        sb.append("[L]Date:[R]").append(date).append("\n");
+        sb.append("[L]Time:[R]").append(time).append("\n");
+        if (!deviceTime.trim().isEmpty()) {
+            sb.append("[L]Device Time:[R]").append(deviceTime.trim()).append("\n");
+        }
 
         boolean showTable = (tableNumber != null && !tableNumber.trim().isEmpty());
         boolean showDelivery = (deliveryAddress != null && !deliveryAddress.trim().isEmpty());
@@ -856,9 +1231,9 @@ public class CartFragment extends Fragment {
 
             String type = normalizeType(it.orderType);
             String typeLabel = "";
-            if (CartManager.TYPE_DINE_IN.equals(type)) typeLabel = "(■ DINE IN)";
-            else if (CartManager.TYPE_TAKE_OUT.equals(type)) typeLabel = "(■ TAKE OUT)";
-            else if (CartManager.TYPE_DELIVERY.equals(type)) typeLabel = "(▲ DELIVERY)";
+            if (CartManager.TYPE_DINE_IN.equals(type)) typeLabel = "(* DINE IN)";
+            else if (CartManager.TYPE_TAKE_OUT.equals(type)) typeLabel = "(* TAKE OUT)";
+            else if (CartManager.TYPE_DELIVERY.equals(type)) typeLabel = "(^ DELIVERY)";
 
             sb.append("[L]<b>").append(name).append("</b>[R]<b>")
                     .append(String.format(Locale.US, "$%.2f", line))
@@ -881,6 +1256,11 @@ public class CartFragment extends Fragment {
 
         sb.append("[C]--------------------------------\n");
         sb.append("[L]<b>Total</b>[R]<b>").append(String.format(Locale.US, "$%.2f", total)).append("</b>\n");
+        sb.append("[L]Payment[R]").append(paymentMethod).append("\n");
+        if (cashReceived > 0) {
+            sb.append("[L]Paid[R]").append(String.format(Locale.US, "$%.2f", cashReceived)).append("\n");
+            sb.append("[L]Change[R]").append(String.format(Locale.US, "$%.2f", changeAmount)).append("\n");
+        }
         sb.append("[C]--------------------------------\n");
 
         sb.append("[C]Obrigado ba order ona iha!\n");

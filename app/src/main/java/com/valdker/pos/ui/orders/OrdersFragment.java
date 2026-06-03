@@ -1,5 +1,7 @@
 package com.valdker.pos.ui.orders;
 
+import android.app.DatePickerDialog;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -9,7 +11,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.activity.OnBackPressedDispatcher;
 import androidx.annotation.NonNull;
@@ -22,9 +24,10 @@ import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.base.BaseFragment;
 import com.valdker.pos.models.Order;
-import com.valdker.pos.repositories.OrderRepository;
+import com.valdker.pos.repositories.TransactionHistoryCacheRepository;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -39,14 +42,18 @@ public class OrdersFragment extends BaseFragment {
     private EditText etSearchOrders;
     private ImageView btnBack;
     private ImageView ivHeaderAction;
+    private ImageView btnDateRange;
 
     private OrdersAdapter adapter;
+    private TransactionHistoryCacheRepository cacheRepository;
 
     private final List<Order> allOrders = new ArrayList<>();
     private final List<Order> filteredOrders = new ArrayList<>();
 
     private boolean isLoading = false;
     private String currentQuery = "";
+    private String startDateFilter = "";
+    private String endDateFilter = "";
 
     public OrdersFragment() {
         super(R.layout.fragment_orders);
@@ -62,8 +69,10 @@ public class OrdersFragment extends BaseFragment {
         setupHeader();
         setupRecycler();
         setupSearch();
+        setupDateRange();
         setupSwipe();
 
+        cacheRepository = new TransactionHistoryCacheRepository(requireContext());
         fetch();
     }
 
@@ -81,6 +90,7 @@ public class OrdersFragment extends BaseFragment {
         etSearchOrders = view.findViewById(R.id.etSearchOrders);
         btnBack = view.findViewById(R.id.btnBack);
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
+        btnDateRange = view.findViewById(R.id.btnDateRange);
 
         if (rvOrders == null) Log.w(TAG, "rvOrders not found.");
         if (tvEmpty == null) Log.w(TAG, "tvEmptyOrders not found.");
@@ -150,6 +160,17 @@ public class OrdersFragment extends BaseFragment {
         });
     }
 
+    private void setupDateRange() {
+        if (btnDateRange == null) return;
+
+        btnDateRange.setOnClickListener(v -> showDateRangePicker());
+        btnDateRange.setOnLongClickListener(v -> {
+            clearDateRangeFilter();
+            return true;
+        });
+        updateDateRangeIcon();
+    }
+
     private void setupSwipe() {
         if (swipeOrders == null) return;
 
@@ -187,18 +208,29 @@ public class OrdersFragment extends BaseFragment {
             return;
         }
 
-        new OrderRepository(requireContext()).fetchOrders(token, new OrderRepository.Callback() {
+        cacheRepository.loadOrdersRoomFirst(token, new TransactionHistoryCacheRepository.RoomFirstCallback<Order>() {
             @Override
-            public void onSuccess(List<Order> orders) {
+            public void onLocal(@NonNull List<Order> orders) {
+                if (!isAdded()) return;
+
+                if (orders.isEmpty()) return;
+
+                allOrders.clear();
+                allOrders.addAll(orders);
+
+                applyFilter();
+                setLoading(false);
+            }
+
+            @Override
+            public void onRemote(@NonNull List<Order> orders) {
                 if (!isAdded()) return;
 
                 isLoading = false;
                 setLoading(false);
 
                 allOrders.clear();
-                if (orders != null) {
-                    allOrders.addAll(orders);
-                }
+                allOrders.addAll(orders);
 
                 applyFilter();
 
@@ -206,27 +238,31 @@ public class OrdersFragment extends BaseFragment {
             }
 
             @Override
-            public void onError(int statusCode, String message) {
+            public void onNoInternet(boolean hasLocalData) {
                 if (!isAdded()) return;
 
                 isLoading = false;
                 setLoading(false);
-                allOrders.clear();
-                filteredOrders.clear();
 
-                if (adapter != null) {
-                    adapter.setData(filteredOrders);
+                if (!hasLocalData && allOrders.isEmpty()) {
+                    showLocalEmpty();
+                    Toast.makeText(requireContext(), TransactionHistoryCacheRepository.NO_LOCAL_DATA_MESSAGE, Toast.LENGTH_SHORT).show();
                 }
+            }
 
-                showEmpty(true);
+            @Override
+            public void onError(int statusCode, @NonNull String message, boolean hasLocalData) {
+                if (!isAdded()) return;
+
+                isLoading = false;
+                setLoading(false);
 
                 Log.e(TAG, "Failed (" + statusCode + "): " + message);
 
-                Toast.makeText(
-                        requireContext(),
-                        "Failed to load orders (" + statusCode + "): " + message,
-                        Toast.LENGTH_LONG
-                ).show();
+                if (!hasLocalData && allOrders.isEmpty()) {
+                    showLocalEmpty();
+                    showApiError("Failed to load orders (" + statusCode + "): " + message);
+                }
             }
         });
     }
@@ -236,22 +272,18 @@ public class OrdersFragment extends BaseFragment {
 
         String q = currentQuery == null ? "" : currentQuery.trim().toLowerCase(Locale.getDefault());
 
-        if (q.isEmpty()) {
-            filteredOrders.addAll(allOrders);
-        } else {
-            for (Order order : allOrders) {
-                if (order == null) continue;
+        for (Order order : allOrders) {
+            if (order == null) continue;
 
-                String invoice = order.getInvoiceNumber();
-                if (invoice == null || invoice.trim().isEmpty()) {
-                    invoice = String.valueOf(order.getId());
-                }
+            String invoice = order.getInvoiceNumber();
+            if (invoice == null || invoice.trim().isEmpty()) {
+                invoice = String.valueOf(order.getId());
+            }
 
-                String invoiceSafe = invoice.toLowerCase(Locale.getDefault());
+            String invoiceSafe = invoice.toLowerCase(Locale.getDefault());
 
-                if (invoiceSafe.contains(q)) {
-                    filteredOrders.add(order);
-                }
+            if ((q.isEmpty() || invoiceSafe.contains(q)) && isOrderInDateRange(order)) {
+                filteredOrders.add(order);
             }
         }
 
@@ -260,6 +292,122 @@ public class OrdersFragment extends BaseFragment {
         }
 
         showEmpty(filteredOrders.isEmpty());
+    }
+
+    private boolean isOrderInDateRange(@NonNull Order order) {
+        boolean hasStart = startDateFilter != null && !startDateFilter.isEmpty();
+        boolean hasEnd = endDateFilter != null && !endDateFilter.isEmpty();
+        if (!hasStart && !hasEnd) return true;
+
+        String orderDate = datePart(order.getCreatedAtIso());
+        if (orderDate.isEmpty()) return false;
+
+        if (hasStart && orderDate.compareTo(startDateFilter) < 0) return false;
+        if (hasEnd && orderDate.compareTo(endDateFilter) > 0) return false;
+        return true;
+    }
+
+    @NonNull
+    private String datePart(@Nullable String value) {
+        if (value == null) return "";
+        String trimmed = value.trim();
+        if (trimmed.length() < 10) return "";
+
+        String date = trimmed.substring(0, 10);
+        return date.matches("^\\d{4}-\\d{2}-\\d{2}$") ? date : "";
+    }
+
+    private void showDateRangePicker() {
+        if (!isAdded()) return;
+
+        Calendar initialStart = calendarFromDate(startDateFilter);
+        DatePickerDialog startDialog = new DatePickerDialog(
+                requireContext(),
+                (picker, year, month, day) -> {
+                    String selectedStart = formatDate(year, month, day);
+                    Calendar initialEnd = calendarFromDate(endDateFilter.isEmpty() ? selectedStart : endDateFilter);
+
+                    DatePickerDialog endDialog = new DatePickerDialog(
+                            requireContext(),
+                            (endPicker, endYear, endMonth, endDay) -> {
+                                String selectedEnd = formatDate(endYear, endMonth, endDay);
+                                applyDateRange(selectedStart, selectedEnd);
+                            },
+                            initialEnd.get(Calendar.YEAR),
+                            initialEnd.get(Calendar.MONTH),
+                            initialEnd.get(Calendar.DAY_OF_MONTH)
+                    );
+                    endDialog.setTitle("Select end date");
+                    endDialog.show();
+                },
+                initialStart.get(Calendar.YEAR),
+                initialStart.get(Calendar.MONTH),
+                initialStart.get(Calendar.DAY_OF_MONTH)
+        );
+        startDialog.setTitle("Select start date");
+        startDialog.show();
+    }
+
+    private void applyDateRange(@NonNull String start, @NonNull String end) {
+        if (end.compareTo(start) < 0) {
+            startDateFilter = end;
+            endDateFilter = start;
+        } else {
+            startDateFilter = start;
+            endDateFilter = end;
+        }
+
+        updateDateRangeIcon();
+        applyFilter();
+
+        if (isAdded()) {
+            Toast.makeText(
+                    requireContext(),
+                    "Date range: " + startDateFilter + " - " + endDateFilter,
+                    Toast.LENGTH_SHORT
+            ).show();
+        }
+    }
+
+    private void clearDateRangeFilter() {
+        boolean hadFilter = (startDateFilter != null && !startDateFilter.isEmpty())
+                || (endDateFilter != null && !endDateFilter.isEmpty());
+        startDateFilter = "";
+        endDateFilter = "";
+        updateDateRangeIcon();
+        applyFilter();
+
+        if (hadFilter && isAdded()) {
+            Toast.makeText(requireContext(), "Date range cleared", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @NonNull
+    private Calendar calendarFromDate(@Nullable String date) {
+        Calendar calendar = Calendar.getInstance();
+        if (date == null || !date.matches("^\\d{4}-\\d{2}-\\d{2}$")) return calendar;
+
+        try {
+            calendar.set(Calendar.YEAR, Integer.parseInt(date.substring(0, 4)));
+            calendar.set(Calendar.MONTH, Integer.parseInt(date.substring(5, 7)) - 1);
+            calendar.set(Calendar.DAY_OF_MONTH, Integer.parseInt(date.substring(8, 10)));
+        } catch (Exception ignored) {
+        }
+        return calendar;
+    }
+
+    @NonNull
+    private String formatDate(int year, int month, int day) {
+        return String.format(Locale.US, "%04d-%02d-%02d", year, month + 1, day);
+    }
+
+    private void updateDateRangeIcon() {
+        if (btnDateRange == null) return;
+
+        boolean active = (startDateFilter != null && !startDateFilter.isEmpty())
+                || (endDateFilter != null && !endDateFilter.isEmpty());
+        btnDateRange.setColorFilter(Color.parseColor(active ? "#22C55E" : "#6B7280"));
+        btnDateRange.setAlpha(active ? 1f : 0.85f);
     }
 
     private String mask(String token) {
@@ -296,6 +444,13 @@ public class OrdersFragment extends BaseFragment {
         }
     }
 
+    private void showLocalEmpty() {
+        if (tvEmpty != null) {
+            tvEmpty.setText(TransactionHistoryCacheRepository.NO_LOCAL_DATA_MESSAGE);
+        }
+        showEmpty(true);
+    }
+
     @Override
     public void onDestroyView() {
         if (swipeOrders != null) {
@@ -313,6 +468,8 @@ public class OrdersFragment extends BaseFragment {
         etSearchOrders = null;
         btnBack = null;
         ivHeaderAction = null;
+        btnDateRange = null;
+        cacheRepository = null;
         adapter = null;
 
         super.onDestroyView();

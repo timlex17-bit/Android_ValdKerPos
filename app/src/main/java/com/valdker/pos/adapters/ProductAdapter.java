@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.google.android.material.button.MaterialButton;
 import com.valdker.pos.R;
 import com.valdker.pos.models.Product;
 
@@ -97,9 +98,11 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
             if (listener != null) listener.onClick(p);
         });
 
-        h.btnAdd.setOnClickListener(v -> {
-            if (listener != null) listener.onAdd(p);
-        });
+        if (h.btnAdd != null) {
+            h.btnAdd.setOnClickListener(v -> {
+                if (listener != null) listener.onAdd(p);
+            });
+        }
     }
 
     private void bindImage(@NonNull VH h, @NonNull Product p) {
@@ -134,7 +137,9 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
     }
 
     private void applyBusinessUi(@NonNull VH h) {
-        h.btnAdd.setText("Add");
+        if (h.btnAdd != null) h.btnAdd.setText("Add");
+        if (h.layoutQtyControl != null) h.layoutQtyControl.setVisibility(View.GONE);
+        if (h.tvQty != null) h.tvQty.setText("1");
 
         if ("restaurant".equals(businessType)) {
             h.tvStock.setVisibility(View.VISIBLE);
@@ -229,6 +234,9 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
     static class VH extends RecyclerView.ViewHolder {
         ImageView img;
         TextView tvName, tvPrice, tvStock;
+        TextView tvQty;
+        View layoutQtyControl;
+        MaterialButton btnMinus, btnPlus;
         Button btnAdd;
 
         VH(@NonNull View itemView) {
@@ -237,6 +245,10 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
             tvName = itemView.findViewById(R.id.tvName);
             tvPrice = itemView.findViewById(R.id.tvPrice);
             tvStock = itemView.findViewById(R.id.tvStock);
+            layoutQtyControl = itemView.findViewById(R.id.layoutQtyControl);
+            btnMinus = itemView.findViewById(R.id.btnMinus);
+            btnPlus = itemView.findViewById(R.id.btnPlus);
+            tvQty = itemView.findViewById(R.id.tvQty);
             btnAdd = itemView.findViewById(R.id.btnAdd);
         }
     }

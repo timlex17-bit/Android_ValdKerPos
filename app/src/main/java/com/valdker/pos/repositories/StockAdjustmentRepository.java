@@ -4,8 +4,8 @@ import android.content.Context;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.models.StockAdjustment;
 import com.valdker.pos.network.ApiClient;
@@ -13,6 +13,7 @@ import com.valdker.pos.network.ApiConfig;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -46,13 +47,12 @@ public class StockAdjustmentRepository {
         SessionManager session = new SessionManager(ctx);
         String url = ApiConfig.url(session, ENDPOINT_STOCK_ADJUSTMENTS);
 
-        JsonArrayRequest req = new JsonArrayRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.GET,
                 url,
-                null,
                 res -> {
                     try {
-                        cb.onSuccess(parseList(res));
+                        cb.onSuccess(parseList(extractResultsArray(res)));
                     } catch (Exception e) {
                         cb.onError("Parse error: " + e.getMessage());
                     }
@@ -67,6 +67,21 @@ public class StockAdjustmentRepository {
 
         req.setShouldCache(false);
         ApiClient.getInstance(ctx).add(req);
+    }
+
+    private static JSONArray extractResultsArray(String response) throws Exception {
+        Object parsed = new JSONTokener(response == null ? "[]" : response).nextValue();
+
+        if (parsed instanceof JSONArray) {
+            return (JSONArray) parsed;
+        }
+
+        if (parsed instanceof JSONObject) {
+            JSONArray results = ((JSONObject) parsed).optJSONArray("results");
+            return results != null ? results : new JSONArray();
+        }
+
+        return new JSONArray();
     }
 
     // =========================

@@ -70,7 +70,11 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.VH> {
     @Override
     public long getItemId(int position) {
         CartItem it = items.get(position);
-        return (it != null) ? it.productId : position;
+        if (it == null) return position;
+        String key = it.cartKey == null || it.cartKey.trim().isEmpty()
+                ? CartItem.buildCartKey(it.productId, it.itemType)
+                : it.cartKey;
+        return key.hashCode();
     }
 
     @NonNull

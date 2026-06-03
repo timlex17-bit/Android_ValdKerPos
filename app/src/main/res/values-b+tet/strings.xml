@@ -15,17 +15,17 @@
     <!-- ================================================== -->
     <!-- APP -->
     <!-- ================================================== -->
-    <string name="app_name">ValdKerPOS</string>
+    <string name="app_name">ValoraPOS</string>
     <string name="app_tagline">Sistema POS ba negósiu modernu sira</string>
     <string name="app_version">Versaun</string>
     <string name="app_powered_by">Habelar husi ValdKer</string>
-    <string name="app_brand">ValdKerPOS</string>
+    <string name="app_brand">ValoraPOS</string>
     <string name="app_logo">Logo aplikasaun</string>
     <string name="welcome">Bemvindu</string>
     <string name="welcome_back">Bemvindu fila fali</string>
     <string name="logout">Sai</string>
     <string name="profile">Perfíl</string>
-    <string name="dashboard">Dashboard</string>
+    <string name="dashboard">Painel</string>
     <string name="home">Uma</string>
 
     <!-- ================================================== -->
@@ -36,7 +36,6 @@
     <string name="login_help_text">Uza ita-nia shop code, username no password atu asesu loja loos.</string>
     <string name="login_title">Tama ba ita-nia loja</string>
     <string name="login_subtitle">Uza ita-nia shop code, username no password atu kontinua</string>
-    <string name="login_multi_tenant">Multi-Tenant</string>
     <string name="login_shop_code">Kode Loja</string>
     <string name="login_username">Naran Uzuariu</string>
     <string name="login_password">Senha</string>
@@ -87,8 +86,7 @@
     <!-- BOTTOM NAVIGATION -->
     <!-- ================================================== -->
     <string name="nav_home">Uma</string>
-    <string name="nav_dashboard">Dashboard</string>
-    <string name="nav_pos">POS</string>
+    <string name="nav_dashboard">Painel</string>
     <string name="nav_orders">Ordem</string>
     <string name="nav_profile">Perfíl</string>
     <string name="nav_settings">Konfigurasaun</string>
@@ -132,7 +130,7 @@
     <string name="action_create">Kria</string>
     <string name="action_save">Rai</string>
     <string name="action_update">Atualiza</string>
-    <string name="action_edit">Edit</string>
+    <string name="action_edit">Edita</string>
     <string name="action_delete">Apaga</string>
     <string name="action_remove">Hasai</string>
     <string name="action_cancel">Kansela</string>
@@ -152,11 +150,11 @@
     <string name="action_no">Lae</string>
     <string name="action_print">Imprime</string>
     <string name="action_reprint">Imprime fila fali</string>
-    <string name="action_checkout">Checkout</string>
+    <string name="action_checkout">Pagamentu</string>
     <string name="action_pay">Selu</string>
-    <string name="action_scan">Scan</string>
-    <string name="action_upload">Upload</string>
-    <string name="action_download">Download</string>
+    <string name="action_scan">Eskanea</string>
+    <string name="action_upload">Karrega sae</string>
+    <string name="action_download">Karrega tun</string>
     <string name="action_export">Exporta</string>
     <string name="action_import">Importa</string>
     <string name="action_view">Haree</string>
@@ -175,7 +173,6 @@
     <string name="msg_delete_unit_failed">La konsege hamoos unidade.</string>
     <string name="title_delete_unit">Hasai unidade</string>
     <string name="msg_delete_unit_confirm">Hakarak hasai unidade &quot;%1$s&quot;?</string>
-    <string name="msg_no_units_yet">Seidauk iha unidade.</string>
     <string name="msg_no_matching_units">La iha unidade ne\'ebé hanesan.</string>
     <string name="label_default_dash">-</string>
 
@@ -243,9 +240,20 @@
     <string name="label_difference">Diferensa</string>
     <string name="label_received">Simu</string>
     <string name="label_change">Troku</string>
-    <string name="label_cart">Cart</string>
+    <string name="label_cart">Lista Kompras</string>
     <string name="label_items">Item sira</string>
     <string name="label_actions">Aksaun sira</string>
+    <string name="menu_warehouses">Armajen</string>
+    <string name="menu_warehouses_desc">Jere lista armajen sira</string>
+
+    <string name="menu_warehouse_stocks">Stok Armajen</string>
+    <string name="menu_warehouse_stocks_desc">Haree stok produtu tuir armajen</string>
+
+    <string name="menu_stock_transfers">Transfere Stok</string>
+    <string name="menu_stock_transfers_desc">Muda stok entre armajen sira</string>
+
+    <string name="menu_bank_ledgers">Livru Banku</string>
+    <string name="menu_bank_ledgers_desc">Haree istória tranzasaun banku</string>
 
     <!-- ================================================== -->
     <!-- HINTS -->
@@ -341,7 +349,7 @@
     <!-- ================================================== -->
     <!-- DASHBOARD MENU -->
     <!-- ================================================== -->
-    <string name="title_dashboard">Dashboard</string>
+    <string name="title_dashboard">Painel</string>
     <string name="menu_pos">POS</string>
     <string name="menu_pos_desc">Halo tranzasaun fa’an</string>
     <string name="menu_reports">Relatóriu</string>
@@ -384,7 +392,7 @@
     <!-- ================================================== -->
     <string name="title_products">Jere Produtu</string>
     <string name="title_add_product">Aumenta Produtu</string>
-    <string name="title_edit_product">Edita Produtu</string>
+    <string name="title_edit_product">Edita</string>
     <string name="title_product_details">Detalle Produtu</string>
     <string name="product_name">Naran Produtu</string>
     <string name="product_code">Kode Produtu</string>
@@ -406,6 +414,12 @@
     <string name="title_add_category">Aumenta Kategoria</string>
     <string name="title_edit_category">Edita Kategoria</string>
     <string name="category_name">Naran Kategoria</string>
+    <string name="msg_no_categories_yet">Seidauk iha kategoria</string>
+    <string name="msg_no_categories_yet_sub">Klik + hodi kria kategoria ida.</string>
+    <string name="msg_no_matching_categories">La hetan kategoria ne\'ebé buka</string>
+    <string name="msg_no_matching_categories_sub">Koko liafuan seluk.</string>
+    <string name="title_delete_category">Hamoos kategoria</string>
+    <string name="msg_delete_category_confirm">Hamoos &quot;%1$s&quot;?</string>
 
     <!-- ================================================== -->
     <!-- UNITS -->
@@ -414,6 +428,9 @@
     <string name="title_add_unit">Kria Unidade</string>
     <string name="title_edit_unit">Edit Unidade</string>
     <string name="unit_name">Naran Unidade</string>
+    <string name="msg_no_units_yet">Seidauk iha unidade</string>
+    <string name="msg_no_units_yet_sub">Klik + atu kria unidade ida.</string>
+    <string name="msg_no_matching_units_sub">Koko liafuan seluk.</string>
 
     <string name="title_customers">Jere Kliente</string>
     <string name="title_add_customer">Aumenta Kliente</string>
@@ -477,7 +494,7 @@
     <string name="title_pos">POS</string>
     <string name="pos_search_products">Buka produtu sira</string>
     <string name="pos_add_to_cart">Tau ba Cart</string>
-    <string name="pos_checkout">Checkout</string>
+    <string name="pos_checkout">Pagamentu</string>
     <string name="pos_payment">Selu</string>
     <string name="pos_cash">Osan Kontan</string>
     <string name="pos_change">Troku</string>
@@ -515,6 +532,10 @@
     <string name="btn_cancel">Kansela</string>
     <string name="btn_save">Rai</string>
     <string name="btn_create">Kria</string>
+    <string name="msg_no_expenses_yet">Belum ada pengeluaran</string>
+    <string name="msg_no_expenses_yet_sub">Tekan + untuk membuat pengeluaran.</string>
+    <string name="msg_no_matching_expenses">Pengeluaran tidak ditemukan</string>
+    <string name="msg_no_matching_expenses_sub">Coba kata kunci lain.</string>
 
     <!-- ================================================== -->
     <!-- INVENTORY -->
@@ -522,6 +543,12 @@
     <string name="title_inventory_counts">Kontájen Inventóriu</string>
     <string name="title_stock_adjustments">Ajusta Stok</string>
     <string name="title_stock_movements">Movimentu Stok</string>
+
+    <string name="msg_no_stock_adjustments_yet">Seidauk iha ajustamentu stock</string>
+    <string name="msg_no_stock_adjustments_yet_sub">Klik + atu kria ajustamentu stock ida.</string>
+    <string name="msg_no_matching_stock_adjustments">La hetan ajustamentu stock ne\'ebé buka</string>
+    <string name="msg_no_matching_stock_adjustments_sub">Koko liafuan seluk.</string>
+    <string name="hint_search_stock_adjustment">Buka ajustamentu stock...</string>
 
     <string name="inventory_count">Kontájen Inventóriu</string>
     <string name="stock_adjustment">Ajusta Stok</string>
@@ -650,13 +677,21 @@
     <string name="bank_create_success">Konta bankária kria ho susesu</string>
     <string name="bank_update_success">Konta bankária atualiza ho susesu</string>
     <string name="bank_delete_success">Konta bankária apaga ho susesu</string>
-    <string name="bank_delete_title">Delete Bank Account</string>
-    <string name="bank_delete_message">Are you sure you want to delete "%1$s - %2$s"?</string>
-    <string name="error_name_required">Name is required</string>
-    <string name="error_bank_name_required">Bank name is required</string>
-    <string name="error_create_request">Failed to create request</string>
-    <string name="error_network">Network error occurred</string>
-    <string name="bank_ledger_coming_soon">Bank Ledger page coming soon: %1$s</string>
+    <string name="bank_delete_title">Hamoos Konta Banku</string>
+    <string name="bank_delete_message">Ita hakarak hamoos "%1$s - %2$s"?</string>
+    <string name="error_name_required">Naran obrigatoriu</string>
+    <string name="error_bank_name_required">Naran banku obrigatoriu</string>
+    <string name="error_create_request">La konsege kria pedidu</string>
+    <string name="error_network">Sala iha rede</string>
+    <string name="bank_ledger_coming_soon">Pajina livru banku sei disponivel lalais: %1$s</string>
+    <string name="empty_bank_accounts_sub">Klik + atu kria konta bankária.</string>
+    <string name="action_add_bank_account">Aumenta konta bankária</string>
+    <string name="empty_bank_accounts">Seidauk iha konta bankária</string>
+    <string name="dialog_delete">Hamoos</string>
+    <string name="dialog_cancel">Kansela</string>
+    <string name="bank_account_type_bank">BANK</string>
+    <string name="bank_account_type_ewallet">EWALLET</string>
+    <string name="bank_account_type_qris">QRIS</string>
 
     <!-- ================================================== -->
     <!-- SHIFT -->
@@ -687,8 +722,8 @@
     <string name="settings_customer_display">Tela Kliente</string>
     <string name="settings_language">Lian</string>
     <string name="settings_currency">Osan</string>
-    <string name="settings_backup">Backup</string>
-    <string name="settings_restore">Restore</string>
+    <string name="settings_backup">Halo Backup</string>
+    <string name="settings_restore">Restaura</string>
     <string name="settings_dark_mode">Modu Nakukun</string>
     <string name="settings_notifications">Notifikasaun sira</string>
 
@@ -713,7 +748,7 @@
     <string name="settings_shop_settings">Konfigurasaun Loja</string>
     <string name="settings_server">Server</string>
     <string name="settings_printer_title">Printer</string>
-    <string name="settings_branding">Branding</string>
+    <string name="settings_branding">Logo no Marka</string>
     <string name="settings_shop_profile">Perfil Loja</string>
     <string name="settings_shop_logo">Logo Loja</string>
     <string name="settings_logo_preview">Previsualizasaun logo</string>
@@ -755,13 +790,280 @@
     <!-- ================================================== -->
     <!-- BACKUP / RESTORE -->
     <!-- ================================================== -->
-    <string name="title_backup">Backup</string>
-    <string name="title_restore">Restore</string>
+    <string name="title_backup">Rai backup</string>
+    <string name="title_restore">Restaura</string>
     <string name="backup_database">Halo Backup Database</string>
     <string name="restore_database">Halo Restore Database</string>
     <string name="export_excel">Exporta ba Excel</string>
     <string name="export_pdf">Exporta ba PDF</string>
     <string name="import_data">Importa Dadus</string>
     <string name="orders_titles">Pedidu</string>
+
+    <!-- ================================================== -->
+    <!-- LOGIN / POS / CHECKOUT LOCALIZATION BATCH -->
+    <!-- ================================================== -->
+    <string name="icon_shop">🏬</string>
+    <string name="icon_user">👤</string>
+    <string name="icon_lock">🔒</string>
+    <string name="icon_password_show">👁</string>
+    <string name="icon_password_hide">🙈</string>
+    <string name="icon_search">⌕</string>
+    <string name="hint_password_mask">••••••</string>
+    <string name="cd_shop_logo">Logo loja</string>
+    <string name="cd_user_menu">Menu uzuariu</string>
+    <string name="cd_barcode_scan">Scan barcode</string>
+    <string name="cd_close">Taka</string>
+    <string name="pos_default_shop_name">Bemvindu</string>
+    <string name="pos_default_subtitle">POS</string>
+    <string name="pos_menu">Menu</string>
+    <string name="pos_zero_count">0</string>
+    <string name="amount_zero_usd">$0.00</string>
+    <string name="amount_sample_usd">$40.99</string>
+    <string name="pos_retail_title">POS Retail</string>
+    <string name="pos_search_product_or_barcode">Buka produtu ka barcode</string>
+    <string name="pos_scan_barcode_quick">Scan barcode atu aumenta produtu lalais</string>
+    <string name="pos_scanned_items">Item scan ona</string>
+    <string name="pos_items_after_barcode">Item sei mosu depois scan barcode</string>
+    <string name="pos_zero_item">0 item</string>
+    <string name="pos_scan_barcode_empty">Scan barcode atu aumenta produtu</string>
+    <string name="category_all">Menu</string>
+    <string name="workshop_default_title">Valdker POS</string>
+    <string name="workshop_default_address">Becora Dili</string>
+    <string name="workshop_walk_in_customer">Kliente direta</string>
+    <string name="customer_fallback_name_format">Kliente #%1$d</string>
+    <string name="workshop_default_vehicle">Kareta</string>
+    <string name="workshop_default_plate">D012314</string>
+    <string name="label_vehicle">Kareta</string>
+    <string name="label_plate">Plaka</string>
+    <string name="label_service">Servisu</string>
+    <string name="label_part">Peca</string>
+    <string name="label_bank_account">Konta Banku</string>
+    <string name="action_change">Troka</string>
+    <string name="hint_cash_received">Osan simu</string>
+    <string name="hint_reference_number">Numeru referensia</string>
+    <string name="hint_payment_note">Nota pagamentu</string>
+    <string name="hint_table_number">Numeru meza</string>
+    <string name="hint_delivery_address">Enderesu entrega</string>
+    <string name="hint_delivery_fee">Taxa entrega</string>
+    <string name="checkout_points_format">Pontu: %1$d</string>
+    <string name="checkout_points_zero">Pontu: 0</string>
+    <string name="checkout_change_format">Troka: %1$s</string>
+    <string name="checkout_change_zero">Troka: $0.00</string>
+    <string name="checkout_shortage_format">Falta: %1$s</string>
+    <string name="checkout_secure_by_knox">Seguru husi Knox</string>
+    <string name="msg_login_required_fields">Kodigu loja, username, no password obrigatoriu.</string>
+    <string name="msg_login_required_fields_server">Kodigu loja, username, no password tenke prense.</string>
+    <string name="msg_login_invalid_shop_user_password">Kodigu loja, username, ka password sala.</string>
+    <string name="msg_user_inactive_or_forbidden_shop">Uzuariu la ativu ka la iha lisensa atu asesu loja ne\'e.</string>
+    <string name="msg_cannot_connect_server">Labele konekta ba server. Haree base URL ka rede.</string>
+    <string name="msg_login_failed_http">Login falla (HTTP %1$d)</string>
+    <string name="msg_error_with_detail">Erro: %1$s</string>
+    <string name="msg_token_missing_server_response">Token la iha iha resposta server.</string>
+    <string name="msg_parse_error_with_detail">Parse falla: %1$s</string>
+    <string name="msg_internet_required_open_shift">Internet presiza atu loke shift.</string>
+    <string name="msg_shift_open_load_failed">Shift loke ona, maibe falla atu carrega detalle shift.</string>
+    <string name="msg_failed_process_barcode">Falla atu prosesu barcode</string>
+    <string name="msg_pos_screen_not_ready">Ekran POS seidauk prontu.</string>
+    <string name="msg_camera_permission_barcode">Permisaun kamera presiza atu scan barcode</string>
+    <string name="msg_scan_cancelled">Scan kansela</string>
+    <string name="msg_retail_pos_not_ready">POS retail seidauk prontu</string>
+    <string name="msg_no_items_scanned">Seidauk iha item scan</string>
+    <string name="msg_failed_load_payment_methods">Falla atu carrega metode pagamentu: %1$s</string>
+    <string name="msg_failed_load_bank_accounts">Falla atu carrega konta banku: %1$s</string>
+    <string name="msg_order_submitting">Pedidu haruka hela...</string>
+    <string name="msg_internet_required_submit_order">Internet presiza atu haruka pedidu.</string>
+    <string name="msg_failed_build_order_payload">Falla atu prepara dadus pedidu: %1$s</string>
+    <string name="msg_payment_method_missing">ID metode pagamentu la iha. Favór carrega metode pagamentu validu.</string>
+    <string name="msg_retail_order_saved">Pedidu retail rai susesu.</string>
+    <string name="msg_retail_order_saved_invoice">Pedidu retail rai ona: %1$s</string>
+    <string name="msg_submit_order_failed_body">Haruka pedidu falla (%1$d): %2$s</string>
+    <string name="msg_submit_order_failed_code">Haruka pedidu falla (%1$d)</string>
+    <string name="msg_submit_order_failed">Haruka pedidu falla</string>
+    <string name="msg_barcode_disabled_business">Scan barcode taka ba tipu biznes ida ne\'e.</string>
+    <string name="msg_barcode_hidden_workshop">Shortcut barcode subar ba POS workshop.</string>
+    <string name="msg_open_shift_first">Loke shift uluk.</string>
+    <string name="msg_workshop_main_screen">Workspace workshop mak ekran POS prinsipal ona.</string>
+    <string name="msg_change_password_clicked">Troka Password klik ona</string>
+    <string name="msg_privacy_policy_clicked">Politika Privasidade klik ona</string>
+    <string name="msg_internet_required_close_shift">Internet presiza atu taka shift.</string>
+    <string name="msg_no_open_shift">La iha shift loke.</string>
+    <string name="msg_unknown_error">Erro la hatene</string>
+    <string name="msg_closing_cash_required">Kaxa taka obrigatoriu.</string>
+    <string name="msg_shift_closed_open_new">Shift taka ona. Favór loke shift foun antes halo transasaun.</string>
+    <string name="msg_table_number_required">Numeru meza obrigatoriu.</string>
+    <string name="msg_delivery_address_required">Enderesu entrega obrigatoriu.</string>
+    <string name="msg_cash_received_required">Osan simu obrigatoriu.</string>
+    <string name="msg_cash_received_less_total">Osan simu labele menus hosi total.</string>
+    <string name="msg_reference_number_required">Numeru referensia obrigatoriu.</string>
+    <string name="action_close_shift_logout">Taka Shift &amp; Logout</string>
+    <string name="action_close_shift">Taka Shift</string>
+    <string name="title_closing_cash">Taka Kaxa</string>
+
+    <!-- ================================================== -->
+    <!-- BATCH 4A: WAREHOUSE / STOCK TRANSFER / BANK LEDGER -->
+    <!-- ================================================== -->
+    <string name="cd_back">Fila</string>
+    <string name="cd_refresh">Atualiza</string>
+    <string name="cd_search">Buka</string>
+    <string name="cd_add_warehouse">Aumenta armazem</string>
+    <string name="cd_add_warehouse_stock">Aumenta stock armazem</string>
+    <string name="cd_add_stock_transfer">Aumenta transfer stock</string>
+    <string name="action_ok">OK</string>
+    <string name="action_complete">Kompleta</string>
+    <string name="action_yes_cancel">Sin, kansela</string>
+<!--    <string name="action_no">Lae</string>-->
+    <string name="label_active">Ativu</string>
+    <string name="label_inactive">La ativu</string>
+    <string name="label_default">Padraun</string>
+    <string name="label_low_stock">Stock kiik</string>
+    <string name="label_normal">Normal</string>
+    <string name="label_minimum_stock">Stock Minimu</string>
+    <string name="label_unit_required">Unidade *</string>
+    <string name="label_quantity_required">Kuantidade *</string>
+    <string name="hint_search_warehouse">Buka armazem...</string>
+    <string name="hint_search_warehouse_stock">Buka stock armazem...</string>
+    <string name="hint_search_stock_transfer">Buka transfer stock...</string>
+    <string name="hint_search_bank_ledger">Buka historiku banku...</string>
+<!--    <string name="hint_search_product">Buka produtu...</string>-->
+    <string name="hint_select_warehouse_required">Hili Armazem *</string>
+    <string name="hint_select_product_required">Hili Produtu *</string>
+    <string name="hint_select_unit">Hili Unidade</string>
+    <string name="hint_warehouse_name_required">Naran Armazem *</string>
+    <string name="hint_warehouse_code_required">Kodigu Armazem *</string>
+    <string name="hint_location">Fatin</string>
+    <string name="hint_from_warehouse_required">Husi Armazem *</string>
+    <string name="hint_to_warehouse_required">Ba Armazem *</string>
+    <string name="hint_quantity_required">Kuantidade *</string>
+    <string name="hint_enter_stock_quantity">Hatama kuantidade stock</string>
+    <string name="hint_enter_minimum_stock_alert">Hatama alerta stock minimu</string>
+    <string name="warehouse_set_default">Halo armazem default</string>
+    <string name="msg_no_warehouses">Seidauk iha armazem</string>
+    <string name="msg_create_first_warehouse">Klik + atu kria armazem primeiru</string>
+    <string name="msg_no_warehouse_stocks">Seidauk iha stock armazem</string>
+    <string name="msg_create_warehouse_stock_hint">Klik + atu kria stock ba armazem</string>
+    <string name="msg_no_stock_transfers">Seidauk iha transfer stock</string>
+    <string name="msg_create_stock_transfer_hint">Klik + atu transfere stock entre armazem</string>
+    <string name="msg_no_bank_ledgers">Seidauk iha historiku banku</string>
+    <string name="msg_bank_ledger_empty_hint">Historiku transasaun banku sei mosu iha ne\'e.</string>
+    <string name="warehouse_code_format">Kodigu: %1$s</string>
+    <string name="warehouse_location_format">Fatin: %1$s</string>
+    <string name="warehouse_stock_sku_code_format">SKU: %1$s | Kodigu: %2$s</string>
+    <string name="warehouse_stock_warehouse_format">Armazem: %1$s (%2$s)</string>
+    <string name="warehouse_stock_qty_min_format">Kuantidade: %1$s | Min: %2$s</string>
+    <string name="stock_transfer_note_format">Nota: %1$s</string>
+    <string name="stock_transfer_created_format">Kria: %1$s</string>
+    <string name="stock_transfer_route_format">%1$s → %2$s</string>
+    <string name="stock_transfer_fallback_reference">Transferensia #%1$d</string>
+    <string name="quantity_preview_base_format">Kuantidade: %1$s %2$s</string>
+    <string name="quantity_preview_conversion_format">%1$s %2$s ≈ %3$s PCS</string>
+    <string name="available_stock_empty">Disponivel: -</string>
+    <string name="available_stock_base_format">Disponivel:\n%1$s</string>
+    <string name="available_stock_conversion_format">Disponivel:\n%1$s\n≈ %2$s %3$s</string>
+    <string name="bank_ledger_title">Historiku Banku</string>
+    <string name="bank_ledger_amount_format">Montante: %1$s</string>
+    <string name="bank_ledger_balance_format">Saldo: %1$s → %2$s</string>
+    <string name="bank_ledger_invoice_format">Fatura: %1$s</string>
+    <string name="bank_ledger_description_format">Deskrisaun: %1$s</string>
+    <string name="bank_ledger_date_format">Data: %1$s</string>
+    <string name="bank_ledger_detail_format">ID: %1$d\nLoja: %2$s (%3$s)\nID Konta Banku: %4$d\nKonta Banku: %5$s\nTipu Transasaun: %6$s\nDireksaun: %7$s\nMontante: %8$s\nSaldo Antes: %9$s\nSaldo Depois: %10$s\nReferensia Pedidu: %11$d\nInvoice: %12$s\nReferensia Pagamentu: %13$d\nDeskrisaun: %14$s\nKria Iha: %15$s\nKria Husi: %16$d</string>
+    <string name="dialog_add_warehouse_title">Aumenta Armazem</string>
+    <string name="dialog_edit_warehouse_title">Edita Armazem</string>
+    <string name="dialog_delete_warehouse_title">Hamoos Armazem</string>
+    <string name="dialog_delete_warehouse_message">Hamoos armazem \"%1$s\"?</string>
+    <string name="dialog_add_warehouse_stock_title">Aumenta Stock Armazem</string>
+    <string name="dialog_edit_warehouse_stock_title">Edita Stock Armazem</string>
+    <string name="dialog_delete_warehouse_stock_title">Hamoos Stock Armazem</string>
+    <string name="dialog_delete_warehouse_stock_message">Hamoos stock ba \"%1$s\"?</string>
+    <string name="dialog_add_stock_transfer_title">Aumenta Transfer Stock</string>
+    <string name="dialog_edit_stock_transfer_title">Edita Transfer Stock</string>
+    <string name="dialog_select_product_title">Hili Produtu</string>
+    <string name="dialog_select_from_warehouse_title">Hili Armazem Origem</string>
+    <string name="dialog_select_to_warehouse_title">Hili Armazem Destino</string>
+    <string name="dialog_complete_stock_transfer_title">Kompleta Transfer Stock</string>
+    <string name="dialog_complete_stock_transfer_message">Kompleta transfer \"%1$s\"?</string>
+    <string name="dialog_cancel_stock_transfer_title">Kansela Transfer Stock</string>
+    <string name="dialog_cancel_stock_transfer_message">Kansela transfer \"%1$s\"?</string>
+    <string name="dialog_delete_stock_transfer_title">Hamoos Transfer Stock</string>
+    <string name="dialog_delete_stock_transfer_message">Hamoos transfer \"%1$s\"?</string>
+    <string name="msg_warehouse_name_required">Naran armazem obrigatoriu</string>
+    <string name="msg_warehouse_code_required">Kodigu armazem obrigatoriu</string>
+    <string name="msg_warehouse_created">Armazem kria ona</string>
+    <string name="msg_warehouse_updated">Armazem atualiza ona</string>
+    <string name="msg_warehouse_deleted">Armazem hamoos ona</string>
+    <string name="msg_load_warehouses_failed">Falla carrega armazem: %1$s</string>
+    <string name="msg_load_products_failed">Falla carrega produtu: %1$s</string>
+    <string name="msg_warehouse_required">Armazem obrigatoriu</string>
+    <string name="msg_product_required">Produtu obrigatoriu</string>
+    <string name="msg_unit_required">Unidade obrigatoriu</string>
+    <string name="msg_valid_product_unit_required">Favor hili unidade produtu ne\'ebé válidu.</string>
+    <string name="msg_selected_product_unit_invalid_reload">Unidade produtu ne\'ebé hili la válidu. Favor karrega fali produtu no koko tan.</string>
+    <string name="msg_barcode_required">Barcode obrigatoriu</string>
+    <string name="msg_invalid_number_format">Formatu numeru la validu</string>
+    <string name="msg_invalid_quantity_format">Formatu kuantidade la validu</string>
+    <string name="msg_quantity_required">Kuantidade obrigatoriu</string>
+    <string name="msg_quantity_greater_than_zero">Kuantidade tenke boot liu 0</string>
+    <string name="msg_scan_failed">Scan falla: %1$s</string>
+    <string name="msg_warehouse_stock_created">Stock armazem kria ona</string>
+    <string name="msg_warehouse_stock_updated">Stock armazem atualiza ona</string>
+    <string name="msg_warehouse_stock_deleted">Stock armazem hamoos ona</string>
+    <string name="msg_warehouse_stock_duplicate">Produtu ida ne\'e iha ona iha armazem ne\'ebé hili. Favor edita stock ne\'ebé iha ona.</string>
+    <string name="msg_quantity_must_be_non_negative">Kuantidade tenke 0 ka boot liu</string>
+    <string name="msg_minimum_stock_must_be_non_negative">Stock minimu tenke 0 ka boot liu</string>
+    <string name="msg_warehouse_data_loading">Dadus armazem sei carrega hela. Koko fali.</string>
+    <string name="msg_product_data_loading">Dadus produtu sei carrega hela. Koko fali.</string>
+    <string name="msg_from_warehouse_required">Armazem origem obrigatoriu</string>
+    <string name="msg_to_warehouse_required">Armazem destino obrigatoriu</string>
+    <string name="msg_invalid_source_warehouse">Favor hili armazem origem ne\'ebé válidu.</string>
+    <string name="msg_invalid_destination_warehouse">Favor hili armazem destino ne\'ebé válidu.</string>
+    <string name="msg_warehouse_list_refreshed_select_again">Dadus armazem atualiza ona. Favor hili armazem fali.</string>
+    <string name="msg_warehouses_cannot_be_same">Armazem origem no destino labele hanesan</string>
+    <string name="msg_quantity_exceeds_available_stock">Kuantidade labele liu stock disponivel</string>
+    <string name="msg_stock_transfer_created">Transfer stock kria ona</string>
+    <string name="msg_stock_transfer_updated">Transfer stock atualiza ona</string>
+    <string name="msg_stock_transfer_completed">Transfer stock kompleta ona</string>
+    <string name="msg_stock_transfer_cancelled">Transfer stock kansela ona</string>
+    <string name="msg_stock_transfer_deleted">Transfer stock hamoos ona</string>
+    <string name="warehouse_display_code_format">%1$s - %2$s</string>
+    <string name="product_sku_display_format">%1$s - SKU: %2$s</string>
+    <string name="label_unit_fallback">UNIT</string>
+    <string name="sample_main_warehouse">Armazem Prinsipal</string>
+    <string name="sample_warehouse_code">Kodigu: WH001</string>
+    <string name="sample_warehouse_location">Fatin: Dili</string>
+    <string name="sample_product_name">Naran Produtu</string>
+    <string name="sample_warehouse_stock_product_info">SKU: - | Kodigu: -</string>
+    <string name="sample_warehouse_stock_warehouse">Armazem: Prinsipal</string>
+    <string name="sample_warehouse_stock_qty">Kuantidade: 0 PCS | Min: 0 PCS</string>
+    <string name="sample_stock_transfer_ref">TRF-0001</string>
+    <string name="sample_stock_transfer_route">Armazem Prinsipal → Armazem Outlet</string>
+    <string name="sample_stock_transfer_note">Nota: -</string>
+    <string name="sample_stock_transfer_created">Kria: -</string>
+    <string name="sample_bank_name">Bank Mandiri</string>
+    <string name="sample_bank_ledger_type">SALE IN</string>
+    <string name="sample_bank_ledger_direction">IN</string>
+    <string name="sample_bank_ledger_amount">Montante: $25.00</string>
+    <string name="sample_bank_ledger_balance">Saldo: $100.00 → $125.00</string>
+    <string name="sample_bank_ledger_invoice">Fatura: INV-0001</string>
+    <string name="sample_bank_ledger_description">Deskrisaun: Pagamentu husi venda</string>
+    <string name="sample_bank_ledger_date">Data: 21 Maiu 2026 10:00</string>
+    <string name="splash_title_1">Bemvindu ba ValoraPOS</string>
+    <string name="splash_subtitle_1">Sistema POS matenek ba retail, workshop, no jestaun negosiu.</string>
+    <string name="splash_title_2">Jere Venda ho Fasil</string>
+    <string name="splash_subtitle_2">Kria pedidu, jere produtu, imprime recibu, no tuir pagamentu.</string>
+    <string name="splash_title_3">Prontu atu Hahu</string>
+    <string name="splash_subtitle_3">Login ba ita-nia konta no hahu jere ita-nia negosiu.</string>
+    <string name="splash_next">Tuir mai</string>
+    <string name="splash_back">Fila</string>
+    <string name="splash_get_started">Hahu</string>
+    <string name="splash_image_placeholder">Ilustrasaun onboarding ValoraPOS</string>
+    <string name="action_clear_draft_items">Hamoos item draft hotu</string>
+    <string name="action_clear_draft_items_symbol">x</string>
+    <string name="menu_offline_orders">Pedidu Offline</string>
+    <string name="menu_offline_orders_desc">Haree no koko fila fali fila sinkronizasaun</string>
+    <string name="msg_opening_cash_required">Osan hahu obrigatoriu.</string>
+    <string name="msg_invalid_money_amount">Hatama montante osan ne\'ebe validu.</string>
+    <string name="draft_a_preview">A - 3</string>
+    <string name="draft_b_preview">B - 12</string>
+    <string name="draft_walkin_preview">Kliente direta - 1</string>
+    <string name="draft_add">+</string>
 
 </resources>

@@ -15,7 +15,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,20 +25,23 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.base.BaseFragment;
+import com.valdker.pos.models.UnitLite;
 import com.valdker.pos.network.ApiClient;
 import com.valdker.pos.network.ApiConfig;
+import com.valdker.pos.repositories.AdminMasterCacheRepository;
 import com.valdker.pos.utils.InsetsHelper;
+import com.valdker.pos.utils.NetworkUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -56,14 +59,16 @@ public class UnitsFragment extends BaseFragment {
 
     private ImageView btnBack;
     private ImageView ivHeaderAction;
-    private TextView tvTitle;
     private EditText etSearch;
 
     private SessionManager session;
+    private AdminMasterCacheRepository cacheRepo;
 
     private RecyclerView rv;
     private ProgressBar progress;
+    private View emptyState;
     private TextView tvEmpty;
+    private TextView tvEmptySub;
     private FloatingActionButton fabAdd;
 
     private final List<Unit> items = new ArrayList<>();
@@ -84,6 +89,7 @@ public class UnitsFragment extends BaseFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         session = new SessionManager(requireContext());
+        cacheRepo = new AdminMasterCacheRepository(requireContext());
     }
 
     @Override
@@ -94,12 +100,13 @@ public class UnitsFragment extends BaseFragment {
 
         rv = view.findViewById(R.id.rvList);
         progress = view.findViewById(R.id.progress);
+        emptyState = view.findViewById(R.id.emptyState);
         tvEmpty = view.findViewById(R.id.tvEmpty);
+        tvEmptySub = view.findViewById(R.id.tvEmptySub);
         fabAdd = view.findViewById(R.id.fabAddUnit);
 
         btnBack = view.findViewById(R.id.btnBack);
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
-        tvTitle = view.findViewById(R.id.tvTitle);
         etSearch = view.findViewById(R.id.etSearch);
 
         if (btnBack != null) {
@@ -199,6 +206,10 @@ public class UnitsFragment extends BaseFragment {
         if (!isAdded()) return;
         if (isFormShowing) return;
         if (isLoading) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         long now = SystemClock.elapsedRealtime();
         if (now - lastFabClickTime < FAB_CLICK_DELAY_MS) {
@@ -240,38 +251,74 @@ public class UnitsFragment extends BaseFragment {
         isLoading = true;
         setLoading(true);
 
+        cacheRepo.loadUnits(localUnits -> {
+            if (!isAdded()) return;
+            boolean hasLocal = !localUnits.isEmpty();
+            if (hasLocal) {
+                allItems.clear();
+                allItems.addAll(unitsFromLite(localUnits));
+                applyFilter(currentQuery);
+            }
+
+            if (!NetworkUtils.isNetworkAvailable(ctx)) {
+                isLoading = false;
+                setLoading(false);
+                if (!hasLocal) {
+                    showLocalEmpty();
+                }
+                return;
+            }
+
+            fetchUnitsFromApi(ctx, token, hasLocal);
+        });
+    }
+
+    private void fetchUnitsFromApi(@NonNull Context ctx, @NonNull String token, boolean hadLocalData) {
+
         final String url = ApiConfig.url(session, ENDPOINT_UNITS);
 
-        JsonArrayRequest req = new JsonArrayRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.GET,
                 url,
-                null,
-                (JSONArray res) -> {
+                response -> {
                     isLoading = false;
                     if (!isAdded()) return;
 
-                    allItems.clear();
+                    try {
+                        JSONArray res = extractResultsArray(response);
+                        List<UnitLite> remoteUnits = new ArrayList<>();
 
-                    for (int i = 0; i < res.length(); i++) {
-                        JSONObject o = res.optJSONObject(i);
-                        if (o == null) continue;
+                        for (int i = 0; i < res.length(); i++) {
+                            JSONObject o = res.optJSONObject(i);
+                            if (o == null) continue;
 
-                        Unit u = new Unit();
-                        u.id = o.optInt("id", 0);
-                        u.name = o.optString("name", "");
-                        allItems.add(u);
+                            remoteUnits.add(new UnitLite(o.optInt("id", 0), o.optString("name", "")));
+                        }
+
+                        cacheRepo.saveUnits(remoteUnits, cachedUnits -> {
+                            if (!isAdded()) return;
+                            allItems.clear();
+                            allItems.addAll(unitsFromLite(cachedUnits));
+                            applyFilter(currentQuery);
+                        });
+                        setLoading(false);
+                        Log.i(TAG, "Fetched units: " + allItems.size());
+                    } catch (Exception e) {
+                        setLoading(false);
+                        setEmpty(items.isEmpty());
+                        toast(getString(R.string.msg_fetch_units_failed));
                     }
-
-                    applyFilter(currentQuery);
-                    setLoading(false);
-                    Log.i(TAG, "Fetched units: " + allItems.size());
                 },
                 err -> {
                     isLoading = false;
                     if (!isAdded()) return;
 
                     setLoading(false);
-                    setEmpty(items.isEmpty());
+                    if (items.isEmpty() && !hadLocalData) {
+                        showLocalEmpty();
+                    } else {
+                        setEmpty(items.isEmpty());
+                    }
                     toastVolleyError(getString(R.string.msg_fetch_units_failed), err);
                 }
         ) {
@@ -285,9 +332,28 @@ public class UnitsFragment extends BaseFragment {
         ApiClient.getInstance(ctx.getApplicationContext()).add(req);
     }
 
+    private static JSONArray extractResultsArray(String response) throws Exception {
+        Object parsed = new JSONTokener(response == null ? "[]" : response).nextValue();
+
+        if (parsed instanceof JSONArray) {
+            return (JSONArray) parsed;
+        }
+
+        if (parsed instanceof JSONObject) {
+            JSONArray results = ((JSONObject) parsed).optJSONArray("results");
+            return results != null ? results : new JSONArray();
+        }
+
+        return new JSONArray();
+    }
+
     private void openForm(@Nullable Unit edit) {
         if (!isAdded()) return;
         if (isFormShowing) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         isFormShowing = true;
         setFabEnabled(false);
@@ -448,6 +514,10 @@ public class UnitsFragment extends BaseFragment {
     private void confirmDelete(@NonNull Unit u) {
         if (!isAdded()) return;
         if (isDeleteRunning) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         new AlertDialog.Builder(requireContext())
                 .setTitle(getString(R.string.title_delete_unit))
@@ -520,14 +590,24 @@ public class UnitsFragment extends BaseFragment {
     }
 
     private void setEmpty(boolean empty) {
-        if (tvEmpty != null) {
-            tvEmpty.setVisibility(empty ? View.VISIBLE : View.GONE);
-            if (empty) {
-                tvEmpty.setText(currentQuery == null || currentQuery.trim().isEmpty()
-                        ? getString(R.string.msg_no_units_yet)
-                        : getString(R.string.msg_no_matching_units));
-            }
+        boolean isSearching = currentQuery != null && !currentQuery.trim().isEmpty();
+
+        if (emptyState != null) {
+            emptyState.setVisibility(empty ? View.VISIBLE : View.GONE);
         }
+
+        if (tvEmpty != null) {
+            tvEmpty.setText(isSearching
+                    ? getString(R.string.msg_no_matching_units)
+                    : getString(R.string.msg_no_units_yet));
+        }
+
+        if (tvEmptySub != null) {
+            tvEmptySub.setText(isSearching
+                    ? getString(R.string.msg_no_matching_units_sub)
+                    : getString(R.string.msg_no_units_yet_sub));
+        }
+
         if (rv != null) {
             rv.setVisibility(empty ? View.GONE : View.VISIBLE);
         }
@@ -570,7 +650,34 @@ public class UnitsFragment extends BaseFragment {
         }
 
         Log.w(TAG, msg);
-        toast(prefix);
+        showApiError(msg);
+    }
+
+    @NonNull
+    private static List<Unit> unitsFromLite(@NonNull List<UnitLite> source) {
+        List<Unit> out = new ArrayList<>();
+        for (UnitLite lite : source) {
+            Unit unit = new Unit();
+            unit.id = lite.id;
+            unit.name = lite.name;
+            out.add(unit);
+        }
+        return out;
+    }
+
+    private void showLocalEmpty() {
+        if (emptyState != null) {
+            emptyState.setVisibility(View.VISIBLE);
+        }
+        if (tvEmpty != null) {
+            tvEmpty.setText(AdminMasterCacheRepository.NO_LOCAL_DATA_MESSAGE);
+        }
+        if (tvEmptySub != null) {
+            tvEmptySub.setText("");
+        }
+        if (rv != null) {
+            rv.setVisibility(View.GONE);
+        }
     }
 
     private void toast(@NonNull String msg) {
@@ -587,11 +694,12 @@ public class UnitsFragment extends BaseFragment {
 
         btnBack = null;
         ivHeaderAction = null;
-        tvTitle = null;
         etSearch = null;
         rv = null;
         progress = null;
+        emptyState = null;
         tvEmpty = null;
+        tvEmptySub = null;
         fabAdd = null;
     }
 

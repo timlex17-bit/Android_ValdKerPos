@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,6 +18,7 @@ import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.models.Customer;
 import com.valdker.pos.repositories.CustomerRepository;
+import com.valdker.pos.utils.ErrorHandler;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class CustomerFormDialog extends DialogFragment {
@@ -149,7 +150,7 @@ public class CustomerFormDialog extends DialogFragment {
                     public void onError(int statusCode, @NonNull String message) {
                         if (!isAdded()) return;
                         setSavingState(progress, positiveButton, false);
-                        toast(buildErrorMessage(isEdit, statusCode, message));
+                        ErrorHandler.handleApiError(requireContext(), buildErrorMessage(isEdit, statusCode, message));
                     }
                 };
 

@@ -9,7 +9,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.activity.OnBackPressedDispatcher;
 import androidx.annotation.NonNull;
@@ -20,19 +20,23 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
-import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.base.BaseFragment;
 import com.valdker.pos.models.InventoryCount;
 import com.valdker.pos.network.ApiClient;
 import com.valdker.pos.network.ApiConfig;
+import com.valdker.pos.repositories.InventoryOperationCacheRepository;
 import com.valdker.pos.repositories.InventoryCountRepository;
 import com.valdker.pos.utils.InsetsHelper;
+import com.valdker.pos.utils.NetworkUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,6 +64,7 @@ public class InventoryCountsFragment extends BaseFragment {
     private ImageView ivHeaderAction;
 
     private InventoryCountAdapter adapter;
+    private InventoryOperationCacheRepository cacheRepository;
 
     private final List<InventoryCount> data = new ArrayList<>();
     private final List<InventoryCount> allData = new ArrayList<>();
@@ -87,6 +92,7 @@ public class InventoryCountsFragment extends BaseFragment {
         applyTopInset(view.findViewById(R.id.topBar));
 
         bindViews(view);
+        cacheRepository = new InventoryOperationCacheRepository(requireContext());
         applyInsets(view);
         setupHeader();
         setupRecycler();
@@ -221,6 +227,10 @@ public class InventoryCountsFragment extends BaseFragment {
             if (isRapidFabClick()) return;
             if (isDialogOpening) return;
             if (isLoadingCounts) return;
+            if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+                toast(InventoryOperationCacheRepository.INTERNET_REQUIRED_MESSAGE);
+                return;
+            }
 
             if (productsJson == null || productsJson.length() == 0) {
                 toast("Loading products...");
@@ -288,6 +298,10 @@ public class InventoryCountsFragment extends BaseFragment {
         if (!isAdded()) return;
         if (isDialogOpening) return;
         if (isStateSaved()) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(InventoryOperationCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         isDialogOpening = true;
         setFabEnabled(false);
@@ -318,9 +332,19 @@ public class InventoryCountsFragment extends BaseFragment {
         isLoadingCounts = true;
         showCountsLoading(true);
 
-        InventoryCountRepository.fetch(requireContext(), new InventoryCountRepository.Callback() {
+        cacheRepository.loadInventoryCountsRoomFirst(new InventoryOperationCacheRepository.RoomFirstCallback<InventoryCount>() {
             @Override
-            public void onSuccess(@NonNull List<InventoryCount> list) {
+            public void onLocal(@NonNull List<InventoryCount> list) {
+                if (!isAdded() || list.isEmpty()) return;
+
+                allData.clear();
+                allData.addAll(list);
+                applyFilter();
+                showCountsLoading(false);
+            }
+
+            @Override
+            public void onRemote(@NonNull List<InventoryCount> list) {
                 isLoadingCounts = false;
                 if (!isAdded()) return;
 
@@ -332,13 +356,27 @@ public class InventoryCountsFragment extends BaseFragment {
             }
 
             @Override
-            public void onError(@NonNull String message) {
+            public void onNoInternet(boolean hasLocalData) {
                 isLoadingCounts = false;
                 if (!isAdded()) return;
 
                 showCountsLoading(false);
-                toast(message);
-                updateEmptyState();
+                if (!hasLocalData && allData.isEmpty()) {
+                    setLocalEmpty();
+                    toast(InventoryOperationCacheRepository.NO_LOCAL_DATA_MESSAGE);
+                }
+            }
+
+            @Override
+            public void onError(@NonNull String message, boolean hasLocalData) {
+                isLoadingCounts = false;
+                if (!isAdded()) return;
+
+                showCountsLoading(false);
+                if (!hasLocalData && allData.isEmpty()) {
+                    setLocalEmpty();
+                    showApiError(message);
+                }
             }
         });
     }
@@ -346,6 +384,15 @@ public class InventoryCountsFragment extends BaseFragment {
     private void loadProducts(boolean openDialogAfterLoad, @Nullable InventoryCount editItem) {
         if (!isAdded()) return;
         if (isLoadingProducts) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            isLoadingProducts = false;
+            productsJson = null;
+            setFabEnabled(true);
+            if (openDialogAfterLoad) {
+                toast(InventoryOperationCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            }
+            return;
+        }
 
         isLoadingProducts = true;
         setFabEnabled(false);
@@ -353,15 +400,18 @@ public class InventoryCountsFragment extends BaseFragment {
         SessionManager sm = new SessionManager(requireContext());
         String url = ApiConfig.url(sm, "api/products/?track_stock=true");
 
-        JsonArrayRequest req = new JsonArrayRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.GET,
                 url,
-                null,
                 response -> {
                     isLoadingProducts = false;
                     if (!isAdded()) return;
 
-                    productsJson = response;
+                    try {
+                        productsJson = extractResultsArray(response);
+                    } catch (Exception e) {
+                        productsJson = null;
+                    }
                     setFabEnabled(true);
 
                     if (productsJson == null || productsJson.length() == 0) {
@@ -388,7 +438,7 @@ public class InventoryCountsFragment extends BaseFragment {
                     if (error != null && error.networkResponse != null) {
                         msg += " (" + error.networkResponse.statusCode + ")";
                     }
-                    toast(msg);
+                    showApiError(msg);
                 }
         ) {
             @Override
@@ -408,6 +458,21 @@ public class InventoryCountsFragment extends BaseFragment {
         req.setShouldCache(false);
         req.setRetryPolicy(new DefaultRetryPolicy(TIMEOUT_MS, MAX_RETRIES, BACKOFF_MULT));
         ApiClient.getInstance(requireContext()).add(req);
+    }
+
+    private static JSONArray extractResultsArray(String response) throws Exception {
+        Object parsed = new JSONTokener(response == null ? "[]" : response).nextValue();
+
+        if (parsed instanceof JSONArray) {
+            return (JSONArray) parsed;
+        }
+
+        if (parsed instanceof JSONObject) {
+            JSONArray results = ((JSONObject) parsed).optJSONArray("results");
+            return results != null ? results : new JSONArray();
+        }
+
+        return new JSONArray();
     }
 
     private void applyFilter() {
@@ -470,9 +535,30 @@ public class InventoryCountsFragment extends BaseFragment {
         }
     }
 
+    private void setLocalEmpty() {
+        if (emptyState != null) {
+            emptyState.setVisibility(View.VISIBLE);
+        } else if (tvEmpty != null) {
+            tvEmpty.setVisibility(View.VISIBLE);
+        }
+        if (tvEmpty != null) {
+            tvEmpty.setText(InventoryOperationCacheRepository.NO_LOCAL_DATA_MESSAGE);
+        }
+        if (tvEmptySub != null) {
+            tvEmptySub.setText("");
+        }
+        if (rv != null) {
+            rv.setVisibility(View.GONE);
+        }
+    }
+
     private void deleteItem(@NonNull InventoryCount item) {
         if (!isAdded()) return;
         if (isDeleteRunning) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(InventoryOperationCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Delete")
@@ -504,7 +590,7 @@ public class InventoryCountsFragment extends BaseFragment {
                                     isDeleteRunning = false;
                                     if (!isAdded()) return;
 
-                                    toast(message);
+                                    showApiError(message);
                                     setFabEnabled(true);
                                 }
                             }
@@ -575,6 +661,7 @@ public class InventoryCountsFragment extends BaseFragment {
         btnBack = null;
         ivHeaderAction = null;
         adapter = null;
+        cacheRepository = null;
 
         isLoadingCounts = false;
         isLoadingProducts = false;

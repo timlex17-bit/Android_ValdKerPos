@@ -13,13 +13,8 @@
 
     <item
         android:id="@+id/nav_chat_ai"
-        android:icon="@drawable/ic_chat_bot"
-        android:title="AI" />
-
-    <item
-        android:id="@+id/nav_pos"
         android:icon="@drawable/ic_support"
-        android:title="POS" />
+        android:title="AI" />
 
     <item
         android:id="@+id/nav_settings"

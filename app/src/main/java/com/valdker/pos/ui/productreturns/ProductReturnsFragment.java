@@ -11,7 +11,7 @@ import java.lang.reflect.Field;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.activity.OnBackPressedDispatcher;
 import androidx.annotation.NonNull;
@@ -28,8 +28,9 @@ import com.valdker.pos.models.OrderLite;
 import com.valdker.pos.models.ProductLite;
 import com.valdker.pos.models.ProductReturn;
 import com.valdker.pos.repositories.LiteRepository;
-import com.valdker.pos.repositories.ProductReturnRepository;
+import com.valdker.pos.repositories.PurchaseReturnCacheRepository;
 import com.valdker.pos.utils.InsetsHelper;
+import com.valdker.pos.utils.NetworkUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -58,6 +59,7 @@ public class ProductReturnsFragment extends BaseFragment {
 
     private final List<ProductReturn> data = new ArrayList<>();
     private ProductReturnAdapter adapter;
+    private PurchaseReturnCacheRepository cacheRepository;
 
     private boolean isLoadingList = false;
     private boolean isPreloadingLite = false;
@@ -78,6 +80,7 @@ public class ProductReturnsFragment extends BaseFragment {
         applyTopInset(view.findViewById(R.id.topBar));
 
         bindViews(view);
+        cacheRepository = new PurchaseReturnCacheRepository(requireContext());
         applyInsets(view);
         setupHeader();
         setupRecycler();
@@ -279,6 +282,10 @@ public class ProductReturnsFragment extends BaseFragment {
         if (!isAdded()) return;
         if (isDialogOpening) return;
         if (isStateSaved()) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(PurchaseReturnCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         if (ordersLite.isEmpty() || customersLite.isEmpty() || productsLite.isEmpty()) {
             toast("Loading spinner data...");
@@ -321,6 +328,10 @@ public class ProductReturnsFragment extends BaseFragment {
     private void preloadLiteData() {
         if (!isAdded()) return;
         if (isPreloadingLite) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            isPreloadingLite = false;
+            return;
+        }
 
         isPreloadingLite = true;
         final int[] doneCount = {0};
@@ -338,7 +349,7 @@ public class ProductReturnsFragment extends BaseFragment {
             @Override
             public void onError(@NonNull String message) {
                 if (!isAdded()) return;
-                toast(message);
+                showApiError(message);
                 doneCount[0]++;
                 finishPreloadIfDone(doneCount[0]);
             }
@@ -357,7 +368,7 @@ public class ProductReturnsFragment extends BaseFragment {
             @Override
             public void onError(@NonNull String message) {
                 if (!isAdded()) return;
-                toast(message);
+                showApiError(message);
                 doneCount[0]++;
                 finishPreloadIfDone(doneCount[0]);
             }
@@ -376,7 +387,7 @@ public class ProductReturnsFragment extends BaseFragment {
             @Override
             public void onError(@NonNull String message) {
                 if (!isAdded()) return;
-                toast(message);
+                showApiError(message);
                 doneCount[0]++;
                 finishPreloadIfDone(doneCount[0]);
             }
@@ -392,13 +403,29 @@ public class ProductReturnsFragment extends BaseFragment {
     private void load() {
         if (!isAdded()) return;
         if (isLoadingList) return;
+        if (cacheRepository == null) return;
 
         isLoadingList = true;
         showLoading(true);
 
-        ProductReturnRepository.fetchAll(requireContext(), new ProductReturnRepository.ListCallback() {
+        cacheRepository.loadProductReturnsRoomFirst(new PurchaseReturnCacheRepository.RoomFirstCallback<ProductReturn>() {
             @Override
-            public void onSuccess(@NonNull List<ProductReturn> items) {
+            public void onLocal(@NonNull List<ProductReturn> items) {
+                if (!isAdded()) return;
+                if (items.isEmpty()) return;
+
+                showLoading(false);
+
+                allData.clear();
+                allData.addAll(items);
+
+                applySearch(etSearch != null && etSearch.getText() != null
+                        ? etSearch.getText().toString()
+                        : "");
+            }
+
+            @Override
+            public void onRemote(@NonNull List<ProductReturn> items) {
                 if (!isAdded()) return;
 
                 isLoadingList = false;
@@ -413,27 +440,31 @@ public class ProductReturnsFragment extends BaseFragment {
             }
 
             @Override
-            public void onError(@NonNull String message) {
+            public void onNoInternet(boolean hasLocalData) {
                 if (!isAdded()) return;
 
                 isLoadingList = false;
                 showLoading(false);
 
-                allData.clear();
-                data.clear();
-
-                if (adapter != null) {
-                    adapter.notifyDataSetChanged();
+                if (!hasLocalData && allData.isEmpty()) {
+                    setLocalEmpty();
+                    toast(PurchaseReturnCacheRepository.NO_LOCAL_DATA_MESSAGE);
                 }
+            }
 
-                updateEmptyDefault();
+            @Override
+            public void onError(int statusCode, @NonNull String message, boolean hasLocalData) {
+                if (!isAdded()) return;
 
-                if (tvEmpty != null && layoutEmpty == null) {
-                    tvEmpty.setText(message == null || message.trim().isEmpty()
-                            ? "Failed to load product returns."
-                            : message);
-                    tvEmpty.setVisibility(View.VISIBLE);
+                isLoadingList = false;
+                showLoading(false);
+
+                if (!hasLocalData && allData.isEmpty()) {
+                    setLocalEmpty();
                 }
+                showApiError(message == null || message.trim().isEmpty()
+                        ? "Failed to load product returns."
+                        : message);
             }
         });
     }
@@ -476,6 +507,24 @@ public class ProductReturnsFragment extends BaseFragment {
         }
     }
 
+    private void setLocalEmpty() {
+        data.clear();
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
+        if (layoutEmpty != null && tvEmpty != null && tvEmptySub != null) {
+            tvEmpty.setText(PurchaseReturnCacheRepository.NO_LOCAL_DATA_MESSAGE);
+            tvEmptySub.setText("");
+            layoutEmpty.setVisibility(View.VISIBLE);
+        } else if (tvEmpty != null) {
+            tvEmpty.setText(PurchaseReturnCacheRepository.NO_LOCAL_DATA_MESSAGE);
+            tvEmpty.setVisibility(View.VISIBLE);
+        }
+        if (rv != null) {
+            rv.setVisibility(View.GONE);
+        }
+    }
+
     private void setFabEnabled(boolean enabled) {
         if (fabAdd == null) return;
         boolean finalEnabled = enabled && !isDialogOpening && !isLoadingList;
@@ -506,6 +555,7 @@ public class ProductReturnsFragment extends BaseFragment {
         btnBack = null;
         ivHeaderAction = null;
         adapter = null;
+        cacheRepository = null;
         etSearch = null;
         allData.clear();
         isLoadingList = false;

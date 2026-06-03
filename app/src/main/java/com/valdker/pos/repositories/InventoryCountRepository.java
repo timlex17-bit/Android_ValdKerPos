@@ -8,7 +8,6 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.valdker.pos.SessionManager;
@@ -19,6 +18,7 @@ import com.valdker.pos.network.ApiConfig;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -151,13 +151,12 @@ public class InventoryCountRepository {
         SessionManager sm = new SessionManager(ctx.getApplicationContext());
         String url = ApiConfig.url(sm, ENDPOINT);
 
-        JsonArrayRequest req = new JsonArrayRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.GET,
                 url,
-                null,
                 response -> {
                     try {
-                        List<InventoryCount> list = parseList(response);
+                        List<InventoryCount> list = parseList(extractResultsArray(response));
                         cb.onSuccess(list);
                     } catch (Exception e) {
                         cb.onError("Parse error: " + e.getMessage());
@@ -179,6 +178,21 @@ public class InventoryCountRepository {
     // -----------------------
     // Helpers
     // -----------------------
+
+    private static JSONArray extractResultsArray(String response) throws Exception {
+        Object parsed = new JSONTokener(response == null ? "[]" : response).nextValue();
+
+        if (parsed instanceof JSONArray) {
+            return (JSONArray) parsed;
+        }
+
+        if (parsed instanceof JSONObject) {
+            JSONArray results = ((JSONObject) parsed).optJSONArray("results");
+            return results != null ? results : new JSONArray();
+        }
+
+        return new JSONArray();
+    }
 
     private static Map<String, String> buildHeaders(@NonNull Context ctx, boolean jsonBody) {
         SessionManager sm = new SessionManager(ctx);

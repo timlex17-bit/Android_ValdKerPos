@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -12,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.valdker.pos.R;
 import com.valdker.pos.models.StockAdjustment;
+import com.valdker.pos.utils.SystemBarsFix;
 
 import org.json.JSONObject;
 
@@ -46,7 +48,10 @@ public class StockAdjustmentDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("DETAIL_ACTIVITY", "OPEN StockAdjustmentDetailActivity");
         setContentView(R.layout.activity_stock_adjustment_detail);
+        View root = findViewById(R.id.detailRoot);
+        SystemBarsFix.applyForcedDetailSafeArea(this, root, "StockAdjustmentDetail");
 
         TextView tvTitle = findViewById(R.id.tvTitle);
         TextView tvDate = findViewById(R.id.tvDate);

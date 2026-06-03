@@ -4,7 +4,7 @@ import android.content.Context;
 import android.provider.Settings;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 public class AndroidBridge {
     private final Context context;

@@ -2,6 +2,7 @@ package com.valdker.pos.ui;
 
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.content.res.Configuration;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -11,7 +12,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,9 +25,11 @@ import com.valdker.pos.SessionManager;
 import com.valdker.pos.adapters.ProductManageAdapter;
 import com.valdker.pos.base.BaseFragment;
 import com.valdker.pos.models.Product;
+import com.valdker.pos.repositories.AdminMasterCacheRepository;
 import com.valdker.pos.repositories.ProductRepository;
 import com.valdker.pos.ui.customers.ConfirmDeleteDialog;
 import com.valdker.pos.utils.InsetsHelper;
+import com.valdker.pos.utils.NetworkUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -44,7 +47,6 @@ public class ProductsManageFragment extends BaseFragment {
     private RecyclerView rv;
     private ProgressBar progress;
     private TextView tvEmpty;
-    private TextView tvTitle;
     private FloatingActionButton fabAdd;
     private EditText etSearchManage;
     private ImageView btnBack;
@@ -57,6 +59,7 @@ public class ProductsManageFragment extends BaseFragment {
 
     private SessionManager session;
     private ProductRepository repo;
+    private AdminMasterCacheRepository cacheRepo;
 
     private boolean isLoading = false;
     private boolean isDialogOpening = false;
@@ -78,6 +81,7 @@ public class ProductsManageFragment extends BaseFragment {
 
         session = new SessionManager(requireContext());
         repo = new ProductRepository(requireContext());
+        cacheRepo = new AdminMasterCacheRepository(requireContext());
 
         swipe = view.findViewById(R.id.swipeRefreshManage);
         rv = view.findViewById(R.id.rvProductsManage);
@@ -86,7 +90,6 @@ public class ProductsManageFragment extends BaseFragment {
         fabAdd = view.findViewById(R.id.fabAddProduct);
         rootManage = view.findViewById(R.id.rootManage);
 
-        tvTitle = view.findViewById(R.id.tvTitleManage);
         etSearchManage = view.findViewById(R.id.etSearchManage);
         btnBack = view.findViewById(R.id.btnBack);
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
@@ -107,9 +110,31 @@ public class ProductsManageFragment extends BaseFragment {
 
     private void setupRecycler() {
         if (rv == null) return;
-        rv.setLayoutManager(new GridLayoutManager(requireContext(), 2));
+        rv.setLayoutManager(new GridLayoutManager(requireContext(), getResponsiveProductSpan()));
         rv.setHasFixedSize(false);
         rv.setClipToPadding(false);
+    }
+
+    private int getResponsiveProductSpan() {
+        int configuredSpan = getResources().getInteger(R.integer.product_grid_span);
+        int widthDp = getResources().getConfiguration().screenWidthDp;
+
+        if (widthDp == Configuration.SCREEN_WIDTH_DP_UNDEFINED) {
+            widthDp = Math.round(
+                    getResources().getDisplayMetrics().widthPixels
+                            / getResources().getDisplayMetrics().density
+            );
+        }
+
+        if (widthDp >= 840) {
+            return Math.max(configuredSpan, 4);
+        }
+
+        if (widthDp >= 600) {
+            return Math.max(configuredSpan, 3);
+        }
+
+        return Math.max(configuredSpan, 2);
     }
 
     private void setupAdapter() {
@@ -219,6 +244,10 @@ public class ProductsManageFragment extends BaseFragment {
         if (isRapidFabClick()) return;
         if (isStateSaved()) return;
         if (isDialogOpening) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         if (getParentFragmentManager().findFragmentByTag(TAG_ADD_PRODUCT) != null) {
             Log.d(TAG, "Add product dialog already showing");
@@ -255,6 +284,10 @@ public class ProductsManageFragment extends BaseFragment {
         if (!isAdded()) return;
         if (isStateSaved()) return;
         if (isDialogOpening) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         if (getParentFragmentManager().findFragmentByTag(TAG_EDIT_PRODUCT) != null) {
             Log.d(TAG, "Edit product dialog already showing");
@@ -290,6 +323,10 @@ public class ProductsManageFragment extends BaseFragment {
     private void confirmDeleteSafely(@NonNull Product p) {
         if (!isAdded()) return;
         if (isDeleteRunning) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         ConfirmDeleteDialog.show(
                 requireContext(),
@@ -329,6 +366,29 @@ public class ProductsManageFragment extends BaseFragment {
             showLoading();
         }
 
+        cacheRepo.loadProducts(localProducts -> {
+            if (!isAdded()) return;
+            boolean hasLocal = !localProducts.isEmpty();
+            if (hasLocal) {
+                allItems.clear();
+                allItems.addAll(localProducts);
+                applyFilter();
+            }
+
+            if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+                isLoading = false;
+                stopRefreshing();
+                if (!hasLocal) {
+                    showEmpty(AdminMasterCacheRepository.NO_LOCAL_DATA_MESSAGE);
+                }
+                return;
+            }
+
+            fetchProductsFromApi(token, hasLocal);
+        });
+    }
+
+    private void fetchProductsFromApi(@NonNull String token, boolean hadLocalData) {
         repo.fetchProducts(token, "all", new ProductRepository.Callback() {
             @Override
             public void onSuccess(@NonNull List<Product> products) {
@@ -337,11 +397,13 @@ public class ProductsManageFragment extends BaseFragment {
 
                 Log.i(TAG, "fetchProducts SUCCESS: " + products.size());
 
-                allItems.clear();
-                allItems.addAll(products);
-                applyFilter();
-
-                stopRefreshing();
+                cacheRepo.saveProducts(products, cachedProducts -> {
+                    if (!isAdded()) return;
+                    allItems.clear();
+                    allItems.addAll(cachedProducts);
+                    applyFilter();
+                    stopRefreshing();
+                });
             }
 
             @Override
@@ -351,13 +413,13 @@ public class ProductsManageFragment extends BaseFragment {
 
                 Log.e(TAG, "fetchProducts ERROR: " + statusCode + " / " + message);
 
-                if (items.isEmpty()) {
-                    showEmpty("Failed to load products");
+                if (items.isEmpty() && !hadLocalData) {
+                    showEmpty(AdminMasterCacheRepository.NO_LOCAL_DATA_MESSAGE);
                 } else {
                     showList();
                 }
 
-                toast("Failed to load products");
+                showApiError("Failed to load products: " + message);
                 stopRefreshing();
             }
         });
@@ -410,6 +472,10 @@ public class ProductsManageFragment extends BaseFragment {
             toast("Token is missing");
             return;
         }
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         isDeleteRunning = true;
         showLoading();
@@ -459,7 +525,7 @@ public class ProductsManageFragment extends BaseFragment {
                     return;
                 }
 
-                toast("Delete failed");
+                showApiError("Delete failed: " + message);
                 if (!items.isEmpty()) {
                     showList();
                 } else {
@@ -550,7 +616,6 @@ public class ProductsManageFragment extends BaseFragment {
         rv = null;
         progress = null;
         tvEmpty = null;
-        tvTitle = null;
         fabAdd = null;
         etSearchManage = null;
         btnBack = null;

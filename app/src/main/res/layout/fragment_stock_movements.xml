@@ -38,7 +38,7 @@
                     android:contentDescription="Back"
                     android:padding="8dp"
                     android:src="@drawable/ic_arrow_back"
-                    android:tint="@android:color/white" />
+                    app:tint="@android:color/white" />
 
                 <TextView
                     android:id="@+id/tvTitle"
@@ -62,7 +62,7 @@
                     android:contentDescription="Refresh"
                     android:padding="8dp"
                     android:src="@android:drawable/ic_popup_sync"
-                    android:tint="@android:color/white" />
+                    app:tint="@android:color/white" />
 
             </LinearLayout>
 

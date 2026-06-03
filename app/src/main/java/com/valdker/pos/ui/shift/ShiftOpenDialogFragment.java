@@ -8,10 +8,13 @@ import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
 import com.valdker.pos.R;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
+import java.math.BigDecimal;
 
 public class ShiftOpenDialogFragment extends DialogFragment {
 
@@ -32,15 +35,41 @@ public class ShiftOpenDialogFragment extends DialogFragment {
 
         setCancelable(false);
 
-        return new MaterialAlertDialogBuilder(requireContext())
+        AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
                 .setView(v)
                 .setCancelable(false)
-                .setPositiveButton("Open Shift", (d, which) -> {
-                    String cash = etCash.getText().toString().trim();
-                    String note = etNote.getText().toString().trim();
-                    if (cash.isEmpty()) cash = "0";
-                    if (listener != null) listener.onSubmit(cash, note);
-                })
+                .setPositiveButton("Open Shift", null)
                 .create();
+
+        dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(btn -> {
+            String cash = etCash.getText() != null ? etCash.getText().toString().trim() : "";
+            String note = etNote.getText() != null ? etNote.getText().toString().trim() : "";
+
+            if (cash.isEmpty()) {
+                etCash.setError(getString(R.string.msg_opening_cash_required));
+                etCash.requestFocus();
+                return;
+            }
+
+            if (!isValidMoneyAmount(cash)) {
+                etCash.setError(getString(R.string.msg_invalid_money_amount));
+                etCash.requestFocus();
+                return;
+            }
+
+            if (listener != null) listener.onSubmit(cash, note);
+            dialog.dismiss();
+        }));
+
+        return dialog;
+    }
+
+    private boolean isValidMoneyAmount(@NonNull String value) {
+        try {
+            BigDecimal amount = new BigDecimal(value.trim());
+            return amount.compareTo(BigDecimal.ZERO) >= 0;
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 }

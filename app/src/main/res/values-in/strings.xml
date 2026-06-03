@@ -15,17 +15,17 @@
     <!-- ================================================== -->
     <!-- APP -->
     <!-- ================================================== -->
-    <string name="app_name">ValdKerPOS</string>
+    <string name="app_name">ValoraPOS</string>
     <string name="app_tagline">Sistem POS untuk bisnis modern</string>
     <string name="app_version">Versi</string>
     <string name="app_powered_by">Didukung oleh ValdKer</string>
-    <string name="app_brand">ValdKerPOS</string>
+    <string name="app_brand">ValoraPOS</string>
     <string name="app_logo">Logo aplikasi</string>
     <string name="welcome">Selamat datang</string>
     <string name="welcome_back">Selamat datang kembali</string>
     <string name="logout">Keluar</string>
     <string name="profile">Profil</string>
-    <string name="dashboard">Dashboard</string>
+    <string name="dashboard">Dasbor</string>
     <string name="home">Beranda</string>
 
     <!-- ================================================== -->
@@ -36,10 +36,9 @@
     <string name="login_help_text">Masuk menggunakan kode toko, username, dan password untuk mengakses toko yang benar.</string>
     <string name="login_title">Masuk ke toko Anda</string>
     <string name="login_subtitle">Gunakan kode toko, username, dan password untuk melanjutkan</string>
-    <string name="login_multi_tenant">Multi-Tenant</string>
     <string name="login_shop_code">Kode Toko</string>
-    <string name="login_username">Username</string>
-    <string name="login_password">Password</string>
+    <string name="login_username">Nama pengguna</string>
+    <string name="login_password">Kata sandi</string>
     <string name="login_button">Masuk</string>
     <string name="login_demo">Isi Data Demo</string>
     <string name="login_remember_me">Ingat saya</string>
@@ -60,8 +59,8 @@
     <string name="dashboard_welcome_user">Halo, %1$s</string>
     <string name="dashboard_subtitle">Pilih modul untuk melanjutkan</string>
     <string name="select_a_module_to_continue">Pilih modul untuk melanjutkan</string>
-    <string name="today_sales">Penjualan</string>
-    <string name="today_expenses">Pengeluaran</string>
+    <string name="today_sales">Penjualan hari ini</string>
+    <string name="today_expenses">Pengeluaran hari ini</string>
     <string name="net_profit">Laba Bersih</string>
     <string name="shift_today">Shift Hari Ini</string>
     <string name="shift_summary_hint">Total aktivitas yang tercatat hari ini</string>
@@ -87,8 +86,7 @@
     <!-- BOTTOM NAVIGATION -->
     <!-- ================================================== -->
     <string name="nav_home">Beranda</string>
-    <string name="nav_dashboard">Dashboard</string>
-    <string name="nav_pos">Kasir</string>
+    <string name="nav_dashboard">Dasbor</string>
     <string name="nav_orders">Pesanan</string>
     <string name="nav_profile">Profil</string>
     <string name="nav_settings">Pengaturan</string>
@@ -132,7 +130,7 @@
     <string name="action_create">Buat</string>
     <string name="action_save">Simpan</string>
     <string name="action_update">Perbarui</string>
-    <string name="action_edit">Edit</string>
+    <string name="action_edit">Ubah</string>
     <string name="action_delete">Hapus</string>
     <string name="action_remove">Hapus</string>
     <string name="action_cancel">Batal</string>
@@ -141,20 +139,20 @@
     <string name="action_next">Berikutnya</string>
     <string name="action_done">Selesai</string>
     <string name="action_search">Cari</string>
-    <string name="action_filter">Filter</string>
-    <string name="action_reset">Reset</string>
+    <string name="action_filter">Saring</string>
+    <string name="action_reset">Atur ulang</string>
     <string name="action_clear">Bersihkan</string>
     <string name="action_refresh">Muat ulang</string>
     <string name="action_confirm">Konfirmasi</string>
     <string name="action_submit">Kirim</string>
     <string name="action_retry">Coba lagi</string>
     <string name="action_yes">Ya</string>
-    <string name="action_no">Tidak</string>
+<!--    <string name="action_no">Tidak</string>-->
     <string name="action_print">Cetak</string>
     <string name="action_reprint">Cetak ulang</string>
     <string name="action_checkout">Checkout</string>
     <string name="action_pay">Bayar</string>
-    <string name="action_scan">Scan</string>
+    <string name="action_scan">Pindai</string>
     <string name="action_upload">Unggah</string>
     <string name="action_download">Unduh</string>
     <string name="action_export">Ekspor</string>
@@ -176,7 +174,6 @@
     <string name="title_delete_unit">Hapus Unit</string>
     <string name="msg_delete_unit_confirm">Hapus "%1$s"?</string>
     <string name="msg_no_units_yet">Belum ada unit</string>
-    <string name="msg_no_matching_units">Tidak ada unit yang cocok</string>
     <string name="label_default_dash">-</string>
 
     <!-- ================================================== -->
@@ -229,8 +226,8 @@
     <string name="label_method">Metode</string>
     <string name="label_cashier">Kasir</string>
     <string name="label_user">Pengguna</string>
-    <string name="label_username">Username</string>
-    <string name="label_password">Password</string>
+    <string name="label_username">Nama pengguna</string>
+    <string name="label_password">Kata sandi</string>
     <string name="label_location">Lokasi</string>
     <string name="label_store_name">Nama Toko</string>
     <string name="label_store_address">Alamat Toko</string>
@@ -246,12 +243,23 @@
     <string name="label_cart">Keranjang</string>
     <string name="label_items">Item</string>
     <string name="label_actions">Aksi</string>
+    <string name="menu_warehouses">Gudang</string>
+    <string name="menu_warehouses_desc">Kelola daftar gudang</string>
+
+    <string name="menu_warehouse_stocks">Stok Gudang</string>
+    <string name="menu_warehouse_stocks_desc">Lihat stok produk per gudang</string>
+
+    <string name="menu_stock_transfers">Transfer Stok</string>
+    <string name="menu_stock_transfers_desc">Pindahkan stok antar gudang</string>
+
+    <string name="menu_bank_ledgers">Mutasi Bank</string>
+    <string name="menu_bank_ledgers_desc">Lihat riwayat transaksi bank</string>
 
     <!-- ================================================== -->
     <!-- HINTS -->
     <!-- ================================================== -->
     <string name="hint_search_here">Cari di sini...</string>
-    <string name="hint_search_product">Cari produk...</string>
+<!--    <string name="hint_search_product">Cari produk...</string>-->
     <string name="hint_search_category">Cari kategori</string>
     <string name="hint_search_units">Cari unit</string>
     <string name="hit_add_units">Nama *</string>
@@ -341,7 +349,7 @@
     <!-- ================================================== -->
     <!-- DASHBOARD MENU -->
     <!-- ================================================== -->
-    <string name="title_dashboard">Dashboard</string>
+    <string name="title_dashboard">Dasbor</string>
     <string name="menu_pos">Kasir (POS)</string>
     <string name="menu_pos_desc">Buat transaksi penjualan</string>
     <string name="menu_reports">Laporan</string>
@@ -384,7 +392,7 @@
     <!-- ================================================== -->
     <string name="title_products">Produk</string>
     <string name="title_add_product">Tambah Produk</string>
-    <string name="title_edit_product">Edit Produk</string>
+    <string name="title_edit_product">Edit</string>
     <string name="title_product_details">Detail Produk</string>
     <string name="product_name">Nama Produk</string>
     <string name="product_code">Kode Produk</string>
@@ -406,6 +414,12 @@
     <string name="title_add_category">Tambah Kategori</string>
     <string name="title_edit_category">Edit Kategori</string>
     <string name="category_name">Nama Kategori</string>
+    <string name="msg_no_categories_yet">Belum ada kategori</string>
+    <string name="msg_no_categories_yet_sub">Tekan + untuk membuat kategori.</string>
+    <string name="msg_no_matching_categories">Kategori tidak ditemukan</string>
+    <string name="msg_no_matching_categories_sub">Coba kata kunci lain.</string>
+    <string name="title_delete_category">Hapus Kategori</string>
+    <string name="msg_delete_category_confirm">Hapus &quot;%1$s&quot;?</string>
 
     <!-- ================================================== -->
     <!-- UNITS -->
@@ -414,6 +428,9 @@
     <string name="title_add_unit">Tambah Satuan</string>
     <string name="title_edit_unit">Edit Satuan</string>
     <string name="unit_name">Nama Satuan</string>
+    <string name="msg_no_units_yet_sub">Tekan + untuk membuat unit.</string>
+    <string name="msg_no_matching_units">Unit tidak ditemukan</string>
+    <string name="msg_no_matching_units_sub">Coba kata kunci lain.</string>
 
     <!-- ================================================== -->
     <!-- CUSTOMERS -->
@@ -441,7 +458,7 @@
     <!-- ================================================== -->
     <string name="title_suppliers">Supplier</string>
     <string name="title_add_supplier">Tambah Supplier</string>
-    <string name="title_edit_supplier">Edit Supplier</string>
+    <string name="title_edit_supplier">Ubah Supplier</string>
     <string name="supplier_name">Nama Supplier</string>
     <string name="supplier_phone">Nomor Telepon Supplier</string>
     <string name="supplier_email">Email Supplier</string>
@@ -527,6 +544,10 @@
     <string name="btn_cancel">Batal</string>
     <string name="btn_save">Simpan</string>
     <string name="btn_create">Buat</string>
+    <string name="msg_no_expenses_yet">Belum ada pengeluaran</string>
+    <string name="msg_no_expenses_yet_sub">Tekan + untuk membuat pengeluaran.</string>
+    <string name="msg_no_matching_expenses">Pengeluaran tidak ditemukan</string>
+    <string name="msg_no_matching_expenses_sub">Coba kata kunci lain.</string>
 
     <!-- ================================================== -->
     <!-- INVENTORY -->
@@ -534,6 +555,12 @@
     <string name="title_inventory_counts">Stok Opname</string>
     <string name="title_stock_adjustments">Penyesuaian Stok</string>
     <string name="title_stock_movements">Pergerakan Stok</string>
+
+    <string name="msg_no_stock_adjustments_yet">Belum ada penyesuaian stok</string>
+    <string name="msg_no_stock_adjustments_yet_sub">Tekan + untuk membuat penyesuaian stok.</string>
+    <string name="msg_no_matching_stock_adjustments">Penyesuaian stok tidak ditemukan</string>
+    <string name="msg_no_matching_stock_adjustments_sub">Coba kata kunci lain.</string>
+    <string name="hint_search_stock_adjustment">Cari penyesuaian stok...</string>
 
     <string name="inventory_count">Stok Opname</string>
     <string name="stock_adjustment">Penyesuaian Stok</string>
@@ -659,17 +686,21 @@
     <string name="bank_create_success">Rekening bank berhasil dibuat</string>
     <string name="bank_update_success">Rekening bank berhasil diperbarui</string>
     <string name="bank_delete_success">Rekening bank berhasil dihapus</string>
-
     <string name="bank_delete_title">Hapus Rekening Bank</string>
     <string name="bank_delete_message">Apakah Anda yakin ingin menghapus "%1$s - %2$s"?</string>
-
     <string name="error_name_required">Nama wajib diisi</string>
     <string name="error_bank_name_required">Nama bank wajib diisi</string>
-
     <string name="error_create_request">Gagal membuat permintaan</string>
     <string name="error_network">Terjadi kesalahan jaringan</string>
-
     <string name="bank_ledger_coming_soon">Halaman Bank Ledger segera hadir: %1$s</string>
+    <string name="empty_bank_accounts_sub">Tekan + untuk membuat akun bank.</string>
+    <string name="action_add_bank_account">Tambah akun bank</string>
+    <string name="empty_bank_accounts">Belum ada akun bank</string>
+    <string name="dialog_delete">Hapus</string>
+    <string name="dialog_cancel">Batal</string>
+    <string name="bank_account_type_bank">BANK</string>
+    <string name="bank_account_type_ewallet">EWALLET</string>
+    <string name="bank_account_type_qris">QRIS</string>
 
     <!-- ================================================== -->
     <!-- SHIFT -->
@@ -700,8 +731,8 @@
     <string name="settings_customer_display">Layar Pelanggan</string>
     <string name="settings_language">Bahasa</string>
     <string name="settings_currency">Mata Uang</string>
-    <string name="settings_backup">Backup</string>
-    <string name="settings_restore">Restore</string>
+    <string name="settings_backup">Cadangan</string>
+    <string name="settings_restore">Pemulihan</string>
     <string name="settings_dark_mode">Mode Gelap</string>
     <string name="settings_notifications">Notifikasi</string>
 
@@ -726,7 +757,7 @@
     <string name="settings_shop_settings">Pengaturan Toko</string>
     <string name="settings_server">Server</string>
     <string name="settings_printer_title">Printer</string>
-    <string name="settings_branding">Branding</string>
+    <string name="settings_branding">Merek</string>
     <string name="settings_shop_profile">Profil Toko</string>
     <string name="settings_shop_logo">Logo Toko</string>
     <string name="settings_logo_preview">Preview logo</string>
@@ -767,13 +798,280 @@
     <!-- ================================================== -->
     <!-- BACKUP / RESTORE -->
     <!-- ================================================== -->
-    <string name="title_backup">Backup</string>
-    <string name="title_restore">Restore</string>
-    <string name="backup_database">Backup Database</string>
-    <string name="restore_database">Restore Database</string>
+    <string name="title_backup">Cadangan</string>
+    <string name="title_restore">Pemulihan</string>
+    <string name="backup_database">Cadangkan Database</string>
+    <string name="restore_database">Pulihkan Database</string>
     <string name="export_excel">Ekspor ke Excel</string>
     <string name="export_pdf">Ekspor ke PDF</string>
     <string name="import_data">Impor Data</string>
     <string name="orders_titles">Transaksi</string>
+
+    <!-- ================================================== -->
+    <!-- LOGIN / POS / CHECKOUT LOCALIZATION BATCH -->
+    <!-- ================================================== -->
+    <string name="icon_shop">🏬</string>
+    <string name="icon_user">👤</string>
+    <string name="icon_lock">🔒</string>
+    <string name="icon_password_show">👁</string>
+    <string name="icon_password_hide">🙈</string>
+    <string name="icon_search">⌕</string>
+    <string name="hint_password_mask">••••••</string>
+    <string name="cd_shop_logo">Logo toko</string>
+    <string name="cd_user_menu">Menu pengguna</string>
+    <string name="cd_barcode_scan">Pemindai barcode</string>
+    <string name="cd_close">Tutup</string>
+    <string name="pos_default_shop_name">Selamat datang</string>
+    <string name="pos_default_subtitle">POS</string>
+    <string name="pos_menu">Menu</string>
+    <string name="pos_zero_count">0</string>
+    <string name="amount_zero_usd">$0.00</string>
+    <string name="amount_sample_usd">$40.99</string>
+    <string name="pos_retail_title">POS Retail</string>
+    <string name="pos_search_product_or_barcode">Cari produk atau barcode</string>
+    <string name="pos_scan_barcode_quick">Pindai barcode untuk menambah produk dengan cepat</string>
+    <string name="pos_scanned_items">Item yang dipindai</string>
+    <string name="pos_items_after_barcode">Item akan muncul setelah barcode dipindai</string>
+    <string name="pos_zero_item">0 item</string>
+    <string name="pos_scan_barcode_empty">Pindai barcode untuk menambah produk</string>
+    <string name="category_all">Semua</string>
+    <string name="workshop_default_title">Valdker POS</string>
+    <string name="workshop_default_address">Becora Dili</string>
+    <string name="workshop_walk_in_customer">Pelanggan langsung</string>
+    <string name="customer_fallback_name_format">Pelanggan #%1$d</string>
+    <string name="workshop_default_vehicle">Mobil</string>
+    <string name="workshop_default_plate">D012314</string>
+    <string name="label_vehicle">Kendaraan</string>
+    <string name="label_plate">Plat</string>
+    <string name="label_service">Layanan</string>
+    <string name="label_part">Suku cadang</string>
+    <string name="label_bank_account">Rekening Bank</string>
+    <string name="action_change">Ubah</string>
+    <string name="hint_cash_received">Uang Diterima</string>
+    <string name="hint_reference_number">Nomor Referensi</string>
+    <string name="hint_payment_note">Catatan Pembayaran</string>
+    <string name="hint_table_number">Nomor Meja</string>
+    <string name="hint_delivery_address">Alamat Pengiriman</string>
+    <string name="hint_delivery_fee">Biaya Pengiriman</string>
+    <string name="checkout_points_format">Poin: %1$d</string>
+    <string name="checkout_points_zero">Poin: 0</string>
+    <string name="checkout_change_format">Kembalian: %1$s</string>
+    <string name="checkout_change_zero">Kembalian: $0.00</string>
+    <string name="checkout_shortage_format">Kurang: %1$s</string>
+    <string name="checkout_secure_by_knox">Diamankan oleh Knox</string>
+    <string name="msg_login_required_fields">Kode toko, username, dan password wajib diisi.</string>
+    <string name="msg_login_required_fields_server">Kode toko, username, dan password harus diisi.</string>
+    <string name="msg_login_invalid_shop_user_password">Kode toko, username, atau password salah.</string>
+    <string name="msg_user_inactive_or_forbidden_shop">Pengguna tidak aktif atau tidak diizinkan mengakses toko ini.</string>
+    <string name="msg_cannot_connect_server">Tidak dapat terhubung ke server. Periksa base URL atau jaringan.</string>
+    <string name="msg_login_failed_http">Login gagal (HTTP %1$d)</string>
+    <string name="msg_error_with_detail">Kesalahan: %1$s</string>
+    <string name="msg_token_missing_server_response">Token tidak ada di respons server.</string>
+    <string name="msg_parse_error_with_detail">Gagal parsing: %1$s</string>
+    <string name="msg_internet_required_open_shift">Internet diperlukan untuk membuka shift.</string>
+    <string name="msg_shift_open_load_failed">Shift sudah terbuka, tetapi detail shift gagal dimuat.</string>
+    <string name="msg_failed_process_barcode">Gagal memproses barcode</string>
+    <string name="msg_pos_screen_not_ready">Layar POS belum siap.</string>
+    <string name="msg_camera_permission_barcode">Izin kamera diperlukan untuk memindai barcode</string>
+    <string name="msg_scan_cancelled">Pemindaian dibatalkan</string>
+    <string name="msg_retail_pos_not_ready">POS retail belum siap</string>
+    <string name="msg_no_items_scanned">Belum ada item yang dipindai</string>
+    <string name="msg_failed_load_payment_methods">Gagal memuat metode pembayaran: %1$s</string>
+    <string name="msg_failed_load_bank_accounts">Gagal memuat rekening bank: %1$s</string>
+    <string name="msg_order_submitting">Pesanan sedang dikirim...</string>
+    <string name="msg_internet_required_submit_order">Internet diperlukan untuk mengirim pesanan.</string>
+    <string name="msg_failed_build_order_payload">Gagal membuat data pesanan: %1$s</string>
+    <string name="msg_payment_method_missing">ID metode pembayaran tidak ada. Muat metode pembayaran yang valid.</string>
+    <string name="msg_retail_order_saved">Pesanan retail berhasil disimpan.</string>
+    <string name="msg_retail_order_saved_invoice">Pesanan retail disimpan: %1$s</string>
+    <string name="msg_submit_order_failed_body">Gagal mengirim pesanan (%1$d): %2$s</string>
+    <string name="msg_submit_order_failed_code">Gagal mengirim pesanan (%1$d)</string>
+    <string name="msg_submit_order_failed">Gagal mengirim pesanan</string>
+    <string name="msg_barcode_disabled_business">Pemindaian barcode dinonaktifkan untuk jenis bisnis ini.</string>
+    <string name="msg_barcode_hidden_workshop">Shortcut barcode disembunyikan untuk POS workshop.</string>
+    <string name="msg_open_shift_first">Buka shift terlebih dahulu.</string>
+    <string name="msg_workshop_main_screen">Workspace workshop sudah menjadi layar POS utama.</string>
+    <string name="msg_change_password_clicked">Ubah Password diklik</string>
+    <string name="msg_privacy_policy_clicked">Kebijakan Privasi diklik</string>
+    <string name="msg_internet_required_close_shift">Internet diperlukan untuk menutup shift.</string>
+    <string name="msg_no_open_shift">Tidak ada shift yang terbuka.</string>
+    <string name="msg_unknown_error">Error tidak diketahui</string>
+    <string name="msg_closing_cash_required">Kas penutupan wajib diisi.</string>
+    <string name="msg_shift_closed_open_new">Shift ditutup. Silakan buka shift baru sebelum membuat transaksi.</string>
+    <string name="msg_table_number_required">Nomor meja wajib diisi.</string>
+    <string name="msg_delivery_address_required">Alamat pengiriman wajib diisi.</string>
+    <string name="msg_cash_received_required">Uang diterima wajib diisi.</string>
+    <string name="msg_cash_received_less_total">Uang diterima tidak boleh kurang dari total.</string>
+    <string name="msg_reference_number_required">Nomor referensi wajib diisi.</string>
+    <string name="action_close_shift_logout">Tutup Shift &amp; Logout</string>
+    <string name="action_close_shift">Tutup Shift</string>
+    <string name="title_closing_cash">Kas Penutupan</string>
+
+    <!-- ================================================== -->
+    <!-- BATCH 4A: WAREHOUSE / STOCK TRANSFER / BANK LEDGER -->
+    <!-- ================================================== -->
+    <string name="cd_back">Kembali</string>
+    <string name="cd_refresh">Muat ulang</string>
+    <string name="cd_search">Cari</string>
+    <string name="cd_add_warehouse">Tambah gudang</string>
+    <string name="cd_add_warehouse_stock">Tambah stok gudang</string>
+    <string name="cd_add_stock_transfer">Tambah transfer stok</string>
+    <string name="action_ok">OK</string>
+    <string name="action_complete">Selesaikan</string>
+    <string name="action_yes_cancel">Ya, batalkan</string>
+    <string name="action_no">Tidak</string>
+    <string name="label_active">Aktif</string>
+    <string name="label_inactive">Tidak aktif</string>
+    <string name="label_default">Bawaan</string>
+    <string name="label_low_stock">Stok Rendah</string>
+    <string name="label_normal">Normal</string>
+    <string name="label_minimum_stock">Stok Minimum</string>
+    <string name="label_unit_required">Satuan *</string>
+    <string name="label_quantity_required">Jumlah *</string>
+    <string name="hint_search_warehouse">Cari gudang...</string>
+    <string name="hint_search_warehouse_stock">Cari stok gudang...</string>
+    <string name="hint_search_stock_transfer">Cari transfer stok...</string>
+    <string name="hint_search_bank_ledger">Cari riwayat rekening...</string>
+    <string name="hint_search_product">Cari produk...</string>
+    <string name="hint_select_warehouse_required">Pilih Gudang *</string>
+    <string name="hint_select_product_required">Pilih Produk *</string>
+    <string name="hint_select_unit">Pilih Unit</string>
+    <string name="hint_warehouse_name_required">Nama Gudang *</string>
+    <string name="hint_warehouse_code_required">Kode Gudang *</string>
+    <string name="hint_location">Lokasi</string>
+    <string name="hint_from_warehouse_required">Dari Gudang *</string>
+    <string name="hint_to_warehouse_required">Ke Gudang *</string>
+    <string name="hint_quantity_required">Jumlah *</string>
+    <string name="hint_enter_stock_quantity">Masukkan jumlah stok</string>
+    <string name="hint_enter_minimum_stock_alert">Masukkan batas minimum stok</string>
+    <string name="warehouse_set_default">Jadikan gudang default</string>
+    <string name="msg_no_warehouses">Belum ada gudang</string>
+    <string name="msg_create_first_warehouse">Ketuk + untuk membuat gudang pertama</string>
+    <string name="msg_no_warehouse_stocks">Belum ada stok gudang</string>
+    <string name="msg_create_warehouse_stock_hint">Ketuk + untuk membuat stok per gudang</string>
+    <string name="msg_no_stock_transfers">Belum ada transfer stok</string>
+    <string name="msg_create_stock_transfer_hint">Ketuk + untuk memindahkan stok antar gudang</string>
+    <string name="msg_no_bank_ledgers">Belum ada riwayat rekening</string>
+    <string name="msg_bank_ledger_empty_hint">Riwayat transaksi rekening akan muncul di sini.</string>
+    <string name="warehouse_code_format">Kode: %1$s</string>
+    <string name="warehouse_location_format">Lokasi: %1$s</string>
+    <string name="warehouse_stock_sku_code_format">SKU: %1$s | Kode: %2$s</string>
+    <string name="warehouse_stock_warehouse_format">Gudang: %1$s (%2$s)</string>
+    <string name="warehouse_stock_qty_min_format">Jumlah: %1$s | Min: %2$s</string>
+    <string name="stock_transfer_note_format">Catatan: %1$s</string>
+    <string name="stock_transfer_created_format">Dibuat: %1$s</string>
+    <string name="stock_transfer_route_format">%1$s → %2$s</string>
+    <string name="stock_transfer_fallback_reference">Transfer #%1$d</string>
+    <string name="quantity_preview_base_format">Jumlah: %1$s %2$s</string>
+    <string name="quantity_preview_conversion_format">%1$s %2$s ≈ %3$s PCS</string>
+    <string name="available_stock_empty">Tersedia: -</string>
+    <string name="available_stock_base_format">Tersedia:\n%1$s</string>
+    <string name="available_stock_conversion_format">Tersedia:\n%1$s\n≈ %2$s %3$s</string>
+    <string name="bank_ledger_title">Riwayat Rekening</string>
+    <string name="bank_ledger_amount_format">Jumlah: %1$s</string>
+    <string name="bank_ledger_balance_format">Saldo: %1$s → %2$s</string>
+    <string name="bank_ledger_invoice_format">Faktur: %1$s</string>
+    <string name="bank_ledger_description_format">Deskripsi: %1$s</string>
+    <string name="bank_ledger_date_format">Tanggal: %1$s</string>
+    <string name="bank_ledger_detail_format">ID: %1$d\nToko: %2$s (%3$s)\nID Rekening Bank: %4$d\nRekening Bank: %5$s\nJenis Transaksi: %6$s\nArah: %7$s\nJumlah: %8$s\nSaldo Sebelum: %9$s\nSaldo Setelah: %10$s\nReferensi Pesanan: %11$d\nInvoice: %12$s\nReferensi Pembayaran: %13$d\nDeskripsi: %14$s\nDibuat Pada: %15$s\nDibuat Oleh: %16$d</string>
+    <string name="dialog_add_warehouse_title">Tambah Gudang</string>
+    <string name="dialog_edit_warehouse_title">Edit Gudang</string>
+    <string name="dialog_delete_warehouse_title">Hapus Gudang</string>
+    <string name="dialog_delete_warehouse_message">Hapus gudang \"%1$s\"?</string>
+    <string name="dialog_add_warehouse_stock_title">Tambah Stok Gudang</string>
+    <string name="dialog_edit_warehouse_stock_title">Edit Stok Gudang</string>
+    <string name="dialog_delete_warehouse_stock_title">Hapus Stok Gudang</string>
+    <string name="dialog_delete_warehouse_stock_message">Hapus stok untuk \"%1$s\"?</string>
+    <string name="dialog_add_stock_transfer_title">Tambah Transfer Stok</string>
+    <string name="dialog_edit_stock_transfer_title">Edit Transfer Stok</string>
+    <string name="dialog_select_product_title">Pilih Produk</string>
+    <string name="dialog_select_from_warehouse_title">Pilih Gudang Asal</string>
+    <string name="dialog_select_to_warehouse_title">Pilih Gudang Tujuan</string>
+    <string name="dialog_complete_stock_transfer_title">Selesaikan Transfer Stok</string>
+    <string name="dialog_complete_stock_transfer_message">Selesaikan transfer \"%1$s\"?</string>
+    <string name="dialog_cancel_stock_transfer_title">Batalkan Transfer Stok</string>
+    <string name="dialog_cancel_stock_transfer_message">Batalkan transfer \"%1$s\"?</string>
+    <string name="dialog_delete_stock_transfer_title">Hapus Transfer Stok</string>
+    <string name="dialog_delete_stock_transfer_message">Hapus transfer \"%1$s\"?</string>
+    <string name="msg_warehouse_name_required">Nama gudang wajib diisi</string>
+    <string name="msg_warehouse_code_required">Kode gudang wajib diisi</string>
+    <string name="msg_warehouse_created">Gudang berhasil dibuat</string>
+    <string name="msg_warehouse_updated">Gudang berhasil diperbarui</string>
+    <string name="msg_warehouse_deleted">Gudang berhasil dihapus</string>
+    <string name="msg_load_warehouses_failed">Gagal memuat gudang: %1$s</string>
+    <string name="msg_load_products_failed">Gagal memuat produk: %1$s</string>
+    <string name="msg_warehouse_required">Gudang wajib dipilih</string>
+    <string name="msg_product_required">Produk wajib dipilih</string>
+    <string name="msg_unit_required">Unit wajib dipilih</string>
+    <string name="msg_valid_product_unit_required">Silakan pilih unit produk yang valid.</string>
+    <string name="msg_selected_product_unit_invalid_reload">Unit produk yang dipilih tidak valid. Silakan muat ulang produk dan coba lagi.</string>
+    <string name="msg_barcode_required">Barcode wajib diisi</string>
+    <string name="msg_invalid_number_format">Format angka tidak valid</string>
+    <string name="msg_invalid_quantity_format">Format quantity tidak valid</string>
+    <string name="msg_quantity_required">Quantity wajib diisi</string>
+    <string name="msg_quantity_greater_than_zero">Quantity harus lebih dari 0</string>
+    <string name="msg_scan_failed">Scan gagal: %1$s</string>
+    <string name="msg_warehouse_stock_created">Stok gudang berhasil dibuat</string>
+    <string name="msg_warehouse_stock_updated">Stok gudang berhasil diperbarui</string>
+    <string name="msg_warehouse_stock_deleted">Stok gudang berhasil dihapus</string>
+    <string name="msg_warehouse_stock_duplicate">Produk ini sudah ada di gudang yang dipilih. Silakan edit stok yang sudah ada.</string>
+    <string name="msg_quantity_must_be_non_negative">Quantity harus 0 atau lebih</string>
+    <string name="msg_minimum_stock_must_be_non_negative">Stok minimum harus 0 atau lebih</string>
+    <string name="msg_warehouse_data_loading">Data gudang masih dimuat. Coba lagi.</string>
+    <string name="msg_product_data_loading">Data produk masih dimuat. Coba lagi.</string>
+    <string name="msg_from_warehouse_required">Gudang asal wajib dipilih</string>
+    <string name="msg_to_warehouse_required">Gudang tujuan wajib dipilih</string>
+    <string name="msg_invalid_source_warehouse">Silakan pilih gudang asal yang valid.</string>
+    <string name="msg_invalid_destination_warehouse">Silakan pilih gudang tujuan yang valid.</string>
+    <string name="msg_warehouse_list_refreshed_select_again">Data gudang telah dimuat ulang. Silakan pilih gudang lagi.</string>
+    <string name="msg_warehouses_cannot_be_same">Gudang asal dan tujuan tidak boleh sama</string>
+    <string name="msg_quantity_exceeds_available_stock">Quantity tidak boleh melebihi stok tersedia</string>
+    <string name="msg_stock_transfer_created">Transfer stok berhasil dibuat</string>
+    <string name="msg_stock_transfer_updated">Transfer stok berhasil diperbarui</string>
+    <string name="msg_stock_transfer_completed">Transfer stok selesai</string>
+    <string name="msg_stock_transfer_cancelled">Transfer stok dibatalkan</string>
+    <string name="msg_stock_transfer_deleted">Transfer stok dihapus</string>
+    <string name="warehouse_display_code_format">%1$s - %2$s</string>
+    <string name="product_sku_display_format">%1$s - SKU: %2$s</string>
+    <string name="label_unit_fallback">UNIT</string>
+    <string name="sample_main_warehouse">Gudang Utama</string>
+    <string name="sample_warehouse_code">Kode: WH001</string>
+    <string name="sample_warehouse_location">Lokasi: Dili</string>
+    <string name="sample_product_name">Nama Produk</string>
+    <string name="sample_warehouse_stock_product_info">SKU: - | Kode: -</string>
+    <string name="sample_warehouse_stock_warehouse">Gudang: Utama</string>
+    <string name="sample_warehouse_stock_qty">Jumlah: 0 PCS | Min: 0 PCS</string>
+    <string name="sample_stock_transfer_ref">TRF-0001</string>
+    <string name="sample_stock_transfer_route">Gudang Utama → Gudang Outlet</string>
+    <string name="sample_stock_transfer_note">Catatan: -</string>
+    <string name="sample_stock_transfer_created">Dibuat: -</string>
+    <string name="sample_bank_name">Bank Mandiri</string>
+    <string name="sample_bank_ledger_type">SALE IN</string>
+    <string name="sample_bank_ledger_direction">IN</string>
+    <string name="sample_bank_ledger_amount">Jumlah: $25.00</string>
+    <string name="sample_bank_ledger_balance">Saldo: $100.00 → $125.00</string>
+    <string name="sample_bank_ledger_invoice">Faktur: INV-0001</string>
+    <string name="sample_bank_ledger_description">Deskripsi: Pembayaran dari penjualan</string>
+    <string name="sample_bank_ledger_date">Tanggal: 21 Mei 2026 10:00</string>
+    <string name="splash_title_1">Selamat datang di ValoraPOS</string>
+    <string name="splash_subtitle_1">Sistem POS cerdas untuk retail, workshop, dan manajemen bisnis.</string>
+    <string name="splash_title_2">Kelola Penjualan dengan Mudah</string>
+    <string name="splash_subtitle_2">Buat pesanan, kelola produk, cetak struk, dan pantau pembayaran.</string>
+    <string name="splash_title_3">Siap Memulai</string>
+    <string name="splash_subtitle_3">Login ke akun Anda dan mulai kelola bisnis.</string>
+    <string name="splash_next">Berikutnya</string>
+    <string name="splash_back">Kembali</string>
+    <string name="splash_get_started">Mulai</string>
+    <string name="splash_image_placeholder">Ilustrasi onboarding ValoraPOS</string>
+    <string name="action_clear_draft_items">Bersihkan semua item draft</string>
+    <string name="action_clear_draft_items_symbol">x</string>
+    <string name="menu_offline_orders">Pesanan Offline</string>
+    <string name="menu_offline_orders_desc">Tinjau dan ulangi antrean sinkronisasi</string>
+    <string name="msg_opening_cash_required">Kas awal wajib diisi.</string>
+    <string name="msg_invalid_money_amount">Masukkan jumlah uang yang valid.</string>
+    <string name="draft_a_preview">A - 3</string>
+    <string name="draft_b_preview">B - 12</string>
+    <string name="draft_walkin_preview">Pelanggan langsung - 1</string>
+    <string name="draft_add">+</string>
 
 </resources>

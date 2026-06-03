@@ -19,7 +19,7 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -34,18 +34,23 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.adapters.BankAccountAdapter;
 import com.valdker.pos.models.BankAccount;
 import com.valdker.pos.network.ApiClient;
 import com.valdker.pos.network.ApiConfig;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.valdker.pos.repositories.AdminMasterCacheRepository;
+import com.valdker.pos.utils.ErrorHandler;
+import com.valdker.pos.utils.NetworkUtils;
 
 import org.json.JSONException;
+import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -57,6 +62,7 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
 
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
+    private View emptyState;
     private TextView tvEmpty;
     private EditText etSearchBank;
     private ImageView btnBack;
@@ -65,6 +71,8 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
     private SwipeRefreshLayout swipeRefreshLayout;
 
     private SessionManager sessionManager;
+    private AdminMasterCacheRepository cacheRepo;
+    private boolean isLoading = false;
 
     private final ArrayList<BankAccount> bankList = new ArrayList<>();
     private final ArrayList<BankAccount> filteredBankList = new ArrayList<>();
@@ -91,10 +99,10 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
         }
 
         sessionManager = new SessionManager(this);
+        cacheRepo = new AdminMasterCacheRepository(this);
 
-        String role = sessionManager.getRole();
-        if (role == null || !role.equalsIgnoreCase("owner")) {
-            Toast.makeText(this, "Na'in de'it maka bele asesu ba Konta Bankária sira", Toast.LENGTH_LONG).show();
+        if (!sessionManager.canAccessMenu("bank_accounts")) {
+            Toast.makeText(this, getString(R.string.error_no_access_bank), Toast.LENGTH_LONG).show();
             finish();
             return;
         }
@@ -131,6 +139,7 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
     private void initViews() {
         recyclerView = findViewById(R.id.recyclerBankAccounts);
         progressBar = findViewById(R.id.progressBar);
+        emptyState = findViewById(R.id.emptyState);
         tvEmpty = findViewById(R.id.tvEmpty);
         etSearchBank = findViewById(R.id.etSearchBank);
         btnBack = findViewById(R.id.btnBack);
@@ -171,37 +180,78 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
     }
 
     private void loadBankAccounts() {
+        if (isLoading) {
+            swipeRefreshLayout.setRefreshing(false);
+            return;
+        }
+        isLoading = true;
         if (!swipeRefreshLayout.isRefreshing()) {
             progressBar.setVisibility(View.VISIBLE);
         }
-        tvEmpty.setVisibility(View.GONE);
+        if (emptyState != null) emptyState.setVisibility(View.GONE);
 
+        cacheRepo.loadBankAccounts(localAccounts -> {
+            boolean hasLocal = !localAccounts.isEmpty();
+            if (hasLocal) {
+                bankList.clear();
+                bankList.addAll(localAccounts);
+                filterBankAccounts(etSearchBank.getText() != null ? etSearchBank.getText().toString() : "");
+            }
+
+            if (!NetworkUtils.isNetworkAvailable(this)) {
+                isLoading = false;
+                progressBar.setVisibility(View.GONE);
+                swipeRefreshLayout.setRefreshing(false);
+                if (!hasLocal) {
+                    showLocalEmpty();
+                }
+                return;
+            }
+
+            fetchBankAccountsFromApi(hasLocal);
+        });
+    }
+
+    private void fetchBankAccountsFromApi(boolean hadLocalData) {
         String url = ApiConfig.url(sessionManager, ENDPOINT_BANK_ACCOUNTS);
 
-        JsonArrayRequest request = new JsonArrayRequest(
+        StringRequest request = new StringRequest(
                 Request.Method.GET,
                 url,
-                null,
                 response -> {
+                    isLoading = false;
                     progressBar.setVisibility(View.GONE);
                     swipeRefreshLayout.setRefreshing(false);
 
-                    bankList.clear();
+                    try {
+                        JSONArray items = extractResultsArray(response);
+                        ArrayList<BankAccount> remoteAccounts = new ArrayList<>();
 
-                    for (int i = 0; i < response.length(); i++) {
-                        JSONObject obj = response.optJSONObject(i);
-                        if (obj != null) {
-                            bankList.add(BankAccount.fromJson(obj));
+                        for (int i = 0; i < items.length(); i++) {
+                            JSONObject obj = items.optJSONObject(i);
+                            if (obj != null) {
+                                remoteAccounts.add(BankAccount.fromJson(obj));
+                            }
                         }
+                        cacheRepo.saveBankAccounts(remoteAccounts, cachedAccounts -> {
+                            bankList.clear();
+                            bankList.addAll(cachedAccounts);
+                            filterBankAccounts(etSearchBank.getText() != null ? etSearchBank.getText().toString() : "");
+                        });
+                    } catch (Exception e) {
+                        Toast.makeText(this, "Parse error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     }
-
-                    filterBankAccounts(etSearchBank.getText() != null ? etSearchBank.getText().toString() : "");
                 },
                 error -> {
+                    isLoading = false;
                     progressBar.setVisibility(View.GONE);
                     swipeRefreshLayout.setRefreshing(false);
-                    tvEmpty.setVisibility(bankList.isEmpty() ? View.VISIBLE : View.GONE);
-                    Toast.makeText(this, parseVolleyError(error), Toast.LENGTH_LONG).show();
+                    if (!hadLocalData && bankList.isEmpty()) {
+                        showLocalEmpty();
+                    } else if (emptyState != null) {
+                        emptyState.setVisibility(bankList.isEmpty() ? View.VISIBLE : View.GONE);
+                    }
+                    ErrorHandler.handleApiError(this, error);
                 }
         ) {
             @Override
@@ -212,6 +262,21 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
 
         request.setRetryPolicy(new DefaultRetryPolicy(TIMEOUT_MS, 1, 1.0f));
         ApiClient.getInstance(this).add(request);
+    }
+
+    private static JSONArray extractResultsArray(String response) throws Exception {
+        Object parsed = new JSONTokener(response == null ? "[]" : response).nextValue();
+
+        if (parsed instanceof JSONArray) {
+            return (JSONArray) parsed;
+        }
+
+        if (parsed instanceof JSONObject) {
+            JSONArray results = ((JSONObject) parsed).optJSONArray("results");
+            return results != null ? results : new JSONArray();
+        }
+
+        return new JSONArray();
     }
 
     private void filterBankAccounts(String keyword) {
@@ -240,7 +305,12 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
         }
 
         adapter.notifyDataSetChanged();
-        tvEmpty.setVisibility(filteredBankList.isEmpty() ? View.VISIBLE : View.GONE);
+        if (recyclerView != null) {
+            recyclerView.setVisibility(filteredBankList.isEmpty() ? View.GONE : View.VISIBLE);
+        }
+        if (emptyState != null) {
+            emptyState.setVisibility(filteredBankList.isEmpty() ? View.VISIBLE : View.GONE);
+        }
     }
 
     private String safe(String value) {
@@ -248,6 +318,10 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
     }
 
     private void createBankAccount(JSONObject body, Dialog dialog) {
+        if (!NetworkUtils.isNetworkAvailable(this)) {
+            Toast.makeText(this, AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE, Toast.LENGTH_SHORT).show();
+            return;
+        }
         String url = ApiConfig.url(sessionManager, ENDPOINT_BANK_ACCOUNTS);
 
         JsonObjectRequest request = new JsonObjectRequest(
@@ -259,7 +333,7 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
                     dialog.dismiss();
                     loadBankAccounts();
                 },
-                error -> Toast.makeText(this, parseVolleyError(error), Toast.LENGTH_LONG).show()
+                error -> ErrorHandler.handleApiError(this, error)
         ) {
             @Override
             public Map<String, String> getHeaders() {
@@ -272,6 +346,10 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
     }
 
     private void updateBankAccount(int bankId, JSONObject body, Dialog dialog) {
+        if (!NetworkUtils.isNetworkAvailable(this)) {
+            Toast.makeText(this, AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE, Toast.LENGTH_SHORT).show();
+            return;
+        }
         String url = ApiConfig.url(sessionManager, ENDPOINT_BANK_ACCOUNTS + bankId + "/");
 
         JsonObjectRequest request = new JsonObjectRequest(
@@ -279,11 +357,11 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
                 url,
                 body,
                 response -> {
-                    Toast.makeText(this, "Konta bankária atualiza ho susesu", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getString(R.string.bank_update_success), Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
                     loadBankAccounts();
                 },
-                error -> Toast.makeText(this, parseVolleyError(error), Toast.LENGTH_LONG).show()
+                error -> ErrorHandler.handleApiError(this, error)
         ) {
             @Override
             public Map<String, String> getHeaders() {
@@ -296,10 +374,18 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
     }
 
     private void deleteBankAccount(BankAccount item) {
+        if (!NetworkUtils.isNetworkAvailable(this)) {
+            Toast.makeText(this, AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE, Toast.LENGTH_SHORT).show();
+            return;
+        }
         new AlertDialog.Builder(this)
-                .setTitle("Apaga Konta Bankária")
-                .setMessage("Ita-boot iha serteza katak ita-boot hakarak atu hamoos? \"" + item.getBankName() + " - " + item.getName() + "\"?")
-                .setPositiveButton("Hapus", (dialog, which) -> {
+                .setTitle(getString(R.string.bank_delete_title))
+                .setMessage(getString(
+                        R.string.bank_delete_message,
+                        item.getBankName() != null ? item.getBankName() : "-",
+                        item.getName() != null ? item.getName() : "-"
+                ))
+                .setPositiveButton(getString(R.string.dialog_delete), (dialog, which) -> {
                     String url = ApiConfig.url(sessionManager, ENDPOINT_BANK_ACCOUNTS + item.getId() + "/");
 
                     JsonObjectRequest request = new JsonObjectRequest(
@@ -307,10 +393,10 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
                             url,
                             null,
                             response -> {
-                                Toast.makeText(this, "Konta bankária hetan eliminasaun ho susesu", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(this, getString(R.string.bank_delete_success), Toast.LENGTH_SHORT).show();
                                 loadBankAccounts();
                             },
-                            error -> Toast.makeText(this, parseVolleyError(error), Toast.LENGTH_LONG).show()
+                            error -> ErrorHandler.handleApiError(this, error)
                     ) {
                         @Override
                         public Map<String, String> getHeaders() {
@@ -321,11 +407,15 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
                     request.setRetryPolicy(new DefaultRetryPolicy(TIMEOUT_MS, 1, 1.0f));
                     ApiClient.getInstance(this).add(request);
                 })
-                .setNegativeButton("Kansela", null)
+                .setNegativeButton(getString(R.string.dialog_cancel), null)
                 .show();
     }
 
     private void showBankDialog(@Nullable BankAccount item) {
+        if (!NetworkUtils.isNetworkAvailable(this)) {
+            Toast.makeText(this, AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE, Toast.LENGTH_SHORT).show();
+            return;
+        }
         Dialog dialog = new Dialog(this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_bank_account, null, false);
@@ -343,7 +433,12 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
         Button btnCancel = view.findViewById(R.id.btnCancel);
         Button btnSave = view.findViewById(R.id.btnSave);
 
-        String[] accountTypes = {"BANK", "EWALLET", "QRIS"};
+        String[] accountTypes = {
+                getString(R.string.bank_account_type_bank),
+                getString(R.string.bank_account_type_ewallet),
+                getString(R.string.bank_account_type_qris)
+        };
+
         ArrayAdapter<String> typeAdapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_spinner_dropdown_item,
@@ -352,7 +447,9 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
         spinnerAccountType.setAdapter(typeAdapter);
 
         boolean isEdit = item != null;
-        tvDialogTitle.setText(isEdit ? "Edita Konta Bankária" : "Aumenta Konta Bankária");
+        tvDialogTitle.setText(isEdit
+                ? getString(R.string.title_edit_bank_account)
+                : getString(R.string.title_add_bank_account));
 
         if (isEdit) {
             etName.setText(item.getName());
@@ -460,6 +557,18 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
         return getString(R.string.error_network);
     }
 
+    private void showLocalEmpty() {
+        if (emptyState != null) {
+            emptyState.setVisibility(View.VISIBLE);
+        }
+        if (tvEmpty != null) {
+            tvEmpty.setText(AdminMasterCacheRepository.NO_LOCAL_DATA_MESSAGE);
+        }
+        if (recyclerView != null) {
+            recyclerView.setVisibility(View.GONE);
+        }
+    }
+
     @Override
     public void onEdit(BankAccount item) {
         showBankDialog(item);
@@ -472,6 +581,10 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
 
     @Override
     public void onViewLedger(BankAccount item) {
-        Toast.makeText(this, "Nanti kita lanjut halaman Bank Ledger: " + item.getBankName(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(
+                this,
+                getString(R.string.bank_ledger_coming_soon, item.getBankName()),
+                Toast.LENGTH_SHORT
+        ).show();
     }
 }

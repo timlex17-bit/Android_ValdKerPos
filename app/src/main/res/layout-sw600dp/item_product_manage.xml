@@ -18,7 +18,7 @@
         <ImageView
             android:id="@+id/imgProduct"
             android:layout_width="0dp"
-            android:layout_height="170dp"
+            android:layout_height="@dimen/product_card_image_height"
             android:scaleType="centerCrop"
             android:src="@android:color/darker_gray"
             android:contentDescription="Product image"
@@ -97,7 +97,7 @@
                 android:layout_width="0dp"
                 android:layout_height="44dp"
                 android:layout_marginTop="12dp"
-                android:text="EDIT PRODUK"
+                android:text="@string/title_edit_product"
                 android:textAllCaps="true"
                 android:textStyle="bold"
                 android:textSize="13sp"

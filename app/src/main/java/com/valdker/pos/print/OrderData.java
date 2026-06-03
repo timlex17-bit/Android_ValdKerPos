@@ -10,7 +10,11 @@ public class OrderData {
 
     public String invoice;
     public String cashier;
+    public String customer;
     public String date;
+    public String paymentMethod;
+    public double paidAmount;
+    public double changeAmount;
 
     public double subtotal;
     public double discount;

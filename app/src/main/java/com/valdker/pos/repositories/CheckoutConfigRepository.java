@@ -8,14 +8,16 @@ import androidx.annotation.Nullable;
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
-import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.network.ApiClient;
 import com.valdker.pos.network.ApiConfig;
 import com.valdker.pos.ui.checkout.BankAccountItem;
 import com.valdker.pos.ui.checkout.PaymentMethodItem;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -51,12 +53,12 @@ public class CheckoutConfigRepository {
     public void fetchPaymentMethods(@Nullable String token, @NonNull PaymentMethodsCallback cb) {
         String url = ApiConfig.url(new SessionManager(appContext), ENDPOINT_PAYMENT_METHODS);
 
-        JsonArrayRequest req = new JsonArrayRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.GET,
                 url,
-                null,
-                res -> {
+                response -> {
                     try {
+                        JSONArray res = extractResultsArray(response);
                         List<PaymentMethodItem> out = new ArrayList<>();
                         for (int i = 0; i < res.length(); i++) {
                             JSONObject o = res.optJSONObject(i);
@@ -96,12 +98,12 @@ public class CheckoutConfigRepository {
     public void fetchBankAccounts(@Nullable String token, @NonNull BankAccountsCallback cb) {
         String url = ApiConfig.url(new SessionManager(appContext), ENDPOINT_BANK_ACCOUNTS);
 
-        JsonArrayRequest req = new JsonArrayRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.GET,
                 url,
-                null,
-                res -> {
+                response -> {
                     try {
+                        JSONArray res = extractResultsArray(response);
                         List<BankAccountItem> out = new ArrayList<>();
                         for (int i = 0; i < res.length(); i++) {
                             JSONObject o = res.optJSONObject(i);
@@ -137,6 +139,21 @@ public class CheckoutConfigRepository {
         req.setRetryPolicy(new DefaultRetryPolicy(TIMEOUT_MS, MAX_RETRIES, BACKOFF_MULT));
         req.setShouldCache(false);
         ApiClient.getInstance(appContext).add(req);
+    }
+
+    private static JSONArray extractResultsArray(String response) throws Exception {
+        Object parsed = new JSONTokener(response == null ? "[]" : response).nextValue();
+
+        if (parsed instanceof JSONArray) {
+            return (JSONArray) parsed;
+        }
+
+        if (parsed instanceof JSONObject) {
+            JSONArray results = ((JSONObject) parsed).optJSONArray("results");
+            return results != null ? results : new JSONArray();
+        }
+
+        return new JSONArray();
     }
 
     private Map<String, String> buildHeaders(@Nullable String token) {

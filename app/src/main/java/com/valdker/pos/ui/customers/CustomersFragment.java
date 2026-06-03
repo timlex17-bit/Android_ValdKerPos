@@ -2,11 +2,14 @@ package com.valdker.pos.ui.customers;
 
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,12 +21,15 @@ import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.base.BaseFragment;
 import com.valdker.pos.models.Customer;
+import com.valdker.pos.repositories.AdminMasterCacheRepository;
 import com.valdker.pos.repositories.CustomerRepository;
 import com.valdker.pos.utils.InsetsHelper;
+import com.valdker.pos.utils.NetworkUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class CustomersFragment extends BaseFragment {
 
@@ -32,7 +38,6 @@ public class CustomersFragment extends BaseFragment {
     private static final String TAG_EDIT_CUSTOMER = "edit_customer";
     private static final long CLICK_GUARD_MS = 700L;
 
-    private TextView tvTitle;
     private android.widget.EditText etSearchCustomer;
     private android.widget.ImageView btnBack;
     private android.widget.ImageView ivHeaderAction;
@@ -45,10 +50,12 @@ public class CustomersFragment extends BaseFragment {
     private FloatingActionButton fabAdd;
 
     private final List<Customer> items = new ArrayList<>();
+    private final List<Customer> allItems = new ArrayList<>();
     private CustomerAdapter adapter;
 
     private SessionManager session;
     private CustomerRepository repo;
+    private AdminMasterCacheRepository cacheRepo;
 
     private long lastFabClickTime = 0L;
     private long lastRowActionTime = 0L;
@@ -56,6 +63,7 @@ public class CustomersFragment extends BaseFragment {
     private boolean isLoading = false;
     private boolean isDialogOpening = false;
     private boolean isDeleteRunning = false;
+    private String currentQuery = "";
 
     public CustomersFragment() {
         super(R.layout.fragment_customers);
@@ -69,6 +77,7 @@ public class CustomersFragment extends BaseFragment {
 
         session = new SessionManager(requireContext());
         repo = new CustomerRepository(requireContext());
+        cacheRepo = new AdminMasterCacheRepository(requireContext());
 
         layoutEmpty = view.findViewById(R.id.layoutEmptyCustomers);
         tvEmpty = view.findViewById(R.id.tvEmptyCustomers);
@@ -79,7 +88,6 @@ public class CustomersFragment extends BaseFragment {
         tvEmpty = view.findViewById(R.id.tvEmptyCustomers);
         fabAdd = view.findViewById(R.id.fabAddCustomer);
 
-        tvTitle = view.findViewById(R.id.tvTitleCustomers);
         etSearchCustomer = view.findViewById(R.id.etSearchCustomer);
         btnBack = view.findViewById(R.id.btnBack);
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
@@ -92,6 +100,24 @@ public class CustomersFragment extends BaseFragment {
 
         if (ivHeaderAction != null) {
             ivHeaderAction.setOnClickListener(v -> load(false));
+        }
+
+        if (etSearchCustomer != null) {
+            etSearchCustomer.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    currentQuery = s == null ? "" : s.toString().trim();
+                    applyFilter();
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                }
+            });
         }
 
         if (swipe == null) Log.w(TAG, "swipeRefreshCustomers not found.");
@@ -176,6 +202,10 @@ public class CustomersFragment extends BaseFragment {
         if (isRapidFabClick()) return;
         if (isDialogOpening) return;
         if (isStateSaved()) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         if (getParentFragmentManager().findFragmentByTag(TAG_ADD_CUSTOMER) != null) {
             Log.d(TAG, "Add customer dialog already showing");
@@ -212,6 +242,10 @@ public class CustomersFragment extends BaseFragment {
         if (!isAdded()) return;
         if (isDialogOpening) return;
         if (isStateSaved()) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         if (getParentFragmentManager().findFragmentByTag(TAG_EDIT_CUSTOMER) != null) {
             Log.d(TAG, "Edit customer dialog already showing");
@@ -247,6 +281,10 @@ public class CustomersFragment extends BaseFragment {
     private void confirmDeleteSafely(@NonNull Customer c) {
         if (!isAdded()) return;
         if (isDeleteRunning) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         ConfirmDeleteDialog.show(
                 requireContext(),
@@ -285,6 +323,29 @@ public class CustomersFragment extends BaseFragment {
             showLoading();
         }
 
+        cacheRepo.loadCustomers(localCustomers -> {
+            if (!isAdded()) return;
+            boolean hasLocal = !localCustomers.isEmpty();
+            if (hasLocal) {
+                allItems.clear();
+                allItems.addAll(localCustomers);
+                applyFilter();
+            }
+
+            if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+                isLoading = false;
+                stopRefreshing();
+                if (!hasLocal) {
+                    showEmpty(AdminMasterCacheRepository.NO_LOCAL_DATA_MESSAGE);
+                }
+                return;
+            }
+
+            fetchCustomersFromApi(token, hasLocal);
+        });
+    }
+
+    private void fetchCustomersFromApi(@NonNull String token, boolean hadLocalData) {
         repo.fetchCustomers(token, new CustomerRepository.ListCallback() {
             @Override
             public void onSuccess(@NonNull List<Customer> customers) {
@@ -294,20 +355,13 @@ public class CustomersFragment extends BaseFragment {
 
                 Log.i(TAG, "fetchCustomers SUCCESS count=" + customers.size());
 
-                items.clear();
-                items.addAll(customers);
-
-                if (adapter != null) {
-                    adapter.notifyDataSetChanged();
-                }
-
-                if (items.isEmpty()) {
-                    showEmpty();
-                } else {
-                    showList();
-                }
-
-                stopRefreshing();
+                cacheRepo.saveCustomers(customers, cachedCustomers -> {
+                    if (!isAdded()) return;
+                    allItems.clear();
+                    allItems.addAll(cachedCustomers);
+                    applyFilter();
+                    stopRefreshing();
+                });
             }
 
             @Override
@@ -317,12 +371,12 @@ public class CustomersFragment extends BaseFragment {
                 isLoading = false;
 
                 Log.e(TAG, "fetchCustomers ERROR " + statusCode + " / " + message);
-                toast("Fetch failed: " + statusCode);
+                showApiError("Fetch failed: " + statusCode + " " + message);
 
-                if (!items.isEmpty()) {
+                if (!items.isEmpty() || hadLocalData) {
                     showList();
                 } else {
-                    showEmpty("Error " + statusCode);
+                    showEmpty(AdminMasterCacheRepository.NO_LOCAL_DATA_MESSAGE);
                 }
 
                 stopRefreshing();
@@ -337,6 +391,10 @@ public class CustomersFragment extends BaseFragment {
         String token = session != null ? session.getToken() : null;
         if (token == null || token.trim().isEmpty()) {
             toast("Token empty");
+            return;
+        }
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE);
             return;
         }
 
@@ -360,6 +418,12 @@ public class CustomersFragment extends BaseFragment {
                         break;
                     }
                 }
+                for (int i = 0; i < allItems.size(); i++) {
+                    if (allItems.get(i).id == c.id) {
+                        allItems.remove(i);
+                        break;
+                    }
+                }
 
                 if (items.isEmpty()) {
                     showEmpty();
@@ -373,7 +437,7 @@ public class CustomersFragment extends BaseFragment {
                 if (!isAdded()) return;
 
                 isDeleteRunning = false;
-                toast("Delete failed: " + statusCode);
+                showApiError("Delete failed: " + statusCode + " " + message);
 
                 if (!items.isEmpty()) {
                     showList();
@@ -388,6 +452,36 @@ public class CustomersFragment extends BaseFragment {
         if (swipe != null) {
             swipe.setRefreshing(false);
         }
+    }
+
+    private void applyFilter() {
+        items.clear();
+        if (TextUtils.isEmpty(currentQuery)) {
+            items.addAll(allItems);
+        } else {
+            String q = currentQuery.toLowerCase(Locale.US);
+            for (Customer c : allItems) {
+                if (safeLower(c.name).contains(q)
+                        || safeLower(c.cell).contains(q)
+                        || safeLower(c.email).contains(q)
+                        || safeLower(c.address).contains(q)) {
+                    items.add(c);
+                }
+            }
+        }
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
+        if (items.isEmpty()) {
+            showEmpty(TextUtils.isEmpty(currentQuery) ? "No customers" : "No matching customers");
+        } else {
+            showList();
+        }
+    }
+
+    @NonNull
+    private String safeLower(@Nullable String value) {
+        return value == null ? "" : value.trim().toLowerCase(Locale.US);
     }
 
     private void setFabEnabled(boolean enabled) {

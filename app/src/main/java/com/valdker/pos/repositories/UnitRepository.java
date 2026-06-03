@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
-import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.models.UnitLite;
 import com.valdker.pos.network.ApiClient;
@@ -14,6 +14,7 @@ import com.valdker.pos.network.ApiConfig;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,24 +41,22 @@ public class UnitRepository {
 
         String url = ApiConfig.url(session, ENDPOINT_UNITS);
 
-        JsonArrayRequest req = new JsonArrayRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.GET,
                 url,
-                null,
-                (JSONArray res) -> {
+                response -> {
                     try {
+                        JSONArray res = extractResultsArray(response);
                         List<UnitLite> out = new ArrayList<>();
-                        if (res != null) {
-                            for (int i = 0; i < res.length(); i++) {
-                                JSONObject o = res.optJSONObject(i);
-                                if (o == null) continue;
+                        for (int i = 0; i < res.length(); i++) {
+                            JSONObject o = res.optJSONObject(i);
+                            if (o == null) continue;
 
-                                int id = o.optInt("id", 0);
-                                String name = o.optString("name", "");
+                            int id = o.optInt("id", 0);
+                            String name = o.optString("name", "");
 
-                                if (id != 0 && !name.trim().isEmpty()) {
-                                    out.add(new UnitLite(id, name.trim()));
-                                }
+                            if (id != 0 && !name.trim().isEmpty()) {
+                                out.add(new UnitLite(id, name.trim()));
                             }
                         }
                         cb.onSuccess(out);
@@ -81,5 +80,20 @@ public class UnitRepository {
         };
 
         ApiClient.getInstance(appContext).add(req);
+    }
+
+    private static JSONArray extractResultsArray(String response) throws Exception {
+        Object parsed = new JSONTokener(response == null ? "[]" : response).nextValue();
+
+        if (parsed instanceof JSONArray) {
+            return (JSONArray) parsed;
+        }
+
+        if (parsed instanceof JSONObject) {
+            JSONArray results = ((JSONObject) parsed).optJSONArray("results");
+            return results != null ? results : new JSONArray();
+        }
+
+        return new JSONArray();
     }
 }

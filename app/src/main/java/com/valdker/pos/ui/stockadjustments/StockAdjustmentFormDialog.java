@@ -8,7 +8,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,6 +17,7 @@ import androidx.fragment.app.DialogFragment;
 import com.valdker.pos.R;
 import com.valdker.pos.models.StockAdjustment;
 import com.valdker.pos.repositories.StockAdjustmentRepository;
+import com.valdker.pos.utils.ErrorHandler;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.json.JSONArray;
@@ -249,7 +250,7 @@ public class StockAdjustmentFormDialog extends DialogFragment {
 
                             @Override
                             public void onError(String message) {
-                                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+                                ErrorHandler.handleApiError(requireContext(), message);
                             }
                         }
                 );
@@ -268,7 +269,7 @@ public class StockAdjustmentFormDialog extends DialogFragment {
 
                             @Override
                             public void onError(String msg) {
-                                Toast.makeText(requireContext(), "Error: " + msg, Toast.LENGTH_LONG).show();
+                                ErrorHandler.handleApiError(requireContext(), "Error: " + msg);
                             }
                         }
                 );

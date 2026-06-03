@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,7 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -32,21 +33,28 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.Request;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.bumptech.glide.Glide;
 import com.valdker.pos.BuildConfig;
 import com.valdker.pos.LoginActivity;
 import com.valdker.pos.MainActivity;
 import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
+import com.valdker.pos.ui.warehouses.WarehousesFragment;
+import com.valdker.pos.ui.warehousestocks.WarehouseStocksFragment;
+import com.valdker.pos.ui.stocktransfers.StockTransfersFragment;
+import com.valdker.pos.ui.bankledgers.BankLedgersFragment;
 import com.valdker.pos.models.Shop;
 import com.valdker.pos.network.ApiClient;
 import com.valdker.pos.network.ApiConfig;
+import com.valdker.pos.repositories.AuthCacheRepository;
+import com.valdker.pos.repositories.ReportCacheRepository;
+import com.valdker.pos.repositories.ReportRepository;
 import com.valdker.pos.repositories.ShopRepository;
 import com.valdker.pos.shop.ShopEvents;
 import com.valdker.pos.ui.BankAccountActivity;
 import com.valdker.pos.ui.expenses.ExpensesFragment;
 import com.valdker.pos.ui.inventorycount.InventoryCountsFragment;
+import com.valdker.pos.ui.offlineorders.PendingOrdersActivity;
 import com.valdker.pos.ui.orders.OrdersFragment;
 import com.valdker.pos.ui.ownerchat.OwnerChatActivity;
 import com.valdker.pos.ui.reports.ReportsFragment;
@@ -56,9 +64,13 @@ import com.google.android.material.button.MaterialButton;
 import org.json.JSONObject;
 
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class HomeDashboardActivity extends AppCompatActivity {
 
@@ -88,13 +100,18 @@ public class HomeDashboardActivity extends AppCompatActivity {
     private static final String BS_STOCK_MOVEMENTS = "stock_movements";
     private static final String BS_BANK_ACCOUNTS = "bank_accounts";
     private static final String BS_PURCHASES = "purchases";
-
-    private static final String ENDPOINT_NET_INCOME_TODAY = "api/reports/net-income-today/";
+    private static final String BS_WAREHOUSES = "warehouses";
+    private static final String BS_WAREHOUSE_STOCKS = "warehouse_stocks";
+    private static final String BS_STOCK_TRANSFERS = "stock_transfers";
+    private static final String BS_BANK_LEDGERS = "bank_ledgers";
+    private static final String ENDPOINT_DASHBOARD_SUMMARY = "api/reports/dashboard-summary/";
     private static final String ENDPOINT_SHIFTS = "api/shifts/";
 
     private final NumberFormat usd = NumberFormat.getCurrencyInstance(Locale.US);
 
     private SessionManager session;
+    private AuthCacheRepository authCacheRepository;
+    private ReportCacheRepository reportCacheRepository;
 
     private RecyclerView rvDashboard;
     private BottomNavigationView bottomNav;
@@ -110,6 +127,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
 
     private TextView tvHello;
     private TextView tvBrand;
+    private TextView tvSubtitle;
     private ImageView imgLogo;
 
     private TextView tvSumValue;
@@ -144,6 +162,8 @@ public class HomeDashboardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         session = new SessionManager(this);
+        authCacheRepository = new AuthCacheRepository(this);
+        reportCacheRepository = new ReportCacheRepository(this);
 
         if (!session.isLoggedIn()) {
             logw("Not logged in. Redirecting to LoginActivity.");
@@ -151,7 +171,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
             return;
         }
 
-        if (isCashier()) {
+        if (isCashier() && !session.hasMenuPermissions()) {
             logw("Cashier detected. Redirecting to POS.");
             openPosAndFinish();
             return;
@@ -177,6 +197,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
 
         renderHeader();
         attachDashboardAdapter();
+        loadCachedAuthPermissionsAndRefreshMenus();
 
         enforceNavigationSecurity();
 
@@ -258,6 +279,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
     private void bindViews() {
         tvHello = findViewById(R.id.tvHello);
         tvBrand = findViewById(R.id.tvAppBrand);
+        tvSubtitle = findViewById(R.id.tvSubtitle);
         imgLogo = findViewById(R.id.imgAppLogo);
 
         btnLogout = findViewById(R.id.btnLogout);
@@ -311,7 +333,29 @@ public class HomeDashboardActivity extends AppCompatActivity {
 
     private void setupDashboardGrid() {
         if (rvDashboard == null) return;
-        rvDashboard.setLayoutManager(new GridLayoutManager(this, 2));
+        rvDashboard.setLayoutManager(new GridLayoutManager(this, getResponsiveDashboardSpan()));
+    }
+
+    private int getResponsiveDashboardSpan() {
+        int configuredSpan = getResources().getInteger(R.integer.dashboard_grid_span);
+        int widthDp = getResources().getConfiguration().screenWidthDp;
+
+        if (widthDp == Configuration.SCREEN_WIDTH_DP_UNDEFINED) {
+            widthDp = Math.round(
+                    getResources().getDisplayMetrics().widthPixels
+                            / getResources().getDisplayMetrics().density
+            );
+        }
+
+        if (widthDp >= 840) {
+            return 4;
+        }
+
+        if (widthDp >= 600) {
+            return Math.max(configuredSpan, 3);
+        }
+
+        return Math.max(configuredSpan, 2);
     }
 
     private void setupBottomNav() {
@@ -333,6 +377,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
             }
 
             if (id == R.id.nav_reports) {
+                if (!ensureMenuAccess("reports")) return false;
                 openFragmentSafe(new ReportsFragment(), BS_REPORTS);
                 return true;
             }
@@ -342,12 +387,8 @@ public class HomeDashboardActivity extends AppCompatActivity {
                 return false;
             }
 
-            if (id == R.id.nav_pos) {
-                openPos();
-                return true;
-            }
-
             if (id == R.id.nav_settings) {
+                if (!ensureMenuAccess("settings")) return false;
                 openFragmentSafe(new com.valdker.pos.ui.settings.SettingsFragment(), BS_SETTINGS);
                 return true;
             }
@@ -359,11 +400,35 @@ public class HomeDashboardActivity extends AppCompatActivity {
     private void configureBottomNavItems() {
         if (bottomNav == null) return;
 
-        if (isOwner()) {
-            bottomNav.getMenu().findItem(R.id.nav_pos).setVisible(false);
-        } else {
-            bottomNav.getMenu().findItem(R.id.nav_pos).setVisible(true);
+        bottomNav.getMenu().findItem(R.id.nav_reports).setVisible(canAccessMenuStrict("reports"));
+        bottomNav.getMenu().findItem(R.id.nav_settings).setVisible(canAccessMenuStrict("settings"));
+    }
+
+    private void loadCachedAuthPermissionsAndRefreshMenus() {
+        if (authCacheRepository == null) {
+            authCacheRepository = new AuthCacheRepository(this);
         }
+        authCacheRepository.applyCachedSessionForCurrentUser(new AuthCacheRepository.Callback() {
+            @Override
+            public void onApplied() {
+                configureBottomNavItems();
+                attachDashboardAdapter();
+                applyRoleDeviceUI();
+            }
+
+            @Override
+            public void onMissing() {
+                configureBottomNavItems();
+                attachDashboardAdapter();
+            }
+
+            @Override
+            public void onError(@NonNull String message) {
+                logw("Cached auth permissions load failed: " + message);
+                configureBottomNavItems();
+                attachDashboardAdapter();
+            }
+        });
     }
 
     private boolean isManager() {
@@ -399,12 +464,12 @@ public class HomeDashboardActivity extends AppCompatActivity {
 
     private void renderHeader() {
         setHelloUser();
-//        loadShopHeader();
+        loadShopHeader();
 
         applySummaryVisibilityByRole();
         loadOpeningCashFromOpenShift();
 
-        if (isOwner()) {
+        if (session.canViewReports()) {
             loadOwnerSummary();
         }
     }
@@ -461,37 +526,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
         String token = session.getToken();
         if (token == null || token.trim().isEmpty()) return;
 
-        setSummaryLoading();
-
-        String url = ApiConfig.url(session, ENDPOINT_NET_INCOME_TODAY);
-        JsonObjectRequest req = new JsonObjectRequest(
-                Request.Method.GET,
-                url,
-                null,
-                res -> {
-                    double revenue = res.optDouble("sales", 0.0);
-                    double expense = res.optDouble("expense", 0.0);
-                    double net = res.optDouble("net_income", 0.0);
-
-                    if (tvRevenueValue != null) tvRevenueValue.setText(usd.format(revenue));
-                    if (tvExpenseValue != null) tvExpenseValue.setText(usd.format(expense));
-                    if (tvNetValue != null) tvNetValue.setText(usd.format(net));
-                },
-                err -> {
-                    logw("Owner summary error: " + err);
-                    setSummaryUnavailable();
-                }
-        ) {
-            @Override
-            public java.util.Map<String, String> getHeaders() {
-                java.util.Map<String, String> h = new java.util.HashMap<>();
-                h.put("Authorization", "Token " + token);
-                return h;
-            }
-        };
-
-        req.setTag(TAG_SUMMARY);
-        ApiClient.getInstance(this).add(req);
+        loadDashboardSummaryRoomFirst(false);
     }
 
     private void loadOpeningCashFromOpenShift() {
@@ -557,44 +592,114 @@ public class HomeDashboardActivity extends AppCompatActivity {
             return;
         }
 
+        loadDashboardSummaryRoomFirst(true);
+    }
+
+    private void loadDashboardSummaryRoomFirst(boolean notifyOnRemoteError) {
+        if (reportCacheRepository == null) {
+            reportCacheRepository = new ReportCacheRepository(this);
+        }
+
         setSummaryLoading();
+        Map<String, String> filters = dashboardSummaryTodayQuery();
 
-        String netIncomeUrl = ApiConfig.url(session, ENDPOINT_NET_INCOME_TODAY);
-        JsonObjectRequest req = new JsonObjectRequest(
-                Request.Method.GET,
-                netIncomeUrl,
-                null,
-                (JSONObject res) -> {
-                    logd("net-income response: " + res);
+        reportCacheRepository.loadJsonEndpointRoomFirst(
+                ReportCacheRepository.TYPE_DASHBOARD_SUMMARY,
+                filters,
+                dashboardSummaryTodayUrl(),
+                TAG_SUMMARY,
+                new ReportCacheRepository.RoomFirstCallback() {
+                    @Override
+                    public void onLocal(@NonNull ReportRepository.ReportResponse response,
+                                        @NonNull ReportCacheRepository.CacheInfo cacheInfo) {
+                        applyDashboardSummaryResponse(response.raw);
+                        showDashboardCacheLabel(cacheInfo);
+                    }
 
-                    double sales = res.optDouble("sales", 0.0);
-                    double expense = res.optDouble("expense", 0.0);
-                    double net = res.optDouble("net_income", 0.0);
+                    @Override
+                    public void onRemote(@NonNull ReportRepository.ReportResponse response,
+                                         @NonNull ReportCacheRepository.CacheInfo cacheInfo) {
+                        logd("dashboard-summary response received");
+                        applyDashboardSummaryResponse(response.raw);
+                        showDashboardCacheLabel(cacheInfo);
+                    }
 
-                    if (tvRevenueValue != null) tvRevenueValue.setText(usd.format(sales));
-                    if (tvExpenseValue != null) tvExpenseValue.setText(usd.format(expense));
-                    if (tvNetValue != null) tvNetValue.setText(usd.format(net));
-                },
-                err -> {
-                    logw("net-income error: " + err);
-                    setSummaryUnavailable();
-                    Toast.makeText(
-                            this,
-                            getString(R.string.msg_owner_summary_not_accessible),
-                            Toast.LENGTH_SHORT
-                    ).show();
+                    @Override
+                    public void onNoInternet(boolean hasLocalData) {
+                        if (!hasLocalData) {
+                            setSummaryUnavailable();
+                            showDashboardMessage(ReportCacheRepository.NO_LOCAL_DASHBOARD_DATA_MESSAGE);
+                        }
+                    }
+
+                    @Override
+                    public void onError(int statusCode, @NonNull String message, boolean hasLocalData) {
+                        logw("dashboard-summary error: " + statusCode + " " + message);
+                        if (!hasLocalData) {
+                            setSummaryUnavailable();
+                        }
+                        if (notifyOnRemoteError && !hasLocalData) {
+                            Toast.makeText(
+                                    HomeDashboardActivity.this,
+                                    getString(R.string.msg_owner_summary_not_accessible),
+                                    Toast.LENGTH_SHORT
+                            ).show();
+                        }
+                    }
                 }
-        ) {
-            @Override
-            public java.util.Map<String, String> getHeaders() {
-                java.util.Map<String, String> h = new java.util.HashMap<>();
-                h.put("Authorization", "Token " + token);
-                return h;
-            }
-        };
+        );
+    }
 
-        req.setTag(TAG_SUMMARY);
-        ApiClient.getInstance(this).add(req);
+    private void applyDashboardSummaryResponse(@NonNull JSONObject res) {
+        JSONObject summary = res.optJSONObject("summary");
+        if (summary == null) summary = res;
+
+        double sales = firstDouble(summary,
+                "total_revenue", "revenue", "total_sales", "sales");
+        double expense = firstDouble(summary,
+                "total_expense", "expense", "expenses");
+        double net = firstDouble(summary,
+                "net_income", "net_sales", "net", "profit");
+
+        if (tvRevenueValue != null) tvRevenueValue.setText(usd.format(sales));
+        if (tvExpenseValue != null) tvExpenseValue.setText(usd.format(expense));
+        if (tvNetValue != null) tvNetValue.setText(usd.format(net));
+    }
+
+    private void showDashboardCacheLabel(@NonNull ReportCacheRepository.CacheInfo cacheInfo) {
+        showDashboardMessage(cacheInfo.dashboardLabel());
+    }
+
+    private void showDashboardMessage(@NonNull String message) {
+        if (tvSubtitle != null) {
+            tvSubtitle.setText(message);
+        }
+    }
+
+    private double firstDouble(@NonNull JSONObject object, @NonNull String... keys) {
+        for (String key : keys) {
+            if (object.has(key) && !object.isNull(key)) {
+                return object.optDouble(key, 0.0);
+            }
+        }
+        return 0.0;
+    }
+
+    @NonNull
+    private String dashboardSummaryTodayUrl() {
+        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
+        return ApiConfig.url(session, ENDPOINT_DASHBOARD_SUMMARY)
+                + "?start_date=" + today
+                + "&end_date=" + today;
+    }
+
+    @NonNull
+    private Map<String, String> dashboardSummaryTodayQuery() {
+        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
+        Map<String, String> filters = new LinkedHashMap<>();
+        filters.put("start_date", today);
+        filters.put("end_date", today);
+        return filters;
     }
 
     private void setSummaryLoading() {
@@ -606,6 +711,16 @@ public class HomeDashboardActivity extends AppCompatActivity {
     }
 
     private void applySummaryVisibilityByRole() {
+        if (!session.canViewReports()) {
+            if (layoutOwnerSummary != null) {
+                layoutOwnerSummary.setVisibility(View.GONE);
+            }
+            if (layoutManagerSummary != null) {
+                layoutManagerSummary.setVisibility(View.GONE);
+            }
+            return;
+        }
+
         if (isManager()) {
             if (layoutOwnerSummary != null) {
                 layoutOwnerSummary.setVisibility(View.GONE);
@@ -668,6 +783,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
         renderHeader();
         applyRoleDeviceUI();
         configureBottomNavItems();
+        loadCachedAuthPermissionsAndRefreshMenus();
 
         if (hasOpenedFragment()) {
             showFragmentContainer();
@@ -679,13 +795,8 @@ public class HomeDashboardActivity extends AppCompatActivity {
     private void handleMenuClick(@NonNull DashboardItem item) {
         logd("Menu clicked: " + item.title + " (id=" + item.id + ")");
 
-        if (item.id == DashboardItem.ID_REPORTS && !session.canViewReports()) {
-            Toast.makeText(this, getString(R.string.msg_permission_denied), Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (item.id == DashboardItem.ID_SETTINGS && !session.canManageSettings()) {
-            Toast.makeText(this, getString(R.string.msg_permission_denied), Toast.LENGTH_SHORT).show();
+        String menuKey = menuKeyForItem(item.id);
+        if (menuKey != null && !ensureMenuAccess(menuKey)) {
             return;
         }
 
@@ -762,6 +873,88 @@ public class HomeDashboardActivity extends AppCompatActivity {
                         BS_STOCK_MOVEMENTS
                 );
                 break;
+            case DashboardItem.ID_WAREHOUSES:
+                openFragmentSafe(new WarehousesFragment(), BS_WAREHOUSES);
+                break;
+
+            case DashboardItem.ID_WAREHOUSE_STOCKS:
+                openFragmentSafe(new WarehouseStocksFragment(), BS_WAREHOUSE_STOCKS);
+                break;
+
+            case DashboardItem.ID_STOCK_TRANSFERS:
+                openFragmentSafe(new StockTransfersFragment(), BS_STOCK_TRANSFERS);
+                break;
+
+            case DashboardItem.ID_BANK_LEDGERS:
+                openFragmentSafe(new BankLedgersFragment(), BS_BANK_LEDGERS);
+                break;
+
+            case DashboardItem.ID_OFFLINE_ORDERS:
+                startActivity(new Intent(this, PendingOrdersActivity.class));
+                break;
+        }
+    }
+
+    private boolean ensureMenuAccess(@NonNull String menuKey) {
+        if (canAccessMenuStrict(menuKey)) return true;
+        Toast.makeText(this, "Anda tidak punya akses ke menu ini.", Toast.LENGTH_SHORT).show();
+        return false;
+    }
+
+    private boolean canAccessMenuStrict(@NonNull String menuKey) {
+        if (session.hasMenuPermissions()) {
+            return session.canAccessMenu(menuKey);
+        }
+        return "pos".equals(menuKey);
+    }
+
+    @Nullable
+    private String menuKeyForItem(int itemId) {
+        switch (itemId) {
+            case DashboardItem.ID_POS:
+                return "pos";
+            case DashboardItem.ID_ORDERS:
+                return "orders";
+            case DashboardItem.ID_CUSTOMERS:
+                return "customers";
+            case DashboardItem.ID_REPORTS:
+                return "reports";
+            case DashboardItem.ID_STOCK_MOVEMENTS:
+                return "stock_movements";
+            case DashboardItem.ID_INVENTORY_COUNTS:
+                return "inventory_counts";
+            case DashboardItem.ID_SETTINGS:
+                return "settings";
+            case DashboardItem.ID_BANK_ACCOUNTS:
+                return "bank_accounts";
+            case DashboardItem.ID_EXPENSE:
+                return "expenses";
+            case DashboardItem.ID_SUPPLIERS:
+                return "suppliers";
+            case DashboardItem.ID_PURCHASES:
+                return "purchases";
+            case DashboardItem.ID_PRODUCTS:
+                return "products";
+            case DashboardItem.ID_CATEGORIES:
+                return "categories";
+            case DashboardItem.ID_UNITS:
+                return "units";
+            case DashboardItem.ID_PRODUCT_RETURNS:
+                return "product_returns";
+            case DashboardItem.ID_STOCK_ADJUSTMENTS:
+                return "stock_adjustments";
+            case DashboardItem.ID_WAREHOUSES:
+                return "warehouses";
+            case DashboardItem.ID_WAREHOUSE_STOCKS:
+                return "warehouse_stocks";
+            case DashboardItem.ID_STOCK_TRANSFERS:
+                return "stock_transfers";
+            case DashboardItem.ID_BANK_LEDGERS:
+                return "bank_ledgers";
+            case DashboardItem.ID_OFFLINE_ORDERS:
+                return "orders";
+            default:
+                return null;
         }
     }
 
@@ -919,11 +1112,11 @@ public class HomeDashboardActivity extends AppCompatActivity {
 
     private boolean isCashier() {
         String role = safeLower(session.getRole());
-        return "cashier".equals(role) || session.isShopCashier();
+        return "cashier".equals(role) || "kasir".equals(role) || session.isShopCashier();
     }
 
     private boolean isOwnerDevice() {
-        return isOwner();
+        return "owner".equals(safeLower(session.getRole()));
     }
 
     private String safeLower(@Nullable String s) {
@@ -952,56 +1145,39 @@ public class HomeDashboardActivity extends AppCompatActivity {
     }
 
     private List<DashboardItem> buildMenu() {
-        boolean owner = isOwner();
-        boolean manager = isManager();
-
         List<DashboardItem> out = new ArrayList<>();
-
-        if (owner) {
-            out.add(new DashboardItem(DashboardItem.ID_REPORTS, getString(R.string.menu_reports), getString(R.string.menu_reports_desc), R.drawable.ic_report));
-            out.add(new DashboardItem(DashboardItem.ID_STOCK_MOVEMENTS, getString(R.string.menu_stock_movements), getString(R.string.menu_stock_movements_desc), R.drawable.ic_stockmovement));
-            out.add(new DashboardItem(DashboardItem.ID_INVENTORY_COUNTS, getString(R.string.menu_inventory_counts), getString(R.string.menu_inventory_counts_desc), R.drawable.ic_report));
-            out.add(new DashboardItem(DashboardItem.ID_SETTINGS, getString(R.string.menu_settings), getString(R.string.menu_settings_desc), R.drawable.ic_settings));
-            out.add(new DashboardItem(DashboardItem.ID_BANK_ACCOUNTS, getString(R.string.menu_bank_accounts), getString(R.string.menu_bank_accounts_desc), R.drawable.ic_bank));
-            out.add(new DashboardItem(DashboardItem.ID_ORDERS, getString(R.string.menu_orders), getString(R.string.menu_orders_desc), R.drawable.ic_receipt));
-            out.add(new DashboardItem(DashboardItem.ID_EXPENSE, getString(R.string.menu_expenses), getString(R.string.menu_expenses_desc), R.drawable.ic_expense));
-            out.add(new DashboardItem(DashboardItem.ID_CUSTOMERS, getString(R.string.menu_customers), getString(R.string.menu_customers_desc), R.drawable.ic_people));
-            out.add(new DashboardItem(DashboardItem.ID_SUPPLIERS, getString(R.string.menu_suppliers), getString(R.string.menu_suppliers_desc), R.drawable.ic_store));
-            out.add(new DashboardItem(DashboardItem.ID_PURCHASES, getString(R.string.menu_purchases), getString(R.string.menu_purchases_desc), R.drawable.ic_purchase));
-            out.add(new DashboardItem(DashboardItem.ID_PRODUCTS, getString(R.string.menu_products), getString(R.string.menu_products_desc), R.drawable.ic_box));
-            out.add(new DashboardItem(DashboardItem.ID_CATEGORIES, getString(R.string.menu_categories), getString(R.string.menu_categories_desc), R.drawable.ic_categories));
-            out.add(new DashboardItem(DashboardItem.ID_UNITS, getString(R.string.menu_units), getString(R.string.menu_units_desc), R.drawable.ic_units));
-            out.add(new DashboardItem(DashboardItem.ID_PRODUCT_RETURNS, getString(R.string.menu_product_returns), getString(R.string.menu_product_returns_desc), R.drawable.ic_return));
-            out.add(new DashboardItem(DashboardItem.ID_STOCK_ADJUSTMENTS, getString(R.string.menu_stock_adjustments), getString(R.string.menu_stock_adjustments_desc), R.drawable.ic_report));
-            return out;
-        }
-
-        if (manager) {
-            out.add(new DashboardItem(DashboardItem.ID_CUSTOMERS, getString(R.string.menu_customers), getString(R.string.menu_customers_desc), R.drawable.ic_people));
-            out.add(new DashboardItem(DashboardItem.ID_SUPPLIERS, getString(R.string.menu_suppliers), getString(R.string.menu_suppliers_desc), R.drawable.ic_store));
-            out.add(new DashboardItem(DashboardItem.ID_PURCHASES, getString(R.string.menu_purchases), getString(R.string.menu_purchases_desc), R.drawable.ic_purchase));
-            out.add(new DashboardItem(DashboardItem.ID_PRODUCTS, getString(R.string.menu_products), getString(R.string.menu_products_desc), R.drawable.ic_box));
-            out.add(new DashboardItem(DashboardItem.ID_CATEGORIES, getString(R.string.menu_categories), getString(R.string.menu_categories_desc), R.drawable.ic_categories));
-            out.add(new DashboardItem(DashboardItem.ID_UNITS, getString(R.string.menu_units), getString(R.string.menu_units_desc), R.drawable.ic_units));
-            out.add(new DashboardItem(DashboardItem.ID_POS, getString(R.string.menu_pos), getString(R.string.menu_pos_desc), R.drawable.ic_pos));
-            out.add(new DashboardItem(DashboardItem.ID_EXPENSE, getString(R.string.menu_expenses), getString(R.string.menu_expenses_desc), R.drawable.ic_expense));
-            out.add(new DashboardItem(DashboardItem.ID_ORDERS, getString(R.string.menu_orders), getString(R.string.menu_orders_desc), R.drawable.ic_receipt));
-            out.add(new DashboardItem(DashboardItem.ID_PRODUCT_RETURNS, getString(R.string.menu_product_returns), getString(R.string.menu_product_returns_desc), R.drawable.ic_return));
-            out.add(new DashboardItem(DashboardItem.ID_INVENTORY_COUNTS, getString(R.string.menu_inventory_counts), getString(R.string.menu_inventory_counts_desc), R.drawable.ic_report));
-            out.add(new DashboardItem(DashboardItem.ID_STOCK_ADJUSTMENTS, getString(R.string.menu_stock_adjustments), getString(R.string.menu_stock_adjustments_desc), R.drawable.ic_report));
-            out.add(new DashboardItem(DashboardItem.ID_STOCK_MOVEMENTS, getString(R.string.menu_stock_movements), getString(R.string.menu_stock_movements_desc), R.drawable.ic_stockmovement));
-
-            if (session.canViewReports()) {
-                out.add(new DashboardItem(DashboardItem.ID_REPORTS, getString(R.string.menu_reports), getString(R.string.menu_reports_desc), R.drawable.ic_report));
-            }
-
-            return out;
-        }
-
-        out.add(new DashboardItem(DashboardItem.ID_POS, getString(R.string.menu_pos), getString(R.string.menu_pos_desc), R.drawable.ic_pos));
-        out.add(new DashboardItem(DashboardItem.ID_ORDERS, getString(R.string.menu_orders), getString(R.string.menu_orders_desc), R.drawable.ic_receipt));
-        out.add(new DashboardItem(DashboardItem.ID_CUSTOMERS, getString(R.string.menu_customers), getString(R.string.menu_customers_desc), R.drawable.ic_people));
+        addMenuIfAllowed(out, "pos", new DashboardItem(DashboardItem.ID_POS, getString(R.string.menu_pos), getString(R.string.menu_pos_desc), R.drawable.ic_pos));
+        addMenuIfAllowed(out, "orders", new DashboardItem(DashboardItem.ID_ORDERS, getString(R.string.menu_orders), getString(R.string.menu_orders_desc), R.drawable.ic_receipt));
+        addMenuIfAllowed(out, "customers", new DashboardItem(DashboardItem.ID_CUSTOMERS, getString(R.string.menu_customers), getString(R.string.menu_customers_desc), R.drawable.ic_people));
+        addMenuIfAllowed(out, "reports", new DashboardItem(DashboardItem.ID_REPORTS, getString(R.string.menu_reports), getString(R.string.menu_reports_desc), R.drawable.ic_report));
+        addMenuIfAllowed(out, "stock_movements", new DashboardItem(DashboardItem.ID_STOCK_MOVEMENTS, getString(R.string.menu_stock_movements), getString(R.string.menu_stock_movements_desc), R.drawable.ic_stockmovement));
+        addMenuIfAllowed(out, "inventory_counts", new DashboardItem(DashboardItem.ID_INVENTORY_COUNTS, getString(R.string.menu_inventory_counts), getString(R.string.menu_inventory_counts_desc), R.drawable.ic_report));
+        addMenuIfAllowed(out, "settings", new DashboardItem(DashboardItem.ID_SETTINGS, getString(R.string.menu_settings), getString(R.string.menu_settings_desc), R.drawable.ic_settings));
+        addMenuIfAllowed(out, "bank_accounts", new DashboardItem(DashboardItem.ID_BANK_ACCOUNTS, getString(R.string.menu_bank_accounts), getString(R.string.menu_bank_accounts_desc), R.drawable.ic_bank));
+        addMenuIfAllowed(out, "expenses", new DashboardItem(DashboardItem.ID_EXPENSE, getString(R.string.menu_expenses), getString(R.string.menu_expenses_desc), R.drawable.ic_expense));
+        addMenuIfAllowed(out, "suppliers", new DashboardItem(DashboardItem.ID_SUPPLIERS, getString(R.string.menu_suppliers), getString(R.string.menu_suppliers_desc), R.drawable.ic_store));
+        addMenuIfAllowed(out, "purchases", new DashboardItem(DashboardItem.ID_PURCHASES, getString(R.string.menu_purchases), getString(R.string.menu_purchases_desc), R.drawable.ic_purchase));
+        addMenuIfAllowed(out, "products", new DashboardItem(DashboardItem.ID_PRODUCTS, getString(R.string.menu_products), getString(R.string.menu_products_desc), R.drawable.ic_box));
+        addMenuIfAllowed(out, "categories", new DashboardItem(DashboardItem.ID_CATEGORIES, getString(R.string.menu_categories), getString(R.string.menu_categories_desc), R.drawable.ic_categories));
+        addMenuIfAllowed(out, "units", new DashboardItem(DashboardItem.ID_UNITS, getString(R.string.menu_units), getString(R.string.menu_units_desc), R.drawable.ic_units));
+        addMenuIfAllowed(out, "product_returns", new DashboardItem(DashboardItem.ID_PRODUCT_RETURNS, getString(R.string.menu_product_returns), getString(R.string.menu_product_returns_desc), R.drawable.ic_return));
+        addMenuIfAllowed(out, "stock_adjustments", new DashboardItem(DashboardItem.ID_STOCK_ADJUSTMENTS, getString(R.string.menu_stock_adjustments), getString(R.string.menu_stock_adjustments_desc), R.drawable.ic_report));
+        addMenuIfAllowed(out, "warehouses", new DashboardItem(DashboardItem.ID_WAREHOUSES, getString(R.string.menu_warehouses), getString(R.string.menu_warehouses_desc), R.drawable.ic_store));
+        addMenuIfAllowed(out, "warehouse_stocks", new DashboardItem(DashboardItem.ID_WAREHOUSE_STOCKS, getString(R.string.menu_warehouse_stocks), getString(R.string.menu_warehouse_stocks_desc), R.drawable.ic_box));
+        addMenuIfAllowed(out, "stock_transfers", new DashboardItem(DashboardItem.ID_STOCK_TRANSFERS, getString(R.string.menu_stock_transfers), getString(R.string.menu_stock_transfers_desc), R.drawable.ic_stockmovement));
+        addMenuIfAllowed(out, "bank_ledgers", new DashboardItem(DashboardItem.ID_BANK_LEDGERS, getString(R.string.menu_bank_ledgers), getString(R.string.menu_bank_ledgers_desc), R.drawable.ic_bank));
+        addMenuIfAllowed(out, "orders", new DashboardItem(DashboardItem.ID_OFFLINE_ORDERS, getString(R.string.menu_offline_orders), getString(R.string.menu_offline_orders_desc), R.drawable.ic_receipt));
         return out;
+    }
+
+    private void addMenuIfAllowed(
+            @NonNull List<DashboardItem> out,
+            @NonNull String menuKey,
+            @NonNull DashboardItem item
+    ) {
+        if (canAccessMenuStrict(menuKey)) {
+            out.add(item);
+        }
     }
 
     private static void logd(@NonNull String msg) {

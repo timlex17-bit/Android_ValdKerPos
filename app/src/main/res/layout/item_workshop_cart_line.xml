@@ -78,7 +78,7 @@
                     android:padding="9dp"
                     android:scaleType="centerInside"
                     android:src="@drawable/ic_remove"
-                    android:tint="#111827" />
+                    app:tint="#111827" />
 
                 <TextView
                     android:id="@+id/txtQty"
@@ -99,7 +99,7 @@
                     android:padding="9dp"
                     android:scaleType="centerInside"
                     android:src="@drawable/ic_add"
-                    android:tint="#111827" />
+                    app:tint="#111827" />
 
             </LinearLayout>
 

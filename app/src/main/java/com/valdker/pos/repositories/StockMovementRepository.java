@@ -3,7 +3,7 @@ package com.valdker.pos.repositories;
 import android.content.Context;
 
 import com.android.volley.Request;
-import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.models.StockMovement;
 import com.valdker.pos.network.ApiClient;
@@ -11,6 +11,7 @@ import com.valdker.pos.network.ApiConfig;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,13 +29,12 @@ public class StockMovementRepository {
         SessionManager session = new SessionManager(ctx);
         String url = ApiConfig.url(session, ENDPOINT_STOCK_MOVEMENTS);
 
-        JsonArrayRequest req = new JsonArrayRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.GET,
                 url,
-                null,
                 res -> {
                     try {
-                        cb.onSuccess(parse(res));
+                        cb.onSuccess(parse(extractResultsArray(res)));
                     } catch (Exception e) {
                         cb.onError("Parse error: " + e.getMessage());
                     }
@@ -65,6 +65,21 @@ public class StockMovementRepository {
 
         req.setShouldCache(false);
         ApiClient.getInstance(ctx).add(req);
+    }
+
+    private static JSONArray extractResultsArray(String response) throws Exception {
+        Object parsed = new JSONTokener(response == null ? "[]" : response).nextValue();
+
+        if (parsed instanceof JSONArray) {
+            return (JSONArray) parsed;
+        }
+
+        if (parsed instanceof JSONObject) {
+            JSONArray results = ((JSONObject) parsed).optJSONArray("results");
+            return results != null ? results : new JSONArray();
+        }
+
+        return new JSONArray();
     }
 
     private static List<StockMovement> parse(JSONArray arr) throws Exception {

@@ -24,14 +24,14 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField "String", "BASE_URL", "\"https://api.valdker.web.id/\""
+            buildConfigField "String", "BASE_URL", "\"https://api.valdker.web.id/api/\""
         }
 
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
-            buildConfigField "String", "BASE_URL", "\"https://api.valdker.web.id/\""
+            buildConfigField "String", "BASE_URL", "\"https://api.valdker.web.id/api/\""
         }
     }
 

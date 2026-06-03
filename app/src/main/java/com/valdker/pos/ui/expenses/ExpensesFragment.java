@@ -14,7 +14,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,7 +26,9 @@ import com.valdker.pos.SessionManager;
 import com.valdker.pos.base.BaseFragment;
 import com.valdker.pos.models.Expense;
 import com.valdker.pos.repositories.ExpenseRepository;
+import com.valdker.pos.repositories.TransactionHistoryCacheRepository;
 import com.valdker.pos.utils.InsetsHelper;
+import com.valdker.pos.utils.NetworkUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -40,11 +42,13 @@ public class ExpensesFragment extends BaseFragment {
 
     private SessionManager session;
     private ExpenseRepository repo;
+    private TransactionHistoryCacheRepository cacheRepository;
 
     private RecyclerView rv;
     private ProgressBar progress;
+    private View emptyState;
     private TextView tvEmpty;
-    private TextView tvTitle;
+    private TextView tvEmptySub;
     private FloatingActionButton fabAdd;
     private EditText etSearchExpense;
     private ImageView btnBack;
@@ -72,11 +76,13 @@ public class ExpensesFragment extends BaseFragment {
 
         session = new SessionManager(requireContext());
         repo = new ExpenseRepository(requireContext());
+        cacheRepository = new TransactionHistoryCacheRepository(requireContext());
 
         rv = view.findViewById(R.id.rvExpenses);
         progress = view.findViewById(R.id.progress);
+        emptyState = view.findViewById(R.id.emptyState);
         tvEmpty = view.findViewById(R.id.tvEmpty);
-        tvTitle = view.findViewById(R.id.tvTitle);
+        tvEmptySub = view.findViewById(R.id.tvEmptySub);
         fabAdd = view.findViewById(R.id.fabAddExpense);
         etSearchExpense = view.findViewById(R.id.etSearchExpense);
         btnBack = view.findViewById(R.id.btnBack);
@@ -156,6 +162,10 @@ public class ExpensesFragment extends BaseFragment {
         if (!isAdded()) return;
         if (isFormShowing) return;
         if (isLoading) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(TransactionHistoryCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         long now = SystemClock.elapsedRealtime();
         if (now - lastFabClickTime < FAB_CLICK_DELAY_MS) {
@@ -185,9 +195,19 @@ public class ExpensesFragment extends BaseFragment {
         isLoading = true;
         showLoading(true);
 
-        repo.fetchExpenses(token, new ExpenseRepository.ListCallback() {
+        cacheRepository.loadExpensesRoomFirst(token, new TransactionHistoryCacheRepository.RoomFirstCallback<Expense>() {
             @Override
-            public void onSuccess(@NonNull List<Expense> list) {
+            public void onLocal(@NonNull List<Expense> list) {
+                if (!isAdded() || list.isEmpty()) return;
+
+                allExpenses.clear();
+                allExpenses.addAll(list);
+                applyFilter();
+                showLoading(false);
+            }
+
+            @Override
+            public void onRemote(@NonNull List<Expense> list) {
                 isLoading = false;
                 if (!isAdded()) return;
 
@@ -198,13 +218,27 @@ public class ExpensesFragment extends BaseFragment {
             }
 
             @Override
-            public void onError(int statusCode, @NonNull String message) {
+            public void onNoInternet(boolean hasLocalData) {
                 isLoading = false;
                 if (!isAdded()) return;
 
                 showLoading(false);
-                toast("Load failed: " + statusCode);
-                setEmpty(adapter == null || adapter.getItemCount() == 0);
+                if (!hasLocalData && allExpenses.isEmpty()) {
+                    setLocalEmpty();
+                    toast(TransactionHistoryCacheRepository.NO_LOCAL_DATA_MESSAGE);
+                }
+            }
+
+            @Override
+            public void onError(int statusCode, @NonNull String message, boolean hasLocalData) {
+                isLoading = false;
+                if (!isAdded()) return;
+
+                showLoading(false);
+                if (!hasLocalData && allExpenses.isEmpty()) {
+                    setLocalEmpty();
+                    showApiError("Load failed: " + statusCode + " " + message);
+                }
             }
         });
     }
@@ -248,6 +282,10 @@ public class ExpensesFragment extends BaseFragment {
     private void openForm(@Nullable Expense editing) {
         if (!isAdded()) return;
         if (isFormShowing) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(TransactionHistoryCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         isFormShowing = true;
         setFabEnabled(false);
@@ -400,7 +438,7 @@ public class ExpensesFragment extends BaseFragment {
 
                             showLoading(false);
                             positiveBtn.setEnabled(true);
-                            toast("Create failed: " + statusCode);
+                            showApiError("Create failed: " + statusCode + " " + message);
                         }
                     });
                 } else {
@@ -420,7 +458,7 @@ public class ExpensesFragment extends BaseFragment {
 
                             showLoading(false);
                             positiveBtn.setEnabled(true);
-                            toast("Update failed: " + statusCode);
+                            showApiError("Update failed: " + statusCode + " " + message);
                         }
                     });
                 }
@@ -433,6 +471,10 @@ public class ExpensesFragment extends BaseFragment {
     private void confirmDelete(@NonNull Expense e) {
         if (!isAdded()) return;
         if (isDeleteRunning) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(TransactionHistoryCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         new AlertDialog.Builder(requireContext())
                 .setTitle("Delete Expense")
@@ -445,6 +487,10 @@ public class ExpensesFragment extends BaseFragment {
     private void doDelete(@NonNull Expense e) {
         if (!isAdded()) return;
         if (isDeleteRunning) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(TransactionHistoryCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         String token = session != null ? session.getToken() : null;
         if (TextUtils.isEmpty(token)) {
@@ -471,7 +517,7 @@ public class ExpensesFragment extends BaseFragment {
                 if (!isAdded()) return;
 
                 showLoading(false);
-                toast("Delete failed: " + statusCode);
+                showApiError("Delete failed: " + statusCode + " " + message);
             }
         });
     }
@@ -494,14 +540,41 @@ public class ExpensesFragment extends BaseFragment {
     }
 
     private void setEmpty(boolean empty) {
-        if (tvEmpty != null) {
-            tvEmpty.setVisibility(empty ? View.VISIBLE : View.GONE);
-            if (empty) {
-                tvEmpty.setText(TextUtils.isEmpty(currentQuery) ? "No expense yet." : "No matching expense.");
-            }
+        boolean isSearching = !TextUtils.isEmpty(currentQuery);
+
+        if (emptyState != null) {
+            emptyState.setVisibility(empty ? View.VISIBLE : View.GONE);
         }
+
+        if (tvEmpty != null) {
+            tvEmpty.setText(isSearching
+                    ? getString(R.string.msg_no_matching_expenses)
+                    : getString(R.string.msg_no_expenses_yet));
+        }
+
+        if (tvEmptySub != null) {
+            tvEmptySub.setText(isSearching
+                    ? getString(R.string.msg_no_matching_expenses_sub)
+                    : getString(R.string.msg_no_expenses_yet_sub));
+        }
+
         if (rv != null) {
             rv.setVisibility(empty ? View.GONE : View.VISIBLE);
+        }
+    }
+
+    private void setLocalEmpty() {
+        if (emptyState != null) {
+            emptyState.setVisibility(View.VISIBLE);
+        }
+        if (tvEmpty != null) {
+            tvEmpty.setText(TransactionHistoryCacheRepository.NO_LOCAL_DATA_MESSAGE);
+        }
+        if (tvEmptySub != null) {
+            tvEmptySub.setText("");
+        }
+        if (rv != null) {
+            rv.setVisibility(View.GONE);
         }
     }
 
@@ -527,11 +600,13 @@ public class ExpensesFragment extends BaseFragment {
 
         rv = null;
         progress = null;
+        emptyState = null;
         tvEmpty = null;
-        tvTitle = null;
+        tvEmptySub = null;
         fabAdd = null;
         etSearchExpense = null;
         btnBack = null;
         ivHeaderAction = null;
+        cacheRepository = null;
     }
 }

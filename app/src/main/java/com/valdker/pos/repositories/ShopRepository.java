@@ -2,6 +2,8 @@ package com.valdker.pos.repositories;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -12,9 +14,12 @@ import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.valdker.pos.SessionManager;
+import com.valdker.pos.local.ShopProfileEntity;
+import com.valdker.pos.local.ValoraLocalDatabase;
 import com.valdker.pos.models.Shop;
 import com.valdker.pos.network.ApiClient;
 import com.valdker.pos.network.ApiConfig;
+import com.valdker.pos.utils.NetworkUtils;
 
 import org.json.JSONObject;
 
@@ -23,11 +28,15 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ShopRepository {
 
     private static final String TAG = "ShopRepository";
     private static final String MY_SHOP_URL = "api/shop/me/";
+    private static final ExecutorService DB_EXECUTOR = Executors.newSingleThreadExecutor();
+    private static final Handler MAIN = new Handler(Looper.getMainLooper());
 
     private static String myShopUrl(@NonNull Context ctx) {
         return ApiConfig.url(new SessionManager(ctx), MY_SHOP_URL);
@@ -49,6 +58,67 @@ public class ShopRepository {
             @Nullable String token,
             @NonNull Callback cb
     ) {
+        loadShopProfileRoomFirst(ctx, token, cb);
+    }
+
+    public static void loadShopProfileRoomFirst(
+            @NonNull Context ctx,
+            @Nullable String token,
+            @NonNull Callback cb
+    ) {
+        Context appCtx = ctx.getApplicationContext();
+        DB_EXECUTOR.execute(() -> {
+            Shop cached = shopFromEntity(ValoraLocalDatabase.getInstance(appCtx)
+                    .shopProfileDao()
+                    .getCachedForShop(currentShopId(appCtx), currentShopCode(appCtx), currentApiBaseUrl(appCtx)));
+            boolean hasCached = cached != null;
+
+            if (hasCached) {
+                MAIN.post(() -> cb.onSuccess(cached));
+            }
+
+            if (!NetworkUtils.isNetworkAvailable(appCtx)) {
+                if (!hasCached) {
+                    MAIN.post(cb::onEmpty);
+                }
+                return;
+            }
+
+            if (token == null || token.trim().isEmpty()) {
+                if (!hasCached) {
+                    MAIN.post(() -> cb.onError("Token missing"));
+                }
+                return;
+            }
+
+            MAIN.post(() -> refreshShopProfileFromApi(appCtx, token, new Callback() {
+                @Override
+                public void onSuccess(@NonNull Shop shop) {
+                    cb.onSuccess(shop);
+                }
+
+                @Override
+                public void onEmpty() {
+                    if (!hasCached) cb.onEmpty();
+                }
+
+                @Override
+                public void onError(@NonNull String message) {
+                    if (hasCached) {
+                        Log.w(TAG, "Keeping cached shop profile after API error: " + message);
+                    } else {
+                        cb.onError(message);
+                    }
+                }
+            }));
+        });
+    }
+
+    public static void refreshShopProfileFromApi(
+            @NonNull Context ctx,
+            @Nullable String token,
+            @NonNull Callback cb
+    ) {
         String url = myShopUrl(ctx);
 
         com.android.volley.toolbox.JsonObjectRequest req = new com.android.volley.toolbox.JsonObjectRequest(
@@ -61,7 +131,9 @@ public class ShopRepository {
                         return;
                     }
 
-                    cb.onSuccess(parseShop(res));
+                    Shop shop = parseShop(ctx, res);
+                    saveShopProfileToRoom(ctx, shop);
+                    cb.onSuccess(shop);
                 },
                 err -> {
                     int code = (err.networkResponse != null) ? err.networkResponse.statusCode : -1;
@@ -95,6 +167,72 @@ public class ShopRepository {
         ApiClient.getInstance(ctx).add(req);
     }
 
+    public static void getBestShopProfileForReceipt(
+            @NonNull Context ctx,
+            @Nullable String token,
+            @NonNull Callback cb
+    ) {
+        Context appCtx = ctx.getApplicationContext();
+        DB_EXECUTOR.execute(() -> {
+            Shop cached = shopFromEntity(ValoraLocalDatabase.getInstance(appCtx)
+                    .shopProfileDao()
+                    .getCachedForShop(currentShopId(appCtx), currentShopCode(appCtx), currentApiBaseUrl(appCtx)));
+
+            if (cached != null) {
+                Log.i(TAG, "Receipt shop profile loaded from Room");
+                MAIN.post(() -> cb.onSuccess(cached));
+                return;
+            }
+
+            if (!NetworkUtils.isNetworkAvailable(appCtx)) {
+                MAIN.post(cb::onEmpty);
+                return;
+            }
+
+            if (token == null || token.trim().isEmpty()) {
+                MAIN.post(() -> cb.onError("Token missing"));
+                return;
+            }
+
+            MAIN.post(() -> refreshShopProfileFromApi(appCtx, token, new Callback() {
+                @Override
+                public void onSuccess(@NonNull Shop shop) {
+                    Log.i(TAG, "Receipt shop profile loaded from API");
+                    cb.onSuccess(shop);
+                }
+
+                @Override
+                public void onEmpty() {
+                    cb.onEmpty();
+                }
+
+                @Override
+                public void onError(@NonNull String message) {
+                    cb.onError(message);
+                }
+            }));
+        });
+    }
+
+    public static void saveShopProfileToRoom(@NonNull Context ctx, @NonNull Shop shop) {
+        Context appCtx = ctx.getApplicationContext();
+        DB_EXECUTOR.execute(() -> saveShopProfileToRoomSync(appCtx, shop));
+    }
+
+    public static void getCachedShopProfile(@NonNull Context ctx, @NonNull Callback cb) {
+        Context appCtx = ctx.getApplicationContext();
+        DB_EXECUTOR.execute(() -> {
+            Shop cached = shopFromEntity(ValoraLocalDatabase.getInstance(appCtx)
+                    .shopProfileDao()
+                    .getCachedForShop(currentShopId(appCtx), currentShopCode(appCtx), currentApiBaseUrl(appCtx)));
+            if (cached != null) {
+                MAIN.post(() -> cb.onSuccess(cached));
+            } else {
+                MAIN.post(cb::onEmpty);
+            }
+        });
+    }
+
     public static void updateShopMultipart(
             @NonNull Context ctx,
             int shopId,
@@ -116,7 +254,9 @@ public class ShopRepository {
                 ctx,
                 response -> {
                     try {
-                        cb.onSuccess(parseShop(response));
+                        Shop shop = parseShop(ctx, response);
+                        saveShopProfileToRoom(ctx, shop);
+                        cb.onSuccess(shop);
                     } catch (Exception e) {
                         cb.onError(500, "Parse error: " + e.getMessage());
                     }
@@ -128,16 +268,141 @@ public class ShopRepository {
         ApiClient.getInstance(ctx).add(req);
     }
 
-    private static Shop parseShop(@NonNull JSONObject o) {
+    private static Shop parseShop(@NonNull Context ctx, @NonNull JSONObject o) {
         Shop s = new Shop();
         s.id = o.optInt("id");
-        s.name = o.optString("name", "");
+        s.shopId = firstNonEmpty(o.optString("shop_id", ""), o.optString("shopId", ""));
+        s.name = firstNonEmpty(o.optString("name", ""), o.optString("store_name", ""));
+        s.storeName = firstNonEmpty(o.optString("store_name", ""), s.name);
         s.address = o.optString("address", "");
         s.phone = o.optString("phone", "");
         s.email = o.optString("email", "");
-        s.logoUrl = o.optString("logo_url", null);
-        s.allCategoryIconUrl = o.optString("all_category_icon_url", null);
+        s.logoUrl = normalizeMediaUrl(ctx, firstNonEmpty(o.optString("logo_url", null), o.optString("logo", null)));
+        s.location = o.optString("location", "");
+        s.version = o.optString("version", "");
+        s.updatedAt = firstNonEmpty(o.optString("updated_at", ""), o.optString("updatedAt", ""));
+        s.lastSyncAt = System.currentTimeMillis();
+        s.allCategoryIconUrl = normalizeMediaUrl(ctx, o.optString("all_category_icon_url", null));
         return s;
+    }
+
+    private static void saveShopProfileToRoomSync(@NonNull Context ctx, @NonNull Shop shop) {
+        try {
+            ValoraLocalDatabase.getInstance(ctx)
+                    .shopProfileDao()
+                    .upsert(entityFromShop(ctx, shop));
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to cache shop profile", e);
+        }
+    }
+
+    @NonNull
+    private static ShopProfileEntity entityFromShop(@NonNull Context ctx, @NonNull Shop shop) {
+        ShopProfileEntity entity = new ShopProfileEntity();
+        entity.localKey = 1;
+        entity.id = shop.id;
+        entity.shopId = currentShopId(ctx);
+        entity.shopCode = currentShopCode(ctx);
+        entity.apiBaseUrl = currentApiBaseUrl(ctx);
+        entity.cacheKey = cacheKey(ctx, String.valueOf(shop.id));
+        entity.name = safe(shop.name);
+        entity.storeName = safe(shop.storeName);
+        entity.address = safe(shop.address);
+        entity.phone = safe(shop.phone);
+        entity.email = safe(shop.email);
+        entity.logoUrl = safe(shop.logoUrl);
+        entity.location = safe(shop.location);
+        entity.version = safe(shop.version);
+        entity.updatedAt = safe(shop.updatedAt);
+        entity.lastSyncAt = shop.lastSyncAt > 0L ? shop.lastSyncAt : System.currentTimeMillis();
+        return entity;
+    }
+
+    @Nullable
+    private static Shop shopFromEntity(@Nullable ShopProfileEntity entity) {
+        if (entity == null) return null;
+
+        Shop shop = new Shop();
+        shop.id = entity.id;
+        shop.shopId = entity.shopId;
+        shop.name = firstNonEmpty(entity.name, firstNonEmpty(entity.storeName, "ValoraPOS"));
+        shop.storeName = firstNonEmpty(entity.storeName, shop.name);
+        shop.address = entity.address;
+        shop.phone = entity.phone;
+        shop.email = entity.email;
+        shop.logoUrl = entity.logoUrl;
+        shop.location = entity.location;
+        shop.version = entity.version;
+        shop.updatedAt = entity.updatedAt;
+        shop.lastSyncAt = entity.lastSyncAt;
+        return shop;
+    }
+
+    @NonNull
+    private static String firstNonEmpty(@Nullable String first, @Nullable String second) {
+        String a = safe(first);
+        return !a.isEmpty() ? a : safe(second);
+    }
+
+    @NonNull
+    private static String safe(@Nullable String value) {
+        if (value == null) return "";
+        String clean = value.trim();
+        return "null".equalsIgnoreCase(clean) ? "" : clean;
+    }
+
+    @NonNull
+    private static String currentShopId(@NonNull Context ctx) {
+        SessionManager session = new SessionManager(ctx);
+        int shopId = session.getShopId();
+        return shopId > 0 ? String.valueOf(shopId) : "";
+    }
+
+    @NonNull
+    private static String currentShopCode(@NonNull Context ctx) {
+        return safe(new SessionManager(ctx).getShopCode()).toUpperCase(java.util.Locale.US);
+    }
+
+    @NonNull
+    private static String currentApiBaseUrl(@NonNull Context ctx) {
+        return safe(new SessionManager(ctx).getBaseUrl());
+    }
+
+    @NonNull
+    private static String cacheKey(@NonNull Context ctx, @NonNull String backendId) {
+        return currentApiBaseUrl(ctx) + "|" + currentShopId(ctx) + "|" + currentShopCode(ctx) + "|" + safe(backendId);
+    }
+
+    @Nullable
+    private static String normalizeMediaUrl(@NonNull Context ctx, @Nullable String url) {
+        if (url == null) return null;
+
+        String clean = url.trim();
+        if (clean.isEmpty() || "null".equalsIgnoreCase(clean)) return null;
+
+        if (clean.startsWith("http://")) {
+            return "https://" + clean.substring("http://".length());
+        }
+
+        if (clean.startsWith("https://")) {
+            return clean;
+        }
+
+        if (!clean.startsWith("/")) {
+            return clean;
+        }
+
+        String base = ApiConfig.base(new SessionManager(ctx));
+        int apiIndex = base.indexOf("/api/");
+        if (apiIndex >= 0) {
+            base = base.substring(0, apiIndex + 1);
+        }
+
+        if (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+
+        return base + clean;
     }
 
     private static class MultipartRequest extends Request<JSONObject> {

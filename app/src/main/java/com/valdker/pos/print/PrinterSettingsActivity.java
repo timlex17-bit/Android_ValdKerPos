@@ -11,7 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresPermission;
@@ -49,6 +49,7 @@ public class PrinterSettingsActivity extends AppCompatActivity {
 
         btnClear.setOnClickListener(v -> {
             PrinterPrefs.clear(this);
+            BluetoothPrinterManager.getInstance().disconnect();
             updateSelectedText();
             Toast.makeText(this, "Printer cleared", Toast.LENGTH_SHORT).show();
         });

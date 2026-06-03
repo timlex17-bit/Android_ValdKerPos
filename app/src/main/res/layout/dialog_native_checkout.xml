@@ -18,7 +18,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:paddingBottom="16dp"
-            android:text="$0.00"
+            android:text="@string/amount_zero_usd"
             android:textSize="22sp"
             android:textStyle="bold" />
 
@@ -26,7 +26,7 @@
             android:id="@+id/tvCustomerLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Customer"
+                android:text="@string/label_customer"
             android:textStyle="bold" />
 
         <Spinner
@@ -40,7 +40,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Points: 0"
+                android:text="@string/checkout_points_zero"
             android:textColor="#065F46"
             android:textStyle="bold" />
 
@@ -49,7 +49,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Payment Method"
+                android:text="@string/label_payment_method"
             android:textStyle="bold" />
 
         <Spinner
@@ -63,7 +63,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:hint="Cash Received"
+                android:hint="@string/hint_cash_received"
             android:inputType="numberDecimal"
             android:visibility="gone" />
 
@@ -73,7 +73,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:paddingTop="4dp"
-            android:text="Change: $0.00"
+                android:text="@string/checkout_change_zero"
             android:visibility="gone" />
 
         <TextView
@@ -81,7 +81,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="Bank Account"
+                android:text="@string/label_bank_account"
             android:textStyle="bold"
             android:visibility="gone" />
 
@@ -97,7 +97,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:hint="Reference Number"
+                android:hint="@string/hint_reference_number"
             android:inputType="text"
             android:visibility="gone" />
 
@@ -107,7 +107,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:gravity="top|start"
-            android:hint="Payment Note"
+                android:hint="@string/hint_payment_note"
             android:inputType="textMultiLine"
             android:minLines="2"
             android:visibility="gone" />
@@ -117,7 +117,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:hint="Table Number"
+                android:hint="@string/hint_table_number"
             android:inputType="number"
             android:visibility="gone" />
 
@@ -126,7 +126,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:hint="Delivery Address"
+                android:hint="@string/hint_delivery_address"
             android:inputType="textPostalAddress"
             android:visibility="gone" />
 
@@ -135,7 +135,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:hint="Delivery Fee"
+                android:hint="@string/hint_delivery_fee"
             android:inputType="numberDecimal"
             android:visibility="gone" />
 

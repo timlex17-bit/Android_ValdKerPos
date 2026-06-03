@@ -11,15 +11,17 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.models.Product;
+import com.valdker.pos.models.ProductUnit;
 import com.valdker.pos.network.ApiClient;
 import com.valdker.pos.network.ApiConfig;
 import com.valdker.pos.network.VolleyMultipartRequest;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -68,27 +70,26 @@ public class ProductRepository {
         final String url = buildProductsUrl(categoryId);
         Log.i(TAG, "REQ: GET " + url);
 
-        JsonArrayRequest req = new JsonArrayRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.GET,
                 url,
-                null,
-                res -> {
-                    List<Product> out = new ArrayList<>(res != null ? res.length() : 0);
+                response -> {
+                    try {
+                        JSONArray res = extractResultsArray(response);
+                        List<Product> out = new ArrayList<>(res.length());
 
-                    if (res == null) {
+                        for (int i = 0; i < res.length(); i++) {
+                            JSONObject o = res.optJSONObject(i);
+                            if (o == null) continue;
+
+                            if (i == 0) Log.d(TAG, "First product JSON: " + o);
+                            out.add(parseProduct(o));
+                        }
+
                         cb.onSuccess(out);
-                        return;
+                    } catch (Exception e) {
+                        cb.onError(0, "Parse error: " + e.getMessage());
                     }
-
-                    for (int i = 0; i < res.length(); i++) {
-                        JSONObject o = res.optJSONObject(i);
-                        if (o == null) continue;
-
-                        if (i == 0) Log.d(TAG, "First product JSON: " + o);
-                        out.add(parseProduct(o));
-                    }
-
-                    cb.onSuccess(out);
                 },
                 err -> {
                     int code = -1;
@@ -120,6 +121,21 @@ public class ProductRepository {
         req.setRetryPolicy(new DefaultRetryPolicy(TIMEOUT_MS, MAX_RETRIES, BACKOFF_MULT));
         req.setShouldCache(false);
         ApiClient.getInstance(appContext).add(req);
+    }
+
+    private static JSONArray extractResultsArray(String response) throws Exception {
+        Object parsed = new JSONTokener(response == null ? "[]" : response).nextValue();
+
+        if (parsed instanceof JSONArray) {
+            return (JSONArray) parsed;
+        }
+
+        if (parsed instanceof JSONObject) {
+            JSONArray results = ((JSONObject) parsed).optJSONArray("results");
+            return results != null ? results : new JSONArray();
+        }
+
+        return new JSONArray();
     }
 
     public void fetchProducts(@Nullable String token, @NonNull Callback cb) {
@@ -525,6 +541,16 @@ public class ProductRepository {
         p.categoryName = categoryName;
 
         p.barcode = barcode;
+        p.product_units.clear();
+        JSONArray productUnits = o.optJSONArray("product_units");
+        if (productUnits != null) {
+            for (int i = 0; i < productUnits.length(); i++) {
+                JSONObject unitObj = productUnits.optJSONObject(i);
+                if (unitObj != null) {
+                    p.product_units.add(ProductUnit.fromJson(unitObj));
+                }
+            }
+        }
         p.description = asString(o, "description");
         p.buyPrice = asString(o, "buy_price", "buyPrice");
         p.sellPrice = asString(o, "sell_price", "sellPrice");
@@ -532,7 +558,8 @@ public class ProductRepository {
         p.itemType = asString(o, "item_type");
 
         String activeRaw = asString(o, "is_active");
-        p.isActive = "true".equalsIgnoreCase(activeRaw)
+        p.isActive = activeRaw.isEmpty()
+                || "true".equalsIgnoreCase(activeRaw)
                 || "1".equals(activeRaw);
 
         try {

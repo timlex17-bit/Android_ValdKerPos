@@ -10,8 +10,8 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.network.ApiClient;
 import com.valdker.pos.network.ApiConfig;
@@ -19,6 +19,7 @@ import com.valdker.pos.ui.purchases.PurchaseLite;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -63,18 +64,16 @@ public class PurchaseRepository {
         String url = ApiConfig.url(new SessionManager(appContext), BASE);
         Log.i(TAG, "REQ: GET " + url);
 
-        JsonArrayRequest req = new JsonArrayRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.GET,
                 url,
-                null,
-                (JSONArray res) -> {
+                response -> {
                     try {
+                        JSONArray res = extractResultsArray(response);
                         List<PurchaseLite> out = new ArrayList<>();
-                        if (res != null) {
-                            for (int i = 0; i < res.length(); i++) {
-                                JSONObject o = res.optJSONObject(i);
-                                if (o != null) out.add(PurchaseLite.fromJson(o));
-                            }
+                        for (int i = 0; i < res.length(); i++) {
+                            JSONObject o = res.optJSONObject(i);
+                            if (o != null) out.add(PurchaseLite.fromJson(o));
                         }
                         cb.onSuccess(out);
                     } catch (Exception e) {
@@ -109,6 +108,21 @@ public class PurchaseRepository {
         req.setShouldCache(false);
 
         ApiClient.getInstance(appContext).add(req);
+    }
+
+    private static JSONArray extractResultsArray(String response) throws Exception {
+        Object parsed = new JSONTokener(response == null ? "[]" : response).nextValue();
+
+        if (parsed instanceof JSONArray) {
+            return (JSONArray) parsed;
+        }
+
+        if (parsed instanceof JSONObject) {
+            JSONArray results = ((JSONObject) parsed).optJSONArray("results");
+            return results != null ? results : new JSONArray();
+        }
+
+        return new JSONArray();
     }
 
     // ==========================================================

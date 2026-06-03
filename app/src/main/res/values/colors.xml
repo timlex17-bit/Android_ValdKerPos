@@ -5,6 +5,7 @@
 
     <color name="brand_orange">#60E66C</color>
     <color name="brand_orange_light">#059814</color>
+    <color name="status_bar_green">#60E66C</color>
 
     <color name="orange_200_fallback">#60E66C</color>
     <color name="orange_400_fallback">#059814</color>

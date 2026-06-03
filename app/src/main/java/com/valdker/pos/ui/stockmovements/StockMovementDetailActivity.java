@@ -3,6 +3,8 @@ package com.valdker.pos.ui.stockmovements;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -10,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.valdker.pos.R;
 import com.valdker.pos.models.StockMovement;
+import com.valdker.pos.utils.SystemBarsFix;
 
 import org.json.JSONObject;
 
@@ -50,7 +53,10 @@ public class StockMovementDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("DETAIL_ACTIVITY", "OPEN StockMovementDetailActivity");
         setContentView(R.layout.activity_stock_movement_detail);
+        View root = findViewById(R.id.detailRoot);
+        SystemBarsFix.applyForcedDetailSafeArea(this, root, "StockMovementDetail");
 
         TextView tvTitle = findViewById(R.id.tvTitle);
         TextView tvMeta = findViewById(R.id.tvMeta);

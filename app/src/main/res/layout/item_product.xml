@@ -18,7 +18,7 @@
         <ImageView
             android:id="@+id/imgProduct"
             android:layout_width="0dp"
-            android:layout_height="170dp"
+            android:layout_height="@dimen/product_card_image_height"
             android:contentDescription="Product image"
             android:scaleType="centerCrop"
             android:src="@android:color/darker_gray"

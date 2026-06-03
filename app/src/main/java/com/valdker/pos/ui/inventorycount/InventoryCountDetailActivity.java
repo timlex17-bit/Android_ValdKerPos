@@ -3,10 +3,11 @@ package com.valdker.pos.ui.inventorycount;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,10 +19,15 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.valdker.pos.BuildConfig;
 import com.valdker.pos.R;
+import com.valdker.pos.SessionManager;
 import com.valdker.pos.models.InventoryCount;
 import com.valdker.pos.models.InventoryCountItem;
+import com.valdker.pos.network.ApiConfig;
+import com.valdker.pos.repositories.InventoryOperationCacheRepository;
+import com.valdker.pos.utils.ErrorHandler;
+import com.valdker.pos.utils.NetworkUtils;
+import com.valdker.pos.utils.SystemBarsFix;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -98,7 +104,10 @@ public class InventoryCountDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("DETAIL_ACTIVITY", "OPEN InventoryCountDetailActivity");
         setContentView(R.layout.activity_inventory_count_detail);
+        View root = findViewById(R.id.detailRoot);
+        SystemBarsFix.applyForcedDetailSafeArea(this, root, "InventoryCountDetail");
 
         bindViews();
         setupRecycler();
@@ -228,6 +237,10 @@ public class InventoryCountDetailActivity extends AppCompatActivity {
     }
 
     private void finalizeInventoryCount() {
+        if (!NetworkUtils.isNetworkAvailable(this)) {
+            Toast.makeText(this, InventoryOperationCacheRepository.INTERNET_REQUIRED_MESSAGE, Toast.LENGTH_SHORT).show();
+            return;
+        }
         if (inventoryId <= 0) {
             Toast.makeText(this, "Invalid inventory count ID", Toast.LENGTH_SHORT).show();
             return;
@@ -236,13 +249,10 @@ public class InventoryCountDetailActivity extends AppCompatActivity {
         isFinalizing = true;
         updateFinalizeButton();
 
-        String baseUrl = BuildConfig.BASE_URL;
-        if (baseUrl == null) baseUrl = "";
-        if (baseUrl.endsWith("/")) {
-            baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
-        }
-
-        final String url = baseUrl + "/api/inventorycounts/" + inventoryId + "/finalize/";
+        final String url = ApiConfig.url(
+                new SessionManager(this),
+                "api/inventorycounts/" + inventoryId + "/finalize/"
+        );
 
         StringRequest request = new StringRequest(
                 Request.Method.POST,
@@ -284,11 +294,7 @@ public class InventoryCountDetailActivity extends AppCompatActivity {
                     } catch (Exception ignored) {
                     }
 
-                    Toast.makeText(
-                            InventoryCountDetailActivity.this,
-                            message,
-                            Toast.LENGTH_LONG
-                    ).show();
+                    ErrorHandler.handleApiError(InventoryCountDetailActivity.this, message);
                 }
         ) {
             @Override

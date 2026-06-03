@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import org.json.JSONArray;
 
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -34,6 +35,7 @@ public class SessionManager {
 
     private static final String KEY_SHIFT_OPEN = "shift_open";
     private static final String KEY_SHIFT_ID = "shift_id";
+    private static final String KEY_SHIFT_STATUS = "shift_status";
     private static final String KEY_OPENING_CASH = "opening_cash";
     private static final String KEY_SHIFT_LOCAL_ID = "shift_local_id";
 
@@ -43,6 +45,7 @@ public class SessionManager {
     private static final String KEY_SHOP_NAME = "shop_name";
     private static final String KEY_SHOP_ADDRESS = "shop_address";
     private static final String KEY_SHOP_LOGO = "shop_logo";
+    private static final String KEY_SHOP_BUSINESS_TYPE = "shop_business_type";
     private static final String KEY_IS_SUPERUSER = "is_superuser";
     private static final String KEY_IS_PLATFORM_ADMIN = "is_platform_admin";
     private static final String KEY_IS_SHOP_OWNER = "is_shop_owner";
@@ -55,6 +58,7 @@ public class SessionManager {
     private static final String KEY_USERNAME = "username";
     private static final String KEY_ROLE = "role";
     private static final String KEY_PERMS = "perms";
+    private static final String KEY_MENU_PERMISSIONS_JSON = "menu_permissions_json";
 
     private final SharedPreferences prefs;
 
@@ -80,7 +84,8 @@ public class SessionManager {
             boolean isShopCashier,
             @Nullable String businessType,
             @Nullable JSONObject features,
-            @Nullable JSONArray permissions
+            @Nullable JSONArray permissions,
+            @Nullable JSONObject menuPermissions
     ) {
         if (token == null) token = "";
         if (username == null) username = "";
@@ -91,6 +96,7 @@ public class SessionManager {
         if (shopAddress == null) shopAddress = "";
         if (shopLogo == null) shopLogo = "";
         if (businessType == null) businessType = "retail";
+        businessType = normalizeBusinessType(businessType);
 
         Set<String> permSet = new HashSet<>();
         if (permissions != null) {
@@ -101,6 +107,7 @@ public class SessionManager {
         }
 
         String featuresJson = features != null ? features.toString() : "{}";
+        String menuPermissionsJson = menuPermissions != null ? menuPermissions.toString() : "{}";
 
         prefs.edit()
                 .putString(KEY_TOKEN, token.trim())
@@ -117,10 +124,51 @@ public class SessionManager {
                 .putBoolean(KEY_IS_SHOP_OWNER, isShopOwner)
                 .putBoolean(KEY_IS_SHOP_MANAGER, isShopManager)
                 .putBoolean(KEY_IS_SHOP_CASHIER, isShopCashier)
-                .putString(KEY_BUSINESS_TYPE, businessType.trim().toLowerCase())
+                .putString(KEY_BUSINESS_TYPE, businessType)
+                .putString(KEY_SHOP_BUSINESS_TYPE, businessType)
                 .putString(KEY_FEATURES_JSON, featuresJson)
                 .putStringSet(KEY_PERMS, permSet)
+                .putString(KEY_MENU_PERMISSIONS_JSON, menuPermissionsJson)
                 .apply();
+    }
+
+    public void applyCachedUserProfile(
+            @Nullable String username,
+            @Nullable String fullName,
+            @Nullable String role,
+            int shopId,
+            @Nullable String shopCode,
+            @Nullable String shopName,
+            boolean isSuperuser,
+            boolean isPlatformAdmin,
+            boolean isShopOwner,
+            boolean isShopManager,
+            boolean isShopCashier,
+            @Nullable String businessType,
+            @Nullable JSONObject features,
+            @Nullable JSONArray permissions,
+            @Nullable JSONObject menuPermissions
+    ) {
+        saveUserProfile(
+                getToken(),
+                username != null && !username.trim().isEmpty() ? username : getUsername(),
+                fullName,
+                role,
+                shopId,
+                shopCode,
+                shopName,
+                getShopAddress(),
+                getShopLogo(),
+                isSuperuser,
+                isPlatformAdmin,
+                isShopOwner,
+                isShopManager,
+                isShopCashier,
+                businessType,
+                features,
+                permissions,
+                menuPermissions
+        );
     }
 
     // -------------------------------
@@ -142,7 +190,7 @@ public class SessionManager {
     }
 
     public int getShopId() {
-        return prefs.getInt(KEY_SHOP_ID, 1);
+        return prefs.getInt(KEY_SHOP_ID, 0);
     }
 
     // -------------------------------
@@ -164,6 +212,28 @@ public class SessionManager {
         return prefs.getInt(KEY_SHIFT_ID, 0);
     }
 
+    public void setShiftStatus(@Nullable String status) {
+        prefs.edit().putString(KEY_SHIFT_STATUS, status != null ? status : "").apply();
+    }
+
+    @NonNull
+    public String getShiftStatus() {
+        String v = prefs.getString(KEY_SHIFT_STATUS, "");
+        return v != null ? v : "";
+    }
+
+    public void saveOpenShift(int id, @Nullable String status, @Nullable String openingCash) {
+        if (status == null || status.trim().isEmpty()) status = "OPEN";
+        if (openingCash == null || openingCash.trim().isEmpty()) openingCash = "0.00";
+
+        prefs.edit()
+                .putBoolean(KEY_SHIFT_OPEN, true)
+                .putInt(KEY_SHIFT_ID, id)
+                .putString(KEY_SHIFT_STATUS, status.trim())
+                .putString(KEY_OPENING_CASH, openingCash.trim())
+                .commit();
+    }
+
     public void setOpeningCash(@Nullable String cash) {
         if (cash == null) cash = "0.00";
         prefs.edit().putString(KEY_OPENING_CASH, cash).apply();
@@ -171,9 +241,25 @@ public class SessionManager {
 
     @NonNull
     public String getBusinessType() {
-        String v = prefs.getString(KEY_BUSINESS_TYPE, "retail");
+        String v = prefs.getString(KEY_SHOP_BUSINESS_TYPE, null);
+        if (v == null || v.trim().isEmpty()) {
+            v = prefs.getString(KEY_BUSINESS_TYPE, "retail");
+        }
         if (v == null || v.trim().isEmpty()) return "retail";
-        return v.trim().toLowerCase();
+        return normalizeBusinessType(v);
+    }
+
+    @NonNull
+    public String getShopBusinessType() {
+        return getBusinessType();
+    }
+
+    public void setShopBusinessType(@Nullable String businessType) {
+        String normalized = normalizeBusinessType(businessType);
+        prefs.edit()
+                .putString(KEY_BUSINESS_TYPE, normalized)
+                .putString(KEY_SHOP_BUSINESS_TYPE, normalized)
+                .apply();
     }
 
     @NonNull
@@ -275,9 +361,10 @@ public class SessionManager {
         prefs.edit()
                 .putBoolean(KEY_SHIFT_OPEN, false)
                 .putInt(KEY_SHIFT_ID, 0)
+                .putString(KEY_SHIFT_STATUS, "")
                 .putLong(KEY_SHIFT_LOCAL_ID, -1L)
                 .putString(KEY_OPENING_CASH, "0.00")
-                .apply();
+                .commit();
     }
 
     // -------------------------------
@@ -314,6 +401,7 @@ public class SessionManager {
                 .putString(KEY_USERNAME, username.trim())
                 .putString(KEY_ROLE, role.trim())
                 .putStringSet(KEY_PERMS, permSet)
+                .putString(KEY_MENU_PERMISSIONS_JSON, "{}")
                 .apply();
     }
 
@@ -373,15 +461,36 @@ public class SessionManager {
         return v != null ? v : "";
     }
 
+    public void updateShopProfile(@Nullable String shopName,
+                                  @Nullable String shopAddress,
+                                  @Nullable String shopLogo) {
+        if (shopName == null) shopName = "";
+        if (shopAddress == null) shopAddress = "";
+        if (shopLogo == null) shopLogo = "";
+
+        prefs.edit()
+                .putString(KEY_SHOP_NAME, shopName.trim())
+                .putString(KEY_SHOP_ADDRESS, shopAddress.trim())
+                .putString(KEY_SHOP_LOGO, shopLogo.trim())
+                .apply();
+    }
+
     public boolean isOwner() {
         return isPlatformSuperuser() || isPlatformAdmin() || isShopOwner();
     }
 
     public boolean canManageSettings() {
+        if (hasMenuPermissions()) {
+            return canAccessMenu("settings");
+        }
         return hasPermission("settings.manage") || isOwner();
     }
 
     public boolean canViewReports() {
+        if (hasMenuPermissions()) {
+            return canAccessMenu("reports");
+        }
+
         if (hasPermission("pos.view_reports") || hasPermission("reports.view")) {
             return true;
         }
@@ -399,6 +508,137 @@ public class SessionManager {
     public boolean hasPermission(@Nullable String code) {
         if (code == null) return false;
         return getPermissions().contains(code.trim());
+    }
+
+    @NonNull
+    public JSONObject getMenuPermissions() {
+        String raw = prefs.getString(KEY_MENU_PERMISSIONS_JSON, "{}");
+        try {
+            return new JSONObject(raw != null ? raw : "{}");
+        } catch (Exception e) {
+            return new JSONObject();
+        }
+    }
+
+    public boolean hasMenuPermissions() {
+        return getMenuPermissions().length() > 0;
+    }
+
+    public boolean canAccessMenu(@Nullable String menuKey) {
+        if (menuKey == null) return false;
+
+        String key = menuKey.trim();
+        if (key.isEmpty()) return false;
+
+        JSONObject menuPermissions = getMenuPermissions();
+        if (menuPermissions.length() > 0) {
+            if (!menuPermissions.has(key)) return false;
+            Object value = menuPermissions.opt(key);
+            if (value instanceof Boolean) return (Boolean) value;
+            String rawValue = value != null ? String.valueOf(value).trim() : "";
+            return "true".equalsIgnoreCase(rawValue) || "1".equals(rawValue);
+        }
+
+        return canAccessMenuByRole(key);
+    }
+
+    private boolean canAccessMenuByRole(@NonNull String menuKey) {
+        String role = getRole().trim().toLowerCase(Locale.US);
+
+        if (isOwner()
+                || "owner".equals(role)
+                || "admin".equals(role)
+                || "superuser".equals(role)) {
+            return isSupportedMenuKey(menuKey);
+        }
+
+        if (isShopManager() || "manager".equals(role)) {
+            switch (menuKey) {
+                case "pos":
+                case "orders":
+                case "customers":
+                case "reports":
+                case "stock_movements":
+                case "inventory_counts":
+                case "expenses":
+                case "suppliers":
+                case "purchases":
+                case "products":
+                case "categories":
+                case "units":
+                case "product_returns":
+                case "stock_adjustments":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        if (isShopCashier() || "cashier".equals(role) || "kasir".equals(role)) {
+            return "pos".equals(menuKey)
+                    || "orders".equals(menuKey)
+                    || "customers".equals(menuKey);
+        }
+
+        if ("inventory_staff".equals(role)) {
+            switch (menuKey) {
+                case "products":
+                case "categories":
+                case "units":
+                case "warehouses":
+                case "warehouse_stocks":
+                case "stock_transfers":
+                case "stock_movements":
+                case "stock_adjustments":
+                case "inventory_counts":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        if ("finance".equals(role)) {
+            switch (menuKey) {
+                case "reports":
+                case "expenses":
+                case "bank_accounts":
+                case "bank_ledgers":
+                case "orders":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isSupportedMenuKey(@NonNull String menuKey) {
+        switch (menuKey) {
+            case "pos":
+            case "orders":
+            case "customers":
+            case "reports":
+            case "stock_movements":
+            case "inventory_counts":
+            case "settings":
+            case "bank_accounts":
+            case "expenses":
+            case "suppliers":
+            case "purchases":
+            case "products":
+            case "categories":
+            case "units":
+            case "product_returns":
+            case "stock_adjustments":
+            case "warehouses":
+            case "warehouse_stocks":
+            case "stock_transfers":
+            case "bank_ledgers":
+                return true;
+            default:
+                return false;
+        }
     }
 
     public boolean isLoggedIn() {
@@ -426,6 +666,7 @@ public class SessionManager {
         editor.remove(KEY_USERNAME);
         editor.remove(KEY_ROLE);
         editor.remove(KEY_PERMS);
+        editor.remove(KEY_MENU_PERMISSIONS_JSON);
         editor.remove(KEY_SHOP_CODE);
         editor.remove(KEY_SHOP_ID);
         editor.remove(KEY_FULL_NAME);
@@ -438,6 +679,7 @@ public class SessionManager {
         editor.remove(KEY_IS_SHOP_MANAGER);
         editor.remove(KEY_IS_SHOP_CASHIER);
         editor.remove(KEY_BUSINESS_TYPE);
+        editor.remove(KEY_SHOP_BUSINESS_TYPE);
         editor.remove(KEY_FEATURES_JSON);
 
         editor.apply();
@@ -465,6 +707,17 @@ public class SessionManager {
 
     private String ensureTrailingSlash(String url) {
         return url.endsWith("/") ? url : url + "/";
+    }
+
+    @NonNull
+    private static String normalizeBusinessType(@Nullable String value) {
+        if (value == null) return "retail";
+        String clean = value.trim().toLowerCase(Locale.US);
+        if (clean.isEmpty()) return "retail";
+        if ("workshop".equals(clean) || "restaurant".equals(clean) || "retail".equals(clean)) {
+            return clean;
+        }
+        return clean;
     }
 
     public void clearToken() {

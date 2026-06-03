@@ -34,6 +34,17 @@ public final class ApiConfig {
         String base = base(session);
 
         if (path.startsWith("/")) path = path.substring(1);
+        boolean baseIncludesApi = base.endsWith("/api/") || base.endsWith("/api");
+
+        if (baseIncludesApi && ("api".equals(path) || "api/".equals(path))) {
+            return base.endsWith("/") ? base.substring(0, base.length() - 1) : base;
+        }
+
+        if (baseIncludesApi && path.startsWith("api/")) {
+            path = path.substring(4);
+        } else if (!baseIncludesApi && !path.startsWith("api/")) {
+            path = "api/" + path;
+        }
 
         return base + path;
     }

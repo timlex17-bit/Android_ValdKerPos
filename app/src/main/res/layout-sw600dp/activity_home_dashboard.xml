@@ -22,28 +22,25 @@
             android:id="@+id/headerContent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
             android:paddingTop="14dp"
             android:paddingBottom="14dp">
 
-            <!-- BRAND -->
             <TextView
                 android:id="@+id/tvAppBrand"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="ValdKer POS"
+                android:text="@string/app_name"
                 android:textStyle="bold"
-                android:textSize="18sp"
+                android:textSize="17sp"
                 android:textColor="#FFFFFF"
                 android:maxLines="1"
                 android:ellipsize="end"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/btnLogout"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintHorizontal_chainStyle="spread_inside"/>
+                app:layout_constraintTop_toTopOf="parent"/>
 
-            <!-- LOGOUT CHIP BUTTON -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnLogout"
                 android:layout_width="wrap_content"
@@ -52,7 +49,7 @@
                 android:minWidth="0dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:text="Logout"
+                android:text="@string/logout"
                 android:textAllCaps="false"
                 android:textStyle="bold"
                 android:textSize="12sp"
@@ -69,15 +66,14 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
 
-            <!-- LOGO -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardLogo"
-                android:layout_width="52dp"
-                android:layout_height="52dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:layout_marginTop="12dp"
+                android:backgroundTint="#33FFFFFF"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                android:backgroundTint="#33FFFFFF"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvAppBrand">
 
@@ -85,23 +81,21 @@
                     android:id="@+id/imgAppLogo"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:padding="12dp"
+                    android:padding="11dp"
                     android:scaleType="centerInside"
                     android:src="@drawable/ic_logovaldker"
-                    android:contentDescription="Logo"/>
-
+                    android:contentDescription="@string/app_logo"/>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- HELLO -->
             <TextView
                 android:id="@+id/tvHello"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Hello"
+                android:layout_marginStart="12dp"
+                android:text="@string/dashboard_hello"
                 android:textStyle="bold"
                 android:textSize="22sp"
                 android:textColor="#FFFFFF"
-                android:layout_marginStart="12dp"
                 android:maxLines="1"
                 android:ellipsize="end"
                 app:layout_constraintStart_toEndOf="@id/cardLogo"
@@ -112,112 +106,246 @@
                 android:id="@+id/tvSubtitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Choose a module to continue your work"
-                android:textSize="13sp"
-                android:textColor="#EAF0FF"
                 android:layout_marginStart="12dp"
                 android:layout_marginTop="4dp"
+                android:text="@string/select_a_module_to_continue"
+                android:textSize="13sp"
+                android:textColor="#EAF0FF"
                 android:maxLines="2"
                 android:ellipsize="end"
                 app:layout_constraintStart_toEndOf="@id/cardLogo"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvHello"/>
 
-            <!-- QUICK SUMMARY -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardSummary"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
+                android:backgroundTint="#22FFFFFF"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
-                app:strokeWidth="0dp"
-                android:backgroundTint="#22FFFFFF"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/cardLogo">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingStart="14dp"
-                    android:paddingEnd="14dp"
-                    android:paddingTop="12dp"
-                    android:paddingBottom="12dp">
+                    android:layout_height="wrap_content">
 
-                    <TextView
-                        android:id="@+id/tvSumTitle"
-                        android:layout_width="wrap_content"
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/layoutOwnerSummary"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Shift Today"
-                        android:textStyle="bold"
-                        android:textSize="14sp"
-                        android:textColor="#FFFFFF"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"/>
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp"
+                        android:visibility="visible">
 
-                    <TextView
-                        android:id="@+id/tvSumValue"
-                        android:layout_width="wrap_content"
+                        <TextView
+                            android:id="@+id/tvRevenueTitle"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:text="@string/today_sales"
+                            android:textSize="11sp"
+                            android:textColor="#EAF0FF"
+                            android:maxLines="1"
+                            android:ellipsize="end"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toStartOf="@id/g1"
+                            app:layout_constraintTop_toTopOf="parent"/>
+
+                        <TextView
+                            android:id="@+id/tvRevenueValue"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="$0.00"
+                            android:textStyle="bold"
+                            android:textSize="16sp"
+                            android:textColor="#FFFFFF"
+                            android:maxLines="1"
+                            android:ellipsize="end"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toStartOf="@id/g1"
+                            app:layout_constraintTop_toBottomOf="@id/tvRevenueTitle"/>
+
+                        <androidx.constraintlayout.widget.Guideline
+                            android:id="@+id/g1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            app:layout_constraintGuide_percent="0.34"/>
+
+                        <androidx.constraintlayout.widget.Guideline
+                            android:id="@+id/g2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            app:layout_constraintGuide_percent="0.67"/>
+
+                        <TextView
+                            android:id="@+id/tvExpenseTitle"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:text="@string/today_expenses"
+                            android:textSize="11sp"
+                            android:textColor="#EAF0FF"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:ellipsize="end"
+                            app:layout_constraintStart_toStartOf="@id/g1"
+                            app:layout_constraintEnd_toStartOf="@id/g2"
+                            app:layout_constraintTop_toTopOf="parent"/>
+
+                        <TextView
+                            android:id="@+id/tvExpenseValue"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="$0.00"
+                            android:textStyle="bold"
+                            android:textSize="16sp"
+                            android:textColor="#FFFFFF"
+                            android:gravity="center"
+                            android:maxLines="1"
+                            android:ellipsize="end"
+                            app:layout_constraintStart_toStartOf="@id/g1"
+                            app:layout_constraintEnd_toStartOf="@id/g2"
+                            app:layout_constraintTop_toBottomOf="@id/tvExpenseTitle"/>
+
+                        <TextView
+                            android:id="@+id/tvNetTitle"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:text="@string/net_profit"
+                            android:textSize="11sp"
+                            android:textColor="#EAF0FF"
+                            android:gravity="end"
+                            android:maxLines="1"
+                            android:ellipsize="end"
+                            app:layout_constraintStart_toStartOf="@id/g2"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"/>
+
+                        <TextView
+                            android:id="@+id/tvNetValue"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="$0.00"
+                            android:textStyle="bold"
+                            android:textSize="16sp"
+                            android:textColor="#FFFFFF"
+                            android:gravity="end"
+                            android:maxLines="1"
+                            android:ellipsize="end"
+                            app:layout_constraintStart_toStartOf="@id/g2"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/tvNetTitle"/>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/layoutManagerSummary"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="$ 0.00"
-                        android:textStyle="bold"
-                        android:textSize="20sp"
-                        android:textColor="#FFFFFF"
-                        android:layout_marginTop="4dp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/tvSumTitle"/>
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp"
+                        android:visibility="gone">
 
-                    <TextView
-                        android:id="@+id/tvSumHint"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:text="Total activities recorded today"
-                        android:textSize="12sp"
-                        android:textColor="#EAF0FF"
-                        android:layout_marginTop="4dp"
-                        android:maxLines="1"
-                        android:ellipsize="end"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/tvSumValue"/>
+                        <TextView
+                            android:id="@+id/tvSumTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/shift_today"
+                            android:textStyle="bold"
+                            android:textSize="14sp"
+                            android:textColor="#FFFFFF"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"/>
 
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                        <TextView
+                            android:id="@+id/tvSumValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="$ 0.00"
+                            android:textStyle="bold"
+                            android:textSize="20sp"
+                            android:textColor="#FFFFFF"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/tvSumTitle"/>
+
+                        <TextView
+                            android:id="@+id/tvSumHint"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="@string/shift_summary_hint"
+                            android:textSize="12sp"
+                            android:textColor="#EAF0FF"
+                            android:maxLines="1"
+                            android:ellipsize="end"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/tvSumValue"/>
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </FrameLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
-
     </FrameLayout>
 
-    <!-- CONTENT LIST -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvDashboard"
+    <!-- DASHBOARD CONTENT AREA -->
+    <FrameLayout
+        android:id="@+id/contentHost"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        android:paddingTop="14dp"
-        android:paddingBottom="18dp"
-        android:clipToPadding="false"
-        android:overScrollMode="never"
         app:layout_constraintTop_toBottomOf="@id/header"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottomNav"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvDashboard"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="18dp"
+            android:clipToPadding="false"
+            android:overScrollMode="never"
+            tools:listitem="@layout/item_dashboard_tile"
+            tools:itemCount="8"
+            tools:spanCount="3"/>
+
+        <FrameLayout
+            android:id="@+id/fragmentContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"/>
+    </FrameLayout>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNav"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        app:menu="@menu/bottom_nav_menu"
+        app:labelVisibilityMode="selected"
+        app:itemHorizontalTranslationEnabled="false"
+        app:itemIconTint="@color/bottom_nav_selector"
+        app:itemTextColor="@color/bottom_nav_selector"
+        app:elevation="8dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        tools:listitem="@layout/item_dashboard_tile"
-        tools:itemCount="8"
-        tools:spanCount="2"/>
-
-    <!-- FRAGMENT CONTAINER -->
-    <FrameLayout
-        android:id="@+id/fragmentContainer"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/header"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

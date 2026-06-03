@@ -6,7 +6,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.activity.OnBackPressedDispatcher;
 import androidx.annotation.NonNull;
@@ -17,18 +17,27 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.android.volley.Request;
-import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.base.BaseFragment;
 import com.valdker.pos.models.StockAdjustment;
 import com.valdker.pos.network.ApiClient;
 import com.valdker.pos.network.ApiConfig;
+import com.valdker.pos.repositories.InventoryOperationCacheRepository;
 import com.valdker.pos.repositories.StockAdjustmentRepository;
 import com.valdker.pos.utils.InsetsHelper;
+import com.valdker.pos.utils.NetworkUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.widget.EditText;
+
 import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,16 +49,21 @@ public class StockAdjustmentsFragment extends BaseFragment {
     private static final String TAG = "STOCK_ADJUSTMENTS";
     private static final String TAG_ADD_DIALOG = "add_stock_adjustment";
     private static final long CLICK_GUARD_MS = 700L;
-
+    private EditText etSearchStockAdjustment;
+    private final List<StockAdjustment> allData = new ArrayList<>();
+    private String currentQuery = "";
     private SwipeRefreshLayout swipe;
     private ProgressBar progress;
+    private View emptyState;
     private TextView tvEmpty;
+    private TextView tvEmptySub;
     private RecyclerView rv;
     private FloatingActionButton fab;
     private ImageView btnBack;
     private ImageView ivHeaderAction;
 
     private StockAdjustmentsAdapter adapter;
+    private InventoryOperationCacheRepository cacheRepository;
     private final List<StockAdjustment> data = new ArrayList<>();
 
     private JSONArray productsJson = null;
@@ -73,11 +87,13 @@ public class StockAdjustmentsFragment extends BaseFragment {
         applyTopInset(view.findViewById(R.id.topBar));
 
         bindViews(view);
+        cacheRepository = new InventoryOperationCacheRepository(requireContext());
         applyInsets(view);
         setupHeader();
         setupRecycler();
         setupSwipe();
         setupFab();
+        setupSearch();
 
         loadProducts();
         load();
@@ -86,11 +102,102 @@ public class StockAdjustmentsFragment extends BaseFragment {
     private void bindViews(@NonNull View view) {
         swipe = view.findViewById(R.id.swipe);
         progress = view.findViewById(R.id.progress);
+        emptyState = view.findViewById(R.id.emptyState);
         tvEmpty = view.findViewById(R.id.tvEmpty);
+        tvEmptySub = view.findViewById(R.id.tvEmptySub);
         rv = view.findViewById(R.id.rv);
         fab = view.findViewById(R.id.fabAdd);
         btnBack = view.findViewById(R.id.btnBack);
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
+        etSearchStockAdjustment = view.findViewById(R.id.etSearchStockAdjustment);
+    }
+
+    private void setupSearch() {
+        if (etSearchStockAdjustment == null) return;
+
+        etSearchStockAdjustment.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) { }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                currentQuery = s == null ? "" : s.toString().trim();
+                applyFilter();
+            }
+        });
+    }
+
+    private String buildSearchText(@NonNull StockAdjustment item) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(String.valueOf(item));
+
+        return sb.toString().toLowerCase();
+    }
+
+    private void applyFilter() {
+        data.clear();
+
+        if (TextUtils.isEmpty(currentQuery)) {
+            data.addAll(allData);
+        } else {
+            String q = currentQuery.toLowerCase().trim();
+
+            for (StockAdjustment item : allData) {
+                String searchable = buildSearchText(item);
+                if (searchable.contains(q)) {
+                    data.add(item);
+                }
+            }
+        }
+
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
+
+        updateEmptyState();
+    }
+    private void updateEmptyState() {
+        boolean empty = data.isEmpty();
+        boolean isSearching = !TextUtils.isEmpty(currentQuery);
+
+        if (emptyState != null) {
+            emptyState.setVisibility(empty ? View.VISIBLE : View.GONE);
+        }
+
+        if (tvEmpty != null) {
+            tvEmpty.setText(isSearching
+                    ? getString(R.string.msg_no_matching_stock_adjustments)
+                    : getString(R.string.msg_no_stock_adjustments_yet));
+        }
+
+        if (tvEmptySub != null) {
+            tvEmptySub.setText(isSearching
+                    ? getString(R.string.msg_no_matching_stock_adjustments_sub)
+                    : getString(R.string.msg_no_stock_adjustments_yet_sub));
+        }
+
+        if (rv != null) {
+            rv.setVisibility(empty ? View.GONE : View.VISIBLE);
+        }
+    }
+
+    private void setLocalEmpty() {
+        if (emptyState != null) {
+            emptyState.setVisibility(View.VISIBLE);
+        }
+        if (tvEmpty != null) {
+            tvEmpty.setText(InventoryOperationCacheRepository.NO_LOCAL_DATA_MESSAGE);
+        }
+        if (tvEmptySub != null) {
+            tvEmptySub.setText("");
+        }
+        if (rv != null) {
+            rv.setVisibility(View.GONE);
+        }
     }
 
     private void applyInsets(@NonNull View root) {
@@ -186,6 +293,10 @@ public class StockAdjustmentsFragment extends BaseFragment {
         if (!isAdded()) return;
         if (isAddDialogShowing) return;
         if (isLoadingList) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(InventoryOperationCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         long now = SystemClock.elapsedRealtime();
         if (now - lastFabClickTime < CLICK_GUARD_MS) {
@@ -242,41 +353,53 @@ public class StockAdjustmentsFragment extends BaseFragment {
         isLoadingList = true;
         showListLoading(true);
 
-        StockAdjustmentRepository.fetch(requireContext(), new StockAdjustmentRepository.ListCallback() {
+        cacheRepository.loadStockAdjustmentsRoomFirst(new InventoryOperationCacheRepository.RoomFirstCallback<StockAdjustment>() {
             @Override
-            public void onSuccess(List<StockAdjustment> list) {
+            public void onLocal(@NonNull List<StockAdjustment> list) {
+                if (!isAdded() || list.isEmpty()) return;
+
+                allData.clear();
+                allData.addAll(list);
+                applyFilter();
+                showListLoading(false);
+            }
+
+            @Override
+            public void onRemote(@NonNull List<StockAdjustment> list) {
                 if (!isAdded()) return;
 
                 isLoadingList = false;
                 showListLoading(false);
 
-                data.clear();
-                if (list != null) {
-                    data.addAll(list);
-                }
+                allData.clear();
+                allData.addAll(list);
 
-                if (adapter != null) {
-                    adapter.notifyDataSetChanged();
-                }
+                applyFilter();
+            }
 
-                if (tvEmpty != null) {
-                    tvEmpty.setText("No stock adjustments");
-                    tvEmpty.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
+            @Override
+            public void onNoInternet(boolean hasLocalData) {
+                if (!isAdded()) return;
+
+                isLoadingList = false;
+                showListLoading(false);
+
+                if (!hasLocalData && allData.isEmpty()) {
+                    setLocalEmpty();
+                    toast(InventoryOperationCacheRepository.NO_LOCAL_DATA_MESSAGE);
                 }
             }
 
             @Override
-            public void onError(String message) {
+            public void onError(@NonNull String message, boolean hasLocalData) {
                 if (!isAdded()) return;
 
                 isLoadingList = false;
                 showListLoading(false);
 
-                toast(message == null ? "Failed to load stock adjustments" : message);
-
-                if (tvEmpty != null) {
-                    tvEmpty.setText("No stock adjustments");
-                    tvEmpty.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
+                if (!hasLocalData && allData.isEmpty()) {
+                    setLocalEmpty();
+                    showApiError(message.trim().isEmpty() ? "Failed to load stock adjustments" : message);
                 }
             }
         });
@@ -285,21 +408,30 @@ public class StockAdjustmentsFragment extends BaseFragment {
     private void loadProducts() {
         if (!isAdded()) return;
         if (isLoadingProducts) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            productsLoaded = false;
+            productsJson = null;
+            setFabEnabled(true);
+            return;
+        }
 
         isLoadingProducts = true;
 
         SessionManager sm = new SessionManager(requireContext());
         String url = ApiConfig.url(sm, "api/products/?track_stock=true");
 
-        JsonArrayRequest req = new JsonArrayRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.GET,
                 url,
-                null,
                 response -> {
                     if (!isAdded()) return;
 
                     isLoadingProducts = false;
-                    productsJson = response;
+                    try {
+                        productsJson = extractResultsArray(response);
+                    } catch (Exception e) {
+                        productsJson = null;
+                    }
                     productsLoaded = productsJson != null && productsJson.length() > 0;
 
                     if (!isAddDialogShowing) {
@@ -322,7 +454,7 @@ public class StockAdjustmentsFragment extends BaseFragment {
                     if (error != null && error.networkResponse != null) {
                         msg += " (" + error.networkResponse.statusCode + ")";
                     }
-                    toast(msg);
+                    showApiError(msg);
                 }
         ) {
             @Override
@@ -343,10 +475,25 @@ public class StockAdjustmentsFragment extends BaseFragment {
         ApiClient.getInstance(requireContext()).add(req);
     }
 
+    private static JSONArray extractResultsArray(String response) throws Exception {
+        Object parsed = new JSONTokener(response == null ? "[]" : response).nextValue();
+
+        if (parsed instanceof JSONArray) {
+            return (JSONArray) parsed;
+        }
+
+        if (parsed instanceof JSONObject) {
+            JSONArray results = ((JSONObject) parsed).optJSONArray("results");
+            return results != null ? results : new JSONArray();
+        }
+
+        return new JSONArray();
+    }
+
     private void showListLoading(boolean loading) {
         if (loading) {
-            if (tvEmpty != null) {
-                tvEmpty.setVisibility(View.GONE);
+            if (emptyState != null) {
+                emptyState.setVisibility(View.GONE);
             }
             if (swipe != null && !swipe.isRefreshing() && progress != null) {
                 progress.setVisibility(View.VISIBLE);
@@ -393,12 +540,16 @@ public class StockAdjustmentsFragment extends BaseFragment {
 
         swipe = null;
         progress = null;
+        emptyState = null;
         tvEmpty = null;
+        tvEmptySub = null;
         rv = null;
         fab = null;
         btnBack = null;
         ivHeaderAction = null;
+        etSearchStockAdjustment = null;
         adapter = null;
+        cacheRepository = null;
 
         isAddDialogShowing = false;
         isLoadingList = false;

@@ -29,83 +29,70 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Back"
+                android:contentDescription="@string/action_back"
                 android:padding="2dp"
                 android:src="@drawable/ic_arrow_back"
                 app:tint="@android:color/white" />
 
-            <TextView
-                android:id="@+id/tvTitleBankAccounts"
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:layout_weight="1"
-                android:text="Konta Bankária"
-                android:textColor="@android:color/white"
-                android:textSize="22sp"
-                android:textStyle="bold" />
+                android:backgroundTint="@android:color/white"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="1dp"
+                app:strokeColor="#BBF7D0"
+                app:strokeWidth="1.5dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="14dp"
+                    android:paddingTop="10dp"
+                    android:paddingEnd="14dp"
+                    android:paddingBottom="10dp">
+
+                    <EditText
+                        android:id="@+id/etSearchBank"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@android:color/transparent"
+                        android:hint="@string/search_bank_account"
+                        android:imeOptions="actionSearch"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:padding="0dp"
+                        android:textColor="#111827"
+                        android:textColorHint="#6B7280"
+                        android:textSize="16sp" />
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:contentDescription="@string/action_search"
+                        android:src="@android:drawable/ic_menu_search"
+                        app:tint="#22C55E" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
             <ImageView
                 android:id="@+id/ivHeaderAction"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Refresh"
+                android:contentDescription="@string/action_refresh"
                 android:padding="2dp"
                 android:src="@android:drawable/ic_popup_sync"
                 app:tint="@android:color/white" />
 
         </LinearLayout>
-
-        <!-- Search -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="6dp"
-            android:backgroundTint="@android:color/white"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="1dp"
-            app:strokeColor="#22C55E"
-            app:strokeWidth="1.5dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingStart="14dp"
-                android:paddingTop="10dp"
-                android:paddingEnd="14dp"
-                android:paddingBottom="10dp">
-
-                <EditText
-                    android:id="@+id/etSearchBank"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@android:color/transparent"
-                    android:hint="@string/search_bank_account"
-                    android:imeOptions="actionSearch"
-                    android:inputType="text"
-                    android:maxLines="1"
-                    android:padding="0dp"
-                    android:textColor="#111827"
-                    android:textColorHint="#6B7280"
-                    android:textSize="16sp" />
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription="Search"
-                    android:src="@android:drawable/ic_menu_search"
-                    app:tint="#22C55E" />
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
 
         <!-- Content -->
         <FrameLayout
@@ -129,18 +116,38 @@
                     android:paddingBottom="88dp" />
             </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-            <TextView
-                android:id="@+id/tvEmpty"
-                android:layout_width="wrap_content"
+            <!-- Empty -->
+            <LinearLayout
+                android:id="@+id/emptyState"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="28dp"
+                android:layout_marginEnd="24dp"
                 android:gravity="center"
-                android:padding="24dp"
-                android:text="Seidauk iha konta bankária"
-                android:textColor="#6B7280"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                android:visibility="gone" />
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tvEmpty"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/empty_bank_accounts"
+                    android:textColor="#6B7280"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvEmptySub"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center"
+                    android:text="@string/empty_bank_accounts_sub"
+                    android:textColor="#9CA3AF"
+                    android:textSize="13sp" />
+            </LinearLayout>
 
             <ProgressBar
                 android:id="@+id/progressBar"
@@ -161,7 +168,7 @@
         android:layout_gravity="bottom|end"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
-        android:contentDescription="Add bank account"
+        android:contentDescription="@string/action_add_bank_account"
         app:backgroundTint="#22C55E"
         app:srcCompat="@android:drawable/ic_input_add"
         app:tint="@android:color/white" />

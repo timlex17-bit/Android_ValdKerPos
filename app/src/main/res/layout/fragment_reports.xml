@@ -10,7 +10,6 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Compact Header -->
         <LinearLayout
             android:id="@+id/topBar"
             android:layout_width="match_parent"
@@ -32,7 +31,7 @@
                 android:contentDescription="@string/back"
                 android:padding="8dp"
                 android:src="@drawable/ic_arrow_back"
-                android:tint="@android:color/white" />
+                app:tint="@android:color/white" />
 
             <TextView
                 android:id="@+id/tvHeaderTitle"
@@ -56,14 +55,14 @@
                 android:contentDescription="@string/refresh"
                 android:padding="8dp"
                 android:src="@android:drawable/ic_popup_sync"
-                android:tint="@android:color/white" />
+                app:tint="@android:color/white" />
         </LinearLayout>
 
         <androidx.core.widget.NestedScrollView
             android:id="@+id/rootReports"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#F6F7FB"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:fillViewport="true"
             android:overScrollMode="never">
 
@@ -73,12 +72,11 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <!-- HEADER CARD -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:cardBackgroundColor="#FFFFFF"
-                    app:cardCornerRadius="22dp"
+                    app:cardCornerRadius="20dp"
                     app:cardElevation="0dp"
                     app:strokeColor="#E5E7EB"
                     app:strokeWidth="1dp">
@@ -93,29 +91,28 @@
                             android:id="@+id/tvTitle"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="@string/daily_profit_report"
+                            android:text="Sales Report"
                             android:textColor="#111827"
                             android:textSize="20sp"
                             android:textStyle="bold" />
 
                         <TextView
+                            android:id="@+id/tvSubtitle"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
-                            android:text="@string/report_description"
-                            android:textColor="#6B7280"
+                            android:text="Dynamic report based on your shop business type."
+                            android:textColor="#64748B"
                             android:textSize="12sp" />
-
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- QUICK RANGE -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     app:cardBackgroundColor="#FFFFFF"
-                    app:cardCornerRadius="22dp"
+                    app:cardCornerRadius="20dp"
                     app:cardElevation="0dp"
                     app:strokeColor="#E5E7EB"
                     app:strokeWidth="1dp">
@@ -129,61 +126,63 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/quick_range"
+                            android:text="Report"
                             android:textColor="#111827"
                             android:textSize="13sp"
                             android:textStyle="bold" />
 
                         <com.google.android.material.chip.ChipGroup
+                            android:id="@+id/chipGroupReportType"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
-                            app:chipSpacingHorizontal="10dp"
-                            app:chipSpacingVertical="10dp"
-                            app:selectionRequired="false"
                             app:singleSelection="true">
 
                             <com.google.android.material.chip.Chip
-                                android:id="@+id/btnToday"
+                                android:id="@+id/chipDaily"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/today"
-                                app:chipBackgroundColor="#FFFFFF"
-                                app:chipCornerRadius="16dp"
-                                app:chipStrokeColor="#E5E7EB"
-                                app:chipStrokeWidth="1dp" />
+                                android:text="Daily Summary" />
 
                             <com.google.android.material.chip.Chip
-                                android:id="@+id/btn7Days"
+                                android:id="@+id/chipSales"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/seven_days"
-                                app:chipBackgroundColor="#FFFFFF"
-                                app:chipCornerRadius="16dp"
-                                app:chipStrokeColor="#E5E7EB"
-                                app:chipStrokeWidth="1dp" />
+                                android:checked="true"
+                                android:text="Sales" />
 
                             <com.google.android.material.chip.Chip
-                                android:id="@+id/btnThisMonth"
+                                android:id="@+id/chipPayments"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/this_month"
-                                app:chipBackgroundColor="#FFFFFF"
-                                app:chipCornerRadius="16dp"
-                                app:chipStrokeColor="#E5E7EB"
-                                app:chipStrokeWidth="1dp" />
+                                android:text="Payments" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipShifts"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Shifts" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipItems"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Products / Items" />
                         </com.google.android.material.chip.ChipGroup>
-
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- DATE RANGE -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     app:cardBackgroundColor="#FFFFFF"
-                    app:cardCornerRadius="22dp"
+                    app:cardCornerRadius="20dp"
                     app:cardElevation="0dp"
                     app:strokeColor="#E5E7EB"
                     app:strokeWidth="1dp">
@@ -197,204 +196,110 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/custom_date_range"
+                            android:text="Filters"
                             android:textColor="#111827"
                             android:textSize="13sp"
                             android:textStyle="bold" />
 
-                        <LinearLayout
+                        <EditText
+                            android:id="@+id/etStart"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:layout_marginTop="10dp"
+                            android:background="@drawable/bg_input"
+                            android:clickable="true"
+                            android:focusable="false"
+                            android:hint="@string/start_date_hint"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp" />
+
+                        <EditText
+                            android:id="@+id/etEnd"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:layout_marginTop="10dp"
+                            android:background="@drawable/bg_input"
+                            android:clickable="true"
+                            android:focusable="false"
+                            android:hint="@string/end_date_hint"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp" />
+
+                        <com.google.android.material.chip.ChipGroup
+                            android:id="@+id/chipGroupBusinessFilter"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
+                            app:singleSelection="true" />
+
+                        <EditText
+                            android:id="@+id/etSearch"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:layout_marginTop="10dp"
+                            android:background="@drawable/bg_input"
+                            android:hint="Product / Search"
+                            android:inputType="text"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp"
+                            android:visibility="gone" />
+
+                        <EditText
+                            android:id="@+id/etCategory"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:layout_marginTop="10dp"
+                            android:background="@drawable/bg_input"
+                            android:hint="Category"
+                            android:inputType="text"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp"
+                            android:visibility="gone" />
+
+                        <EditText
+                            android:id="@+id/etPaymentMethod"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:layout_marginTop="10dp"
+                            android:background="@drawable/bg_input"
+                            android:hint="Payment Method"
+                            android:inputType="text"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
                             android:orientation="horizontal">
 
-                            <com.google.android.material.textfield.TextInputLayout
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnFetch"
                                 android:layout_width="0dp"
-                                android:layout_height="wrap_content"
+                                android:layout_height="50dp"
                                 android:layout_weight="1"
-                                app:boxBackgroundMode="outline"
-                                app:boxCornerRadiusBottomEnd="16dp"
-                                app:boxCornerRadiusBottomStart="16dp"
-                                app:boxCornerRadiusTopEnd="16dp"
-                                app:boxCornerRadiusTopStart="16dp"
-                                app:boxStrokeColor="#E5E7EB"
-                                app:boxStrokeWidth="1dp"
-                                app:hintTextColor="#6B7280">
+                                android:backgroundTint="#22C55E"
+                                android:insetTop="0dp"
+                                android:insetBottom="0dp"
+                                android:text="@string/fetch_report"
+                                android:textAllCaps="false"
+                                android:textColor="@android:color/white"
+                                android:textStyle="bold"
+                                app:cornerRadius="16dp" />
 
-                                <com.google.android.material.textfield.TextInputEditText
-                                    android:id="@+id/etStart"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:clickable="true"
-                                    android:focusable="false"
-                                    android:hint="@string/start_date_hint"
-                                    android:paddingHorizontal="14dp"
-                                    android:paddingVertical="14dp" />
-                            </com.google.android.material.textfield.TextInputLayout>
-
-                            <Space
-                                android:layout_width="12dp"
-                                android:layout_height="0dp" />
-
-                            <com.google.android.material.textfield.TextInputLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                app:boxBackgroundMode="outline"
-                                app:boxCornerRadiusBottomEnd="16dp"
-                                app:boxCornerRadiusBottomStart="16dp"
-                                app:boxCornerRadiusTopEnd="16dp"
-                                app:boxCornerRadiusTopStart="16dp"
-                                app:boxStrokeColor="#E5E7EB"
-                                app:boxStrokeWidth="1dp"
-                                app:hintTextColor="#6B7280">
-
-                                <com.google.android.material.textfield.TextInputEditText
-                                    android:id="@+id/etEnd"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:clickable="true"
-                                    android:focusable="false"
-                                    android:hint="@string/end_date_hint"
-                                    android:paddingHorizontal="14dp"
-                                    android:paddingVertical="14dp" />
-                            </com.google.android.material.textfield.TextInputLayout>
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnExport"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="50dp"
+                                android:layout_marginStart="10dp"
+                                android:enabled="false"
+                                android:text="Export"
+                                android:textAllCaps="false"
+                                android:visibility="gone" />
                         </LinearLayout>
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnFetch"
-                            android:layout_width="match_parent"
-                            android:layout_height="52dp"
-                            android:layout_marginTop="12dp"
-                            android:backgroundTint="#22C55E"
-                            android:insetTop="0dp"
-                            android:insetBottom="0dp"
-                            android:text="@string/fetch_report"
-                            android:textAllCaps="false"
-                            android:textColor="@android:color/white"
-                            android:textStyle="bold"
-                            app:cornerRadius="16dp" />
-
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
-
-                <!-- SUMMARY CARDS -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:orientation="horizontal">
-
-                    <!-- SALES -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        app:cardBackgroundColor="#FFFFFF"
-                        app:cardCornerRadius="18dp"
-                        app:strokeColor="#E5E7EB"
-                        app:strokeWidth="1dp">
-
-                        <LinearLayout
-                            android:padding="14dp"
-                            android:orientation="vertical"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
-
-                            <TextView
-                                android:text="@string/sales"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textColor="#6B7280"
-                                android:textSize="11sp"/>
-
-                            <TextView
-                                android:id="@+id/tvSales"
-                                android:text="$0.00"
-                                android:layout_marginTop="6dp"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:textColor="#111827"
-                                android:textSize="18sp"
-                                android:textStyle="bold"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <Space android:layout_width="12dp" android:layout_height="0dp"/>
-
-                    <!-- EXPENSE -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        app:cardBackgroundColor="#FFFFFF"
-                        app:cardCornerRadius="18dp"
-                        app:strokeColor="#E5E7EB"
-                        app:strokeWidth="1dp">
-
-                        <LinearLayout
-                            android:padding="14dp"
-                            android:orientation="vertical"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
-
-                            <TextView
-                                android:text="@string/expense"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textColor="#6B7280"
-                                android:textSize="11sp"/>
-
-                            <TextView
-                                android:id="@+id/tvExpense"
-                                android:text="$0.00"
-                                android:layout_marginTop="6dp"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:textColor="#111827"
-                                android:textSize="18sp"
-                                android:textStyle="bold"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <Space android:layout_width="12dp" android:layout_height="0dp"/>
-
-                    <!-- PROFIT -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        app:cardBackgroundColor="#FFFFFF"
-                        app:cardCornerRadius="18dp"
-                        app:strokeColor="#E5E7EB"
-                        app:strokeWidth="1dp">
-
-                        <LinearLayout
-                            android:padding="14dp"
-                            android:orientation="vertical"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
-
-                            <TextView
-                                android:text="@string/profit"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textColor="#6B7280"
-                                android:textSize="11sp"/>
-
-                            <TextView
-                                android:id="@+id/tvProfit"
-                                android:text="$0.00"
-                                android:layout_marginTop="6dp"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:textColor="#111827"
-                                android:textSize="18sp"
-                                android:textStyle="bold"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                </LinearLayout>
 
                 <ProgressBar
                     android:id="@+id/progress"
@@ -404,93 +309,48 @@
                     android:layout_marginTop="14dp"
                     android:visibility="gone" />
 
-                <!-- LINE CHART -->
-                <com.google.android.material.card.MaterialCardView
+                <TextView
+                    android:id="@+id/tvState"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
-                    app:cardBackgroundColor="#FFFFFF"
-                    app:cardCornerRadius="22dp"
-                    app:strokeColor="#E5E7EB"
-                    app:strokeWidth="1dp">
+                    android:gravity="center"
+                    android:padding="14dp"
+                    android:textColor="#64748B"
+                    android:textSize="14sp"
+                    android:visibility="gone" />
 
-                    <LinearLayout
-                        android:padding="14dp"
-                        android:orientation="vertical"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                <LinearLayout
+                    android:id="@+id/layoutSummary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="vertical" />
 
-                        <TextView
-                            android:text="@string/trend"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="#111827"
-                            android:textSize="13sp"
-                            android:textStyle="bold"/>
-
-                        <com.github.mikephil.charting.charts.LineChart
-                            android:id="@+id/lineChart"
-                            android:layout_width="match_parent"
-                            android:layout_height="220dp"
-                            android:layout_marginTop="10dp"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- BAR CHART -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     app:cardBackgroundColor="#FFFFFF"
-                    app:cardCornerRadius="22dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="0dp"
                     app:strokeColor="#E5E7EB"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
-                        android:padding="14dp"
-                        android:orientation="vertical"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="14dp">
 
                         <TextView
-                            android:text="@string/breakdown"
+                            android:id="@+id/tvListTitle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:text="Sales"
                             android:textColor="#111827"
                             android:textSize="13sp"
-                            android:textStyle="bold"/>
-
-                        <com.github.mikephil.charting.charts.BarChart
-                            android:id="@+id/barChart"
-                            android:layout_width="match_parent"
-                            android:layout_height="220dp"
-                            android:layout_marginTop="10dp"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- ROWS -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    app:cardBackgroundColor="#FFFFFF"
-                    app:cardCornerRadius="22dp"
-                    app:strokeColor="#E5E7EB"
-                    app:strokeWidth="1dp">
-
-                    <LinearLayout
-                        android:padding="14dp"
-                        android:orientation="vertical"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <TextView
-                            android:text="@string/rows"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="#111827"
-                            android:textSize="13sp"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold" />
 
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/rvRows"
@@ -498,17 +358,14 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
                             android:nestedScrollingEnabled="false"
-                            android:overScrollMode="never"/>
+                            android:overScrollMode="never" />
                     </LinearLayout>
-
                 </com.google.android.material.card.MaterialCardView>
 
                 <Space
                     android:layout_width="match_parent"
                     android:layout_height="24dp" />
-
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
     </LinearLayout>
-
 </FrameLayout>

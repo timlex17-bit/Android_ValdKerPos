@@ -11,7 +11,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,9 +23,11 @@ import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.base.BaseFragment;
 import com.valdker.pos.models.Supplier;
+import com.valdker.pos.repositories.AdminMasterCacheRepository;
 import com.valdker.pos.repositories.SupplierRepository;
 import com.valdker.pos.ui.customers.ConfirmDeleteDialog;
 import com.valdker.pos.utils.InsetsHelper;
+import com.valdker.pos.utils.NetworkUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -43,7 +45,6 @@ public class SuppliersFragment extends BaseFragment {
     private RecyclerView rv;
     private ProgressBar progress;
     private TextView tvEmpty;
-    private TextView tvTitle;
     private FloatingActionButton fabAdd;
     private EditText etSearchSupplier;
     private ImageView btnBack;
@@ -55,6 +56,7 @@ public class SuppliersFragment extends BaseFragment {
 
     private SessionManager session;
     private SupplierRepository repo;
+    private AdminMasterCacheRepository cacheRepo;
 
     private long lastFabClickTime = 0L;
     private long lastRowActionTime = 0L;
@@ -77,13 +79,13 @@ public class SuppliersFragment extends BaseFragment {
 
         session = new SessionManager(requireContext());
         repo = new SupplierRepository(requireContext());
+        cacheRepo = new AdminMasterCacheRepository(requireContext());
 
         swipe = view.findViewById(R.id.swipeRefreshSuppliers);
         rv = view.findViewById(R.id.rvSuppliers);
         progress = view.findViewById(R.id.progressSuppliers);
         tvEmpty = view.findViewById(R.id.tvEmptySuppliers);
         fabAdd = view.findViewById(R.id.fabAddSupplier);
-        tvTitle = view.findViewById(R.id.tvTitleSuppliers);
         etSearchSupplier = view.findViewById(R.id.etSearchSupplier);
         btnBack = view.findViewById(R.id.btnBack);
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
@@ -204,6 +206,10 @@ public class SuppliersFragment extends BaseFragment {
         if (isRapidFabClick()) return;
         if (isDialogOpening) return;
         if (isStateSaved()) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         if (getParentFragmentManager().findFragmentByTag(TAG_ADD_SUPPLIER) != null) {
             Log.d(TAG, "Add supplier dialog already showing");
@@ -240,6 +246,10 @@ public class SuppliersFragment extends BaseFragment {
         if (!isAdded()) return;
         if (isDialogOpening) return;
         if (isStateSaved()) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         if (getParentFragmentManager().findFragmentByTag(TAG_EDIT_SUPPLIER) != null) {
             Log.d(TAG, "Edit supplier dialog already showing");
@@ -275,6 +285,10 @@ public class SuppliersFragment extends BaseFragment {
     private void confirmDeleteSafely(@NonNull Supplier s) {
         if (!isAdded()) return;
         if (isDeleteRunning) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         ConfirmDeleteDialog.show(
                 requireContext(),
@@ -314,6 +328,29 @@ public class SuppliersFragment extends BaseFragment {
             showLoading();
         }
 
+        cacheRepo.loadSuppliers(localSuppliers -> {
+            if (!isAdded()) return;
+            boolean hasLocal = !localSuppliers.isEmpty();
+            if (hasLocal) {
+                allItems.clear();
+                allItems.addAll(localSuppliers);
+                applyFilter();
+            }
+
+            if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+                isLoading = false;
+                stopRefreshing();
+                if (!hasLocal) {
+                    showEmpty(AdminMasterCacheRepository.NO_LOCAL_DATA_MESSAGE);
+                }
+                return;
+            }
+
+            fetchSuppliersFromApi(token, hasLocal);
+        });
+    }
+
+    private void fetchSuppliersFromApi(@NonNull String token, boolean hadLocalData) {
         repo.fetchSuppliers(token, new SupplierRepository.ListCallback() {
             @Override
             public void onSuccess(@NonNull List<Supplier> list) {
@@ -322,11 +359,13 @@ public class SuppliersFragment extends BaseFragment {
 
                 Log.i(TAG, "fetchSuppliers SUCCESS count=" + list.size());
 
-                allItems.clear();
-                allItems.addAll(list);
-
-                applyFilter();
-                stopRefreshing();
+                cacheRepo.saveSuppliers(list, cachedSuppliers -> {
+                    if (!isAdded()) return;
+                    allItems.clear();
+                    allItems.addAll(cachedSuppliers);
+                    applyFilter();
+                    stopRefreshing();
+                });
             }
 
             @Override
@@ -335,12 +374,12 @@ public class SuppliersFragment extends BaseFragment {
                 if (!isAdded()) return;
 
                 Log.e(TAG, "fetchSuppliers ERROR " + code + " / " + message);
-                toast("Fetch failed: " + code);
+                showApiError("Fetch failed: " + code + " " + message);
 
-                if (!items.isEmpty()) {
+                if (!items.isEmpty() || hadLocalData) {
                     showList();
                 } else {
-                    showEmpty("Error " + code);
+                    showEmpty(AdminMasterCacheRepository.NO_LOCAL_DATA_MESSAGE);
                 }
 
                 stopRefreshing();
@@ -391,6 +430,10 @@ public class SuppliersFragment extends BaseFragment {
             toast("Token empty");
             return;
         }
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            toast(AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         isDeleteRunning = true;
         showLoading();
@@ -422,7 +465,7 @@ public class SuppliersFragment extends BaseFragment {
                 isDeleteRunning = false;
                 if (!isAdded()) return;
 
-                toast("Delete failed: " + code);
+                showApiError("Delete failed: " + code + " " + message);
 
                 if (!items.isEmpty()) {
                     showList();
@@ -503,7 +546,6 @@ public class SuppliersFragment extends BaseFragment {
         rv = null;
         progress = null;
         tvEmpty = null;
-        tvTitle = null;
         fabAdd = null;
         etSearchSupplier = null;
         btnBack = null;

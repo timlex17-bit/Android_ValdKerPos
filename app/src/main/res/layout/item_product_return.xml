@@ -86,7 +86,7 @@
                     android:layout_height="20dp"
                     android:contentDescription="@null"
                     android:src="@drawable/ic_arrow_down"
-                    android:tint="#6B7280" />
+                    app:tint="#6B7280" />
             </LinearLayout>
 
         </LinearLayout>

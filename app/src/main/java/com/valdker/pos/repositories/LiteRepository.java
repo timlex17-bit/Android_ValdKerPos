@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
-import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.models.CustomerLite;
 import com.valdker.pos.models.OrderLite;
@@ -17,6 +17,7 @@ import com.valdker.pos.network.ApiConfig;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,15 +45,15 @@ public class LiteRepository {
         SessionManager sm = new SessionManager(ctx);
         String url = ApiConfig.url(sm, ORDERS_URL);
 
-        JsonArrayRequest req = new JsonArrayRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.GET,
                 url,
-                null,
-                (JSONArray response) -> {
+                response -> {
                     try {
+                        JSONArray items = extractResultsArray(response);
                         List<OrderLite> out = new ArrayList<>();
-                        for (int i = 0; i < response.length(); i++) {
-                            JSONObject o = response.optJSONObject(i);
+                        for (int i = 0; i < items.length(); i++) {
+                            JSONObject o = items.optJSONObject(i);
                             if (o != null) out.add(OrderLite.fromJson(o));
                         }
                         cb.onSuccess(out);
@@ -86,15 +87,15 @@ public class LiteRepository {
         SessionManager sm = new SessionManager(ctx);
         String url = ApiConfig.url(sm, CUSTOMERS_URL);
 
-        JsonArrayRequest req = new JsonArrayRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.GET,
                 url,
-                null,
-                (JSONArray response) -> {
+                response -> {
                     try {
+                        JSONArray items = extractResultsArray(response);
                         List<CustomerLite> out = new ArrayList<>();
-                        for (int i = 0; i < response.length(); i++) {
-                            JSONObject o = response.optJSONObject(i);
+                        for (int i = 0; i < items.length(); i++) {
+                            JSONObject o = items.optJSONObject(i);
                             if (o != null) out.add(CustomerLite.fromJson(o));
                         }
                         cb.onSuccess(out);
@@ -128,15 +129,15 @@ public class LiteRepository {
         SessionManager sm = new SessionManager(ctx);
         String url = ApiConfig.url(sm, PRODUCTS_URL);
 
-        JsonArrayRequest req = new JsonArrayRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.GET,
                 url,
-                null,
-                (JSONArray response) -> {
+                response -> {
                     try {
+                        JSONArray items = extractResultsArray(response);
                         List<ProductLite> out = new ArrayList<>();
-                        for (int i = 0; i < response.length(); i++) {
-                            JSONObject o = response.optJSONObject(i);
+                        for (int i = 0; i < items.length(); i++) {
+                            JSONObject o = items.optJSONObject(i);
                             if (o != null) out.add(ProductLite.fromJson(o));
                         }
                         cb.onSuccess(out);
@@ -160,6 +161,21 @@ public class LiteRepository {
 
         req.setRetryPolicy(new DefaultRetryPolicy(20000, 1, 1.0f));
         ApiClient.getInstance(ctx).add(req);
+    }
+
+    private static JSONArray extractResultsArray(String response) throws Exception {
+        Object parsed = new JSONTokener(response == null ? "[]" : response).nextValue();
+
+        if (parsed instanceof JSONArray) {
+            return (JSONArray) parsed;
+        }
+
+        if (parsed instanceof JSONObject) {
+            JSONArray results = ((JSONObject) parsed).optJSONArray("results");
+            return results != null ? results : new JSONArray();
+        }
+
+        return new JSONArray();
     }
 
     // -----------------------

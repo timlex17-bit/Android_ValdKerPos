@@ -39,7 +39,7 @@ public class CartManager {
 
     private static CartManager instance;
 
-    private final Map<Integer, CartItem> map = new LinkedHashMap<>();
+    private final Map<String, CartItem> map = new LinkedHashMap<>();
     private final SharedPreferences sp;
 
     public interface Listener {
@@ -92,14 +92,16 @@ public class CartManager {
         double price = extractAnyDouble(p, "price", "selling_price", "sell_price", "sale_price", "unit_price",
                 "price_usd", "usd_price", "amount");
         String imageUrl = safe(extractAnyString(p, "imageUrl", "image_url", "image", "photo", "thumbnail", "icon_url"));
-        String itemType = extractItemType(p);
+        String itemType = CartItem.normalizeItemType(extractItemType(p));
+        String key = CartItem.buildCartKey(id, itemType);
 
-        CartItem item = map.get(id);
+        CartItem item = map.get(key);
         if (item == null) {
             item = new CartItem(id, shopId, name, price, imageUrl, qty);
             item.orderType = "";
             item.itemType = itemType;
-            map.put(id, item);
+            item.refreshCartKey();
+            map.put(item.cartKey, item);
         } else {
             item.qty += qty;
 
@@ -117,11 +119,15 @@ public class CartManager {
     }
 
     public synchronized void setQty(int productId, int qty) {
-        CartItem item = map.get(productId);
+        setQty(productId, CartItem.ITEM_TYPE_PRODUCT, qty);
+    }
+
+    public synchronized void setQty(int productId, @NonNull String itemType, int qty) {
+        CartItem item = map.get(CartItem.buildCartKey(productId, itemType));
         if (item == null) return;
 
         if (qty <= 0) {
-            map.remove(productId);
+            map.remove(item.cartKey);
         } else {
             item.qty = qty;
         }
@@ -131,7 +137,11 @@ public class CartManager {
     }
 
     public synchronized void setOrderType(int productId, @NonNull String orderType) {
-        CartItem item = map.get(productId);
+        setOrderType(productId, CartItem.ITEM_TYPE_PRODUCT, orderType);
+    }
+
+    public synchronized void setOrderType(int productId, @NonNull String itemType, @NonNull String orderType) {
+        CartItem item = map.get(CartItem.buildCartKey(productId, itemType));
         if (item == null) return;
 
         item.orderType = normalizeTypeOrEmpty(orderType);
@@ -178,7 +188,11 @@ public class CartManager {
     }
 
     public synchronized void remove(int productId) {
-        map.remove(productId);
+        remove(productId, CartItem.ITEM_TYPE_PRODUCT);
+    }
+
+    public synchronized void remove(int productId, @NonNull String itemType) {
+        map.remove(CartItem.buildCartKey(productId, itemType));
         saveToPrefs();
         notifyChangedDebounced();
     }
@@ -283,6 +297,7 @@ public class CartManager {
             for (CartItem i : map.values()) {
                 JSONObject o = new JSONObject();
                 o.put("productId", i.productId);
+                o.put("cartKey", safe(i.cartKey));
                 o.put("shopId", i.shopId);
                 o.put("name", safe(i.name));
                 o.put("price", i.price);
@@ -309,10 +324,11 @@ public class CartManager {
         }
 
         item.itemType = CartItem.normalizeItemType(item.itemType);
+        item.refreshCartKey();
 
-        CartItem existing = map.get(item.productId);
+        CartItem existing = map.get(item.cartKey);
         if (existing == null) {
-            map.put(item.productId, item);
+            map.put(item.cartKey, item);
         } else {
             existing.qty += item.qty;
 
@@ -356,8 +372,9 @@ public class CartManager {
 
                 item.orderType = normalizeTypeOrEmpty(o.optString("orderType", ""));
                 item.itemType = normalizeItemType(o.optString("itemType", ""));
+                item.refreshCartKey();
 
-                if (item.qty > 0) map.put(id, item);
+                if (item.qty > 0) map.put(item.cartKey, item);
             }
         } catch (Exception e) {
             Log.e(TAG, "loadFromPrefs(): corrupted cart JSON. Clearing saved cart.", e);
@@ -368,12 +385,12 @@ public class CartManager {
 
     @NonNull
     private String normalizeItemType(@Nullable String t) {
-        if (t == null) return ITEM_TYPE_PRODUCT;
+        if (t == null) return CartItem.ITEM_TYPE_PRODUCT;
 
         String v = t.trim().toLowerCase(Locale.US);
-        if (ITEM_TYPE_SERVICE.equals(v)) return ITEM_TYPE_SERVICE;
-        if (ITEM_TYPE_SPAREPART.equals(v)) return ITEM_TYPE_SPAREPART;
-        return ITEM_TYPE_PRODUCT;
+        if (ITEM_TYPE_SERVICE.equals(v)) return CartItem.ITEM_TYPE_SERVICE;
+        if (ITEM_TYPE_SPAREPART.equals(v) || "part".equals(v)) return CartItem.ITEM_TYPE_PART;
+        return CartItem.ITEM_TYPE_PRODUCT;
     }
 
     @NonNull
@@ -384,9 +401,9 @@ public class CartManager {
                 "type"
         )).toLowerCase(Locale.US);
 
-        if (ITEM_TYPE_SERVICE.equals(raw)) return ITEM_TYPE_SERVICE;
-        if (ITEM_TYPE_SPAREPART.equals(raw)) return ITEM_TYPE_SPAREPART;
-        return ITEM_TYPE_PRODUCT;
+        if (ITEM_TYPE_SERVICE.equals(raw)) return CartItem.ITEM_TYPE_SERVICE;
+        if (ITEM_TYPE_SPAREPART.equals(raw) || "part".equals(raw)) return CartItem.ITEM_TYPE_PART;
+        return CartItem.ITEM_TYPE_PRODUCT;
     }
 
     private String extractAnyString(@NonNull Object obj, @NonNull String... keys) {

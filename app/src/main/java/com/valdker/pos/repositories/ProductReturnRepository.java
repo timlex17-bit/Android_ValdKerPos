@@ -9,8 +9,8 @@ import androidx.annotation.Nullable;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.models.ProductReturn;
 import com.valdker.pos.network.ApiClient;
@@ -18,11 +18,13 @@ import com.valdker.pos.network.ApiConfig;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class ProductReturnRepository {
@@ -41,15 +43,15 @@ public class ProductReturnRepository {
     public static void fetchAll(@NonNull Context ctx, @NonNull ListCallback cb) {
         String url = ApiConfig.url(new SessionManager(ctx), ENDPOINT);
 
-        JsonArrayRequest req = new JsonArrayRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.GET,
                 url,
-                null,
                 response -> {
                     try {
+                        JSONArray items = extractResultsArray(response);
                         List<ProductReturn> out = new ArrayList<>();
-                        for (int i = 0; i < response.length(); i++) {
-                            JSONObject o = response.optJSONObject(i);
+                        for (int i = 0; i < items.length(); i++) {
+                            JSONObject o = items.optJSONObject(i);
                             if (o != null) {
                                 out.add(ProductReturn.fromJson(o));
                             }
@@ -80,6 +82,21 @@ public class ProductReturnRepository {
         ));
 
         ApiClient.getInstance(ctx).add(req);
+    }
+
+    private static JSONArray extractResultsArray(String response) throws Exception {
+        Object parsed = new JSONTokener(response == null ? "[]" : response).nextValue();
+
+        if (parsed instanceof JSONArray) {
+            return (JSONArray) parsed;
+        }
+
+        if (parsed instanceof JSONObject) {
+            JSONArray results = ((JSONObject) parsed).optJSONArray("results");
+            return results != null ? results : new JSONArray();
+        }
+
+        return new JSONArray();
     }
 
     // =======================
@@ -294,9 +311,20 @@ public class ProductReturnRepository {
         try {
             if (networkResponse != null && networkResponse.data != null) {
                 String raw = new String(networkResponse.data, StandardCharsets.UTF_8);
-                Log.e(TAG, prefix + ": " + raw);
+                Log.e(TAG, prefix + ": " + safeLogDetail(raw));
             }
         } catch (Exception ignored) {
         }
+    }
+
+    @NonNull
+    private static String safeLogDetail(@Nullable String value) {
+        if (value == null) return "";
+        String clean = value.replace('\n', ' ').replace('\r', ' ').trim();
+        String lower = clean.toLowerCase(Locale.US);
+        if (lower.startsWith("<!doctype") || lower.startsWith("<html") || lower.contains("<body")) {
+            return "<html omitted>";
+        }
+        return clean.length() > 180 ? clean.substring(0, 180).trim() + "..." : clean;
     }
 }

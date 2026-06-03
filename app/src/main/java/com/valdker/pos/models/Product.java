@@ -1,5 +1,8 @@
 package com.valdker.pos.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Product {
     public String id;
     public String name;
@@ -19,6 +22,7 @@ public class Product {
     public String categoryName;
 
     public String barcode;
+    public List<ProductUnit> product_units = new ArrayList<>();
 
     public String description = "";
     public String buyPrice = "";

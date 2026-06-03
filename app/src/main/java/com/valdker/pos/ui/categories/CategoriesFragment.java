@@ -23,7 +23,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -38,7 +38,6 @@ import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.bumptech.glide.Glide;
 import com.valdker.pos.BuildConfig;
@@ -48,12 +47,15 @@ import com.valdker.pos.base.BaseFragment;
 import com.valdker.pos.models.Category;
 import com.valdker.pos.network.ApiClient;
 import com.valdker.pos.network.ApiConfig;
+import com.valdker.pos.repositories.AdminMasterCacheRepository;
 import com.valdker.pos.utils.InsetsHelper;
+import com.valdker.pos.utils.NetworkUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -79,11 +81,13 @@ public class CategoriesFragment extends BaseFragment {
     private static final int WEBP_QUALITY = 82;
 
     private SessionManager session;
+    private AdminMasterCacheRepository cacheRepo;
 
     private RecyclerView rv;
     private ProgressBar progress;
+    private View emptyState;
     private TextView tvEmpty;
-    private TextView tvTitle;
+    private TextView tvEmptySub;
     private FloatingActionButton fabAdd;
     private ImageView btnBack;
     private ImageView ivHeaderAction;
@@ -112,6 +116,7 @@ public class CategoriesFragment extends BaseFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         session = new SessionManager(requireContext());
+        cacheRepo = new AdminMasterCacheRepository(requireContext());
 
         pickIconLauncher = registerForActivityResult(
                 new ActivityResultContracts.GetContent(),
@@ -193,11 +198,12 @@ public class CategoriesFragment extends BaseFragment {
 
         rv = view.findViewById(R.id.rvList);
         progress = view.findViewById(R.id.progress);
+        emptyState = view.findViewById(R.id.emptyState);
         tvEmpty = view.findViewById(R.id.tvEmpty);
+        tvEmptySub = view.findViewById(R.id.tvEmptySub);
         fabAdd = view.findViewById(R.id.fabAddCategory);
         btnBack = view.findViewById(R.id.btnBack);
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
-        tvTitle = view.findViewById(R.id.tvTitle);
         etSearch = view.findViewById(R.id.etSearch);
 
         InsetsHelper.applyRecyclerBottomInsets(view, rv, TAG);
@@ -272,6 +278,10 @@ public class CategoriesFragment extends BaseFragment {
         if (!isAdded()) return;
         if (isFormShowing) return;
         if (isLoading) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            showToast(requireContext(), AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         long now = SystemClock.elapsedRealtime();
         if (now - lastFabClickTime < FAB_CLICK_DELAY_MS) {
@@ -318,37 +328,75 @@ public class CategoriesFragment extends BaseFragment {
             return;
         }
 
+        cacheRepo.loadCategories(localCategories -> {
+            if (!isAdded()) return;
+            boolean hasLocal = !localCategories.isEmpty();
+            if (hasLocal) {
+                allItems.clear();
+                allItems.addAll(localCategories);
+                applyFilter();
+            }
+
+            if (!NetworkUtils.isNetworkAvailable(ctx)) {
+                isLoading = false;
+                setLoading(false);
+                if (!hasLocal) {
+                    showLocalEmpty();
+                }
+                return;
+            }
+
+            fetchCategoriesFromApi(ctx, token, hasLocal);
+        });
+    }
+
+    private void fetchCategoriesFromApi(@NonNull Context ctx, @NonNull String token, boolean hadLocalData) {
+
         final String url = ApiConfig.url(session, ENDPOINT_CATEGORIES);
 
-        JsonArrayRequest req = new JsonArrayRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.GET,
                 url,
-                null,
-                (JSONArray res) -> {
+                response -> {
                     isLoading = false;
                     if (!isAdded()) return;
 
-                    allItems.clear();
+                    try {
+                        JSONArray res = extractResultsArray(response);
+                        List<Category> remoteItems = new ArrayList<>();
 
-                    for (int i = 0; i < res.length(); i++) {
-                        JSONObject o = res.optJSONObject(i);
-                        if (o == null) continue;
+                        for (int i = 0; i < res.length(); i++) {
+                            JSONObject o = res.optJSONObject(i);
+                            if (o == null) continue;
 
-                        Category c = new Category();
-                        c.id = o.optInt("id", 0);
-                        c.name = o.optString("name", "");
-                        c.iconUrl = o.optString("icon_url", "");
-                        allItems.add(c);
+                            Category c = new Category();
+                            c.id = o.optInt("id", 0);
+                            c.name = o.optString("name", "");
+                            c.iconUrl = o.optString("icon_url", "");
+                            remoteItems.add(c);
+                        }
+
+                        cacheRepo.saveCategories(remoteItems, cachedCategories -> {
+                            if (!isAdded()) return;
+                            allItems.clear();
+                            allItems.addAll(cachedCategories);
+                            applyFilter();
+                        });
+                    } catch (Exception e) {
+                        Toast.makeText(ctx, "Parse error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     }
 
-                    applyFilter();
                     setLoading(false);
                 },
                 err -> {
                     isLoading = false;
                     if (!isAdded()) return;
                     setLoading(false);
-                    setEmpty(items.isEmpty());
+                    if (items.isEmpty() && !hadLocalData) {
+                        showLocalEmpty();
+                    } else {
+                        setEmpty(items.isEmpty());
+                    }
                     toastVolleyError("Fetch categories failed", err);
                 }
         ) {
@@ -360,6 +408,21 @@ public class CategoriesFragment extends BaseFragment {
 
         req.setTag(FETCH_TAG);
         ApiClient.getInstance(ctx.getApplicationContext()).add(req);
+    }
+
+    private static JSONArray extractResultsArray(String response) throws Exception {
+        Object parsed = new JSONTokener(response == null ? "[]" : response).nextValue();
+
+        if (parsed instanceof JSONArray) {
+            return (JSONArray) parsed;
+        }
+
+        if (parsed instanceof JSONObject) {
+            JSONArray results = ((JSONObject) parsed).optJSONArray("results");
+            return results != null ? results : new JSONArray();
+        }
+
+        return new JSONArray();
     }
 
     private void applyFilter() {
@@ -387,6 +450,10 @@ public class CategoriesFragment extends BaseFragment {
     private void openForm(@Nullable Category edit) {
         if (!isAdded()) return;
         if (isFormShowing) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            showToast(requireContext(), AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         isFormShowing = true;
         setFabEnabled(false);
@@ -439,10 +506,14 @@ public class CategoriesFragment extends BaseFragment {
         }
 
         AlertDialog dialog = new AlertDialog.Builder(formContext)
-                .setTitle(edit == null ? "Add Category" : "Edit Category")
+                .setTitle(edit == null
+                        ? getString(R.string.title_add_category)
+                        : getString(R.string.title_edit_category))
                 .setView(content)
-                .setNegativeButton("Cancel", (d, w) -> d.dismiss())
-                .setPositiveButton(edit == null ? "Create" : "Save", null)
+                .setNegativeButton(getString(R.string.action_cancel), (d, w) -> d.dismiss())
+                .setPositiveButton(edit == null
+                        ? getString(R.string.action_create)
+                        : getString(R.string.action_save), null)
                 .create();
 
         dialog.setOnDismissListener(d -> {
@@ -464,7 +535,7 @@ public class CategoriesFragment extends BaseFragment {
                     final String name = safeText(etName);
                     if (name.isEmpty()) {
                         if (etName != null) {
-                            etName.setError("Name is required");
+                            etName.setError(getString(R.string.msg_name_required));
                             etName.requestFocus();
                         }
                         return;
@@ -630,12 +701,16 @@ public class CategoriesFragment extends BaseFragment {
     private void confirmDelete(@NonNull Category c) {
         if (!isAdded()) return;
         if (isDeleteRunning) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            showToast(requireContext(), AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE);
+            return;
+        }
 
         new AlertDialog.Builder(requireContext())
-                .setTitle("Delete Category")
-                .setMessage("Delete \"" + c.name + "\"?")
-                .setNegativeButton("Cancel", (d, w) -> d.dismiss())
-                .setPositiveButton("Delete", (d, w) -> deleteCategory(c.id))
+                .setTitle(getString(R.string.title_delete_category))
+                .setMessage(getString(R.string.msg_delete_category_confirm, c.name))
+                .setNegativeButton(getString(R.string.action_cancel), (d, w) -> d.dismiss())
+                .setPositiveButton(getString(R.string.action_delete), (d, w) -> deleteCategory(c.id))
                 .show();
     }
 
@@ -694,13 +769,27 @@ public class CategoriesFragment extends BaseFragment {
     }
 
     private void setEmpty(boolean empty) {
-        if (tvEmpty != null) {
-            tvEmpty.setVisibility(empty ? View.VISIBLE : View.GONE);
-            if (empty) {
-                tvEmpty.setText(TextUtils.isEmpty(currentQuery) ? "No data yet." : "No matching categories.");
-            }
+        boolean isSearching = !TextUtils.isEmpty(currentQuery);
+
+        if (emptyState != null) {
+            emptyState.setVisibility(empty ? View.VISIBLE : View.GONE);
         }
-        if (rv != null) rv.setVisibility(empty ? View.GONE : View.VISIBLE);
+
+        if (tvEmpty != null) {
+            tvEmpty.setText(isSearching
+                    ? getString(R.string.msg_no_matching_categories)
+                    : getString(R.string.msg_no_categories_yet));
+        }
+
+        if (tvEmptySub != null) {
+            tvEmptySub.setText(isSearching
+                    ? getString(R.string.msg_no_matching_categories_sub)
+                    : getString(R.string.msg_no_categories_yet_sub));
+        }
+
+        if (rv != null) {
+            rv.setVisibility(empty ? View.GONE : View.VISIBLE);
+        }
     }
 
     @NonNull
@@ -734,7 +823,22 @@ public class CategoriesFragment extends BaseFragment {
         }
 
         logw(msg);
-        showToast(getContext(), msg);
+        showApiError(msg);
+    }
+
+    private void showLocalEmpty() {
+        if (emptyState != null) {
+            emptyState.setVisibility(View.VISIBLE);
+        }
+        if (tvEmpty != null) {
+            tvEmpty.setText(AdminMasterCacheRepository.NO_LOCAL_DATA_MESSAGE);
+        }
+        if (tvEmptySub != null) {
+            tvEmptySub.setText("");
+        }
+        if (rv != null) {
+            rv.setVisibility(View.GONE);
+        }
     }
 
     private void clearFormIconState(@NonNull PendingIconState state, boolean clearPreview) {
@@ -944,6 +1048,25 @@ public class CategoriesFragment extends BaseFragment {
     private void showToast(@Nullable Context ctx, @NonNull String msg) {
         if (ctx == null) return;
         Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        rv = null;
+        progress = null;
+        emptyState = null;
+        tvEmpty = null;
+        tvEmptySub = null;
+        fabAdd = null;
+        btnBack = null;
+        ivHeaderAction = null;
+        etSearch = null;
+
+        isFormShowing = false;
+        isLoading = false;
+        isDeleteRunning = false;
     }
 
     private static void logd(@NonNull String msg) {

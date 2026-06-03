@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.button.MaterialButton;
 import com.valdker.pos.R;
 
 import java.text.NumberFormat;
@@ -23,6 +24,9 @@ public class RetailProductAdapter extends RecyclerView.Adapter<RetailProductAdap
     public interface Listener {
         void onProductClick(@NonNull RetailProductItem item);
         void onAddToCartClick(@NonNull RetailProductItem item);
+        int getQuantity(@NonNull RetailProductItem item);
+        void onIncreaseQty(@NonNull RetailProductItem item);
+        void onDecreaseQty(@NonNull RetailProductItem item);
     }
 
     private final List<RetailProductItem> items = new ArrayList<>();
@@ -55,6 +59,14 @@ public class RetailProductAdapter extends RecyclerView.Adapter<RetailProductAdap
         return new ArrayList<>(items);
     }
 
+    @Nullable
+    public RetailProductItem getItemAt(int position) {
+        if (position < 0 || position >= items.size()) {
+            return null;
+        }
+        return items.get(position);
+    }
+
     @NonNull
     @Override
     public ProductVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -80,6 +92,9 @@ public class RetailProductAdapter extends RecyclerView.Adapter<RetailProductAdap
         private final TextView tvPrice;
         private final TextView tvSku;
         private final TextView tvStock;
+        private final TextView tvQty;
+        private final MaterialButton btnMinus;
+        private final MaterialButton btnPlus;
         private final View btnAdd;
 
         ProductVH(@NonNull View itemView) {
@@ -89,6 +104,9 @@ public class RetailProductAdapter extends RecyclerView.Adapter<RetailProductAdap
             tvPrice = itemView.findViewById(R.id.tvPrice);
             tvSku = itemView.findViewById(R.id.tvSku);
             tvStock = itemView.findViewById(R.id.tvStock);
+            btnMinus = itemView.findViewById(R.id.btnMinus);
+            btnPlus = itemView.findViewById(R.id.btnPlus);
+            tvQty = itemView.findViewById(R.id.tvQty);
             btnAdd = itemView.findViewById(R.id.btnAdd);
         }
 
@@ -97,13 +115,16 @@ public class RetailProductAdapter extends RecyclerView.Adapter<RetailProductAdap
                   boolean showImages,
                   @NonNull NumberFormat moneyFormat) {
 
-            tvName.setText(notEmpty(item.name, "-"));
-            tvPrice.setText(moneyFormat.format(item.price));
+            if (tvName != null) tvName.setText(notEmpty(item.name, "-"));
+            if (tvPrice != null) tvPrice.setText(moneyFormat.format(item.price));
 
             String sku = notEmpty(item.sku, "-");
-            tvSku.setText("SKU: " + sku);
+            if (tvSku != null) tvSku.setText("SKU: " + sku);
 
-            tvStock.setText("Stock: " + formatStock(item.stock));
+            if (tvStock != null) tvStock.setText("Stock: " + formatStock(item.stock));
+
+            int qty = listener != null ? listener.getQuantity(item) : 1;
+            if (tvQty != null) tvQty.setText(String.valueOf(Math.max(1, qty)));
 
             if (imgProduct != null) {
                 if (showImages) {
@@ -134,6 +155,22 @@ public class RetailProductAdapter extends RecyclerView.Adapter<RetailProductAdap
                 btnAdd.setOnClickListener(v -> {
                     if (listener != null) {
                         listener.onAddToCartClick(item);
+                    }
+                });
+            }
+
+            if (btnPlus != null) {
+                btnPlus.setOnClickListener(v -> {
+                    if (listener != null) {
+                        listener.onIncreaseQty(item);
+                    }
+                });
+            }
+
+            if (btnMinus != null) {
+                btnMinus.setOnClickListener(v -> {
+                    if (listener != null) {
+                        listener.onDecreaseQty(item);
                     }
                 });
             }

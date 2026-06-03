@@ -34,7 +34,7 @@
                 android:contentDescription="@string/action_back"
                 android:padding="8dp"
                 android:src="@drawable/ic_arrow_back"
-                android:tint="@android:color/white" />
+                app:tint="@android:color/white" />
 
             <TextView
                 android:id="@+id/tvTopTitle"
@@ -58,7 +58,7 @@
                 android:contentDescription="@string/action_refresh"
                 android:padding="8dp"
                 android:src="@android:drawable/ic_popup_sync"
-                android:tint="@android:color/white" />
+                app:tint="@android:color/white" />
         </LinearLayout>
 
         <ScrollView

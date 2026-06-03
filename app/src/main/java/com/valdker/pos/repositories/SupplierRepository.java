@@ -8,7 +8,6 @@ import androidx.annotation.Nullable;
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.valdker.pos.models.Supplier;
@@ -19,6 +18,7 @@ import com.valdker.pos.network.ApiConfig;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,13 +61,12 @@ public class SupplierRepository {
     // ------------------- FETCH -------------------
     public void fetchSuppliers(@NonNull String token, @NonNull ListCallback cb) {
         String url = ApiConfig.url(session, ENDPOINT_SUPPLIERS);
-        JsonArrayRequest req = new JsonArrayRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.GET,
                 url,
-                null,
-                (JSONArray res) -> {
+                response -> {
                     try {
-                        cb.onSuccess(parseList(res));
+                        cb.onSuccess(parseList(extractResultsArray(response)));
                     } catch (Exception e) {
                         cb.onError(0, "Parse error");
                     }
@@ -84,6 +83,21 @@ public class SupplierRepository {
         };
 
         ApiClient.getInstance(appContext).add(req);
+    }
+
+    private JSONArray extractResultsArray(String response) throws Exception {
+        Object parsed = new JSONTokener(response == null ? "[]" : response).nextValue();
+
+        if (parsed instanceof JSONArray) {
+            return (JSONArray) parsed;
+        }
+
+        if (parsed instanceof JSONObject) {
+            JSONArray results = ((JSONObject) parsed).optJSONArray("results");
+            return results != null ? results : new JSONArray();
+        }
+
+        return new JSONArray();
     }
 
     // ✅ NEW: Fetch suppliers lite (id + name) for Spinner

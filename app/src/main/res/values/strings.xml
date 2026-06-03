@@ -14,11 +14,11 @@
     <!-- ================================================== -->
     <!-- APP -->
     <!-- ================================================== -->
-    <string name="app_name">ValdKerPOS</string>
+    <string name="app_name">ValoraPOS</string>
     <string name="app_tagline">POS system for modern businesses</string>
     <string name="app_version">Version</string>
     <string name="app_powered_by">Powered by ValdKer</string>
-    <string name="app_brand">ValdKerPOS</string>
+    <string name="app_brand">ValoraPOS</string>
     <string name="app_logo">App logo</string>
     <string name="welcome">Welcome</string>
     <string name="welcome_back">Welcome back</string>
@@ -35,7 +35,6 @@
     <string name="login_help_text">Log in using your shop code, username, and password to access the correct shop.</string>
     <string name="login_title">Sign in to your shop</string>
     <string name="login_subtitle">Use your shop code, username, and password to continue</string>
-    <string name="login_multi_tenant">Multi-Tenant</string>
     <string name="login_shop_code">Shop Code</string>
     <string name="login_username">Username</string>
     <string name="login_password">Password</string>
@@ -51,6 +50,18 @@
     <string name="hint_password">Enter password</string>
     <string name="show_password">Show password</string>
     <string name="hide_password">Hide password</string>
+    <string name="splash_title_1">Welcome to ValoraPOS</string>
+    <string name="splash_subtitle_1">Smart POS system for retail, workshop, and business management.</string>
+    <string name="splash_title_2">Manage Sales Easily</string>
+    <string name="splash_subtitle_2">Create orders, manage products, print receipts, and track payments.</string>
+    <string name="splash_title_3">Ready to Start</string>
+    <string name="splash_subtitle_3">Login to your account and start managing your business.</string>
+    <string name="splash_next">Next</string>
+    <string name="splash_back">Back</string>
+    <string name="splash_get_started">Get Started</string>
+    <string name="splash_image_placeholder">ValoraPOS onboarding illustration</string>
+    <string name="action_clear_draft_items">Clear all draft items</string>
+    <string name="action_clear_draft_items_symbol">×</string>
 
     <!-- ================================================== -->
     <!-- DASHBOARD EXTRA -->
@@ -81,13 +92,14 @@
     <string name="tile_inventory">Inventory</string>
     <string name="tile_sales">Sales</string>
     <string name="tile_finance">Finance</string>
+    <string name="menu_offline_orders">Offline Orders</string>
+    <string name="menu_offline_orders_desc">Review and retry sync queue</string>
 
     <!-- ================================================== -->
     <!-- BOTTOM NAVIGATION -->
     <!-- ================================================== -->
     <string name="nav_home">Home</string>
     <string name="nav_dashboard">Dashboard</string>
-    <string name="nav_pos">POS</string>
     <string name="nav_orders">Orders</string>
     <string name="nav_profile">Profile</string>
     <string name="nav_settings">Settings</string>
@@ -148,7 +160,7 @@
     <string name="action_submit">Submit</string>
     <string name="action_retry">Retry</string>
     <string name="action_yes">Yes</string>
-    <string name="action_no">No</string>
+<!--    <string name="action_no">No</string>-->
     <string name="action_print">Print</string>
     <string name="action_reprint">Reprint</string>
     <string name="action_checkout">Checkout</string>
@@ -174,8 +186,6 @@
     <string name="msg_delete_unit_failed">Delete unit failed</string>
     <string name="title_delete_unit">Delete Unit</string>
     <string name="msg_delete_unit_confirm">Delete "%1$s"?</string>
-    <string name="msg_no_units_yet">No units yet</string>
-    <string name="msg_no_matching_units">No matching units</string>
     <string name="label_default_dash">-</string>
 
     <!-- ================================================== -->
@@ -245,6 +255,17 @@
     <string name="label_cart">Cart</string>
     <string name="label_items">Items</string>
     <string name="label_actions">Actions</string>
+    <string name="menu_warehouses">Warehouses</string>
+    <string name="menu_warehouses_desc">Manage warehouse list</string>
+
+    <string name="menu_warehouse_stocks">Warehouse Stocks</string>
+    <string name="menu_warehouse_stocks_desc">View product stock by warehouse</string>
+
+    <string name="menu_stock_transfers">Stock Transfers</string>
+    <string name="menu_stock_transfers_desc">Transfer stock between warehouses</string>
+
+    <string name="menu_bank_ledgers">Bank Ledgers</string>
+    <string name="menu_bank_ledgers_desc">View bank transaction history</string>
 
     <!-- ================================================== -->
     <!-- HINTS -->
@@ -383,7 +404,7 @@
     <!-- ================================================== -->
     <string name="title_products">Products</string>
     <string name="title_add_product">Add Product</string>
-    <string name="title_edit_product">Edit Product</string>
+    <string name="title_edit_product">Edit</string>
     <string name="title_product_details">Product Details</string>
     <string name="product_name">Product Name</string>
     <string name="product_code">Product Code</string>
@@ -405,6 +426,12 @@
     <string name="title_add_category">Add Category</string>
     <string name="title_edit_category">Edit Category</string>
     <string name="category_name">Category Name</string>
+    <string name="msg_no_categories_yet">No categories yet</string>
+    <string name="msg_no_categories_yet_sub">Tap + to create a category.</string>
+    <string name="msg_no_matching_categories">No matching categories found</string>
+    <string name="msg_no_matching_categories_sub">Try another keyword.</string>
+    <string name="title_delete_category">Delete Category</string>
+    <string name="msg_delete_category_confirm">Delete &quot;%1$s&quot;?</string>
 
     <!-- ================================================== -->
     <!-- UNITS -->
@@ -413,7 +440,10 @@
     <string name="title_add_unit">Add Unit</string>
     <string name="title_edit_unit">Edit Unit</string>
     <string name="unit_name">Unit Name</string>
-
+    <string name="msg_no_units_yet">No units yet</string>
+    <string name="msg_no_units_yet_sub">Tap + to create a unit.</string>
+    <string name="msg_no_matching_units">No matching units found</string>
+    <string name="msg_no_matching_units_sub">Try another keyword.</string>
     <string name="title_customers">Customers</string>
     <string name="title_add_customer">Add Customer</string>
     <string name="customer_details">Customer Details</string>
@@ -514,6 +544,10 @@
     <string name="btn_cancel">Cancel</string>
     <string name="btn_save">Save</string>
     <string name="btn_create">Create</string>
+    <string name="msg_no_expenses_yet">No expense yet</string>
+    <string name="msg_no_expenses_yet_sub">Tap + to create an expense.</string>
+    <string name="msg_no_matching_expenses">No matching expense found</string>
+    <string name="msg_no_matching_expenses_sub">Try another keyword.</string>
 
     <!-- ================================================== -->
     <!-- INVENTORY -->
@@ -521,6 +555,12 @@
     <string name="title_inventory_counts">Inventory Counts</string>
     <string name="title_stock_adjustments">Stock Adjustments</string>
     <string name="title_stock_movements">Stock Movements</string>
+
+    <string name="msg_no_stock_adjustments_yet">No stock adjustments yet</string>
+    <string name="msg_no_stock_adjustments_yet_sub">Tap + to create a stock adjustment.</string>
+    <string name="msg_no_matching_stock_adjustments">No matching stock adjustments found</string>
+    <string name="msg_no_matching_stock_adjustments_sub">Try another keyword.</string>
+    <string name="hint_search_stock_adjustment">Search stock adjustment...</string>
 
     <string name="inventory_count">Inventory Count</string>
     <string name="stock_adjustment">Stock Adjustment</string>
@@ -650,6 +690,14 @@
     <string name="error_create_request">Failed to create request</string>
     <string name="error_network">Network error occurred</string>
     <string name="bank_ledger_coming_soon">Bank Ledger page coming soon: %1$s</string>
+    <string name="empty_bank_accounts_sub">Tap + to create a bank account.</string>
+    <string name="action_add_bank_account">Add bank account</string>
+    <string name="empty_bank_accounts">No bank accounts yet</string>
+    <string name="dialog_delete">Delete</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="bank_account_type_bank">BANK</string>
+    <string name="bank_account_type_ewallet">EWALLET</string>
+    <string name="bank_account_type_qris">QRIS</string>
 
     <!-- ================================================== -->
     <!-- SHIFT -->
@@ -755,5 +803,258 @@
     <string name="export_pdf">Export to PDF</string>
     <string name="import_data">Import Data</string>
     <string name="orders_titles">Orders</string>
+
+    <!-- ================================================== -->
+    <!-- LOGIN / POS / CHECKOUT LOCALIZATION BATCH -->
+    <!-- ================================================== -->
+    <string name="icon_shop">🏬</string>
+    <string name="icon_user">👤</string>
+    <string name="icon_lock">🔒</string>
+    <string name="icon_password_show">👁</string>
+    <string name="icon_password_hide">🙈</string>
+    <string name="icon_search">⌕</string>
+    <string name="hint_password_mask">••••••</string>
+    <string name="cd_shop_logo">Shop logo</string>
+    <string name="cd_user_menu">User menu</string>
+    <string name="cd_barcode_scan">Barcode scanner</string>
+    <string name="cd_close">Close</string>
+    <string name="pos_default_shop_name">Welcome</string>
+    <string name="pos_default_subtitle">POS</string>
+    <string name="pos_menu">Menu</string>
+    <string name="pos_zero_count">0</string>
+    <string name="amount_zero_usd">$0.00</string>
+    <string name="amount_sample_usd">$40.99</string>
+    <string name="pos_retail_title">Retail POS</string>
+    <string name="pos_search_product_or_barcode">Search product or barcode</string>
+    <string name="pos_scan_barcode_quick">Scan barcode to add product quickly</string>
+    <string name="pos_scanned_items">Scanned Items</string>
+    <string name="pos_items_after_barcode">Items will appear after barcode scan</string>
+    <string name="pos_zero_item">0 item</string>
+    <string name="pos_scan_barcode_empty">Scan barcode to add product</string>
+    <string name="category_all">All</string>
+    <string name="workshop_default_title">Valdker POS</string>
+    <string name="workshop_default_address">Becora Dili</string>
+    <string name="workshop_walk_in_customer">Walk-in Customer</string>
+    <string name="customer_fallback_name_format">Customer #%1$d</string>
+    <string name="workshop_default_vehicle">Car</string>
+    <string name="workshop_default_plate">D012314</string>
+    <string name="label_vehicle">Vehicle</string>
+    <string name="label_plate">Plate</string>
+    <string name="label_service">Service</string>
+    <string name="label_part">Part</string>
+    <string name="label_bank_account">Bank Account</string>
+    <string name="action_change">Change</string>
+    <string name="hint_cash_received">Cash Received</string>
+    <string name="hint_reference_number">Reference Number</string>
+    <string name="hint_payment_note">Payment Note</string>
+    <string name="hint_table_number">Table Number</string>
+    <string name="hint_delivery_address">Delivery Address</string>
+    <string name="hint_delivery_fee">Delivery Fee</string>
+    <string name="checkout_points_format">Points: %1$d</string>
+    <string name="checkout_points_zero">Points: 0</string>
+    <string name="checkout_change_format">Change: %1$s</string>
+    <string name="checkout_change_zero">Change: $0.00</string>
+    <string name="checkout_shortage_format">Shortage: %1$s</string>
+    <string name="checkout_secure_by_knox">Secure By Knox</string>
+    <string name="msg_login_required_fields">Shop code, username, and password are required.</string>
+    <string name="msg_login_required_fields_server">Shop code, username, and password must be filled.</string>
+    <string name="msg_login_invalid_shop_user_password">Shop code, username, or password is invalid.</string>
+    <string name="msg_user_inactive_or_forbidden_shop">User is inactive or not allowed to access this shop.</string>
+    <string name="msg_cannot_connect_server">Cannot connect to server. Check base URL or network.</string>
+    <string name="msg_login_failed_http">Login failed (HTTP %1$d)</string>
+    <string name="msg_error_with_detail">Error: %1$s</string>
+    <string name="msg_token_missing_server_response">Token is missing from server response.</string>
+    <string name="msg_parse_error_with_detail">Parse error: %1$s</string>
+    <string name="msg_internet_required_open_shift">Internet is required to open a shift.</string>
+    <string name="msg_shift_open_load_failed">Shift is already open, but failed to load shift details.</string>
+    <string name="msg_failed_process_barcode">Failed to process barcode</string>
+    <string name="msg_pos_screen_not_ready">POS screen not ready.</string>
+    <string name="msg_camera_permission_barcode">Camera permission required to scan barcode</string>
+    <string name="msg_scan_cancelled">Scan cancelled</string>
+    <string name="msg_retail_pos_not_ready">Retail POS not ready</string>
+    <string name="msg_no_items_scanned">No items scanned yet</string>
+    <string name="msg_failed_load_payment_methods">Failed to load payment methods: %1$s</string>
+    <string name="msg_failed_load_bank_accounts">Failed to load bank accounts: %1$s</string>
+    <string name="msg_order_submitting">Order is being submitted...</string>
+    <string name="msg_internet_required_submit_order">Internet is required to submit order.</string>
+    <string name="msg_failed_build_order_payload">Failed to build order payload: %1$s</string>
+    <string name="msg_payment_method_missing">Payment method ID is missing. Please load valid payment methods.</string>
+    <string name="msg_retail_order_saved">Retail order saved successfully.</string>
+    <string name="msg_retail_order_saved_invoice">Retail order saved: %1$s</string>
+    <string name="msg_submit_order_failed_body">Submit order failed (%1$d): %2$s</string>
+    <string name="msg_submit_order_failed_code">Submit order failed (%1$d)</string>
+    <string name="msg_submit_order_failed">Submit order failed</string>
+    <string name="msg_barcode_disabled_business">Barcode scan is disabled for this business type.</string>
+    <string name="msg_barcode_hidden_workshop">Barcode shortcut is hidden for Workshop POS.</string>
+    <string name="msg_open_shift_first">Open shift first.</string>
+    <string name="msg_workshop_main_screen">Workshop workspace is already the main POS screen.</string>
+    <string name="msg_change_password_clicked">Change Password clicked</string>
+    <string name="msg_privacy_policy_clicked">Privacy Policy clicked</string>
+    <string name="msg_internet_required_close_shift">Internet is required to close a shift.</string>
+    <string name="msg_no_open_shift">There is no open shift.</string>
+    <string name="msg_unknown_error">Unknown error</string>
+    <string name="msg_closing_cash_required">Closing cash is required.</string>
+    <string name="msg_opening_cash_required">Opening cash is required.</string>
+    <string name="msg_invalid_money_amount">Enter a valid money amount.</string>
+    <string name="msg_shift_closed_open_new">Shift closed. Please open a new shift before making transactions.</string>
+    <string name="msg_table_number_required">Table number is required.</string>
+    <string name="msg_delivery_address_required">Delivery address is required.</string>
+    <string name="msg_cash_received_required">Cash received is required.</string>
+    <string name="msg_cash_received_less_total">Cash received cannot be less than total.</string>
+    <string name="msg_reference_number_required">Reference number is required.</string>
+    <string name="action_close_shift_logout">Close Shift &amp; Logout</string>
+    <string name="action_close_shift">Close Shift</string>
+    <string name="title_closing_cash">Closing Cash</string>
+
+    <!-- ================================================== -->
+    <!-- BATCH 4A: WAREHOUSE / STOCK TRANSFER / BANK LEDGER -->
+    <!-- ================================================== -->
+    <string name="cd_back">Back</string>
+    <string name="cd_refresh">Refresh</string>
+    <string name="cd_search">Search</string>
+    <string name="cd_add_warehouse">Add warehouse</string>
+    <string name="cd_add_warehouse_stock">Add warehouse stock</string>
+    <string name="cd_add_stock_transfer">Add stock transfer</string>
+    <string name="action_ok">OK</string>
+    <string name="action_complete">Complete</string>
+    <string name="action_yes_cancel">Yes, cancel</string>
+    <string name="action_no">No</string>
+    <string name="label_active">Active</string>
+    <string name="label_inactive">Inactive</string>
+    <string name="label_default">Default</string>
+    <string name="label_low_stock">Low Stock</string>
+    <string name="label_normal">Normal</string>
+    <string name="label_minimum_stock">Minimum Stock</string>
+    <string name="label_unit_required">Unit *</string>
+    <string name="label_quantity_required">Quantity *</string>
+    <string name="hint_search_warehouse">Search warehouse...</string>
+    <string name="hint_search_warehouse_stock">Search warehouse stock...</string>
+    <string name="hint_search_stock_transfer">Search stock transfer...</string>
+    <string name="hint_search_bank_ledger">Search bank ledger...</string>
+<!--    <string name="hint_search_product">Search product...</string>-->
+    <string name="hint_select_warehouse_required">Select Warehouse *</string>
+    <string name="hint_select_product_required">Select Product *</string>
+    <string name="hint_select_unit">Select Unit</string>
+    <string name="hint_warehouse_name_required">Warehouse Name *</string>
+    <string name="hint_warehouse_code_required">Warehouse Code *</string>
+    <string name="hint_location">Location</string>
+    <string name="hint_from_warehouse_required">From Warehouse *</string>
+    <string name="hint_to_warehouse_required">To Warehouse *</string>
+    <string name="hint_quantity_required">Quantity *</string>
+    <string name="hint_enter_stock_quantity">Enter stock quantity</string>
+    <string name="hint_enter_minimum_stock_alert">Enter minimum stock alert</string>
+    <string name="warehouse_set_default">Set as default warehouse</string>
+    <string name="msg_no_warehouses">No warehouses yet</string>
+    <string name="msg_create_first_warehouse">Tap + to create your first warehouse</string>
+    <string name="msg_no_warehouse_stocks">No warehouse stocks yet</string>
+    <string name="msg_create_warehouse_stock_hint">Tap + to create stock per warehouse</string>
+    <string name="msg_no_stock_transfers">No stock transfers yet</string>
+    <string name="msg_create_stock_transfer_hint">Tap + to transfer stock between warehouses</string>
+    <string name="msg_no_bank_ledgers">No bank ledgers yet</string>
+    <string name="msg_bank_ledger_empty_hint">Bank transaction history will appear here.</string>
+    <string name="warehouse_code_format">Code: %1$s</string>
+    <string name="warehouse_location_format">Location: %1$s</string>
+    <string name="warehouse_stock_sku_code_format">SKU: %1$s | Code: %2$s</string>
+    <string name="warehouse_stock_warehouse_format">Warehouse: %1$s (%2$s)</string>
+    <string name="warehouse_stock_qty_min_format">Qty: %1$s | Min: %2$s</string>
+    <string name="stock_transfer_note_format">Note: %1$s</string>
+    <string name="stock_transfer_created_format">Created: %1$s</string>
+    <string name="stock_transfer_route_format">%1$s → %2$s</string>
+    <string name="stock_transfer_fallback_reference">Transfer #%1$d</string>
+    <string name="quantity_preview_base_format">Qty: %1$s %2$s</string>
+    <string name="quantity_preview_conversion_format">%1$s %2$s ≈ %3$s PCS</string>
+    <string name="available_stock_empty">Available: -</string>
+    <string name="available_stock_base_format">Available:\n%1$s</string>
+    <string name="available_stock_conversion_format">Available:\n%1$s\n≈ %2$s %3$s</string>
+    <string name="bank_ledger_title">Bank Ledger</string>
+    <string name="bank_ledger_amount_format">Amount: %1$s</string>
+    <string name="bank_ledger_balance_format">Balance: %1$s → %2$s</string>
+    <string name="bank_ledger_invoice_format">Invoice: %1$s</string>
+    <string name="bank_ledger_description_format">Description: %1$s</string>
+    <string name="bank_ledger_date_format">Date: %1$s</string>
+    <string name="bank_ledger_detail_format">ID: %1$d\nShop: %2$s (%3$s)\nBank Account ID: %4$d\nBank Account: %5$s\nTransaction Type: %6$s\nDirection: %7$s\nAmount: %8$s\nBalance Before: %9$s\nBalance After: %10$s\nReference Order: %11$d\nInvoice: %12$s\nReference Payment: %13$d\nDescription: %14$s\nCreated At: %15$s\nCreated By: %16$d</string>
+    <string name="dialog_add_warehouse_title">Add Warehouse</string>
+    <string name="dialog_edit_warehouse_title">Edit Warehouse</string>
+    <string name="dialog_delete_warehouse_title">Delete Warehouse</string>
+    <string name="dialog_delete_warehouse_message">Delete warehouse \"%1$s\"?</string>
+    <string name="dialog_add_warehouse_stock_title">Add Warehouse Stock</string>
+    <string name="dialog_edit_warehouse_stock_title">Edit Warehouse Stock</string>
+    <string name="dialog_delete_warehouse_stock_title">Delete Warehouse Stock</string>
+    <string name="dialog_delete_warehouse_stock_message">Delete stock for \"%1$s\"?</string>
+    <string name="dialog_add_stock_transfer_title">Add Stock Transfer</string>
+    <string name="dialog_edit_stock_transfer_title">Edit Stock Transfer</string>
+    <string name="dialog_select_product_title">Select Product</string>
+    <string name="dialog_select_from_warehouse_title">Select From Warehouse</string>
+    <string name="dialog_select_to_warehouse_title">Select To Warehouse</string>
+    <string name="dialog_complete_stock_transfer_title">Complete Stock Transfer</string>
+    <string name="dialog_complete_stock_transfer_message">Complete transfer \"%1$s\"?</string>
+    <string name="dialog_cancel_stock_transfer_title">Cancel Stock Transfer</string>
+    <string name="dialog_cancel_stock_transfer_message">Cancel transfer \"%1$s\"?</string>
+    <string name="dialog_delete_stock_transfer_title">Delete Stock Transfer</string>
+    <string name="dialog_delete_stock_transfer_message">Delete transfer \"%1$s\"?</string>
+    <string name="msg_warehouse_name_required">Warehouse name is required</string>
+    <string name="msg_warehouse_code_required">Warehouse code is required</string>
+    <string name="msg_warehouse_created">Warehouse created</string>
+    <string name="msg_warehouse_updated">Warehouse updated</string>
+    <string name="msg_warehouse_deleted">Warehouse deleted</string>
+    <string name="msg_load_warehouses_failed">Load warehouses failed: %1$s</string>
+    <string name="msg_load_products_failed">Load products failed: %1$s</string>
+    <string name="msg_warehouse_required">Warehouse is required</string>
+    <string name="msg_product_required">Product is required</string>
+    <string name="msg_unit_required">Unit is required</string>
+    <string name="msg_valid_product_unit_required">Please select a valid product unit.</string>
+    <string name="msg_selected_product_unit_invalid_reload">Selected product unit is not valid. Please reload products and try again.</string>
+    <string name="msg_barcode_required">Barcode is required</string>
+    <string name="msg_invalid_number_format">Invalid number format</string>
+    <string name="msg_invalid_quantity_format">Invalid quantity format</string>
+    <string name="msg_quantity_required">Quantity is required</string>
+    <string name="msg_quantity_greater_than_zero">Quantity must be greater than 0</string>
+    <string name="msg_scan_failed">Scan failed: %1$s</string>
+    <string name="msg_warehouse_stock_created">Warehouse stock created</string>
+    <string name="msg_warehouse_stock_updated">Warehouse stock updated</string>
+    <string name="msg_warehouse_stock_deleted">Warehouse stock deleted</string>
+    <string name="msg_warehouse_stock_duplicate">This product already exists in the selected warehouse. Please edit the existing stock.</string>
+    <string name="msg_quantity_must_be_non_negative">Quantity must be 0 or greater</string>
+    <string name="msg_minimum_stock_must_be_non_negative">Minimum stock must be 0 or greater</string>
+    <string name="msg_warehouse_data_loading">Warehouse data is still loading. Please try again.</string>
+    <string name="msg_product_data_loading">Product data is still loading. Please try again.</string>
+    <string name="msg_from_warehouse_required">From Warehouse is required</string>
+    <string name="msg_to_warehouse_required">To Warehouse is required</string>
+    <string name="msg_invalid_source_warehouse">Please select a valid source warehouse.</string>
+    <string name="msg_invalid_destination_warehouse">Please select a valid destination warehouse.</string>
+    <string name="msg_warehouse_list_refreshed_select_again">Warehouse data was refreshed. Please select warehouses again.</string>
+    <string name="msg_warehouses_cannot_be_same">From and To warehouse cannot be same</string>
+    <string name="msg_quantity_exceeds_available_stock">Quantity cannot exceed available stock</string>
+    <string name="msg_stock_transfer_created">Stock transfer created</string>
+    <string name="msg_stock_transfer_updated">Stock transfer updated</string>
+    <string name="msg_stock_transfer_completed">Stock transfer completed</string>
+    <string name="msg_stock_transfer_cancelled">Stock transfer cancelled</string>
+    <string name="msg_stock_transfer_deleted">Stock transfer deleted</string>
+    <string name="warehouse_display_code_format">%1$s - %2$s</string>
+    <string name="product_sku_display_format">%1$s - SKU: %2$s</string>
+    <string name="label_unit_fallback">UNIT</string>
+    <string name="sample_main_warehouse">Main Warehouse</string>
+    <string name="sample_warehouse_code">Code: WH001</string>
+    <string name="sample_warehouse_location">Location: Dili</string>
+    <string name="sample_product_name">Product Name</string>
+    <string name="sample_warehouse_stock_product_info">SKU: - | Code: -</string>
+    <string name="sample_warehouse_stock_warehouse">Warehouse: Main</string>
+    <string name="sample_warehouse_stock_qty">Qty: 0 PCS | Min: 0 PCS</string>
+    <string name="sample_stock_transfer_ref">TRF-0001</string>
+    <string name="sample_stock_transfer_route">Main Warehouse → Outlet Warehouse</string>
+    <string name="sample_stock_transfer_note">Note: -</string>
+    <string name="sample_stock_transfer_created">Created: -</string>
+    <string name="sample_bank_name">Bank Mandiri</string>
+    <string name="sample_bank_ledger_type">SALE IN</string>
+    <string name="sample_bank_ledger_direction">IN</string>
+    <string name="sample_bank_ledger_amount">Amount: $25.00</string>
+    <string name="sample_bank_ledger_balance">Balance: $100.00 → $125.00</string>
+    <string name="sample_bank_ledger_invoice">Invoice: INV-0001</string>
+    <string name="sample_bank_ledger_description">Description: Payment from sale</string>
+    <string name="sample_bank_ledger_date">Date: 21 May 2026 10:00</string>
+    <string name="draft_a_preview">&#9679; A &#8226; 3</string>
+    <string name="draft_b_preview">B &#8226; 12</string>
+    <string name="draft_walkin_preview">Walk-in &#8226; 1</string>
+    <string name="draft_add">+</string>
 
 </resources>

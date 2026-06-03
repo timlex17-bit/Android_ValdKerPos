@@ -8,7 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,6 +20,7 @@ import com.valdker.pos.R;
 import com.valdker.pos.models.InventoryCount;
 import com.valdker.pos.models.InventoryCountItem;
 import com.valdker.pos.repositories.InventoryCountRepository;
+import com.valdker.pos.utils.ErrorHandler;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -323,7 +324,7 @@ public class InventoryCountFormDialog extends DialogFragment {
             public void onError(@NonNull String message) {
                 if (!isAdded()) return;
                 setLoading(false);
-                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+                ErrorHandler.handleApiError(requireContext(), message);
             }
         });
     }
@@ -355,7 +356,7 @@ public class InventoryCountFormDialog extends DialogFragment {
             public void onError(@NonNull String message) {
                 if (!isAdded()) return;
                 setLoading(false);
-                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+                ErrorHandler.handleApiError(requireContext(), message);
             }
         });
     }

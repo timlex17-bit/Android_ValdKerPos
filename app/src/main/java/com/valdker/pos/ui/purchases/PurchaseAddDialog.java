@@ -11,7 +11,7 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,6 +24,7 @@ import com.valdker.pos.network.ApiClient;
 import com.valdker.pos.repositories.LiteRepository;
 import com.valdker.pos.repositories.PurchaseRepository;
 import com.valdker.pos.repositories.SupplierRepository;
+import com.valdker.pos.utils.ErrorHandler;
 import com.valdker.pos.utils.InsetsHelper;
 import com.google.android.material.button.MaterialButton;
 
@@ -136,7 +137,7 @@ public class PurchaseAddDialog extends androidx.fragment.app.DialogFragment {
 
         rvDraft = v.findViewById(R.id.rvDraftItems);
         rvDraft.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(requireContext()));
-        rvDraft.setHasFixedSize(true);
+        rvDraft.setHasFixedSize(false);
 
         draftAdapter = new PurchaseItemDraftAdapter(drafts, position -> {
             if (position >= 0 && position < drafts.size()) {
@@ -201,7 +202,7 @@ public class PurchaseAddDialog extends androidx.fragment.app.DialogFragment {
                     @Override
                     public void onError(@NonNull String message) {
                         showLoading(false);
-                        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+                        ErrorHandler.handleApiError(requireContext(), message);
                     }
                 });
             }
@@ -209,7 +210,7 @@ public class PurchaseAddDialog extends androidx.fragment.app.DialogFragment {
             @Override
             public void onError(int code, @NonNull String message) {
                 showLoading(false);
-                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+                ErrorHandler.handleApiError(requireContext(), message);
             }
         });
     }
@@ -436,7 +437,7 @@ public class PurchaseAddDialog extends androidx.fragment.app.DialogFragment {
                     if (!isAdded()) return;
                     showLoading(false);
                     btnSave.setEnabled(true);
-                    Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+                    ErrorHandler.handleApiError(requireContext(), message);
                 }
             });
 

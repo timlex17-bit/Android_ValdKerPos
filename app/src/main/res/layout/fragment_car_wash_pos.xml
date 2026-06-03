@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/rootCarWashPos"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F6F7FB"
+    android:paddingStart="10dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="10dp"
+    android:paddingBottom="8dp">
+
+<!--    &lt;!&ndash; HEADER &ndash;&gt;-->
+<!--    <com.google.android.material.card.MaterialCardView-->
+<!--        android:id="@+id/cardCarWashHeader"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:backgroundTint="#FFFFFF"-->
+<!--        app:cardCornerRadius="16dp"-->
+<!--        app:cardElevation="1dp"-->
+<!--        app:strokeColor="#E9EDF5"-->
+<!--        app:strokeWidth="1dp"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent">-->
+
+<!--        <LinearLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:orientation="vertical"-->
+<!--            android:padding="10dp">-->
+
+<!--            <LinearLayout-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:gravity="center_vertical"-->
+<!--                android:orientation="horizontal">-->
+
+<!--                <com.google.android.material.card.MaterialCardView-->
+<!--                    android:layout_width="40dp"-->
+<!--                    android:layout_height="40dp"-->
+<!--                    android:layout_marginEnd="10dp"-->
+<!--                    android:backgroundTint="#0EA5E9"-->
+<!--                    app:cardCornerRadius="20dp"-->
+<!--                    app:cardElevation="0dp">-->
+
+<!--                    <ImageView-->
+<!--                        android:id="@+id/imgLogo"-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="match_parent"-->
+<!--                        android:padding="9dp"-->
+<!--                        android:src="@drawable/ic_car"-->
+<!--                        app:tint="#FFFFFF" />-->
+<!--                </com.google.android.material.card.MaterialCardView>-->
+
+<!--                <LinearLayout-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:orientation="vertical">-->
+
+<!--                    <TextView-->
+<!--                        android:id="@+id/tvBrand"-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:ellipsize="end"-->
+<!--                        android:maxLines="1"-->
+<!--                        android:text="Valora Car Wash"-->
+<!--                        android:textColor="#0F172A"-->
+<!--                        android:textSize="17sp"-->
+<!--                        android:textStyle="bold" />-->
+
+<!--                    <TextView-->
+<!--                        android:id="@+id/tvShopAddress"-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_marginTop="1dp"-->
+<!--                        android:ellipsize="end"-->
+<!--                        android:maxLines="1"-->
+<!--                        android:text="Car Wash POS"-->
+<!--                        android:textColor="#98A2B3"-->
+<!--                        android:textSize="11sp" />-->
+<!--                </LinearLayout>-->
+
+<!--                <TextView-->
+<!--                    android:id="@+id/txtTransactionStatus"-->
+<!--                    android:layout_width="58dp"-->
+<!--                    android:layout_height="30dp"-->
+<!--                    android:background="@drawable/bg_chip_green"-->
+<!--                    android:gravity="center"-->
+<!--                    android:text="Draft"-->
+<!--                    android:textColor="#166534"-->
+<!--                    android:textSize="11sp"-->
+<!--                    android:textStyle="bold" />-->
+<!--            </LinearLayout>-->
+
+<!--            &lt;!&ndash; Customer &ndash;&gt;-->
+<!--            <LinearLayout-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginTop="8dp"-->
+<!--                android:gravity="center_vertical"-->
+<!--                android:orientation="horizontal">-->
+
+<!--                <LinearLayout-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:orientation="vertical">-->
+
+<!--                    <TextView-->
+<!--                        android:layout_width="wrap_content"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:text="CUSTOMER"-->
+<!--                        android:textColor="#B0B7C8"-->
+<!--                        android:textSize="10sp"-->
+<!--                        android:textStyle="bold" />-->
+
+<!--                    <TextView-->
+<!--                        android:id="@+id/txtCustomerName"-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:ellipsize="end"-->
+<!--                        android:maxLines="1"-->
+<!--                        android:text="Walk-in Customer"-->
+<!--                        android:textColor="#0F172A"-->
+<!--                        android:textSize="14sp"-->
+<!--                        android:textStyle="bold" />-->
+<!--                </LinearLayout>-->
+
+<!--                <com.google.android.material.button.MaterialButton-->
+<!--                    android:id="@+id/btnSelectCustomer"-->
+<!--                    style="@style/Widget.MaterialComponents.Button.TextButton"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="32dp"-->
+<!--                    android:text="Change"-->
+<!--                    android:textAllCaps="false"-->
+<!--                    android:textColor="#0EA5E9"-->
+<!--                    android:textSize="13sp"-->
+<!--                    android:textStyle="bold"-->
+<!--                    app:backgroundTint="@android:color/transparent" />-->
+<!--            </LinearLayout>-->
+
+<!--            &lt;!&ndash; Vehicle + Plate &ndash;&gt;-->
+<!--            <LinearLayout-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginTop="8dp"-->
+<!--                android:orientation="horizontal"-->
+<!--                android:weightSum="2">-->
+
+<!--                <TextView-->
+<!--                    android:id="@+id/txtVehicleName"-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="40dp"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:background="@drawable/bg_input_soft"-->
+<!--                    android:gravity="center_vertical"-->
+<!--                    android:paddingStart="12dp"-->
+<!--                    android:text="Car / Motor"-->
+<!--                    android:textColor="#0F172A"-->
+<!--                    android:textSize="13sp"-->
+<!--                    android:textStyle="bold" />-->
+
+<!--                <TextView-->
+<!--                    android:id="@+id/txtPlateNumber"-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="40dp"-->
+<!--                    android:layout_marginStart="8dp"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:background="@drawable/bg_input_soft"-->
+<!--                    android:gravity="center_vertical"-->
+<!--                    android:paddingStart="12dp"-->
+<!--                    android:text="Plate Number"-->
+<!--                    android:textColor="#0F172A"-->
+<!--                    android:textSize="13sp"-->
+<!--                    android:textStyle="bold" />-->
+<!--            </LinearLayout>-->
+
+<!--        </LinearLayout>-->
+<!--    </com.google.android.material.card.MaterialCardView>-->
+
+<!--    &lt;!&ndash; SUMMARY &ndash;&gt;-->
+<!--    <LinearLayout-->
+<!--        android:id="@+id/layoutQuickStats"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="54dp"-->
+<!--        android:layout_marginTop="8dp"-->
+<!--        android:orientation="horizontal"-->
+<!--        android:weightSum="3"-->
+<!--        app:layout_constraintTop_toBottomOf="@id/cardCarWashHeader"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent">-->
+
+<!--        <TextView-->
+<!--            android:id="@+id/txtWashTotal"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:layout_weight="1"-->
+<!--            android:background="@drawable/bg_stat_blue"-->
+<!--            android:gravity="center"-->
+<!--            android:text="Wash\n$0.00"-->
+<!--            android:textColor="#0369A1"-->
+<!--            android:textSize="13sp"-->
+<!--            android:textStyle="bold" />-->
+
+<!--        <TextView-->
+<!--            android:id="@+id/txtAddonTotal"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:layout_marginStart="6dp"-->
+<!--            android:layout_weight="1"-->
+<!--            android:background="@drawable/bg_stat_green"-->
+<!--            android:gravity="center"-->
+<!--            android:text="Add-on\n$0.00"-->
+<!--            android:textColor="#166534"-->
+<!--            android:textSize="13sp"-->
+<!--            android:textStyle="bold" />-->
+
+<!--        <TextView-->
+<!--            android:id="@+id/txtProductTotal"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:layout_marginStart="6dp"-->
+<!--            android:layout_weight="1"-->
+<!--            android:background="@drawable/bg_stat_orange"-->
+<!--            android:gravity="center"-->
+<!--            android:text="Product\n$0.00"-->
+<!--            android:textColor="#C2410C"-->
+<!--            android:textSize="13sp"-->
+<!--            android:textStyle="bold" />-->
+<!--    </LinearLayout>-->
+
+<!--    &lt;!&ndash; ITEMS &ndash;&gt;-->
+<!--    <androidx.recyclerview.widget.RecyclerView-->
+<!--        android:id="@+id/recyclerCarWashItems"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="0dp"-->
+<!--        android:layout_marginTop="8dp"-->
+<!--        android:layout_marginBottom="12dp"-->
+<!--        android:clipToPadding="false"-->
+<!--        android:padding="6dp"-->
+<!--        app:layout_constraintTop_toBottomOf="@id/layoutQuickStats"-->
+<!--        app:layout_constraintBottom_toTopOf="@id/layoutBottomPanel"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        tools:listitem="@layout/item_workshop_cart" />-->
+
+<!--    &lt;!&ndash; BOTTOM PANEL &ndash;&gt;-->
+<!--    <com.google.android.material.card.MaterialCardView-->
+<!--        android:id="@+id/layoutBottomPanel"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginBottom="6dp"-->
+<!--        android:backgroundTint="#FFFFFF"-->
+<!--        app:cardCornerRadius="20dp"-->
+<!--        app:cardElevation="6dp"-->
+<!--        app:strokeColor="#E8EEF5"-->
+<!--        app:strokeWidth="1dp"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent">-->
+
+<!--        <LinearLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:orientation="vertical"-->
+<!--            android:padding="10dp">-->
+
+<!--            <LinearLayout-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:gravity="center_vertical"-->
+<!--                android:orientation="horizontal">-->
+
+<!--                <LinearLayout-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_weight="1">-->
+
+<!--                    <TextView-->
+<!--                        android:id="@+id/txtGrandTotal"-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:text="$0.00"-->
+<!--                        android:textColor="#16A34A"-->
+<!--                        android:textSize="24sp"-->
+<!--                        android:textStyle="bold" />-->
+<!--                </LinearLayout>-->
+
+<!--                <com.google.android.material.button.MaterialButton-->
+<!--                    android:id="@+id/btnCheckout"-->
+<!--                    android:layout_width="160dp"-->
+<!--                    android:layout_height="50dp"-->
+<!--                    android:text="Checkout"-->
+<!--                    android:textAllCaps="false"-->
+<!--                    android:textColor="#FFFFFF"-->
+<!--                    android:textSize="15sp"-->
+<!--                    android:textStyle="bold"-->
+<!--                    app:backgroundTint="#22C55E"-->
+<!--                    app:cornerRadius="17dp" />-->
+<!--            </LinearLayout>-->
+
+<!--            <LinearLayout-->
+<!--                android:id="@+id/layoutCarWashActions"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginTop="8dp"-->
+<!--                android:orientation="horizontal"-->
+<!--                android:weightSum="3">-->
+
+<!--                <com.google.android.material.button.MaterialButton-->
+<!--                    android:id="@+id/btnAddWashPackage"-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="40dp"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:text="Wash"-->
+<!--                    android:textAllCaps="false"-->
+<!--                    android:textColor="#0369A1"-->
+<!--                    android:textSize="11sp"-->
+<!--                    android:textStyle="bold"-->
+<!--                    app:backgroundTint="#E0F2FE"-->
+<!--                    app:cornerRadius="14dp"-->
+<!--                    app:icon="@drawable/ic_car"-->
+<!--                    app:iconTint="#0284C7" />-->
+
+<!--                <com.google.android.material.button.MaterialButton-->
+<!--                    android:id="@+id/btnAddAddon"-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="40dp"-->
+<!--                    android:layout_marginStart="6dp"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:text="Add-on"-->
+<!--                    android:textAllCaps="false"-->
+<!--                    android:textColor="#166534"-->
+<!--                    android:textSize="11sp"-->
+<!--                    android:textStyle="bold"-->
+<!--                    app:backgroundTint="#DCFCE7"-->
+<!--                    app:cornerRadius="14dp"-->
+<!--                    app:icon="@drawable/ic_service"-->
+<!--                    app:iconTint="#16A34A" />-->
+
+<!--                <com.google.android.material.button.MaterialButton-->
+<!--                    android:id="@+id/btnAddProduct"-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="40dp"-->
+<!--                    android:layout_marginStart="6dp"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:text="Product"-->
+<!--                    android:textAllCaps="false"-->
+<!--                    android:textColor="#C2410C"-->
+<!--                    android:textSize="11sp"-->
+<!--                    android:textStyle="bold"-->
+<!--                    app:backgroundTint="#FFEDD5"-->
+<!--                    app:cornerRadius="14dp"-->
+<!--                    app:icon="@drawable/ic_bag"-->
+<!--                    app:iconTint="#F97316" />-->
+<!--            </LinearLayout>-->
+
+<!--        </LinearLayout>-->
+<!--    </com.google.android.material.card.MaterialCardView>-->
+
+</androidx.constraintlayout.widget.ConstraintLayout>

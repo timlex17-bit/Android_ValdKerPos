@@ -12,6 +12,8 @@ public class ValdkerApp extends Application {
     public void onCreate() {
         super.onCreate();
 
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
         SharedPreferences prefs = getSharedPreferences("app_settings", MODE_PRIVATE);
         String languageCode = prefs.getString("app_language", "tet");
 

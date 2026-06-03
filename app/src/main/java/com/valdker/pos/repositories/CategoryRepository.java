@@ -10,15 +10,17 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.models.Category;
 import com.valdker.pos.models.CategoryLite;
 import com.valdker.pos.network.ApiClient;
 import com.valdker.pos.network.ApiConfig;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -85,16 +87,16 @@ public class CategoryRepository {
         String apiCategoriesUrl = ApiConfig.url(session, API_CATEGORIES_PATH);
         String baseUrl = session.getBaseUrl();
 
-        JsonArrayRequest req = new JsonArrayRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.GET,
                 apiCategoriesUrl,
-                null,
                 response -> {
                     try {
+                        JSONArray categories = extractResultsArray(response);
                         List<Category> list = new ArrayList<>();
 
-                        for (int i = 0; i < response.length(); i++) {
-                            JSONObject o = response.optJSONObject(i);
+                        for (int i = 0; i < categories.length(); i++) {
+                            JSONObject o = categories.optJSONObject(i);
                             if (o == null) continue;
 
                             int id = o.optInt("id", 0);
@@ -217,12 +219,12 @@ public class CategoryRepository {
         SessionManager session = new SessionManager(context.getApplicationContext());
         String apiCategoriesUrl = ApiConfig.url(session, API_CATEGORIES_PATH);
 
-        JsonArrayRequest req = new JsonArrayRequest(
+        StringRequest req = new StringRequest(
                 Request.Method.GET,
                 apiCategoriesUrl,
-                null,
-                res -> {
+                response -> {
                     try {
+                        JSONArray res = extractResultsArray(response);
                         List<CategoryLite> out = new ArrayList<>();
 
                         for (int i = 0; i < res.length(); i++) {
@@ -264,6 +266,21 @@ public class CategoryRepository {
     // =========================
     // Helpers
     // =========================
+
+    private static JSONArray extractResultsArray(String response) throws Exception {
+        Object parsed = new JSONTokener(response == null ? "[]" : response).nextValue();
+
+        if (parsed instanceof JSONArray) {
+            return (JSONArray) parsed;
+        }
+
+        if (parsed instanceof JSONObject) {
+            JSONArray results = ((JSONObject) parsed).optJSONArray("results");
+            return results != null ? results : new JSONArray();
+        }
+
+        return new JSONArray();
+    }
 
     private static Map<String, String> buildHeaders(@Nullable String tokenOrNull) {
         Map<String, String> h = new HashMap<>();

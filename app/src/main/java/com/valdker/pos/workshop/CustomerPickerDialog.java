@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,6 +15,7 @@ import androidx.fragment.app.DialogFragment;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.models.Customer;
 import com.valdker.pos.repositories.CustomerRepository;
+import com.valdker.pos.repositories.MasterDataRepository;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
@@ -30,6 +31,9 @@ public class CustomerPickerDialog extends DialogFragment {
 
     private SessionManager sessionManager;
     private CustomerRepository customerRepository;
+    private MasterDataRepository masterDataRepository;
+    private boolean offlineNoticeShown = false;
+    private boolean noLocalDataNoticeShown = false;
 
     private final List<Customer> customerList = new ArrayList<>();
     private final List<String> displayItems = new ArrayList<>();
@@ -50,6 +54,7 @@ public class CustomerPickerDialog extends DialogFragment {
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         sessionManager = new SessionManager(requireContext());
         customerRepository = new CustomerRepository(requireContext());
+        masterDataRepository = new MasterDataRepository(requireContext());
 
         ListView listView = new ListView(requireContext());
         listView.setDividerHeight(1);
@@ -113,49 +118,78 @@ public class CustomerPickerDialog extends DialogFragment {
             return;
         }
 
-        customerRepository.fetchCustomers(token, new CustomerRepository.ListCallback() {
+        masterDataRepository.loadCustomersRoomFirst(token, new MasterDataRepository.CustomersCallback() {
             @Override
-            public void onSuccess(@NonNull List<Customer> customers) {
+            public void onLocalCustomers(@NonNull List<Customer> customers) {
                 if (!isAdded()) return;
+                renderCustomers(customers);
+            }
 
-                customerList.clear();
-                displayItems.clear();
+            @Override
+            public void onRemoteCustomers(@NonNull List<Customer> customers) {
+                if (!isAdded()) return;
+                offlineNoticeShown = false;
+                noLocalDataNoticeShown = false;
+                renderCustomers(customers);
+            }
 
-                if (customers.isEmpty()) {
-                    displayItems.add("No customer found");
-                } else {
-                    customerList.addAll(customers);
-
-                    for (Customer c : customers) {
-                        StringBuilder line = new StringBuilder();
-                        line.append(c.name);
-
-                        if (!TextUtils.isEmpty(c.cell)) {
-                            line.append("\n").append(c.cell);
-                        } else if (!TextUtils.isEmpty(c.email)) {
-                            line.append("\n").append(c.email);
-                        }
-                        displayItems.add(line.toString());
+            @Override
+            public void onNoInternet(@NonNull List<Customer> localCustomers) {
+                if (!isAdded()) return;
+                if (localCustomers.isEmpty() && customerList.isEmpty()) {
+                    showErrorState(MasterDataRepository.MESSAGE_NO_LOCAL_POS_DATA);
+                    if (!noLocalDataNoticeShown) {
+                        noLocalDataNoticeShown = true;
+                        Toast.makeText(requireContext(), MasterDataRepository.MESSAGE_NO_LOCAL_POS_DATA, Toast.LENGTH_SHORT).show();
                     }
+                    return;
                 }
-
-                if (adapter != null) {
-                    adapter.notifyDataSetChanged();
+                if (!offlineNoticeShown) {
+                    offlineNoticeShown = true;
+                    Toast.makeText(requireContext(), MasterDataRepository.MESSAGE_NO_INTERNET_SHOWING_LOCAL, Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onError(int statusCode, @NonNull String message) {
                 if (!isAdded()) return;
-
-                showErrorState("Failed load customer");
-                Toast.makeText(
-                        requireContext(),
-                        "Gagal memuat customer: " + message,
-                        Toast.LENGTH_LONG
-                ).show();
+                if (customerList.isEmpty()) {
+                    showErrorState("Failed load customer");
+                    Toast.makeText(
+                            requireContext(),
+                            "Gagal memuat customer: " + message,
+                            Toast.LENGTH_LONG
+                    ).show();
+                }
             }
         });
+    }
+
+    private void renderCustomers(@NonNull List<Customer> customers) {
+        customerList.clear();
+        displayItems.clear();
+
+        if (customers.isEmpty()) {
+            displayItems.add("No customer found");
+        } else {
+            customerList.addAll(customers);
+
+            for (Customer c : customers) {
+                StringBuilder line = new StringBuilder();
+                line.append(c.name);
+
+                if (!TextUtils.isEmpty(c.cell)) {
+                    line.append("\n").append(c.cell);
+                } else if (!TextUtils.isEmpty(c.email)) {
+                    line.append("\n").append(c.email);
+                }
+                displayItems.add(line.toString());
+            }
+        }
+
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
     }
 
     private void showErrorState(@NonNull String message) {

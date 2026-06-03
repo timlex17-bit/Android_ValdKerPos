@@ -8,6 +8,8 @@ import androidx.fragment.app.Fragment;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.valdker.pos.utils.ErrorHandler;
+
 public abstract class BaseFragment extends Fragment {
 
     public BaseFragment() {
@@ -193,5 +195,15 @@ public abstract class BaseFragment extends Fragment {
         if (getContext() == null) return value;
         float density = getContext().getResources().getDisplayMetrics().density;
         return Math.round(value * density);
+    }
+
+    protected void showApiError(@Nullable Throwable throwable) {
+        if (getContext() == null) return;
+        ErrorHandler.handleApiError(requireContext(), throwable);
+    }
+
+    protected void showApiError(@Nullable String message) {
+        if (getContext() == null) return;
+        ErrorHandler.handleApiError(requireContext(), message);
     }
 }

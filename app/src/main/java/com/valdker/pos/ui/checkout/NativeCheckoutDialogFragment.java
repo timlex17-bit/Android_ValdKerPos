@@ -1,6 +1,7 @@
 package com.valdker.pos.ui.checkout;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -19,6 +20,7 @@ import androidx.fragment.app.DialogFragment;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.valdker.pos.R;
+import com.valdker.pos.utils.Toast;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -199,11 +201,20 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
 
     private Listener listener;
     private BankListener bankListener;
+    @Nullable
+    private Runnable onDismissCallback;
 
     private final List<CustomerOption> customerOptions = new ArrayList<>();
     private final List<PaymentMethodOption> paymentOptions = new ArrayList<>();
     private final List<BankAccountOption> bankOptions = new ArrayList<>();
     private final List<CheckoutItem> checkoutItems = new ArrayList<>();
+
+    @Nullable
+    private ArrayAdapter<CustomerOption> customerAdapter;
+    @Nullable
+    private ArrayAdapter<PaymentMethodOption> paymentAdapter;
+    @Nullable
+    private ArrayAdapter<BankAccountOption> bankAdapter;
 
     public void setListener(@Nullable Listener l) {
         this.listener = l;
@@ -213,19 +224,26 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         this.bankListener = l;
     }
 
+    public void setOnDismissCallback(@Nullable Runnable callback) {
+        this.onDismissCallback = callback;
+    }
+
     public void setCustomerOptions(@Nullable List<CustomerOption> items) {
         customerOptions.clear();
         if (items != null) customerOptions.addAll(items);
+        if (customerAdapter != null) customerAdapter.notifyDataSetChanged();
     }
 
     public void setPaymentOptions(@Nullable List<PaymentMethodOption> items) {
         paymentOptions.clear();
         if (items != null) paymentOptions.addAll(items);
+        if (paymentAdapter != null) paymentAdapter.notifyDataSetChanged();
     }
 
     public void setBankOptions(@Nullable List<BankAccountOption> items) {
         bankOptions.clear();
         if (items != null) bankOptions.addAll(items);
+        if (bankAdapter != null) bankAdapter.notifyDataSetChanged();
     }
 
     public void setCheckoutItems(@Nullable List<CheckoutItem> items) {
@@ -233,13 +251,21 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         if (items != null) checkoutItems.addAll(items);
     }
 
+    @Override
+    public void onDismiss(@NonNull DialogInterface dialog) {
+        super.onDismiss(dialog);
+        if (onDismissCallback != null) {
+            onDismissCallback.run();
+        }
+    }
+
     private void ensureDefaultOptions() {
         if (customerOptions.isEmpty()) {
-            customerOptions.add(new CustomerOption(0, "Walk-in Customer", 0));
+            customerOptions.add(new CustomerOption(0, getString(R.string.workshop_walk_in_customer), 0));
         }
 
         if (paymentOptions.isEmpty()) {
-            paymentOptions.add(new PaymentMethodOption(-1, "", "Select payment method", false));
+            paymentOptions.add(new PaymentMethodOption(-1, "", getString(R.string.payment_select_method), false));
         }
     }
 
@@ -283,7 +309,7 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         if (etAddr != null) etAddr.setVisibility(needDelivery ? View.VISIBLE : View.GONE);
         if (etFee != null) etFee.setVisibility(needDelivery ? View.VISIBLE : View.GONE);
 
-        ArrayAdapter<CustomerOption> customerAdapter = new ArrayAdapter<>(
+        customerAdapter = new ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_spinner_item,
                 customerOptions
@@ -291,7 +317,7 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         customerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spCustomer.setAdapter(customerAdapter);
 
-        ArrayAdapter<PaymentMethodOption> paymentAdapter = new ArrayAdapter<>(
+        paymentAdapter = new ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_spinner_item,
                 paymentOptions
@@ -308,7 +334,7 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         }
         spPaymentMethod.setSelection(defaultIndex);
 
-        ArrayAdapter<BankAccountOption> bankAdapter = new ArrayAdapter<>(
+        bankAdapter = new ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_spinner_item,
                 bankOptions
@@ -320,9 +346,9 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
             CustomerOption customer = getSelectedCustomer(spCustomer);
             if (tvCustomerPointsInfo != null) {
                 if (customer != null) {
-                    tvCustomerPointsInfo.setText("Points: " + customer.points);
+                    tvCustomerPointsInfo.setText(getString(R.string.checkout_points_format, customer.points));
                 } else {
-                    tvCustomerPointsInfo.setText("Points: 0");
+                    tvCustomerPointsInfo.setText(getString(R.string.checkout_points_zero));
                 }
             }
         };
@@ -344,13 +370,13 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                 double cash = parseMoney(safe(etCash.getText()));
 
                 if (cash <= 0) {
-                    tvChange.setText("Change: " + usd.format(0.0));
+                    tvChange.setText(getString(R.string.checkout_change_format, usd.format(0.0)));
                 } else if (cash < totalNow) {
                     double shortage = totalNow - cash;
-                    tvChange.setText("Shortage: " + usd.format(shortage));
+                    tvChange.setText(getString(R.string.checkout_shortage_format, usd.format(shortage)));
                 } else {
                     double change = cash - totalNow;
-                    tvChange.setText("Change: " + usd.format(change));
+                    tvChange.setText(getString(R.string.checkout_change_format, usd.format(change)));
                 }
             }
         };
@@ -418,10 +444,10 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         applyPaymentUi.run();
 
         androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Checkout")
+                .setTitle(getString(R.string.action_checkout))
                 .setView(view)
-                .setNegativeButton("Cancel", (d, w) -> d.dismiss())
-                .setPositiveButton("Confirm", null)
+                .setNegativeButton(getString(R.string.action_cancel), (d, w) -> d.dismiss())
+                .setPositiveButton(getString(R.string.action_confirm), null)
                 .create();
 
         dialog.setOnShowListener(dlg -> {
@@ -431,8 +457,9 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                 PaymentMethodOption selectedMethod = getSelectedPaymentMethod(spPaymentMethod);
                 BankAccountOption selectedBank = getSelectedBankAccount(spBankAccount);
 
-                if (selectedMethod.id <= 0) {
+                if (selectedMethod == null || selectedMethod.id <= 0) {
                     Log.w(TAG, "Payment method ID is invalid/not loaded yet.");
+                    Toast.makeText(requireContext(), getString(R.string.msg_payment_method_missing), Toast.LENGTH_LONG).show();
                     return;
                 }
 
@@ -453,7 +480,7 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
 
                 if (needTable && table.isEmpty()) {
                     if (etTable != null) {
-                        etTable.setError("Table number is required.");
+                        etTable.setError(getString(R.string.msg_table_number_required));
                         etTable.requestFocus();
                     }
                     return;
@@ -461,7 +488,7 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
 
                 if (needDelivery && addr.isEmpty()) {
                     if (etAddr != null) {
-                        etAddr.setError("Delivery address is required.");
+                        etAddr.setError(getString(R.string.msg_delivery_address_required));
                         etAddr.requestFocus();
                     }
                     return;
@@ -470,7 +497,7 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                 if ("CASH".equalsIgnoreCase(selectedMethod.code)) {
                     if (cashReceived <= 0) {
                         if (etCash != null) {
-                            etCash.setError("Cash received is required.");
+                            etCash.setError(getString(R.string.msg_cash_received_required));
                             etCash.requestFocus();
                         }
                         return;
@@ -478,7 +505,7 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
 
                     if (cashReceived < totalNow) {
                         if (etCash != null) {
-                            etCash.setError("Cash received cannot be less than total.");
+                            etCash.setError(getString(R.string.msg_cash_received_less_total));
                             etCash.requestFocus();
                             etCash.setSelection(etCash.getText().length());
                         }
@@ -489,11 +516,12 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                 if (selectedMethod.requiresBankAccount) {
                     if (selectedBank == null) {
                         Log.w(TAG, "Bank account is required.");
+                        Toast.makeText(requireContext(), getString(R.string.error_required), Toast.LENGTH_SHORT).show();
                         return;
                     }
                     if (referenceNumber.isEmpty()) {
                         if (etReferenceNumber != null) {
-                            etReferenceNumber.setError("Reference number is required.");
+                            etReferenceNumber.setError(getString(R.string.msg_reference_number_required));
                             etReferenceNumber.requestFocus();
                         }
                         return;

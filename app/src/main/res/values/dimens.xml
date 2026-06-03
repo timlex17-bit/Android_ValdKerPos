@@ -28,4 +28,18 @@
     <dimen name="space_lg">16dp</dimen>
     <dimen name="space_xl">20dp</dimen>
 
+    <dimen name="cart_drawer_max_width">420dp</dimen>
+    <dimen name="dialog_card_max_width">560dp</dimen>
+    <dimen name="dialog_checkout_max_height">620dp</dimen>
+    <dimen name="dialog_scroll_max_height">420dp</dimen>
+    <dimen name="dialog_list_height">180dp</dimen>
+    <dimen name="scanner_card_max_width">420dp</dimen>
+    <dimen name="scanner_card_max_height">560dp</dimen>
+    <dimen name="scanner_frame_size">220dp</dimen>
+    <dimen name="report_chart_height">220dp</dimen>
+    <dimen name="pos_side_panel_width">300dp</dimen>
+    <dimen name="pos_side_panel_min_width">260dp</dimen>
+    <dimen name="pos_side_panel_max_width">340dp</dimen>
+    <dimen name="product_card_image_height">170dp</dimen>
+
 </resources>

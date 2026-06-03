@@ -4,18 +4,17 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
-
-import com.dantsu.escposprinter.EscPosPrinter;
-import com.dantsu.escposprinter.connection.bluetooth.BluetoothConnection;
-import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections;
 
 public final class PrinterService {
 
     private PrinterService() {}
+
+    private static final Handler MAIN = new Handler(Looper.getMainLooper());
 
     public static class PaperProfile {
         public final int dpi;
@@ -45,39 +44,41 @@ public final class PrinterService {
         return true;
     }
 
-    @Nullable
-    public static BluetoothConnection findSavedPrinter(@NonNull Context ctx) {
-        String mac = PrinterPrefs.getMac(ctx);
-        if (mac == null || mac.trim().isEmpty()) return null;
-
-        BluetoothPrintersConnections printers = new BluetoothPrintersConnections();
-        BluetoothConnection[] list = printers.getList();
-        if (list == null) return null;
-
-        for (BluetoothConnection c : list) {
-            try {
-                if (c != null && c.getDevice() != null) {
-                    String addr = c.getDevice().getAddress();
-                    if (mac.equalsIgnoreCase(addr)) return c;
-                }
-            } catch (Exception ignored) {}
-        }
-        return null;
-    }
-
     public static boolean isPrinterReachable(@NonNull Context ctx) {
-        return findSavedPrinter(ctx) != null;
+        try {
+            return BluetoothPrinterManager.getInstance().findSavedBondedDevice(ctx) != null;
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     public static void printText(@NonNull Context ctx, @NonNull String formattedText) throws Exception {
-        BluetoothConnection conn = findSavedPrinter(ctx);
-        if (conn == null) throw new IllegalStateException("Printer seidauk hili. Konfigura Printer iha Settings uluk.");
+        BluetoothPrinterManager.getInstance().printBlocking(ctx, formattedText);
+    }
 
-        int mm = PrinterPrefs.getPaperWidthMm(ctx);
-        PaperProfile p = profileForMm(mm);
+    public static void printTextAsync(@NonNull Context ctx,
+                                      @NonNull String formattedText,
+                                      @NonNull BluetoothPrinterManager.PrintCallback callback) {
+        BluetoothPrinterManager.getInstance().printAsync(ctx, formattedText, new BluetoothPrinterManager.PrintCallback() {
+            @Override
+            public void onSuccess() {
+                MAIN.post(callback::onSuccess);
+            }
 
-        EscPosPrinter printer = new EscPosPrinter(conn, p.dpi, p.mmWidth, p.chars);
-        printer.printFormattedText(formattedText);
+            @Override
+            public void onError(@NonNull String message) {
+                MAIN.post(() -> callback.onError(message));
+            }
 
+            @Override
+            public void onSkipped(@NonNull String message) {
+                MAIN.post(() -> callback.onSkipped(message));
+            }
+
+            @Override
+            public void onTimeout(@NonNull String message) {
+                MAIN.post(() -> callback.onTimeout(message));
+            }
+        });
     }
 }

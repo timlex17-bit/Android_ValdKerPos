@@ -9,12 +9,15 @@ import androidx.annotation.Nullable;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.models.Shift;
 import com.valdker.pos.network.ApiClient;
 import com.valdker.pos.network.ApiConfig;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -46,7 +49,8 @@ public class ShiftRepository {
     }
 
     private String baseUrl() {
-        return ApiConfig.url(session, "api/");
+        String base = ApiConfig.url(session, "api/");
+        return base.endsWith("/") ? base : base + "/";
     }
 
     private Map<String, String> authHeaders() {
@@ -97,6 +101,7 @@ public class ShiftRepository {
                     boolean open = res.optBoolean("open", false);
                     JSONObject shiftObj = extractShiftObject(res);
                     Shift shift = (shiftObj != null) ? Shift.fromJson(shiftObj) : null;
+                    if (!open && isOpenShift(shift)) open = true;
                     cb.onSuccess(open, shift);
                 },
                 err -> cb.onError("Failed check shift: " + parseVolleyErrorMessage(err))
@@ -141,6 +146,86 @@ public class ShiftRepository {
         return shiftObj;
     }
 
+    public void getOpenShift(@NonNull CurrentCallback cb) {
+        Integer sid = session != null ? session.getShopId() : 0;
+        if (sid != null && sid <= 0) sid = 1;
+        getOpenShift(sid, cb);
+    }
+
+    public void getOpenShift(@Nullable Integer shopId, @NonNull CurrentCallback cb) {
+        String url = withShop(baseUrl() + "shifts/", shopId);
+
+        StringRequest req = new StringRequest(
+                Request.Method.GET,
+                url,
+                body -> {
+                    Shift shift = findOpenShift(body);
+                    cb.onSuccess(shift != null, shift);
+                },
+                err -> cb.onError("Failed check shift: " + parseVolleyErrorMessage(err))
+        ) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                return authHeaders();
+            }
+        };
+
+        req.setTag("SHIFT");
+        req.setRetryPolicy(new com.android.volley.DefaultRetryPolicy(
+                6000,
+                1,
+                1.0f
+        ));
+
+        ApiClient.getInstance(ctx).add(req);
+    }
+
+    @Nullable
+    private Shift findOpenShift(@Nullable String body) {
+        if (body == null || body.trim().isEmpty()) return null;
+
+        try {
+            Object parsed = new JSONTokener(body).nextValue();
+            if (parsed instanceof JSONArray) {
+                return findOpenShiftInArray((JSONArray) parsed);
+            }
+
+            if (parsed instanceof JSONObject) {
+                JSONObject obj = (JSONObject) parsed;
+
+                JSONArray results = obj.optJSONArray("results");
+                if (results != null) return findOpenShiftInArray(results);
+
+                boolean open = obj.optBoolean("open", false);
+                JSONObject shiftObj = extractShiftObject(obj);
+                Shift shift = (shiftObj != null) ? Shift.fromJson(shiftObj) : null;
+                if ((open && shift != null && shift.id > 0) || isOpenShift(shift)) return shift;
+            }
+        } catch (Exception e) {
+            Log.w("SHIFT", "Open shift parse failed: " + e.getMessage());
+        }
+
+        return null;
+    }
+
+    @Nullable
+    private Shift findOpenShiftInArray(@NonNull JSONArray arr) {
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject obj = arr.optJSONObject(i);
+            if (obj == null) continue;
+
+            Shift shift = Shift.fromJson(obj);
+            if (isOpenShift(shift)) return shift;
+        }
+        return null;
+    }
+
+    private boolean isOpenShift(@Nullable Shift shift) {
+        return shift != null
+                && shift.id > 0
+                && "OPEN".equalsIgnoreCase(shift.status != null ? shift.status.trim() : "");
+    }
+
     public void openShift(@Nullable Integer shopId, @NonNull String openingCash, @NonNull String note, @NonNull OpenCallback cb) {
         String url = withShop(baseUrl() + "shifts/open/", shopId);
 
@@ -166,13 +251,7 @@ public class ShiftRepository {
                         return;
                     }
 
-                    session.setShiftOpen(true);
-                    session.setShiftId(shift.id);
-                    session.setOpeningCash(
-                            (shift.opening_cash == null || shift.opening_cash.trim().isEmpty())
-                                    ? "0.00"
-                                    : shift.opening_cash
-                    );
+                    session.saveOpenShift(shift.id, shift.status, shift.opening_cash);
 
                     cb.onSuccess(shift);
                 },
@@ -189,13 +268,7 @@ public class ShiftRepository {
                             Shift shift = (shiftObj != null) ? Shift.fromJson(shiftObj) : null;
 
                             if (shift != null && shift.id > 0) {
-                                session.setShiftOpen(true);
-                                session.setShiftId(shift.id);
-                                session.setOpeningCash(
-                                        (shift.opening_cash == null || shift.opening_cash.trim().isEmpty())
-                                                ? "0.00"
-                                                : shift.opening_cash
-                                );
+                                session.saveOpenShift(shift.id, shift.status, shift.opening_cash);
                                 cb.onSuccess(shift);
                                 return;
                             }

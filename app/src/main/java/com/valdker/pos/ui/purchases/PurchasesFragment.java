@@ -9,7 +9,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,8 +19,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.valdker.pos.R;
 import com.valdker.pos.base.BaseFragment;
 import com.valdker.pos.network.ApiClient;
-import com.valdker.pos.repositories.PurchaseRepository;
+import com.valdker.pos.repositories.PurchaseReturnCacheRepository;
 import com.valdker.pos.utils.InsetsHelper;
+import com.valdker.pos.utils.NetworkUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.lang.reflect.Field;
@@ -37,14 +38,13 @@ public class PurchasesFragment extends BaseFragment {
     private RecyclerView rv;
     private ProgressBar progress;
     private TextView tvEmpty;
-    private TextView tvTitle;
     private FloatingActionButton fabAdd;
     private EditText etSearchPurchase;
     private ImageView btnBack;
     private ImageView ivHeaderAction;
 
     private PurchaseListAdapter adapter;
-    private PurchaseRepository repo;
+    private PurchaseReturnCacheRepository cacheRepository;
 
     private final List<PurchaseLite> allItems = new ArrayList<>();
 
@@ -67,7 +67,6 @@ public class PurchasesFragment extends BaseFragment {
         progress = view.findViewById(R.id.progressPurchases);
         tvEmpty = view.findViewById(R.id.tvEmptyPurchases);
         fabAdd = view.findViewById(R.id.fabAddPurchase);
-        tvTitle = view.findViewById(R.id.tvTitlePurchases);
         etSearchPurchase = view.findViewById(R.id.etSearchPurchase);
         btnBack = view.findViewById(R.id.btnBack);
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
@@ -86,7 +85,7 @@ public class PurchasesFragment extends BaseFragment {
             rv.setAdapter(adapter);
         }
 
-        repo = new PurchaseRepository(requireContext());
+        cacheRepository = new PurchaseReturnCacheRepository(requireContext());
 
         if (fabAdd != null) {
             fabAdd.post(() -> {
@@ -152,6 +151,10 @@ public class PurchasesFragment extends BaseFragment {
         if (!isAdded()) return;
         if (isDialogOpening) return;
         if (isStateSaved()) return;
+        if (!NetworkUtils.isNetworkAvailable(requireContext())) {
+            Toast.makeText(requireContext(), PurchaseReturnCacheRepository.INTERNET_REQUIRED_MESSAGE, Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         isDialogOpening = true;
         setFabEnabled(false);
@@ -170,14 +173,25 @@ public class PurchasesFragment extends BaseFragment {
     private void loadPurchases() {
         if (!isAdded()) return;
         if (isLoading) return;
-        if (repo == null) return;
+        if (cacheRepository == null) return;
 
         isLoading = true;
         showLoading(true);
 
-        repo.fetchPurchases(new PurchaseRepository.ListCallback() {
+        cacheRepository.loadPurchasesRoomFirst(new PurchaseReturnCacheRepository.RoomFirstCallback<PurchaseLite>() {
             @Override
-            public void onSuccess(@NonNull List<PurchaseLite> list) {
+            public void onLocal(@NonNull List<PurchaseLite> list) {
+                if (!isAdded()) return;
+                if (list.isEmpty()) return;
+
+                showLoading(false);
+                allItems.clear();
+                allItems.addAll(list);
+                applyFilter();
+            }
+
+            @Override
+            public void onRemote(@NonNull List<PurchaseLite> list) {
                 isLoading = false;
                 if (!isAdded()) return;
 
@@ -189,24 +203,39 @@ public class PurchasesFragment extends BaseFragment {
             }
 
             @Override
-            public void onError(int code, @NonNull String message) {
+            public void onNoInternet(boolean hasLocalData) {
                 isLoading = false;
                 if (!isAdded()) return;
 
                 showLoading(false);
-
-                if (tvEmpty != null) {
-                    tvEmpty.setText("Failed to load purchases");
-                    tvEmpty.setVisibility(View.VISIBLE);
+                if (!hasLocalData && allItems.isEmpty()) {
+                    showLocalEmpty();
+                    Toast.makeText(requireContext(), PurchaseReturnCacheRepository.NO_LOCAL_DATA_MESSAGE, Toast.LENGTH_SHORT).show();
                 }
+            }
 
-                if (rv != null) {
-                    rv.setVisibility(View.GONE);
+            @Override
+            public void onError(int statusCode, @NonNull String message, boolean hasLocalData) {
+                isLoading = false;
+                if (!isAdded()) return;
+
+                showLoading(false);
+                if (!hasLocalData && allItems.isEmpty()) {
+                    showLocalEmpty();
                 }
-
-                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
+                showApiError(message);
             }
         });
+    }
+
+    private void showLocalEmpty() {
+        if (tvEmpty != null) {
+            tvEmpty.setText(PurchaseReturnCacheRepository.NO_LOCAL_DATA_MESSAGE);
+            tvEmpty.setVisibility(View.VISIBLE);
+        }
+        if (rv != null) {
+            rv.setVisibility(View.GONE);
+        }
     }
 
     private void applyFilter() {
@@ -329,10 +358,10 @@ public class PurchasesFragment extends BaseFragment {
         rv = null;
         progress = null;
         tvEmpty = null;
-        tvTitle = null;
         fabAdd = null;
         etSearchPurchase = null;
         btnBack = null;
         ivHeaderAction = null;
+        cacheRepository = null;
     }
 }

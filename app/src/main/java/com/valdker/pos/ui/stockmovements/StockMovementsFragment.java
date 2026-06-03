@@ -6,7 +6,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.activity.OnBackPressedDispatcher;
 import androidx.annotation.NonNull;
@@ -18,7 +18,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.valdker.pos.R;
 import com.valdker.pos.base.BaseFragment;
 import com.valdker.pos.models.StockMovement;
-import com.valdker.pos.repositories.StockMovementRepository;
+import com.valdker.pos.repositories.InventoryOperationCacheRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +35,7 @@ public class StockMovementsFragment extends BaseFragment {
     private ImageView ivHeaderAction;
 
     private StockMovementsAdapter adapter;
+    private InventoryOperationCacheRepository cacheRepository;
     private final List<StockMovement> data = new ArrayList<>();
 
     private boolean isLoading = false;
@@ -52,6 +53,7 @@ public class StockMovementsFragment extends BaseFragment {
         applyTopInset(view.findViewById(R.id.topBar));
 
         bindViews(view);
+        cacheRepository = new InventoryOperationCacheRepository(requireContext());
         setupHeader();
         setupRecycler();
         setupSwipe();
@@ -149,9 +151,20 @@ public class StockMovementsFragment extends BaseFragment {
             progress.setVisibility(View.VISIBLE);
         }
 
-        StockMovementRepository.fetch(requireContext(), new StockMovementRepository.Callback() {
+        cacheRepository.loadStockMovementsRoomFirst(new InventoryOperationCacheRepository.RoomFirstCallback<StockMovement>() {
             @Override
-            public void onSuccess(List<StockMovement> list) {
+            public void onLocal(@NonNull List<StockMovement> list) {
+                if (!isAdded() || list.isEmpty()) return;
+
+                data.clear();
+                data.addAll(list);
+                if (adapter != null) adapter.notifyDataSetChanged();
+                if (tvEmpty != null) tvEmpty.setVisibility(View.GONE);
+                if (progress != null) progress.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onRemote(@NonNull List<StockMovement> list) {
                 if (!isAdded()) return;
 
                 isLoading = false;
@@ -160,9 +173,7 @@ public class StockMovementsFragment extends BaseFragment {
                 if (swipe != null) swipe.setRefreshing(false);
 
                 data.clear();
-                if (list != null) {
-                    data.addAll(list);
-                }
+                data.addAll(list);
 
                 if (adapter != null) {
                     adapter.notifyDataSetChanged();
@@ -175,7 +186,7 @@ public class StockMovementsFragment extends BaseFragment {
             }
 
             @Override
-            public void onError(String message) {
+            public void onNoInternet(boolean hasLocalData) {
                 if (!isAdded()) return;
 
                 isLoading = false;
@@ -183,16 +194,32 @@ public class StockMovementsFragment extends BaseFragment {
                 if (progress != null) progress.setVisibility(View.GONE);
                 if (swipe != null) swipe.setRefreshing(false);
 
-                Toast.makeText(
-                        requireContext(),
-                        message == null || message.trim().isEmpty()
-                                ? getString(R.string.msg_failed_load_stock_movements)
-                                : message,
-                        Toast.LENGTH_LONG
-                ).show();
+                if (!hasLocalData && data.isEmpty()) {
+                    if (tvEmpty != null) {
+                        tvEmpty.setText(InventoryOperationCacheRepository.NO_LOCAL_DATA_MESSAGE);
+                        tvEmpty.setVisibility(View.VISIBLE);
+                    }
+                    Toast.makeText(requireContext(), InventoryOperationCacheRepository.NO_LOCAL_DATA_MESSAGE, Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onError(@NonNull String message, boolean hasLocalData) {
+                if (!isAdded()) return;
+
+                isLoading = false;
+
+                if (progress != null) progress.setVisibility(View.GONE);
+                if (swipe != null) swipe.setRefreshing(false);
+
+                if (!hasLocalData && data.isEmpty()) {
+                    showApiError(message.trim().isEmpty()
+                            ? getString(R.string.msg_failed_load_stock_movements)
+                            : message);
+                }
 
                 if (tvEmpty != null) {
-                    tvEmpty.setText(getString(R.string.msg_no_stock_movements));
+                    tvEmpty.setText(hasLocalData ? getString(R.string.msg_no_stock_movements) : InventoryOperationCacheRepository.NO_LOCAL_DATA_MESSAGE);
                     tvEmpty.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
                 }
             }
@@ -216,6 +243,7 @@ public class StockMovementsFragment extends BaseFragment {
         btnBack = null;
         ivHeaderAction = null;
         adapter = null;
+        cacheRepository = null;
 
         super.onDestroyView();
     }

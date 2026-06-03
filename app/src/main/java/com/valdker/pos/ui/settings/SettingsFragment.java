@@ -14,7 +14,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.activity.OnBackPressedDispatcher;
 import androidx.activity.result.ActivityResultLauncher;
@@ -501,20 +501,46 @@ public class SettingsFragment extends BaseFragment {
                 "[C]<b>" + getString(R.string.app_name) + "</b>\n" +
                         "[C]-------------------------------\n" +
                         "[L]" + getString(R.string.settings_test_print) + "\n" +
-                        "[L]" + getString(R.string.settings_printer_ok) + " ✅\n" +
+                        "[L]" + getString(R.string.settings_printer_ok) + " *\n" +
                         "[C]-------------------------------\n" +
                         "[L]" + getString(R.string.label_paper_width) + ": " +
                         com.valdker.pos.print.PrinterPrefs.getPaperWidthMm(requireContext()) +
                         "mm\n" +
                         "[C]\n\n\n";
 
-        try {
-            com.valdker.pos.print.PrinterService.printText(requireContext(), demo);
-            Toast.makeText(requireContext(), getString(R.string.msg_test_print_success), Toast.LENGTH_SHORT).show();
-            setupPrinterUi();
-        } catch (Exception e) {
-            Toast.makeText(requireContext(), getString(R.string.msg_test_print_failed, e.getMessage()), Toast.LENGTH_LONG).show();
-        }
+        btnTestPrint.setEnabled(false);
+        com.valdker.pos.print.PrinterService.printTextAsync(
+                requireContext().getApplicationContext(),
+                demo,
+                new com.valdker.pos.print.BluetoothPrinterManager.PrintCallback() {
+                    @Override
+                    public void onSuccess() {
+                        if (!isAdded()) return;
+                        requireActivity().runOnUiThread(() -> {
+                            if (!isAdded()) return;
+                            if (btnTestPrint != null) btnTestPrint.setEnabled(true);
+                            Toast.makeText(requireContext(), getString(R.string.msg_test_print_success), Toast.LENGTH_SHORT).show();
+                            setupPrinterUi();
+                        });
+                    }
+
+                    @Override
+                    public void onError(@NonNull String message) {
+                        if (!isAdded()) return;
+                        requireActivity().runOnUiThread(() -> {
+                            if (!isAdded()) return;
+                            if (btnTestPrint != null) btnTestPrint.setEnabled(true);
+                            Toast.makeText(requireContext(), getString(R.string.msg_test_print_failed, message), Toast.LENGTH_LONG).show();
+                            setupPrinterUi();
+                        });
+                    }
+
+                    @Override
+                    public void onSkipped(@NonNull String message) {
+                        onError(message);
+                    }
+                }
+        );
     }
 
     private final ActivityResultLauncher<String> pickLogo =
@@ -567,7 +593,7 @@ public class SettingsFragment extends BaseFragment {
             public void onError(@NonNull String message) {
                 if (!isAdded()) return;
                 setLoading(false);
-                Toast.makeText(requireContext(), getString(R.string.msg_failed_load_shop, message), Toast.LENGTH_LONG).show();
+                showApiError(getString(R.string.msg_failed_load_shop, message));
             }
         });
     }
@@ -649,6 +675,11 @@ public class SettingsFragment extends BaseFragment {
                         currentShop = updatedShop;
                         pickedLogoUri = null;
 
+                        new SessionManager(requireContext()).updateShopProfile(
+                                updatedShop.name,
+                                updatedShop.address,
+                                updatedShop.logoUrl
+                        );
                         bind(updatedShop);
 
                         Toast.makeText(requireContext(), getString(R.string.msg_shop_saved), Toast.LENGTH_SHORT).show();
@@ -671,6 +702,7 @@ public class SettingsFragment extends BaseFragment {
 
     private void sendShopUpdatedBroadcast(@NonNull Context ctx) {
         Intent i = new Intent(ShopEvents.ACTION_SHOP_UPDATED);
+        i.setPackage(ctx.getPackageName());
         ctx.sendBroadcast(i);
     }
 

@@ -4,8 +4,10 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.valdker.pos.utils.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,14 +19,11 @@ import com.valdker.pos.R;
 import com.valdker.pos.models.ProductLite;
 import com.valdker.pos.models.ProductReturn;
 import com.valdker.pos.models.ProductReturnItem;
+import com.valdker.pos.utils.SystemBarsFix;
 import com.google.android.material.button.MaterialButton;
 
 import java.text.NumberFormat;
 import java.util.Locale;
-
-import com.dantsu.escposprinter.EscPosPrinter;
-import com.dantsu.escposprinter.connection.bluetooth.BluetoothConnection;
-import com.dantsu.escposprinter.connection.bluetooth.BluetoothPrintersConnections;
 
 public class ProductReturnDetailActivity extends AppCompatActivity {
 
@@ -42,7 +41,10 @@ public class ProductReturnDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("DETAIL_ACTIVITY", "OPEN ProductReturnDetailActivity");
         setContentView(R.layout.activity_product_return_detail);
+        View root = findViewById(R.id.detailRoot);
+        SystemBarsFix.applyForcedDetailSafeArea(this, root, "ProductReturnDetail");
 
         tvTitle = findViewById(R.id.tvTitle);
         tvInvoice = findViewById(R.id.tvInvoice);
@@ -151,23 +153,39 @@ public class ProductReturnDetailActivity extends AppCompatActivity {
             }
         }
 
-        try {
-            BluetoothConnection connection = BluetoothPrintersConnections.selectFirstPaired();
-            if (connection == null) {
-                Toast.makeText(this, "No paired Bluetooth printer found.", Toast.LENGTH_LONG).show();
-                return;
-            }
-
-            EscPosPrinter printer = new EscPosPrinter(connection, 203, 48f, 32);
-
-            String receipt = buildReturnReceiptText();
-            printer.printFormattedText(receipt);
-
-            Toast.makeText(this, "Printed.", Toast.LENGTH_SHORT).show();
-
-        } catch (Exception e) {
-            Toast.makeText(this, "Print failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        String mac = com.valdker.pos.print.PrinterPrefs.getMac(this);
+        if (mac == null || mac.trim().isEmpty()) {
+            Toast.makeText(this, "Printer not connected. Please select printer.", Toast.LENGTH_LONG).show();
+            return;
         }
+
+        if (btnPrint != null) btnPrint.setEnabled(false);
+        com.valdker.pos.print.PrinterService.printTextAsync(
+                getApplicationContext(),
+                buildReturnReceiptText(),
+                new com.valdker.pos.print.BluetoothPrinterManager.PrintCallback() {
+                    @Override
+                    public void onSuccess() {
+                        runOnUiThread(() -> {
+                            if (btnPrint != null) btnPrint.setEnabled(true);
+                            Toast.makeText(ProductReturnDetailActivity.this, "Printed.", Toast.LENGTH_SHORT).show();
+                        });
+                    }
+
+                    @Override
+                    public void onError(@androidx.annotation.NonNull String message) {
+                        runOnUiThread(() -> {
+                            if (btnPrint != null) btnPrint.setEnabled(true);
+                            Toast.makeText(ProductReturnDetailActivity.this, "Print failed: " + message, Toast.LENGTH_LONG).show();
+                        });
+                    }
+
+                    @Override
+                    public void onSkipped(@androidx.annotation.NonNull String message) {
+                        onError(message);
+                    }
+                }
+        );
     }
 
     private String buildReturnReceiptText() {
