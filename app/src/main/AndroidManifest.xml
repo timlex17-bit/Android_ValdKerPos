@@ -102,6 +102,27 @@
         <activity
             android:name=".ui.BankAccountActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.purchasereturns.PurchaseReturnListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.workshop.VehiclesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.workshop.MechanicsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.workshop.WorkOrdersActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.workshop.ServiceHistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.workshop.ServicePackagesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.workshop.BookingsActivity"
+            android:exported="false" />
 
     </application>
 

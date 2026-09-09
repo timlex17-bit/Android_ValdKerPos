@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CustomerPickerDialog extends DialogFragment {
+    private static final String ARG_ALLOW_WALK_IN = "allow_walk_in";
+    private static final String ARG_ALLOW_CLEAR = "allow_clear";
 
     public interface Listener {
         void onSelected(@NonNull Customer customer);
@@ -46,7 +48,16 @@ public class CustomerPickerDialog extends DialogFragment {
     }
 
     public static CustomerPickerDialog newInstance() {
-        return new CustomerPickerDialog();
+        return newInstance(true, false);
+    }
+
+    public static CustomerPickerDialog newInstance(boolean allowWalkIn, boolean allowClear) {
+        CustomerPickerDialog dialog = new CustomerPickerDialog();
+        Bundle args = new Bundle();
+        args.putBoolean(ARG_ALLOW_WALK_IN, allowWalkIn);
+        args.putBoolean(ARG_ALLOW_CLEAR, allowClear);
+        dialog.setArguments(args);
+        return dialog;
     }
 
     @NonNull
@@ -85,23 +96,43 @@ public class CustomerPickerDialog extends DialogFragment {
             dismissAllowingStateLoss();
         });
 
-        dialog = new MaterialAlertDialogBuilder(requireContext())
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Select Customer")
                 .setNegativeButton("Close", null)
-                .setNeutralButton("Walk-in", (d, which) -> {
-                    if (listener != null) {
-                        listener.onSelected(new Customer(
-                                0,
-                                "Walk-in Customer",
-                                "",
-                                null,
-                                null,
-                                0L
-                        ));
-                    }
-                })
-                .setView(listView)
-                .create();
+                .setView(listView);
+
+        Bundle args = getArguments();
+        boolean allowWalkIn = args == null || args.getBoolean(ARG_ALLOW_WALK_IN, true);
+        boolean allowClear = args != null && args.getBoolean(ARG_ALLOW_CLEAR, false);
+        if (allowWalkIn) {
+            builder.setNeutralButton("Walk-in", (d, which) -> {
+                if (listener != null) {
+                    listener.onSelected(new Customer(
+                            0,
+                            "Walk-in Customer",
+                            "",
+                            null,
+                            null,
+                            0L
+                    ));
+                }
+            });
+        } else if (allowClear) {
+            builder.setNeutralButton("Clear", (d, which) -> {
+                if (listener != null) {
+                    listener.onSelected(new Customer(
+                            0,
+                            "",
+                            "",
+                            null,
+                            null,
+                            0L
+                    ));
+                }
+            });
+        }
+
+        dialog = builder.create();
 
         loadCustomers();
 

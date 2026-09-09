@@ -18,7 +18,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Vehicle Type"
+        android:text="@string/label_vehicle_type"
         android:textSize="13sp"
         android:textColor="#6B7280" />
 
@@ -26,6 +26,7 @@
         android:id="@+id/spVehicleType"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:entries="@array/vehicle_types"
         android:layout_marginTop="6dp" />
 
     <TextView

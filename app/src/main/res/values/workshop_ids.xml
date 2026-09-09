@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="txtVehicleName" type="id" />
+    <item name="txtPlateNumber" type="id" />
+    <item name="txtMechanicName" type="id" />
+    <item name="txtWorkOrderCode" type="id" />
+    <item name="txtBookingInfo" type="id" />
+    <item name="btnSelectMechanic" type="id" />
+    <item name="btnSelectWorkOrder" type="id" />
+    <item name="btnSelectBooking" type="id" />
+</resources>

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Spinner;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,16 +18,25 @@ public class VehicleInputDialog extends DialogFragment {
 
     public interface Listener{
 
-        void onSave(String vehicle,String plate);
+        void onSave(String vehicleTypeCode,String vehicle,String plate);
 
     }
 
     private Listener listener;
+    private String initialVehicleTypeCode = "CAR";
 
     public void setListener(Listener l){
 
         listener=l;
 
+    }
+
+    public void setInitialVehicleTypeCode(String vehicleTypeCode) {
+        if ("MOTORCYCLE".equalsIgnoreCase(vehicleTypeCode)) {
+            initialVehicleTypeCode = "MOTORCYCLE";
+        } else {
+            initialVehicleTypeCode = "CAR";
+        }
     }
 
     public static VehicleInputDialog newInstance(){
@@ -46,6 +56,11 @@ public class VehicleInputDialog extends DialogFragment {
 
         EditText etPlate=v.findViewById(R.id.etPlate);
 
+        Spinner spVehicleType=v.findViewById(R.id.spVehicleType);
+        if (spVehicleType != null) {
+            spVehicleType.setSelection("MOTORCYCLE".equals(initialVehicleTypeCode) ? 1 : 0);
+        }
+
         return new MaterialAlertDialogBuilder(requireContext())
 
                 .setTitle("Vehicle Info")
@@ -57,6 +72,8 @@ public class VehicleInputDialog extends DialogFragment {
                     if(listener!=null){
 
                         listener.onSave(
+
+                                getSelectedVehicleTypeCode(spVehicleType),
 
                                 etVehicle.getText().toString(),
 
@@ -72,6 +89,18 @@ public class VehicleInputDialog extends DialogFragment {
 
                 .create();
 
+    }
+
+    private String getSelectedVehicleTypeCode(Spinner spinner) {
+        if (spinner == null || spinner.getSelectedItem() == null) {
+            return "CAR";
+        }
+
+        String selected = spinner.getSelectedItem().toString();
+        if ("Motorcycle".equalsIgnoreCase(selected)) {
+            return "MOTORCYCLE";
+        }
+        return "CAR";
     }
 
 }

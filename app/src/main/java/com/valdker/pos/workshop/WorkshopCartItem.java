@@ -12,6 +12,7 @@ public class WorkshopCartItem {
 
     private final String cartKey;
     private final int productId;
+    private final int servicePackageId;
     private final int shopId;
     private final String name;
     private final double unitPrice;
@@ -21,6 +22,7 @@ public class WorkshopCartItem {
 
     public WorkshopCartItem(@NonNull String cartKey,
                             int productId,
+                            int servicePackageId,
                             int shopId,
                             @NonNull String name,
                             double unitPrice,
@@ -29,6 +31,7 @@ public class WorkshopCartItem {
                             String imageUrl) {
         this.cartKey = cartKey;
         this.productId = productId;
+        this.servicePackageId = servicePackageId;
         this.shopId = shopId;
         this.name = name;
         this.unitPrice = unitPrice;
@@ -47,6 +50,7 @@ public class WorkshopCartItem {
         return new WorkshopCartItem(
                 key,
                 item.productId,
+                item.servicePackageId,
                 item.shopId,
                 item.name != null ? item.name : "",
                 item.price,
@@ -64,6 +68,9 @@ public class WorkshopCartItem {
 
         switch (value) {
             case "SERVICE":
+            case "SERVICE_PACKAGE":
+            case "SERVICEPACKAGE":
+            case "PACKAGE":
                 return TYPE_SERVICE;
             case "SPAREPART":
             case "PART":
@@ -81,6 +88,10 @@ public class WorkshopCartItem {
 
     public int getProductId() {
         return productId;
+    }
+
+    public int getServicePackageId() {
+        return servicePackageId;
     }
 
     public int getShopId() {
@@ -119,6 +130,10 @@ public class WorkshopCartItem {
 
     public boolean isService() {
         return TYPE_SERVICE.equals(itemType);
+    }
+
+    public boolean isServicePackage() {
+        return servicePackageId > 0;
     }
 
     public boolean isPart() {

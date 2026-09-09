@@ -114,23 +114,27 @@ public class WorkshopWorkspaceAdapter extends RecyclerView.Adapter<RecyclerView.
             txtLineTotal.setText(formatMoney(item.getLineTotal()));
             txtItemMeta.setText(String.format(
                     Locale.US,
-                    "Qty %d × %s",
+                    "Qty %d x %s",
                     item.getQuantity(),
                     formatMoney(item.getUnitPrice())
             ));
 
             String badgeText;
-            switch (item.getItemType()) {
-                case WorkshopCartItem.TYPE_SERVICE:
-                    badgeText = "SERVICE";
-                    break;
-                case WorkshopCartItem.TYPE_PART:
-                    badgeText = "PART";
-                    break;
-                case WorkshopCartItem.TYPE_PRODUCT:
-                default:
-                    badgeText = "PRODUCT";
-                    break;
+            if (item.isServicePackage()) {
+                badgeText = "PACKAGE";
+            } else {
+                switch (item.getItemType()) {
+                    case WorkshopCartItem.TYPE_SERVICE:
+                        badgeText = "SERVICE";
+                        break;
+                    case WorkshopCartItem.TYPE_PART:
+                        badgeText = "PART";
+                        break;
+                    case WorkshopCartItem.TYPE_PRODUCT:
+                    default:
+                        badgeText = "PRODUCT";
+                        break;
+                }
             }
 
             txtItemTypeBadge.setText(badgeText);

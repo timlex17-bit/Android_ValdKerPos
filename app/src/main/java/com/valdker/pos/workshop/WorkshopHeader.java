@@ -8,6 +8,8 @@ public class WorkshopHeader {
 
     public String vehicleName;
 
+    public String vehicleTypeCode;
+
     public String plateNumber;
 
     public String status;
@@ -19,6 +21,8 @@ public class WorkshopHeader {
         customerName="Walk-in Customer";
 
         vehicleName="-";
+
+        vehicleTypeCode="CAR";
 
         plateNumber="-";
 
