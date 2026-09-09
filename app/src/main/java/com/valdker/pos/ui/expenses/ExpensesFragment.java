@@ -27,6 +27,7 @@ import com.valdker.pos.base.BaseFragment;
 import com.valdker.pos.models.Expense;
 import com.valdker.pos.repositories.ExpenseRepository;
 import com.valdker.pos.repositories.TransactionHistoryCacheRepository;
+import com.valdker.pos.utils.DateRangeFilterHelper;
 import com.valdker.pos.utils.InsetsHelper;
 import com.valdker.pos.utils.NetworkUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -53,6 +54,8 @@ public class ExpensesFragment extends BaseFragment {
     private EditText etSearchExpense;
     private ImageView btnBack;
     private ImageView ivHeaderAction;
+    private ImageView btnDateRange;
+    private DateRangeFilterHelper dateRangeFilter;
 
     private ExpenseAdapter adapter;
 
@@ -87,6 +90,7 @@ public class ExpensesFragment extends BaseFragment {
         etSearchExpense = view.findViewById(R.id.etSearchExpense);
         btnBack = view.findViewById(R.id.btnBack);
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
+        btnDateRange = view.findViewById(R.id.btnDateRange);
 
         InsetsHelper.applyRecyclerBottomInsets(view, rv, "EXPENSES");
         applyFabBottomInset(fabAdd, 56);
@@ -154,6 +158,7 @@ public class ExpensesFragment extends BaseFragment {
                 }
             });
         }
+        dateRangeFilter = new DateRangeFilterHelper(this, btnDateRange, this::applyFilter);
 
         load();
     }
@@ -248,25 +253,28 @@ public class ExpensesFragment extends BaseFragment {
 
         List<Expense> filtered = new ArrayList<>();
 
-        if (TextUtils.isEmpty(currentQuery)) {
-            filtered.addAll(allExpenses);
-        } else {
-            String q = currentQuery.toLowerCase(Locale.US);
+        boolean hasQuery = !TextUtils.isEmpty(currentQuery);
+        String q = hasQuery ? currentQuery.toLowerCase(Locale.US) : "";
 
-            for (Expense e : allExpenses) {
-                String name = safeLower(e.name);
-                String note = safeLower(e.note);
-                String amount = safeLower(e.amount);
-                String date = safeLower(e.date);
-                String time = safeLower(e.time);
+        for (Expense e : allExpenses) {
+            if (e == null) continue;
 
-                if (name.contains(q)
-                        || note.contains(q)
-                        || amount.contains(q)
-                        || date.contains(q)
-                        || time.contains(q)) {
-                    filtered.add(e);
-                }
+            String name = safeLower(e.name);
+            String note = safeLower(e.note);
+            String amount = safeLower(e.amount);
+            String date = safeLower(e.date);
+            String time = safeLower(e.time);
+
+            boolean matchesQuery = !hasQuery
+                    || name.contains(q)
+                    || note.contains(q)
+                    || amount.contains(q)
+                    || date.contains(q)
+                    || time.contains(q);
+            boolean matchesDate = dateRangeFilter == null || dateRangeFilter.matches(e.date);
+
+            if (matchesQuery && matchesDate) {
+                filtered.add(e);
             }
         }
 
@@ -607,6 +615,8 @@ public class ExpensesFragment extends BaseFragment {
         etSearchExpense = null;
         btnBack = null;
         ivHeaderAction = null;
+        btnDateRange = null;
+        dateRangeFilter = null;
         cacheRepository = null;
     }
 }

@@ -20,6 +20,7 @@ import com.valdker.pos.R;
 import com.valdker.pos.base.BaseFragment;
 import com.valdker.pos.network.ApiClient;
 import com.valdker.pos.repositories.PurchaseReturnCacheRepository;
+import com.valdker.pos.utils.DateRangeFilterHelper;
 import com.valdker.pos.utils.InsetsHelper;
 import com.valdker.pos.utils.NetworkUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -42,6 +43,8 @@ public class PurchasesFragment extends BaseFragment {
     private EditText etSearchPurchase;
     private ImageView btnBack;
     private ImageView ivHeaderAction;
+    private ImageView btnDateRange;
+    private DateRangeFilterHelper dateRangeFilter;
 
     private PurchaseListAdapter adapter;
     private PurchaseReturnCacheRepository cacheRepository;
@@ -70,6 +73,7 @@ public class PurchasesFragment extends BaseFragment {
         etSearchPurchase = view.findViewById(R.id.etSearchPurchase);
         btnBack = view.findViewById(R.id.btnBack);
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
+        btnDateRange = view.findViewById(R.id.btnDateRange);
 
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -134,6 +138,7 @@ public class PurchasesFragment extends BaseFragment {
                 }
             });
         }
+        dateRangeFilter = new DateRangeFilterHelper(this, btnDateRange, this::applyFilter);
 
         loadPurchases();
     }
@@ -240,16 +245,16 @@ public class PurchasesFragment extends BaseFragment {
 
     private void applyFilter() {
         List<PurchaseLite> filtered = new ArrayList<>();
+        boolean hasQuery = currentQuery != null && !currentQuery.trim().isEmpty();
+        String q = hasQuery ? currentQuery.toLowerCase(Locale.US) : "";
 
-        if (currentQuery == null || currentQuery.trim().isEmpty()) {
-            filtered.addAll(allItems);
-        } else {
-            String q = currentQuery.toLowerCase(Locale.US);
-
-            for (PurchaseLite item : allItems) {
-                if (matchesPurchase(item, q)) {
-                    filtered.add(item);
-                }
+        for (PurchaseLite item : allItems) {
+            if (item == null) continue;
+            boolean matchesQuery = !hasQuery || matchesPurchase(item, q);
+            boolean matchesDate = dateRangeFilter == null
+                    || dateRangeFilter.matches(item.purchaseDate, extractFieldAsString(item, "createdAt"), extractFieldAsString(item, "created_at"));
+            if (matchesQuery && matchesDate) {
+                filtered.add(item);
             }
         }
 
@@ -362,6 +367,8 @@ public class PurchasesFragment extends BaseFragment {
         etSearchPurchase = null;
         btnBack = null;
         ivHeaderAction = null;
+        btnDateRange = null;
+        dateRangeFilter = null;
         cacheRepository = null;
     }
 }

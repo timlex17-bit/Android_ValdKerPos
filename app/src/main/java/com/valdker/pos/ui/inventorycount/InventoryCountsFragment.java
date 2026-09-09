@@ -29,6 +29,7 @@ import com.valdker.pos.network.ApiClient;
 import com.valdker.pos.network.ApiConfig;
 import com.valdker.pos.repositories.InventoryOperationCacheRepository;
 import com.valdker.pos.repositories.InventoryCountRepository;
+import com.valdker.pos.utils.DateRangeFilterHelper;
 import com.valdker.pos.utils.InsetsHelper;
 import com.valdker.pos.utils.NetworkUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -62,6 +63,8 @@ public class InventoryCountsFragment extends BaseFragment {
     private EditText etSearch;
     private ImageView btnBack;
     private ImageView ivHeaderAction;
+    private ImageView btnDateRange;
+    private DateRangeFilterHelper dateRangeFilter;
 
     private InventoryCountAdapter adapter;
     private InventoryOperationCacheRepository cacheRepository;
@@ -115,6 +118,7 @@ public class InventoryCountsFragment extends BaseFragment {
         etSearch = view.findViewById(R.id.etSearch);
         btnBack = view.findViewById(R.id.btnBack);
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
+        btnDateRange = view.findViewById(R.id.btnDateRange);
     }
 
     private void applyInsets(@NonNull View root) {
@@ -196,6 +200,8 @@ public class InventoryCountsFragment extends BaseFragment {
             @Override
             public void afterTextChanged(Editable s) { }
         });
+
+        dateRangeFilter = new DateRangeFilterHelper(this, btnDateRange, this::applyFilter);
     }
 
     private void setupSwipe() {
@@ -486,16 +492,15 @@ public class InventoryCountsFragment extends BaseFragment {
 
         String query = currentQuery == null ? "" : currentQuery.trim().toLowerCase(Locale.getDefault());
 
-        if (query.isEmpty()) {
-            data.addAll(allData);
-        } else {
-            for (InventoryCount item : allData) {
-                if (item == null) continue;
+        for (InventoryCount item : allData) {
+            if (item == null) continue;
 
-                String title = item.title == null ? "" : item.title.trim().toLowerCase(Locale.getDefault());
-                if (title.contains(query)) {
-                    data.add(item);
-                }
+            String title = item.title == null ? "" : item.title.trim().toLowerCase(Locale.getDefault());
+            boolean matchesQuery = query.isEmpty() || title.contains(query);
+            boolean matchesDate = dateRangeFilter == null || dateRangeFilter.matches(item.counted_at);
+
+            if (matchesQuery && matchesDate) {
+                data.add(item);
             }
         }
 
@@ -660,6 +665,8 @@ public class InventoryCountsFragment extends BaseFragment {
         etSearch = null;
         btnBack = null;
         ivHeaderAction = null;
+        btnDateRange = null;
+        dateRangeFilter = null;
         adapter = null;
         cacheRepository = null;
 

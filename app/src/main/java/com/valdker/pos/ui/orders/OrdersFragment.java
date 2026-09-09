@@ -406,8 +406,8 @@ public class OrdersFragment extends BaseFragment {
 
         boolean active = (startDateFilter != null && !startDateFilter.isEmpty())
                 || (endDateFilter != null && !endDateFilter.isEmpty());
-        btnDateRange.setColorFilter(Color.parseColor(active ? "#22C55E" : "#6B7280"));
-        btnDateRange.setAlpha(active ? 1f : 0.85f);
+        btnDateRange.setColorFilter(Color.parseColor(active ? "#FACC15" : "#FFFFFF"));
+        btnDateRange.setAlpha(active ? 1f : 0.9f);
     }
 
     private String mask(String token) {

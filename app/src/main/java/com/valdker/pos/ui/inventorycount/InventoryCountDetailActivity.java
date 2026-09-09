@@ -20,6 +20,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.valdker.pos.R;
+import com.valdker.pos.ModuleRegistry;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.models.InventoryCount;
 import com.valdker.pos.models.InventoryCountItem;
@@ -104,6 +105,11 @@ public class InventoryCountDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (!new SessionManager(this).canAccessModule(ModuleRegistry.INVENTORY_COUNTS)) {
+            Toast.makeText(this, getString(R.string.msg_permission_denied), Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
         Log.d("DETAIL_ACTIVITY", "OPEN InventoryCountDetailActivity");
         setContentView(R.layout.activity_inventory_count_detail);
         View root = findViewById(R.id.detailRoot);

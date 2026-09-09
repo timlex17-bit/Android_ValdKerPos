@@ -47,12 +47,12 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
-                    android:layout_marginEnd="8dp"
+                    android:layout_marginEnd="4dp"
                     android:layout_weight="1"
                     app:cardBackgroundColor="@android:color/white"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="0dp"
-                    app:strokeColor="#BBF7D0"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="1dp"
+                    app:strokeColor="#E5E7EB"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -61,16 +61,16 @@
                         android:gravity="center_vertical"
                         android:orientation="horizontal"
                         android:paddingStart="14dp"
-                        android:paddingTop="2dp"
+                        android:paddingTop="0dp"
                         android:paddingEnd="14dp"
-                        android:paddingBottom="2dp">
+                        android:paddingBottom="0dp">
 
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:contentDescription="Search"
-                            android:src="@android:drawable/ic_menu_search"
-                            app:tint="#6B7280" />
+                            android:src="@drawable/search_24"
+                            app:tint="#9CA3AF" />
 
                         <EditText
                             android:id="@+id/etSearch"
@@ -79,7 +79,7 @@
                             android:layout_marginStart="10dp"
                             android:layout_weight="1"
                             android:background="@android:color/transparent"
-                            android:hint="Search inventory count..."
+                            android:hint="Inventory count..."
                             android:imeOptions="actionSearch"
                             android:inputType="text"
                             android:maxLines="1"
@@ -88,9 +88,20 @@
                             android:paddingBottom="12dp"
                             android:textColor="#111827"
                             android:textColorHint="#9CA3AF"
-                            android:textSize="14sp" />
+                            android:textSize="15sp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
+
+                <ImageView
+                    android:id="@+id/btnDateRange"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Date range"
+                    android:padding="8dp"
+                    android:src="@drawable/calendar_month_24"
+                    app:tint="@android:color/white" />
 
                 <ImageView
                     android:id="@+id/ivHeaderAction"

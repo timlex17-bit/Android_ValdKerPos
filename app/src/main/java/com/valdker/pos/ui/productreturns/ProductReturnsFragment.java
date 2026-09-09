@@ -29,6 +29,7 @@ import com.valdker.pos.models.ProductLite;
 import com.valdker.pos.models.ProductReturn;
 import com.valdker.pos.repositories.LiteRepository;
 import com.valdker.pos.repositories.PurchaseReturnCacheRepository;
+import com.valdker.pos.utils.DateRangeFilterHelper;
 import com.valdker.pos.utils.InsetsHelper;
 import com.valdker.pos.utils.NetworkUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -50,6 +51,8 @@ public class ProductReturnsFragment extends BaseFragment {
     private View layoutEmpty;
     private TextView tvEmptySub;
     private ImageView ivHeaderAction;
+    private ImageView btnDateRange;
+    private DateRangeFilterHelper dateRangeFilter;
 
     private final List<OrderLite> ordersLite = new ArrayList<>();
     private final List<CustomerLite> customersLite = new ArrayList<>();
@@ -87,6 +90,10 @@ public class ProductReturnsFragment extends BaseFragment {
         setupFab();
         setupSwipe();
         setupSearch();
+        dateRangeFilter = new DateRangeFilterHelper(this, btnDateRange, () ->
+                applySearch(etSearch != null && etSearch.getText() != null
+                        ? etSearch.getText().toString()
+                        : ""));
 
         load();
         preloadLiteData();
@@ -116,26 +123,27 @@ public class ProductReturnsFragment extends BaseFragment {
 
         data.clear();
 
-        if (q.isEmpty()) {
-            data.addAll(allData);
-        } else {
-            for (ProductReturn item : allData) {
-                if (item == null) continue;
+        for (ProductReturn item : allData) {
+            if (item == null) continue;
 
-                String haystack =
-                        (
-                                getFieldValue(item, "invoice_number") + " " +
-                                        getFieldValue(item, "invoice_id") + " " +
-                                        getFieldValue(item, "invoice_title") + " " +
-                                        getFieldValue(item, "note") + " " +
-                                        getFieldValue(item, "customer_name") + " " +
-                                        getFieldValue(item, "returned_by") + " " +
-                                        getFieldValue(item, "order_reference")
-                        ).toLowerCase();
+            String haystack =
+                    (
+                            getFieldValue(item, "invoice_number") + " " +
+                                    getFieldValue(item, "invoiceNumber") + " " +
+                                    getFieldValue(item, "invoice_id") + " " +
+                                    getFieldValue(item, "invoice_title") + " " +
+                                    getFieldValue(item, "note") + " " +
+                                    getFieldValue(item, "customer_name") + " " +
+                                    getFieldValue(item, "returned_by") + " " +
+                                    getFieldValue(item, "order_reference")
+                    ).toLowerCase();
 
-                if (haystack.contains(q)) {
-                    data.add(item);
-                }
+            boolean matchesQuery = q.isEmpty() || haystack.contains(q);
+            boolean matchesDate = dateRangeFilter == null
+                    || dateRangeFilter.matches(item.returnedAt, getFieldValue(item, "returned_at"), getFieldValue(item, "created_at"));
+
+            if (matchesQuery && matchesDate) {
+                data.add(item);
             }
         }
 
@@ -165,6 +173,7 @@ public class ProductReturnsFragment extends BaseFragment {
         fabAdd = view.findViewById(R.id.fabAdd);
         btnBack = view.findViewById(R.id.btnBack);
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
+        btnDateRange = view.findViewById(R.id.btnDateRange);
         layoutEmpty = view.findViewById(R.id.layoutEmpty);
         tvEmpty = view.findViewById(R.id.tvEmpty);
         tvEmptySub = view.findViewById(R.id.tvEmptySub);
@@ -554,6 +563,8 @@ public class ProductReturnsFragment extends BaseFragment {
         fabAdd = null;
         btnBack = null;
         ivHeaderAction = null;
+        btnDateRange = null;
+        dateRangeFilter = null;
         adapter = null;
         cacheRepository = null;
         etSearch = null;

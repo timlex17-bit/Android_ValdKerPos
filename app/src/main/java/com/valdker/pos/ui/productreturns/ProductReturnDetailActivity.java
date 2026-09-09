@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.valdker.pos.R;
+import com.valdker.pos.ModuleRegistry;
+import com.valdker.pos.SessionManager;
 import com.valdker.pos.models.ProductLite;
 import com.valdker.pos.models.ProductReturn;
 import com.valdker.pos.models.ProductReturnItem;
@@ -41,6 +43,11 @@ public class ProductReturnDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (!new SessionManager(this).canAccessModule(ModuleRegistry.PRODUCT_RETURNS)) {
+            Toast.makeText(this, getString(R.string.msg_permission_denied), Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
         Log.d("DETAIL_ACTIVITY", "OPEN ProductReturnDetailActivity");
         setContentView(R.layout.activity_product_return_detail);
         View root = findViewById(R.id.detailRoot);

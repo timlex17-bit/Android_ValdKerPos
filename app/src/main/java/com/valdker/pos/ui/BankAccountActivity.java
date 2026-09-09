@@ -37,6 +37,7 @@ import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.valdker.pos.ModuleRegistry;
 import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.adapters.BankAccountAdapter;
@@ -101,7 +102,7 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
         sessionManager = new SessionManager(this);
         cacheRepo = new AdminMasterCacheRepository(this);
 
-        if (!sessionManager.canAccessMenu("bank_accounts")) {
+        if (!sessionManager.canAccessModule(ModuleRegistry.BANK_ACCOUNTS)) {
             Toast.makeText(this, getString(R.string.error_no_access_bank), Toast.LENGTH_LONG).show();
             finish();
             return;

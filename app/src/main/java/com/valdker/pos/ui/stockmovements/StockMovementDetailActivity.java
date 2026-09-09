@@ -10,9 +10,12 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.valdker.pos.ModuleRegistry;
 import com.valdker.pos.R;
+import com.valdker.pos.SessionManager;
 import com.valdker.pos.models.StockMovement;
 import com.valdker.pos.utils.SystemBarsFix;
+import com.valdker.pos.utils.Toast;
 
 import org.json.JSONObject;
 
@@ -53,6 +56,11 @@ public class StockMovementDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (!new SessionManager(this).canAccessModule(ModuleRegistry.STOCK_MOVEMENTS)) {
+            Toast.makeText(this, getString(R.string.msg_permission_denied), Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
         Log.d("DETAIL_ACTIVITY", "OPEN StockMovementDetailActivity");
         setContentView(R.layout.activity_stock_movement_detail);
         View root = findViewById(R.id.detailRoot);

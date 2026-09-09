@@ -24,6 +24,7 @@ import com.valdker.pos.base.BaseFragment;
 import com.valdker.pos.models.BankLedger;
 import com.valdker.pos.network.BankLedgerApi;
 import com.valdker.pos.repositories.TransactionHistoryCacheRepository;
+import com.valdker.pos.utils.DateRangeFilterHelper;
 import com.valdker.pos.utils.NetworkUtils;
 
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ public class BankLedgersFragment extends BaseFragment {
     private EditText etSearchBankLedger;
     private ImageView btnBack;
     private ImageView ivRefreshBankLedger;
+    private ImageView btnDateRange;
     private SwipeRefreshLayout swipeRefreshLayout;
 
     private SessionManager sessionManager;
@@ -47,6 +49,7 @@ public class BankLedgersFragment extends BaseFragment {
     private BankLedgerAdapter adapter;
     private final List<BankLedger> allLedgers = new ArrayList<>();
     private boolean isLoading = false;
+    private DateRangeFilterHelper dateRangeFilter;
 
     public BankLedgersFragment() {
         super(R.layout.fragment_bank_ledgers);
@@ -76,6 +79,7 @@ public class BankLedgersFragment extends BaseFragment {
         etSearchBankLedger = view.findViewById(R.id.etSearchBankLedger);
         btnBack = view.findViewById(R.id.btnBack);
         ivRefreshBankLedger = view.findViewById(R.id.ivRefreshBankLedger);
+        btnDateRange = view.findViewById(R.id.btnDateRange);
         swipeRefreshLayout = view.findViewById(R.id.swipeRefreshBankLedgers);
     }
 
@@ -108,6 +112,11 @@ public class BankLedgersFragment extends BaseFragment {
             public void afterTextChanged(Editable s) {
             }
         });
+
+        dateRangeFilter = new DateRangeFilterHelper(this, btnDateRange, () ->
+                filterLedgers(etSearchBankLedger != null && etSearchBankLedger.getText() != null
+                        ? etSearchBankLedger.getText().toString()
+                        : ""));
     }
 
     private void loadBankLedgers() {
@@ -171,18 +180,20 @@ public class BankLedgersFragment extends BaseFragment {
         String query = keyword == null ? "" : keyword.trim().toLowerCase(Locale.US);
         List<BankLedger> filtered = new ArrayList<>();
 
-        if (query.isEmpty()) {
-            filtered.addAll(allLedgers);
-        } else {
-            for (BankLedger ledger : allLedgers) {
-                if (contains(ledger.getBankAccountName(), query)
-                        || contains(ledger.getTransactionType(), query)
-                        || contains(ledger.getDirection(), query)
-                        || contains(ledger.getReferenceOrderInvoice(), query)
-                        || contains(ledger.getDescription(), query)
-                        || contains(ledger.getAmount(), query)) {
-                    filtered.add(ledger);
-                }
+        for (BankLedger ledger : allLedgers) {
+            if (ledger == null) continue;
+
+            boolean matchesQuery = query.isEmpty()
+                    || contains(ledger.getBankAccountName(), query)
+                    || contains(ledger.getTransactionType(), query)
+                    || contains(ledger.getDirection(), query)
+                    || contains(ledger.getReferenceOrderInvoice(), query)
+                    || contains(ledger.getDescription(), query)
+                    || contains(ledger.getAmount(), query);
+            boolean matchesDate = dateRangeFilter == null || dateRangeFilter.matches(ledger.getCreatedAt(), ledger.getDisplayDate());
+
+            if (matchesQuery && matchesDate) {
+                filtered.add(ledger);
             }
         }
 
@@ -298,7 +309,9 @@ public class BankLedgersFragment extends BaseFragment {
         etSearchBankLedger = null;
         btnBack = null;
         ivRefreshBankLedger = null;
+        btnDateRange = null;
         swipeRefreshLayout = null;
         cacheRepository = null;
+        dateRangeFilter = null;
     }
 }

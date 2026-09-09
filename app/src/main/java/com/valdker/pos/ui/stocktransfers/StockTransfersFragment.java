@@ -45,6 +45,7 @@ import com.valdker.pos.network.StockTransferApi;
 import com.valdker.pos.network.WarehouseApi;
 import com.valdker.pos.network.WarehouseStockApi;
 import com.valdker.pos.repositories.InventoryOperationCacheRepository;
+import com.valdker.pos.utils.DateRangeFilterHelper;
 import com.valdker.pos.utils.InsetsHelper;
 import com.valdker.pos.utils.NetworkUtils;
 
@@ -64,6 +65,7 @@ public class StockTransfersFragment extends BaseFragment {
     private TextView tvEmptySub;
     private ImageView btnBack;
     private ImageView ivRefreshStockTransfer;
+    private ImageView btnDateRange;
     private FloatingActionButton fabAddStockTransfer;
 
     private SessionManager sessionManager;
@@ -78,6 +80,7 @@ public class StockTransfersFragment extends BaseFragment {
     private final List<ProductOption> productOptions = new ArrayList<>();
     private final List<WarehouseStock> warehouseStocks = new ArrayList<>();
     private final DecimalFormat quantityFormat = new DecimalFormat("#.##");
+    private DateRangeFilterHelper dateRangeFilter;
 
     public StockTransfersFragment() {
         super(R.layout.fragment_stock_transfers);
@@ -112,6 +115,7 @@ public class StockTransfersFragment extends BaseFragment {
         tvEmptySub = view.findViewById(R.id.tvEmptySub);
         btnBack = view.findViewById(R.id.btnBack);
         ivRefreshStockTransfer = view.findViewById(R.id.ivRefreshStockTransfer);
+        btnDateRange = view.findViewById(R.id.btnDateRange);
         fabAddStockTransfer = view.findViewById(R.id.fabAddStockTransfer);
     }
 
@@ -177,6 +181,11 @@ public class StockTransfersFragment extends BaseFragment {
             public void afterTextChanged(Editable s) {
             }
         });
+
+        dateRangeFilter = new DateRangeFilterHelper(this, btnDateRange, () ->
+                filterStockTransfers(etSearchStockTransfer != null && etSearchStockTransfer.getText() != null
+                        ? etSearchStockTransfer.getText().toString()
+                        : ""));
     }
 
     private SessionManager getSessionManager() {
@@ -298,16 +307,11 @@ public class StockTransfersFragment extends BaseFragment {
                 }
             }
         });
+
     }
 
     private void filterStockTransfers(String keyword) {
         String query = keyword == null ? "" : keyword.toLowerCase(Locale.US).trim();
-
-        if (query.isEmpty()) {
-            adapter.setData(allTransfers);
-            updateEmptyState(allTransfers.isEmpty());
-            return;
-        }
 
         List<StockTransfer> filtered = new ArrayList<>();
 
@@ -321,14 +325,18 @@ public class StockTransfersFragment extends BaseFragment {
             String note = safeLower(transfer.getNote());
             String createdAt = safeLower(transfer.getCreatedAt());
 
-            if (reference.contains(query)
+            boolean matchesQuery = query.isEmpty()
+                    || reference.contains(query)
                     || fromWarehouse.contains(query)
                     || fromCode.contains(query)
                     || toWarehouse.contains(query)
                     || toCode.contains(query)
                     || status.contains(query)
                     || note.contains(query)
-                    || createdAt.contains(query)) {
+                    || createdAt.contains(query);
+            boolean matchesDate = dateRangeFilter == null || dateRangeFilter.matches(transfer.getCreatedAt());
+
+            if (matchesQuery && matchesDate) {
                 filtered.add(transfer);
             }
         }
@@ -1459,7 +1467,9 @@ public class StockTransfersFragment extends BaseFragment {
         tvEmptySub = null;
         btnBack = null;
         ivRefreshStockTransfer = null;
+        btnDateRange = null;
         fabAddStockTransfer = null;
         cacheRepository = null;
+        dateRangeFilter = null;
     }
 }

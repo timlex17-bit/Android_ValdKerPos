@@ -26,6 +26,7 @@ import com.valdker.pos.network.ApiClient;
 import com.valdker.pos.network.ApiConfig;
 import com.valdker.pos.repositories.InventoryOperationCacheRepository;
 import com.valdker.pos.repositories.StockAdjustmentRepository;
+import com.valdker.pos.utils.DateRangeFilterHelper;
 import com.valdker.pos.utils.InsetsHelper;
 import com.valdker.pos.utils.NetworkUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -61,6 +62,8 @@ public class StockAdjustmentsFragment extends BaseFragment {
     private FloatingActionButton fab;
     private ImageView btnBack;
     private ImageView ivHeaderAction;
+    private ImageView btnDateRange;
+    private DateRangeFilterHelper dateRangeFilter;
 
     private StockAdjustmentsAdapter adapter;
     private InventoryOperationCacheRepository cacheRepository;
@@ -109,6 +112,7 @@ public class StockAdjustmentsFragment extends BaseFragment {
         fab = view.findViewById(R.id.fabAdd);
         btnBack = view.findViewById(R.id.btnBack);
         ivHeaderAction = view.findViewById(R.id.ivHeaderAction);
+        btnDateRange = view.findViewById(R.id.btnDateRange);
         etSearchStockAdjustment = view.findViewById(R.id.etSearchStockAdjustment);
     }
 
@@ -128,6 +132,8 @@ public class StockAdjustmentsFragment extends BaseFragment {
                 applyFilter();
             }
         });
+
+        dateRangeFilter = new DateRangeFilterHelper(this, btnDateRange, this::applyFilter);
     }
 
     private String buildSearchText(@NonNull StockAdjustment item) {
@@ -141,16 +147,18 @@ public class StockAdjustmentsFragment extends BaseFragment {
     private void applyFilter() {
         data.clear();
 
-        if (TextUtils.isEmpty(currentQuery)) {
-            data.addAll(allData);
-        } else {
-            String q = currentQuery.toLowerCase().trim();
+        boolean hasQuery = !TextUtils.isEmpty(currentQuery);
+        String q = hasQuery ? currentQuery.toLowerCase().trim() : "";
 
-            for (StockAdjustment item : allData) {
-                String searchable = buildSearchText(item);
-                if (searchable.contains(q)) {
-                    data.add(item);
-                }
+        for (StockAdjustment item : allData) {
+            if (item == null) continue;
+
+            String searchable = buildSearchText(item);
+            boolean matchesQuery = !hasQuery || searchable.contains(q);
+            boolean matchesDate = dateRangeFilter == null || dateRangeFilter.matches(item.adjusted_at);
+
+            if (matchesQuery && matchesDate) {
+                data.add(item);
             }
         }
 
@@ -403,6 +411,7 @@ public class StockAdjustmentsFragment extends BaseFragment {
                 }
             }
         });
+
     }
 
     private void loadProducts() {
@@ -547,6 +556,8 @@ public class StockAdjustmentsFragment extends BaseFragment {
         fab = null;
         btnBack = null;
         ivHeaderAction = null;
+        btnDateRange = null;
+        dateRangeFilter = null;
         etSearchStockAdjustment = null;
         adapter = null;
         cacheRepository = null;
