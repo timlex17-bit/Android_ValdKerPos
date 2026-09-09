@@ -62,6 +62,13 @@ public class AuthCacheRepository {
                 JSONObject userJson = loginResponse.optJSONObject("user");
                 JSONObject shopJson = loginResponse.optJSONObject("shop");
                 JSONArray permissions = loginResponse.optJSONArray("permissions");
+                JSONArray effectiveModules = optJsonArrayFlexible(loginResponse, "effective_modules");
+                if (effectiveModules == null && userJson != null) {
+                    effectiveModules = optJsonArrayFlexible(userJson, "effective_modules");
+                }
+                if (effectiveModules == null && shopJson != null) {
+                    effectiveModules = optJsonArrayFlexible(shopJson, "effective_modules");
+                }
                 JSONObject menuPermissions = optJsonObjectFlexible(loginResponse, "menu_permissions");
                 if (menuPermissions == null && userJson != null) {
                     menuPermissions = optJsonObjectFlexible(userJson, "menu_permissions");
@@ -80,6 +87,9 @@ public class AuthCacheRepository {
                 user.email = userJson != null ? userJson.optString("email", "") : "";
                 user.role = sessionManager.getRole();
                 user.shopName = sessionManager.getShopName();
+                user.businessType = sessionManager.getBusinessType();
+                user.plan = sessionManager.getPlan();
+                user.effectiveModulesJson = effectiveModules != null ? effectiveModules.toString() : "[]";
                 user.isActive = userJson == null || userJson.optBoolean("is_active", true);
                 user.lastLogin = userJson != null ? userJson.optString("last_login", "") : "";
                 user.syncedAt = formatIso(now);
@@ -163,7 +173,9 @@ public class AuthCacheRepository {
                         user.isShopOwner,
                         user.isShopManager,
                         user.isShopCashier,
-                        sessionManager.getBusinessType(),
+                        !TextUtils.isEmpty(user.businessType) ? user.businessType : sessionManager.getBusinessType(),
+                        !TextUtils.isEmpty(user.plan) ? user.plan : sessionManager.getPlan(),
+                        new JSONArray(TextUtils.isEmpty(user.effectiveModulesJson) ? "[]" : user.effectiveModulesJson),
                         features,
                         permissions,
                         menuPermissions
@@ -285,6 +297,35 @@ public class AuthCacheRepository {
         if (value instanceof Boolean) return (Boolean) value;
         String raw = value != null ? String.valueOf(value).trim() : "";
         return "true".equalsIgnoreCase(raw) || "1".equals(raw);
+    }
+
+    @Nullable
+    private static JSONArray optJsonArrayFlexible(@Nullable JSONObject parent, @NonNull String key) {
+        if (parent == null) return null;
+        Object value = parent.opt(key);
+        if (value instanceof JSONArray) {
+            return (JSONArray) value;
+        }
+        if (value instanceof JSONObject) {
+            JSONArray arr = new JSONArray();
+            Iterator<String> keys = ((JSONObject) value).keys();
+            while (keys.hasNext()) {
+                String module = keys.next();
+                if (parseBoolean(((JSONObject) value).opt(module))) {
+                    arr.put(module);
+                }
+            }
+            return arr;
+        }
+        if (value instanceof String) {
+            String raw = ((String) value).trim();
+            if (raw.isEmpty()) return null;
+            try {
+                return new JSONArray(raw);
+            } catch (Exception ignored) {
+            }
+        }
+        return null;
     }
 
     @NonNull

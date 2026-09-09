@@ -31,6 +31,12 @@ public class CachedUserEntity {
     public String email;
     public String role;
     public String shopName;
+    @ColumnInfo(defaultValue = "'retail'")
+    public String businessType;
+    @ColumnInfo(defaultValue = "'basic'")
+    public String plan;
+    @ColumnInfo(defaultValue = "'[]'")
+    public String effectiveModulesJson;
     public boolean isActive;
     public String lastLogin;
     public String syncedAt;

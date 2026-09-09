@@ -52,6 +52,8 @@ public class SessionManager {
     private static final String KEY_IS_SHOP_MANAGER = "is_shop_manager";
     private static final String KEY_IS_SHOP_CASHIER = "is_shop_cashier";
     private static final String KEY_BUSINESS_TYPE = "business_type";
+    private static final String KEY_PLAN = "plan";
+    private static final String KEY_EFFECTIVE_MODULES_JSON = "effective_modules_json";
     private static final String KEY_FEATURES_JSON = "features_json";
 
     private static final String KEY_TOKEN = "token";
@@ -83,6 +85,8 @@ public class SessionManager {
             boolean isShopManager,
             boolean isShopCashier,
             @Nullable String businessType,
+            @Nullable String plan,
+            @Nullable JSONArray effectiveModules,
             @Nullable JSONObject features,
             @Nullable JSONArray permissions,
             @Nullable JSONObject menuPermissions
@@ -97,6 +101,7 @@ public class SessionManager {
         if (shopLogo == null) shopLogo = "";
         if (businessType == null) businessType = "retail";
         businessType = normalizeBusinessType(businessType);
+        plan = normalizePlan(plan);
 
         Set<String> permSet = new HashSet<>();
         if (permissions != null) {
@@ -107,6 +112,9 @@ public class SessionManager {
         }
 
         String featuresJson = features != null ? features.toString() : "{}";
+        String effectiveModulesJson = effectiveModules != null
+                ? effectiveModules.toString()
+                : getDefaultOfflineModulesJson();
         String menuPermissionsJson = menuPermissions != null ? menuPermissions.toString() : "{}";
 
         prefs.edit()
@@ -126,6 +134,8 @@ public class SessionManager {
                 .putBoolean(KEY_IS_SHOP_CASHIER, isShopCashier)
                 .putString(KEY_BUSINESS_TYPE, businessType)
                 .putString(KEY_SHOP_BUSINESS_TYPE, businessType)
+                .putString(KEY_PLAN, plan)
+                .putString(KEY_EFFECTIVE_MODULES_JSON, effectiveModulesJson)
                 .putString(KEY_FEATURES_JSON, featuresJson)
                 .putStringSet(KEY_PERMS, permSet)
                 .putString(KEY_MENU_PERMISSIONS_JSON, menuPermissionsJson)
@@ -145,6 +155,8 @@ public class SessionManager {
             boolean isShopManager,
             boolean isShopCashier,
             @Nullable String businessType,
+            @Nullable String plan,
+            @Nullable JSONArray effectiveModules,
             @Nullable JSONObject features,
             @Nullable JSONArray permissions,
             @Nullable JSONObject menuPermissions
@@ -165,6 +177,8 @@ public class SessionManager {
                 isShopManager,
                 isShopCashier,
                 businessType,
+                plan,
+                effectiveModules,
                 features,
                 permissions,
                 menuPermissions
@@ -260,6 +274,60 @@ public class SessionManager {
                 .putString(KEY_BUSINESS_TYPE, normalized)
                 .putString(KEY_SHOP_BUSINESS_TYPE, normalized)
                 .apply();
+    }
+
+    @NonNull
+    public String getPlan() {
+        return normalizePlan(prefs.getString(KEY_PLAN, "basic"));
+    }
+
+    public boolean isBasic() {
+        return "basic".equals(getPlan());
+    }
+
+    public boolean isPro() {
+        return "pro".equals(getPlan());
+    }
+
+    public boolean isEnterprise() {
+        return "enterprise".equals(getPlan());
+    }
+
+    public boolean canAccessModule(@Nullable String key) {
+        String moduleKey = normalizeModuleKey(key);
+        if (moduleKey.isEmpty()) return false;
+        return isEffectiveModuleAllowed(moduleKey) && canAccessMenu(moduleKey);
+    }
+
+    public boolean canShowDashboardMenu(@Nullable String key) {
+        return canAccessModule(key);
+    }
+
+    public boolean hasEffectiveModules() {
+        return parseEffectiveModules().length() > 0;
+    }
+
+    private boolean isEffectiveModuleAllowed(@NonNull String key) {
+        JSONArray modules = parseEffectiveModules();
+        if (modules.length() == 0) {
+            return isDefaultOfflineModule(key);
+        }
+
+        for (int i = 0; i < modules.length(); i++) {
+            String module = normalizeModuleKey(modules.optString(i, ""));
+            if (key.equals(module)) return true;
+        }
+        return false;
+    }
+
+    @NonNull
+    private JSONArray parseEffectiveModules() {
+        String raw = prefs.getString(KEY_EFFECTIVE_MODULES_JSON, "[]");
+        try {
+            return new JSONArray(raw != null ? raw : "[]");
+        } catch (Exception e) {
+            return new JSONArray();
+        }
     }
 
     @NonNull
@@ -527,7 +595,7 @@ public class SessionManager {
     public boolean canAccessMenu(@Nullable String menuKey) {
         if (menuKey == null) return false;
 
-        String key = menuKey.trim();
+        String key = normalizeModuleKey(menuKey);
         if (key.isEmpty()) return false;
 
         JSONObject menuPermissions = getMenuPermissions();
@@ -568,6 +636,13 @@ public class SessionManager {
                 case "units":
                 case "product_returns":
                 case "stock_adjustments":
+                case "offline_orders":
+                case "vehicles":
+                case "mechanics":
+                case "work_orders":
+                case "service_history":
+                case "service_packages":
+                case "bookings":
                     return true;
                 default:
                     return false;
@@ -591,6 +666,7 @@ public class SessionManager {
                 case "stock_movements":
                 case "stock_adjustments":
                 case "inventory_counts":
+                case "offline_orders":
                     return true;
                 default:
                     return false;
@@ -616,6 +692,7 @@ public class SessionManager {
     private boolean isSupportedMenuKey(@NonNull String menuKey) {
         switch (menuKey) {
             case "pos":
+            case "dashboard":
             case "orders":
             case "customers":
             case "reports":
@@ -635,6 +712,14 @@ public class SessionManager {
             case "warehouse_stocks":
             case "stock_transfers":
             case "bank_ledgers":
+            case "offline_orders":
+            case "purchase_returns":
+            case "vehicles":
+            case "mechanics":
+            case "work_orders":
+            case "service_history":
+            case "service_packages":
+            case "bookings":
                 return true;
             default:
                 return false;
@@ -680,6 +765,8 @@ public class SessionManager {
         editor.remove(KEY_IS_SHOP_CASHIER);
         editor.remove(KEY_BUSINESS_TYPE);
         editor.remove(KEY_SHOP_BUSINESS_TYPE);
+        editor.remove(KEY_PLAN);
+        editor.remove(KEY_EFFECTIVE_MODULES_JSON);
         editor.remove(KEY_FEATURES_JSON);
 
         editor.apply();
@@ -707,6 +794,40 @@ public class SessionManager {
 
     private String ensureTrailingSlash(String url) {
         return url.endsWith("/") ? url : url + "/";
+    }
+
+    @NonNull
+    private static String normalizePlan(@Nullable String value) {
+        if (value == null) return "basic";
+        String clean = value.trim().toLowerCase(Locale.US);
+        if (clean.isEmpty()) return "basic";
+        if ("enterprise".equals(clean) || "pro".equals(clean) || "basic".equals(clean)) {
+            return clean;
+        }
+        return clean;
+    }
+
+    @NonNull
+    private static String normalizeModuleKey(@Nullable String value) {
+        if (value == null) return "";
+        return value.trim().toLowerCase(Locale.US);
+    }
+
+    private static boolean isDefaultOfflineModule(@NonNull String key) {
+        return ModuleRegistry.DASHBOARD.equals(key)
+                || ModuleRegistry.POS.equals(key)
+                || ModuleRegistry.ORDERS.equals(key)
+                || ModuleRegistry.SETTINGS.equals(key);
+    }
+
+    @NonNull
+    private static String getDefaultOfflineModulesJson() {
+        JSONArray arr = new JSONArray();
+        arr.put(ModuleRegistry.DASHBOARD);
+        arr.put(ModuleRegistry.POS);
+        arr.put(ModuleRegistry.ORDERS);
+        arr.put(ModuleRegistry.SETTINGS);
+        return arr.toString();
     }
 
     @NonNull

@@ -21,6 +21,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+import com.valdker.pos.ModuleRegistry;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.local.PendingOrderEntity;
 import com.valdker.pos.local.PendingOrderItemEntity;
@@ -66,6 +67,11 @@ public class PendingOrdersActivity extends AppCompatActivity {
 
         repository = new OfflineOrderRepository(this);
         sessionManager = new SessionManager(this);
+        if (!sessionManager.canAccessModule(ModuleRegistry.OFFLINE_ORDERS)) {
+            Toast.makeText(this, getString(com.valdker.pos.R.string.msg_permission_denied), Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
 
         setContentView(buildContent());
         setupRecycler();

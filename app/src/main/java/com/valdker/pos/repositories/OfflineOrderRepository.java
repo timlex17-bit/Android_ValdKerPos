@@ -745,7 +745,7 @@ public class OfflineOrderRepository {
             order.syncStatus = STATUS_NEEDS_REVIEW;
             order.lastSyncError = MESSAGE_UNKNOWN_SHOP_CONTEXT;
         }
-        order.customerId = nullableInt(payload, "customer");
+        order.customerId = firstNullableInt(payload, "customer", "customer_id");
         order.paymentMethodId = firstNullableInt(
                 firstPayment(payload),
                 "payment_method_id",
@@ -798,7 +798,7 @@ public class OfflineOrderRepository {
 
             PendingOrderItemEntity entity = new PendingOrderItemEntity();
             entity.localOrderId = localOrderId;
-            entity.productId = firstInt(item, "product", "product_id", "item_id");
+            entity.productId = firstInt(item, "product", "product_id", "service_package_id", "item_id");
             entity.itemType = toBackendItemType(item.optString("item_type", ""));
             entity.name = firstNonEmpty(item.optString("name", ""), item.optString("product_name", ""));
             entity.sku = item.optString("sku", "");
@@ -897,6 +897,9 @@ public class OfflineOrderRepository {
             case "MENU":
                 return "menu";
             case "SERVICE":
+            case "SERVICE_PACKAGE":
+            case "SERVICEPACKAGE":
+            case "PACKAGE":
                 return "service";
             case "SPAREPART":
             case "PART":

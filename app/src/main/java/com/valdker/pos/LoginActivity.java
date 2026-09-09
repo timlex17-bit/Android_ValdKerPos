@@ -37,6 +37,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 
@@ -49,6 +50,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = "LOGIN";
     private static final String ENDPOINT_LOGIN = "api/auth/login/";
+    private static final String ENDPOINT_AUTH_ME = "api/auth/me/";
     private static final Object LOGIN_TAG = "LoginActivityRequest";
 
     private static final int TIMEOUT_MS = 20000;
@@ -271,10 +273,53 @@ public class LoginActivity extends AppCompatActivity {
     private void handleLoginSuccess(@NonNull JSONObject response,
                                     @NonNull String fallbackUsername,
                                     @NonNull String fallbackShopCode) {
+        String newToken = response.optString("token", "");
+        if (newToken == null || newToken.trim().isEmpty()) {
+            Toast.makeText(this, getString(R.string.msg_token_missing_server_response), Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        fetchAuthMeAndPersist(newToken, response, fallbackUsername, fallbackShopCode);
+    }
+
+    private void fetchAuthMeAndPersist(@NonNull String token,
+                                       @NonNull JSONObject loginResponse,
+                                       @NonNull String fallbackUsername,
+                                       @NonNull String fallbackShopCode) {
+        String url = ApiConfig.url(sm, ENDPOINT_AUTH_ME);
+        JsonObjectRequest req = new JsonObjectRequest(
+                Request.Method.GET,
+                url,
+                null,
+                authMe -> persistAuthProfile(authMe, token, fallbackUsername, fallbackShopCode),
+                error -> {
+                    Log.w(TAG, "auth/me failed. Falling back to login response.");
+                    persistAuthProfile(loginResponse, token, fallbackUsername, fallbackShopCode);
+                }
+        ) {
+            @Override
+            public Map<String, String> getHeaders() {
+                Map<String, String> h = new HashMap<>();
+                h.put("Accept", "application/json");
+                h.put("Authorization", "Token " + token.trim());
+                return h;
+            }
+        };
+
+        req.setRetryPolicy(new DefaultRetryPolicy(TIMEOUT_MS, MAX_RETRIES, BACKOFF_MULT));
+        req.setShouldCache(false);
+        req.setTag(LOGIN_TAG);
+        ApiClient.getInstance(this).add(req);
+    }
+
+    private void persistAuthProfile(@NonNull JSONObject response,
+                                    @NonNull String authToken,
+                                    @NonNull String fallbackUsername,
+                                    @NonNull String fallbackShopCode) {
         try {
-            String newToken = response.optString("token", "");
             JSONObject user = response.optJSONObject("user");
             JSONArray perms = response.optJSONArray("permissions");
+            JSONArray effectiveModules = optJsonArrayFlexible(response, "effective_modules");
             JSONObject menuPermissions = optJsonObjectFlexible(user, "menu_permissions");
             if (menuPermissions == null) {
                 menuPermissions = optJsonObjectFlexible(response, "menu_permissions");
@@ -283,11 +328,18 @@ public class LoginActivity extends AppCompatActivity {
             JSONObject shop = response.optJSONObject("shop");
 
             String businessType = response.optString("shop_business_type", "");
+            String plan = response.optString("plan", "");
             JSONObject features = new JSONObject();
 
             if (shop != null) {
                 if (businessType == null || businessType.trim().isEmpty()) {
                     businessType = shop.optString("business_type", "");
+                }
+                if (plan == null || plan.trim().isEmpty()) {
+                    plan = shop.optString("plan", "");
+                }
+                if (effectiveModules == null) {
+                    effectiveModules = optJsonArrayFlexible(shop, "effective_modules");
                 }
 
                 JSONObject f = shop.optJSONObject("features");
@@ -298,11 +350,20 @@ public class LoginActivity extends AppCompatActivity {
             if ((businessType == null || businessType.trim().isEmpty()) && user != null) {
                 businessType = user.optString("shop_business_type", "");
             }
+            if ((plan == null || plan.trim().isEmpty()) && user != null) {
+                plan = user.optString("plan", "");
+            }
+            if (effectiveModules == null && user != null) {
+                effectiveModules = optJsonArrayFlexible(user, "effective_modules");
+            }
             if (businessType == null || businessType.trim().isEmpty()) {
                 businessType = "retail";
             }
+            if (plan == null || plan.trim().isEmpty()) {
+                plan = "basic";
+            }
 
-            Log.i(TAG, "Shop config loaded businessType=" + businessType);
+            Log.i(TAG, "Shop config loaded businessType=" + businessType + " plan=" + plan);
 
             String username = user != null
                     ? user.optString("username", fallbackUsername)
@@ -386,14 +447,9 @@ public class LoginActivity extends AppCompatActivity {
                     + " permsCount=" + (perms != null ? perms.length() : 0)
                     + " menuPermsCount=" + (menuPermissions != null ? menuPermissions.length() : 0));
 
-            if (newToken == null || newToken.trim().isEmpty()) {
-                Toast.makeText(this, getString(R.string.msg_token_missing_server_response), Toast.LENGTH_LONG).show();
-                return;
-            }
-
             sm.clearAuth();
             sm.saveUserProfile(
-                    newToken,
+                    authToken,
                     username,
                     fullName,
                     role,
@@ -408,6 +464,8 @@ public class LoginActivity extends AppCompatActivity {
                     isShopManager,
                     isShopCashier,
                     businessType,
+                    plan,
+                    effectiveModules,
                     features,
                     perms,
                     menuPermissions
@@ -483,6 +541,47 @@ public class LoginActivity extends AppCompatActivity {
         if (etPassword.getText() != null) {
             etPassword.setSelection(etPassword.getText().length());
         }
+    }
+
+    @Nullable
+    private JSONArray optJsonArrayFlexible(@Nullable JSONObject parent, @NonNull String key) {
+        if (parent == null) return null;
+
+        Object value = parent.opt(key);
+        if (value instanceof JSONArray) {
+            return (JSONArray) value;
+        }
+
+        if (value instanceof JSONObject) {
+            JSONArray arr = new JSONArray();
+            JSONObject obj = (JSONObject) value;
+            Iterator<String> keys = obj.keys();
+            while (keys.hasNext()) {
+                String module = keys.next();
+                Object enabled = obj.opt(module);
+                if (enabled instanceof Boolean && (Boolean) enabled) {
+                    arr.put(module);
+                } else {
+                    String raw = enabled != null ? String.valueOf(enabled).trim() : "";
+                    if ("true".equalsIgnoreCase(raw) || "1".equals(raw)) {
+                        arr.put(module);
+                    }
+                }
+            }
+            return arr;
+        }
+
+        if (value instanceof String) {
+            String raw = ((String) value).trim();
+            if (raw.isEmpty()) return null;
+            try {
+                return new JSONArray(raw);
+            } catch (Exception e) {
+                Log.w(TAG, "Invalid JSON array for " + key + ": " + e.getMessage());
+            }
+        }
+
+        return null;
     }
 
     @Nullable
