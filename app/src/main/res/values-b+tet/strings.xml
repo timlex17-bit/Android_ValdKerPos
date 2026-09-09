@@ -161,6 +161,7 @@
     <string name="action_open">Loke</string>
     <string name="action_apply">Aplika</string>
     <string name="action_continue">Kontinua</string>
+    <string name="action_select">Hili</string>
 
     <string name="msg_token_missing_login_again">Token la iha. Favór login fali.</string>
     <string name="msg_name_required">Naran tenke iha.</string>
@@ -218,7 +219,7 @@
     <string name="label_role">Knaar</string>
     <string name="label_shop">Loja</string>
     <string name="label_store">Loja</string>
-    <string name="label_search">Buka</string>
+    <string name="label_search">Produtu</string>
     <string name="label_from">Husi</string>
     <string name="label_to">Ba</string>
     <string name="label_amount">Montante</string>
@@ -258,18 +259,18 @@
     <!-- ================================================== -->
     <!-- HINTS -->
     <!-- ================================================== -->
-    <string name="hint_search_here">Buka iha ne’e...</string>
-    <string name="hint_search_product">Buka produtu...</string>
-    <string name="hint_search_category">Buka kategoria</string>
-    <string name="hint_search_units">Buka unidade...</string>
+    <string name="hint_search_here">Iha ne’e...</string>
+    <string name="hint_search_product">Produtu...</string>
+    <string name="hint_search_category">Kategoria</string>
+    <string name="hint_search_units">Unidade...</string>
     <string name="hit_add_units">Naran *</string>
-    <string name="hint_search_expense">Buka despeza...</string>
-    <string name="hint_search_customer">Buka kliente...</string>
-    <string name="hint_search_supplier">Buka fornesedór...</string>
-    <string name="hint_search_order">Buka ordem...</string>
-    <string name="hint_search_purchase">Buka kompra...</string>
-    <string name="hint_search_invoice">Buka invoice...</string>
-    <string name="hint_search_inventory">Buka dadus inventóriu...</string>
+    <string name="hint_search_expense">Despeza...</string>
+    <string name="hint_search_customer">Kliente...</string>
+    <string name="hint_search_supplier">Fornesedór...</string>
+    <string name="hint_search_order">Ordem...</string>
+    <string name="hint_search_purchase">Kompra...</string>
+    <string name="hint_search_invoice">Invoice...</string>
+    <string name="hint_search_inventory">Dadus inventóriu...</string>
     <string name="hint_product_name">Hatama naran produtu</string>
     <string name="hint_product_code">Hatama kode produtu</string>
     <string name="hint_product_barcode">Hatama barcode</string>
@@ -548,7 +549,7 @@
     <string name="msg_no_stock_adjustments_yet_sub">Klik + atu kria ajustamentu stock ida.</string>
     <string name="msg_no_matching_stock_adjustments">La hetan ajustamentu stock ne\'ebé buka</string>
     <string name="msg_no_matching_stock_adjustments_sub">Koko liafuan seluk.</string>
-    <string name="hint_search_stock_adjustment">Buka ajustamentu stock...</string>
+    <string name="hint_search_stock_adjustment">Ajustamentu stock...</string>
 
     <string name="inventory_count">Kontájen Inventóriu</string>
     <string name="stock_adjustment">Ajusta Stok</string>
@@ -673,7 +674,7 @@
     <string name="hint_opening_balance">Saldo inisiu</string>
     <string name="hint_bank_note">Nota</string>
     <string name="error_no_access_bank">Só proprietáriu mak bele asesu konta bankária</string>
-    <string name="search_bank_account">Buka konta bankária...</string>
+    <string name="search_bank_account">Konta bankária...</string>
     <string name="bank_create_success">Konta bankária kria ho susesu</string>
     <string name="bank_update_success">Konta bankária atualiza ho susesu</string>
     <string name="bank_delete_success">Konta bankária apaga ho susesu</string>
@@ -820,7 +821,7 @@
     <string name="amount_zero_usd">$0.00</string>
     <string name="amount_sample_usd">$40.99</string>
     <string name="pos_retail_title">POS Retail</string>
-    <string name="pos_search_product_or_barcode">Buka produtu ka barcode</string>
+    <string name="pos_search_product_or_barcode">Produtu ka barcode</string>
     <string name="pos_scan_barcode_quick">Scan barcode atu aumenta produtu lalais</string>
     <string name="pos_scanned_items">Item scan ona</string>
     <string name="pos_items_after_barcode">Item sei mosu depois scan barcode</string>
@@ -830,6 +831,20 @@
     <string name="workshop_default_title">Valdker POS</string>
     <string name="workshop_default_address">Becora Dili</string>
     <string name="workshop_walk_in_customer">Kliente direta</string>
+    <string name="label_package">Pakote</string>
+    <string name="label_mechanic">Mekanik</string>
+    <string name="label_work_order">Work Order</string>
+    <string name="label_booking">Rezerva</string>
+    <string name="label_workshop_job_info">Kliente &amp; Veikulu</string>
+    <string name="label_workshop_links">Ligasaun Workshop</string>
+    <string name="label_workshop_add_item">Aumenta Item</string>
+    <string name="label_workshop_cart_items">Item Hili Ona</string>
+    <string name="dialog_workshop_info_title">Hili Kliente &amp; Veikulu</string>
+    <string name="workshop_vehicle_prefix">Veikulu</string>
+    <string name="workshop_vehicle_not_selected">Veikulu: Seidauk hili</string>
+    <string name="workshop_summary_prefix">Workshop</string>
+    <string name="hint_vehicle_name">Naran veikulu</string>
+    <string name="hint_plate_number">Numeru plaka</string>
     <string name="customer_fallback_name_format">Kliente #%1$d</string>
     <string name="workshop_default_vehicle">Kareta</string>
     <string name="workshop_default_plate">D012314</string>
@@ -883,7 +898,6 @@
     <string name="msg_barcode_hidden_workshop">Shortcut barcode subar ba POS workshop.</string>
     <string name="msg_open_shift_first">Loke shift uluk.</string>
     <string name="msg_workshop_main_screen">Workspace workshop mak ekran POS prinsipal ona.</string>
-    <string name="msg_change_password_clicked">Troka Password klik ona</string>
     <string name="msg_privacy_policy_clicked">Politika Privasidade klik ona</string>
     <string name="msg_internet_required_close_shift">Internet presiza atu taka shift.</string>
     <string name="msg_no_open_shift">La iha shift loke.</string>
@@ -920,10 +934,10 @@
     <string name="label_minimum_stock">Stock Minimu</string>
     <string name="label_unit_required">Unidade *</string>
     <string name="label_quantity_required">Kuantidade *</string>
-    <string name="hint_search_warehouse">Buka armazem...</string>
-    <string name="hint_search_warehouse_stock">Buka stock armazem...</string>
-    <string name="hint_search_stock_transfer">Buka transfer stock...</string>
-    <string name="hint_search_bank_ledger">Buka historiku banku...</string>
+    <string name="hint_search_warehouse">Armazem...</string>
+    <string name="hint_search_warehouse_stock">Stock armazem...</string>
+    <string name="hint_search_stock_transfer">Transfer stock...</string>
+    <string name="hint_search_bank_ledger">Historiku banku...</string>
 <!--    <string name="hint_search_product">Buka produtu...</string>-->
     <string name="hint_select_warehouse_required">Hili Armazem *</string>
     <string name="hint_select_product_required">Hili Produtu *</string>
@@ -1065,5 +1079,21 @@
     <string name="draft_b_preview">B - 12</string>
     <string name="draft_walkin_preview">Kliente direta - 1</string>
     <string name="draft_add">+</string>
+    <string name="owner_chat_title">Owner Chat</string>
+    <string name="owner_chat_subtitle">Husu kona-ba venda, stock, despeza, pagamentu, no relatoriu</string>
+    <string name="owner_chat_hint">Hakerek mensajen...</string>
+    <string name="owner_chat_send">Haruka</string>
+    <string name="owner_chat_welcome">Bondia Owner, husu hau kona-ba venda, stock, despeza, pagamentu, no relatoriu negosiu.</string>
+    <string name="owner_chat_no_permission">Ita la iha lisensa atu asesu Owner Chat.</string>
+    <string name="owner_chat_session_expired">Sesaun remata ona. Favor login fali.</string>
+    <string name="owner_chat_shop_context_missing">Kontekstu loja la hetan. Favor login fali.</string>
+    <string name="owner_chat_empty_message">Favor hakerek pergunta uluk.</string>
+    <string name="owner_chat_network_timeout">La iha internet ka server timeout.</string>
+    <string name="owner_chat_server_error">Server iha problema. Koko fali depois.</string>
+    <string name="owner_chat_unable_contact">La bele kontaktu Owner Chat.</string>
+    <string name="owner_chat_response_unreadable">Deskulpa, hau la komprende resposta.</string>
+    <string name="owner_chat_question_not_processed">Ita nia pergunta la bele prosesu. Koko fali.</string>
+    <string name="owner_chat_link_cannot_open">Link ida ne e la bele loke.</string>
+    <string name="label_vehicle_type">Tipu Veíkulu</string>
 
 </resources>

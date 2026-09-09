@@ -94,6 +94,35 @@
     <string name="tile_finance">Finance</string>
     <string name="menu_offline_orders">Offline Orders</string>
     <string name="menu_offline_orders_desc">Review and retry sync queue</string>
+    <string name="menu_purchase_returns">Purchase Returns</string>
+    <string name="menu_purchase_returns_desc">Return purchased stock to suppliers</string>
+    <string name="menu_vehicles">Vehicles</string>
+    <string name="menu_vehicles_desc">Manage customer vehicles</string>
+    <string name="menu_mechanics">Mechanics</string>
+    <string name="menu_mechanics_desc">Manage workshop mechanics</string>
+    <string name="menu_work_orders">Work Orders</string>
+    <string name="menu_work_orders_desc">Track workshop jobs</string>
+    <string name="menu_service_history">Service History</string>
+    <string name="menu_service_history_desc">Review completed vehicle services</string>
+    <string name="menu_service_packages">Service Packages</string>
+    <string name="menu_service_packages_desc">Manage service bundles</string>
+    <string name="menu_bookings">Bookings</string>
+    <string name="menu_bookings_desc">Manage workshop appointments</string>
+    <string name="label_package">Package</string>
+    <string name="label_mechanic">Mechanic</string>
+    <string name="label_work_order">Work Order</string>
+    <string name="label_booking">Booking</string>
+    <string name="action_select">Select</string>
+    <string name="label_workshop_job_info">Customer &amp; Vehicle</string>
+    <string name="label_workshop_links">Workshop Links</string>
+    <string name="label_workshop_add_item">Add Item</string>
+    <string name="label_workshop_cart_items">Selected Items</string>
+    <string name="dialog_workshop_info_title">Select Customer &amp; Vehicle</string>
+    <string name="workshop_vehicle_prefix">Vehicle</string>
+    <string name="workshop_vehicle_not_selected">Vehicle: Not selected</string>
+    <string name="workshop_summary_prefix">Workshop</string>
+    <string name="hint_vehicle_name">Vehicle name</string>
+    <string name="hint_plate_number">Plate number</string>
 
     <!-- ================================================== -->
     <!-- BOTTOM NAVIGATION -->
@@ -230,7 +259,7 @@
     <string name="label_role">Role</string>
     <string name="label_shop">Shop</string>
     <string name="label_store">Store</string>
-    <string name="label_search">Search</string>
+    <string name="label_search">Product</string>
     <string name="label_from">From</string>
     <string name="label_to">To</string>
     <string name="label_amount">Amount</string>
@@ -270,18 +299,18 @@
     <!-- ================================================== -->
     <!-- HINTS -->
     <!-- ================================================== -->
-    <string name="hint_search_here">Search here...</string>
-    <string name="hint_search_product">Search product...</string>
-    <string name="hint_search_category">Search category</string>
-    <string name="hint_search_units">Search unit...</string>
+    <string name="hint_search_here">Here...</string>
+    <string name="hint_search_product">Product...</string>
+    <string name="hint_search_category">Category</string>
+    <string name="hint_search_units">Unit...</string>
     <string name="hit_add_units">Name *</string>
-    <string name="hint_search_expense">Search expense...</string>
-    <string name="hint_search_customer">Search customer...</string>
-    <string name="hint_search_supplier">Search supplier...</string>
-    <string name="hint_search_order">Search order...</string>
-    <string name="hint_search_purchase">Search purchase...</string>
-    <string name="hint_search_invoice">Search invoice...</string>
-    <string name="hint_search_inventory">Search inventory data...</string>
+    <string name="hint_search_expense">Expense...</string>
+    <string name="hint_search_customer">Customer...</string>
+    <string name="hint_search_supplier">Supplier...</string>
+    <string name="hint_search_order">Order...</string>
+    <string name="hint_search_purchase">Purchase...</string>
+    <string name="hint_search_invoice">Invoice...</string>
+    <string name="hint_search_inventory">Inventory data...</string>
     <string name="hint_product_name">Enter product name</string>
     <string name="hint_product_code">Enter product code</string>
     <string name="hint_product_barcode">Enter barcode</string>
@@ -504,7 +533,7 @@
     <!-- POS -->
     <!-- ================================================== -->
     <string name="title_pos">POS</string>
-    <string name="pos_search_products">Search products</string>
+    <string name="pos_search_products">Products</string>
     <string name="pos_add_to_cart">Add to Cart</string>
     <string name="pos_checkout">Checkout</string>
     <string name="pos_payment">Payment</string>
@@ -560,7 +589,7 @@
     <string name="msg_no_stock_adjustments_yet_sub">Tap + to create a stock adjustment.</string>
     <string name="msg_no_matching_stock_adjustments">No matching stock adjustments found</string>
     <string name="msg_no_matching_stock_adjustments_sub">Try another keyword.</string>
-    <string name="hint_search_stock_adjustment">Search stock adjustment...</string>
+    <string name="hint_search_stock_adjustment">Stock adjustment...</string>
 
     <string name="inventory_count">Inventory Count</string>
     <string name="stock_adjustment">Stock Adjustment</string>
@@ -679,7 +708,7 @@
     <string name="hint_opening_balance">Opening balance</string>
     <string name="hint_bank_note">Note</string>
     <string name="error_no_access_bank">Only the owner can access bank accounts</string>
-    <string name="search_bank_account">Search bank account...</string>
+    <string name="search_bank_account">Bank account...</string>
     <string name="bank_create_success">Bank account created successfully</string>
     <string name="bank_update_success">Bank account updated successfully</string>
     <string name="bank_delete_success">Bank account deleted successfully</string>
@@ -825,7 +854,7 @@
     <string name="amount_zero_usd">$0.00</string>
     <string name="amount_sample_usd">$40.99</string>
     <string name="pos_retail_title">Retail POS</string>
-    <string name="pos_search_product_or_barcode">Search product or barcode</string>
+    <string name="pos_search_product_or_barcode">Product or barcode</string>
     <string name="pos_scan_barcode_quick">Scan barcode to add product quickly</string>
     <string name="pos_scanned_items">Scanned Items</string>
     <string name="pos_items_after_barcode">Items will appear after barcode scan</string>
@@ -888,7 +917,6 @@
     <string name="msg_barcode_hidden_workshop">Barcode shortcut is hidden for Workshop POS.</string>
     <string name="msg_open_shift_first">Open shift first.</string>
     <string name="msg_workshop_main_screen">Workshop workspace is already the main POS screen.</string>
-    <string name="msg_change_password_clicked">Change Password clicked</string>
     <string name="msg_privacy_policy_clicked">Privacy Policy clicked</string>
     <string name="msg_internet_required_close_shift">Internet is required to close a shift.</string>
     <string name="msg_no_open_shift">There is no open shift.</string>
@@ -927,10 +955,10 @@
     <string name="label_minimum_stock">Minimum Stock</string>
     <string name="label_unit_required">Unit *</string>
     <string name="label_quantity_required">Quantity *</string>
-    <string name="hint_search_warehouse">Search warehouse...</string>
-    <string name="hint_search_warehouse_stock">Search warehouse stock...</string>
-    <string name="hint_search_stock_transfer">Search stock transfer...</string>
-    <string name="hint_search_bank_ledger">Search bank ledger...</string>
+    <string name="hint_search_warehouse">Warehouse...</string>
+    <string name="hint_search_warehouse_stock">Warehouse stock...</string>
+    <string name="hint_search_stock_transfer">Stock transfer...</string>
+    <string name="hint_search_bank_ledger">Bank ledger...</string>
 <!--    <string name="hint_search_product">Search product...</string>-->
     <string name="hint_select_warehouse_required">Select Warehouse *</string>
     <string name="hint_select_product_required">Select Product *</string>
@@ -1056,5 +1084,21 @@
     <string name="draft_b_preview">B &#8226; 12</string>
     <string name="draft_walkin_preview">Walk-in &#8226; 1</string>
     <string name="draft_add">+</string>
+    <string name="owner_chat_title">Owner Chat</string>
+    <string name="owner_chat_subtitle">Ask about sales, stock, expenses, payments, and reports</string>
+    <string name="owner_chat_hint">Type a message...</string>
+    <string name="owner_chat_send">Send</string>
+    <string name="owner_chat_welcome">Hello Owner, ask me about sales, stock, expenses, payments, and business reports.</string>
+    <string name="owner_chat_no_permission">You do not have permission to access Owner Chat.</string>
+    <string name="owner_chat_session_expired">Session expired. Please login again.</string>
+    <string name="owner_chat_shop_context_missing">Shop context not found. Please login again.</string>
+    <string name="owner_chat_empty_message">Please type a question first.</string>
+    <string name="owner_chat_network_timeout">No internet connection or server timeout.</string>
+    <string name="owner_chat_server_error">Server error. Please try again later.</string>
+    <string name="owner_chat_unable_contact">Unable to contact Owner Chat.</string>
+    <string name="owner_chat_response_unreadable">Sorry, I could not understand the response.</string>
+    <string name="owner_chat_question_not_processed">Your question could not be processed. Please try again.</string>
+    <string name="owner_chat_link_cannot_open">This link cannot be opened.</string>
+    <string name="label_vehicle_type">Vehicle Type</string>
 
 </resources>

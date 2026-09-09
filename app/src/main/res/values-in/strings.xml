@@ -161,6 +161,7 @@
     <string name="action_open">Buka</string>
     <string name="action_apply">Terapkan</string>
     <string name="action_continue">Lanjutkan</string>
+    <string name="action_select">Pilih</string>
 
     <string name="msg_token_missing_login_again">Token tidak ada. Silakan login kembali.</string>
     <string name="msg_name_required">Nama wajib diisi</string>
@@ -211,6 +212,10 @@
     <string name="label_customer">Pelanggan</string>
     <string name="label_product">Produk</string>
     <string name="label_products">Produk</string>
+    <string name="label_package">Paket</string>
+    <string name="label_mechanic">Mekanik</string>
+    <string name="label_work_order">Work Order</string>
+    <string name="label_booking">Booking</string>
     <string name="label_payment_method">Metode Pembayaran</string>
     <string name="label_invoice">Faktur</string>
     <string name="label_invoice_id">ID Faktur</string>
@@ -218,7 +223,7 @@
     <string name="label_role">Peran</string>
     <string name="label_shop">Toko</string>
     <string name="label_store">Toko</string>
-    <string name="label_search">Cari</string>
+    <string name="label_search">Produk</string>
     <string name="label_from">Dari</string>
     <string name="label_to">Sampai</string>
     <string name="label_amount">Jumlah</string>
@@ -258,18 +263,18 @@
     <!-- ================================================== -->
     <!-- HINTS -->
     <!-- ================================================== -->
-    <string name="hint_search_here">Cari di sini...</string>
+    <string name="hint_search_here">Di sini...</string>
 <!--    <string name="hint_search_product">Cari produk...</string>-->
-    <string name="hint_search_category">Cari kategori</string>
-    <string name="hint_search_units">Cari unit</string>
+    <string name="hint_search_category">Kategori</string>
+    <string name="hint_search_units">Unit</string>
     <string name="hit_add_units">Nama *</string>
-    <string name="hint_search_expense">Cari pengeluaran...</string>
-    <string name="hint_search_customer">Cari pelanggan...</string>
-    <string name="hint_search_supplier">Cari supplier...</string>
-    <string name="hint_search_order">Cari pesanan...</string>
-    <string name="hint_search_purchase">Cari pembelian...</string>
-    <string name="hint_search_invoice">Cari faktur...</string>
-    <string name="hint_search_inventory">Cari data inventaris...</string>
+    <string name="hint_search_expense">Pengeluaran...</string>
+    <string name="hint_search_customer">Pelanggan...</string>
+    <string name="hint_search_supplier">Supplier...</string>
+    <string name="hint_search_order">Pesanan...</string>
+    <string name="hint_search_purchase">Pembelian...</string>
+    <string name="hint_search_invoice">Faktur...</string>
+    <string name="hint_search_inventory">Data inventaris...</string>
     <string name="hint_product_name">Masukkan nama produk</string>
     <string name="hint_product_code">Masukkan kode produk</string>
     <string name="hint_product_barcode">Masukkan barcode</string>
@@ -504,7 +509,7 @@
     <!-- POS -->
     <!-- ================================================== -->
     <string name="title_pos">Kasir (POS)</string>
-    <string name="pos_search_products">Cari produk</string>
+    <string name="pos_search_products">Produk</string>
     <string name="pos_add_to_cart">Tambah ke Keranjang</string>
     <string name="pos_checkout">Checkout</string>
     <string name="pos_payment">Pembayaran</string>
@@ -560,7 +565,7 @@
     <string name="msg_no_stock_adjustments_yet_sub">Tekan + untuk membuat penyesuaian stok.</string>
     <string name="msg_no_matching_stock_adjustments">Penyesuaian stok tidak ditemukan</string>
     <string name="msg_no_matching_stock_adjustments_sub">Coba kata kunci lain.</string>
-    <string name="hint_search_stock_adjustment">Cari penyesuaian stok...</string>
+    <string name="hint_search_stock_adjustment">Penyesuaian stok...</string>
 
     <string name="inventory_count">Stok Opname</string>
     <string name="stock_adjustment">Penyesuaian Stok</string>
@@ -682,7 +687,7 @@
     <string name="hint_opening_balance">Saldo awal</string>
     <string name="hint_bank_note">Catatan</string>
     <string name="error_no_access_bank">Hanya owner yang dapat mengakses rekening bank</string>
-    <string name="search_bank_account">Cari rekening bank...</string>
+    <string name="search_bank_account">Rekening bank...</string>
     <string name="bank_create_success">Rekening bank berhasil dibuat</string>
     <string name="bank_update_success">Rekening bank berhasil diperbarui</string>
     <string name="bank_delete_success">Rekening bank berhasil dihapus</string>
@@ -828,7 +833,7 @@
     <string name="amount_zero_usd">$0.00</string>
     <string name="amount_sample_usd">$40.99</string>
     <string name="pos_retail_title">POS Retail</string>
-    <string name="pos_search_product_or_barcode">Cari produk atau barcode</string>
+    <string name="pos_search_product_or_barcode">Produk atau barcode</string>
     <string name="pos_scan_barcode_quick">Pindai barcode untuk menambah produk dengan cepat</string>
     <string name="pos_scanned_items">Item yang dipindai</string>
     <string name="pos_items_after_barcode">Item akan muncul setelah barcode dipindai</string>
@@ -838,6 +843,16 @@
     <string name="workshop_default_title">Valdker POS</string>
     <string name="workshop_default_address">Becora Dili</string>
     <string name="workshop_walk_in_customer">Pelanggan langsung</string>
+    <string name="label_workshop_job_info">Pelanggan &amp; Kendaraan</string>
+    <string name="label_workshop_links">Link Workshop</string>
+    <string name="label_workshop_add_item">Tambah Item</string>
+    <string name="label_workshop_cart_items">Item Dipilih</string>
+    <string name="dialog_workshop_info_title">Pilih Pelanggan &amp; Kendaraan</string>
+    <string name="workshop_vehicle_prefix">Kendaraan</string>
+    <string name="workshop_vehicle_not_selected">Kendaraan: Belum dipilih</string>
+    <string name="workshop_summary_prefix">Workshop</string>
+    <string name="hint_vehicle_name">Nama kendaraan</string>
+    <string name="hint_plate_number">Nomor plat</string>
     <string name="customer_fallback_name_format">Pelanggan #%1$d</string>
     <string name="workshop_default_vehicle">Mobil</string>
     <string name="workshop_default_plate">D012314</string>
@@ -891,7 +906,6 @@
     <string name="msg_barcode_hidden_workshop">Shortcut barcode disembunyikan untuk POS workshop.</string>
     <string name="msg_open_shift_first">Buka shift terlebih dahulu.</string>
     <string name="msg_workshop_main_screen">Workspace workshop sudah menjadi layar POS utama.</string>
-    <string name="msg_change_password_clicked">Ubah Password diklik</string>
     <string name="msg_privacy_policy_clicked">Kebijakan Privasi diklik</string>
     <string name="msg_internet_required_close_shift">Internet diperlukan untuk menutup shift.</string>
     <string name="msg_no_open_shift">Tidak ada shift yang terbuka.</string>
@@ -928,11 +942,11 @@
     <string name="label_minimum_stock">Stok Minimum</string>
     <string name="label_unit_required">Satuan *</string>
     <string name="label_quantity_required">Jumlah *</string>
-    <string name="hint_search_warehouse">Cari gudang...</string>
-    <string name="hint_search_warehouse_stock">Cari stok gudang...</string>
-    <string name="hint_search_stock_transfer">Cari transfer stok...</string>
-    <string name="hint_search_bank_ledger">Cari riwayat rekening...</string>
-    <string name="hint_search_product">Cari produk...</string>
+    <string name="hint_search_warehouse">Gudang...</string>
+    <string name="hint_search_warehouse_stock">Stok gudang...</string>
+    <string name="hint_search_stock_transfer">Transfer stok...</string>
+    <string name="hint_search_bank_ledger">Riwayat rekening...</string>
+    <string name="hint_search_product">Produk...</string>
     <string name="hint_select_warehouse_required">Pilih Gudang *</string>
     <string name="hint_select_product_required">Pilih Produk *</string>
     <string name="hint_select_unit">Pilih Unit</string>
@@ -1073,5 +1087,21 @@
     <string name="draft_b_preview">B - 12</string>
     <string name="draft_walkin_preview">Pelanggan langsung - 1</string>
     <string name="draft_add">+</string>
+    <string name="owner_chat_title">Owner Chat</string>
+    <string name="owner_chat_subtitle">Tanya tentang penjualan, stok, pengeluaran, pembayaran, dan laporan</string>
+    <string name="owner_chat_hint">Ketik pesan...</string>
+    <string name="owner_chat_send">Kirim</string>
+    <string name="owner_chat_welcome">Halo Owner, tanyakan tentang penjualan, stok, pengeluaran, pembayaran, dan laporan bisnis.</string>
+    <string name="owner_chat_no_permission">Anda tidak memiliki izin untuk mengakses Owner Chat.</string>
+    <string name="owner_chat_session_expired">Sesi berakhir. Silakan login ulang.</string>
+    <string name="owner_chat_shop_context_missing">Konteks toko tidak ditemukan. Silakan login ulang.</string>
+    <string name="owner_chat_empty_message">Ketik pertanyaan terlebih dahulu.</string>
+    <string name="owner_chat_network_timeout">Tidak ada koneksi internet atau server timeout.</string>
+    <string name="owner_chat_server_error">Server bermasalah. Coba lagi nanti.</string>
+    <string name="owner_chat_unable_contact">Tidak dapat menghubungi Owner Chat.</string>
+    <string name="owner_chat_response_unreadable">Maaf, respons tidak dapat dipahami.</string>
+    <string name="owner_chat_question_not_processed">Pertanyaan Anda tidak dapat diproses. Coba lagi.</string>
+    <string name="owner_chat_link_cannot_open">Link ini tidak dapat dibuka.</string>
+    <string name="label_vehicle_type">Jenis Kendaraan</string>
 
 </resources>
