@@ -13,3 +13,15 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Signing / secrets
+*.jks
+*.keystore
+keystore.properties
+signing.properties
+google-services.json
+
+# Build outputs
+/app/build
+/build
+.gradle
