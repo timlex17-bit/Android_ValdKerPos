@@ -80,6 +80,7 @@ import com.valdker.pos.ui.ProductsFragment;
 import com.valdker.pos.ui.checkout.BankAccountItem;
 import com.valdker.pos.ui.checkout.NativeCheckoutDialogFragment;
 import com.valdker.pos.ui.checkout.PaymentMethodItem;
+import com.valdker.pos.ui.offlineorders.PendingOrdersActivity;
 import com.valdker.pos.ui.retail.RetailCartItem;
 import com.valdker.pos.ui.retail.RetailPOSFragment;
 import com.valdker.pos.ui.retail.RetailProductItem;
@@ -2477,7 +2478,7 @@ public class MainActivity extends AppCompatActivity
         ((TextView) content.findViewById(R.id.tvUserName)).setText(cachedUsername);
         ((TextView) content.findViewById(R.id.tvUserRole)).setText(cachedRole);
 
-        View btnChangePassword = content.findViewById(R.id.btnChangePassword);
+        View btnOfflineOrders = content.findViewById(R.id.btnOfflineOrders);
         View btnPrivacy = content.findViewById(R.id.btnPrivacy);
         View btnCloseShift = content.findViewById(R.id.btnCloseShift);
         View btnLogout = content.findViewById(R.id.btnLogout);
@@ -2490,10 +2491,10 @@ public class MainActivity extends AppCompatActivity
             btnCloseShift.setAlpha(canCloseShift ? 1f : 0.45f);
         }
 
-        if (btnChangePassword != null) {
-            btnChangePassword.setOnClickListener(v -> {
+        if (btnOfflineOrders != null) {
+            btnOfflineOrders.setOnClickListener(v -> {
                 if (userPopup != null && userPopup.isShowing()) userPopup.dismiss();
-                openChangePasswordFromUserMenu();
+                openOfflineOrdersFromUserMenu();
             });
         }
 
@@ -2525,8 +2526,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void openChangePasswordFromUserMenu() {
-        Toast.makeText(this, getString(R.string.msg_change_password_clicked), Toast.LENGTH_SHORT).show();
+    public void openOfflineOrdersFromUserMenu() {
+        startActivity(new Intent(this, PendingOrdersActivity.class));
     }
 
     @Override

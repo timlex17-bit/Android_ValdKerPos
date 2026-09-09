@@ -27,12 +27,19 @@ public class DashboardItem {
     public static final int ID_STOCK_MOVEMENTS   = 14;
     public static final int ID_BANK_ACCOUNTS = 15;
     public static final int ID_PURCHASES = 16;
+    public static final int ID_PURCHASE_RETURNS = 17;
 
     public static final int ID_WAREHOUSES = 1001;
     public static final int ID_WAREHOUSE_STOCKS = 1002;
     public static final int ID_STOCK_TRANSFERS = 1003;
     public static final int ID_BANK_LEDGERS = 1004;
     public static final int ID_OFFLINE_ORDERS = 1005;
+    public static final int ID_VEHICLES = 1101;
+    public static final int ID_MECHANICS = 1102;
+    public static final int ID_WORK_ORDERS = 1103;
+    public static final int ID_SERVICE_HISTORY = 1104;
+    public static final int ID_SERVICE_PACKAGES = 1105;
+    public static final int ID_BOOKINGS = 1106;
 
     public final int id;
     @NonNull public final String title;

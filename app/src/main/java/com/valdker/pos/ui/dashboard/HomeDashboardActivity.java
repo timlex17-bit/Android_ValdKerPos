@@ -33,10 +33,10 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.Request;
-import com.bumptech.glide.Glide;
 import com.valdker.pos.BuildConfig;
 import com.valdker.pos.LoginActivity;
 import com.valdker.pos.MainActivity;
+import com.valdker.pos.ModuleRegistry;
 import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.ui.warehouses.WarehousesFragment;
@@ -57,7 +57,14 @@ import com.valdker.pos.ui.inventorycount.InventoryCountsFragment;
 import com.valdker.pos.ui.offlineorders.PendingOrdersActivity;
 import com.valdker.pos.ui.orders.OrdersFragment;
 import com.valdker.pos.ui.ownerchat.OwnerChatActivity;
+import com.valdker.pos.ui.purchasereturns.PurchaseReturnListActivity;
 import com.valdker.pos.ui.reports.ReportsFragment;
+import com.valdker.pos.ui.workshop.BookingsActivity;
+import com.valdker.pos.ui.workshop.MechanicsActivity;
+import com.valdker.pos.ui.workshop.ServiceHistoryActivity;
+import com.valdker.pos.ui.workshop.ServicePackagesActivity;
+import com.valdker.pos.ui.workshop.VehiclesActivity;
+import com.valdker.pos.ui.workshop.WorkOrdersActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 
@@ -281,6 +288,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
         tvBrand = findViewById(R.id.tvAppBrand);
         tvSubtitle = findViewById(R.id.tvSubtitle);
         imgLogo = findViewById(R.id.imgAppLogo);
+        if (imgLogo != null) imgLogo.setImageResource(R.drawable.ic_logovaldker);
 
         btnLogout = findViewById(R.id.btnLogout);
 
@@ -383,6 +391,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
             }
 
             if (id == R.id.nav_chat_ai) {
+                if (!ensureOwnerChatAccess()) return false;
                 startActivity(new Intent(HomeDashboardActivity.this, OwnerChatActivity.class));
                 return false;
             }
@@ -400,8 +409,9 @@ public class HomeDashboardActivity extends AppCompatActivity {
     private void configureBottomNavItems() {
         if (bottomNav == null) return;
 
-        bottomNav.getMenu().findItem(R.id.nav_reports).setVisible(canAccessMenuStrict("reports"));
-        bottomNav.getMenu().findItem(R.id.nav_settings).setVisible(canAccessMenuStrict("settings"));
+        bottomNav.getMenu().findItem(R.id.nav_reports).setVisible(canAccessMenuStrict(ModuleRegistry.REPORTS));
+        bottomNav.getMenu().findItem(R.id.nav_chat_ai).setVisible(canAccessOwnerChat());
+        bottomNav.getMenu().findItem(R.id.nav_settings).setVisible(canAccessMenuStrict(ModuleRegistry.SETTINGS));
     }
 
     private void loadCachedAuthPermissionsAndRefreshMenus() {
@@ -500,13 +510,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
                 }
 
                 if (imgLogo != null) {
-                    if (shop.logoUrl != null && !shop.logoUrl.trim().isEmpty()) {
-                        Glide.with(HomeDashboardActivity.this)
-                                .load(shop.logoUrl.trim())
-                                .into(imgLogo);
-                    } else {
-                        imgLogo.setImageResource(R.drawable.ic_store);
-                    }
+                    imgLogo.setImageResource(R.drawable.ic_logovaldker);
                 }
             }
 
@@ -825,6 +829,10 @@ public class HomeDashboardActivity extends AppCompatActivity {
                 openFragmentSafe(new com.valdker.pos.ui.purchases.PurchasesFragment(), BS_PURCHASES);
                 break;
 
+            case DashboardItem.ID_PURCHASE_RETURNS:
+                startActivity(new Intent(this, PurchaseReturnListActivity.class));
+                break;
+
             case DashboardItem.ID_CATEGORIES:
                 openFragmentSafe(new com.valdker.pos.ui.categories.CategoriesFragment(), BS_CATEGORIES);
                 break;
@@ -892,6 +900,30 @@ public class HomeDashboardActivity extends AppCompatActivity {
             case DashboardItem.ID_OFFLINE_ORDERS:
                 startActivity(new Intent(this, PendingOrdersActivity.class));
                 break;
+
+            case DashboardItem.ID_VEHICLES:
+                startActivity(new Intent(this, VehiclesActivity.class));
+                break;
+
+            case DashboardItem.ID_MECHANICS:
+                startActivity(new Intent(this, MechanicsActivity.class));
+                break;
+
+            case DashboardItem.ID_WORK_ORDERS:
+                startActivity(new Intent(this, WorkOrdersActivity.class));
+                break;
+
+            case DashboardItem.ID_SERVICE_HISTORY:
+                startActivity(new Intent(this, ServiceHistoryActivity.class));
+                break;
+
+            case DashboardItem.ID_SERVICE_PACKAGES:
+                startActivity(new Intent(this, ServicePackagesActivity.class));
+                break;
+
+            case DashboardItem.ID_BOOKINGS:
+                startActivity(new Intent(this, BookingsActivity.class));
+                break;
         }
     }
 
@@ -901,58 +933,79 @@ public class HomeDashboardActivity extends AppCompatActivity {
         return false;
     }
 
+    private boolean ensureOwnerChatAccess() {
+        if (canAccessOwnerChat()) return true;
+        Toast.makeText(this, getString(R.string.owner_chat_no_permission), Toast.LENGTH_SHORT).show();
+        return false;
+    }
+
+    private boolean canAccessOwnerChat() {
+        return session.isOwner() || session.canAccessMenu("owner_chat");
+    }
+
     private boolean canAccessMenuStrict(@NonNull String menuKey) {
-        if (session.hasMenuPermissions()) {
-            return session.canAccessMenu(menuKey);
-        }
-        return "pos".equals(menuKey);
+        return session.canShowDashboardMenu(menuKey);
     }
 
     @Nullable
     private String menuKeyForItem(int itemId) {
         switch (itemId) {
             case DashboardItem.ID_POS:
-                return "pos";
+                return ModuleRegistry.POS;
             case DashboardItem.ID_ORDERS:
-                return "orders";
+                return ModuleRegistry.ORDERS;
             case DashboardItem.ID_CUSTOMERS:
-                return "customers";
+                return ModuleRegistry.CUSTOMERS;
             case DashboardItem.ID_REPORTS:
-                return "reports";
+                return ModuleRegistry.REPORTS;
             case DashboardItem.ID_STOCK_MOVEMENTS:
-                return "stock_movements";
+                return ModuleRegistry.STOCK_MOVEMENTS;
             case DashboardItem.ID_INVENTORY_COUNTS:
-                return "inventory_counts";
+                return ModuleRegistry.INVENTORY_COUNTS;
             case DashboardItem.ID_SETTINGS:
-                return "settings";
+                return ModuleRegistry.SETTINGS;
             case DashboardItem.ID_BANK_ACCOUNTS:
-                return "bank_accounts";
+                return ModuleRegistry.BANK_ACCOUNTS;
             case DashboardItem.ID_EXPENSE:
-                return "expenses";
+                return ModuleRegistry.EXPENSES;
             case DashboardItem.ID_SUPPLIERS:
-                return "suppliers";
+                return ModuleRegistry.SUPPLIERS;
             case DashboardItem.ID_PURCHASES:
-                return "purchases";
+                return ModuleRegistry.PURCHASES;
+            case DashboardItem.ID_PURCHASE_RETURNS:
+                return ModuleRegistry.PURCHASE_RETURNS;
             case DashboardItem.ID_PRODUCTS:
-                return "products";
+                return ModuleRegistry.PRODUCTS;
             case DashboardItem.ID_CATEGORIES:
-                return "categories";
+                return ModuleRegistry.CATEGORIES;
             case DashboardItem.ID_UNITS:
-                return "units";
+                return ModuleRegistry.UNITS;
             case DashboardItem.ID_PRODUCT_RETURNS:
-                return "product_returns";
+                return ModuleRegistry.PRODUCT_RETURNS;
             case DashboardItem.ID_STOCK_ADJUSTMENTS:
-                return "stock_adjustments";
+                return ModuleRegistry.STOCK_ADJUSTMENTS;
             case DashboardItem.ID_WAREHOUSES:
-                return "warehouses";
+                return ModuleRegistry.WAREHOUSES;
             case DashboardItem.ID_WAREHOUSE_STOCKS:
-                return "warehouse_stocks";
+                return ModuleRegistry.WAREHOUSE_STOCKS;
             case DashboardItem.ID_STOCK_TRANSFERS:
-                return "stock_transfers";
+                return ModuleRegistry.STOCK_TRANSFERS;
             case DashboardItem.ID_BANK_LEDGERS:
-                return "bank_ledgers";
+                return ModuleRegistry.BANK_LEDGERS;
             case DashboardItem.ID_OFFLINE_ORDERS:
-                return "orders";
+                return ModuleRegistry.OFFLINE_ORDERS;
+            case DashboardItem.ID_VEHICLES:
+                return ModuleRegistry.VEHICLES;
+            case DashboardItem.ID_MECHANICS:
+                return ModuleRegistry.MECHANICS;
+            case DashboardItem.ID_WORK_ORDERS:
+                return ModuleRegistry.WORK_ORDERS;
+            case DashboardItem.ID_SERVICE_HISTORY:
+                return ModuleRegistry.SERVICE_HISTORY;
+            case DashboardItem.ID_SERVICE_PACKAGES:
+                return ModuleRegistry.SERVICE_PACKAGES;
+            case DashboardItem.ID_BOOKINGS:
+                return ModuleRegistry.BOOKINGS;
             default:
                 return null;
         }
@@ -1146,27 +1199,34 @@ public class HomeDashboardActivity extends AppCompatActivity {
 
     private List<DashboardItem> buildMenu() {
         List<DashboardItem> out = new ArrayList<>();
-        addMenuIfAllowed(out, "pos", new DashboardItem(DashboardItem.ID_POS, getString(R.string.menu_pos), getString(R.string.menu_pos_desc), R.drawable.ic_pos));
-        addMenuIfAllowed(out, "orders", new DashboardItem(DashboardItem.ID_ORDERS, getString(R.string.menu_orders), getString(R.string.menu_orders_desc), R.drawable.ic_receipt));
-        addMenuIfAllowed(out, "customers", new DashboardItem(DashboardItem.ID_CUSTOMERS, getString(R.string.menu_customers), getString(R.string.menu_customers_desc), R.drawable.ic_people));
-        addMenuIfAllowed(out, "reports", new DashboardItem(DashboardItem.ID_REPORTS, getString(R.string.menu_reports), getString(R.string.menu_reports_desc), R.drawable.ic_report));
-        addMenuIfAllowed(out, "stock_movements", new DashboardItem(DashboardItem.ID_STOCK_MOVEMENTS, getString(R.string.menu_stock_movements), getString(R.string.menu_stock_movements_desc), R.drawable.ic_stockmovement));
-        addMenuIfAllowed(out, "inventory_counts", new DashboardItem(DashboardItem.ID_INVENTORY_COUNTS, getString(R.string.menu_inventory_counts), getString(R.string.menu_inventory_counts_desc), R.drawable.ic_report));
-        addMenuIfAllowed(out, "settings", new DashboardItem(DashboardItem.ID_SETTINGS, getString(R.string.menu_settings), getString(R.string.menu_settings_desc), R.drawable.ic_settings));
-        addMenuIfAllowed(out, "bank_accounts", new DashboardItem(DashboardItem.ID_BANK_ACCOUNTS, getString(R.string.menu_bank_accounts), getString(R.string.menu_bank_accounts_desc), R.drawable.ic_bank));
-        addMenuIfAllowed(out, "expenses", new DashboardItem(DashboardItem.ID_EXPENSE, getString(R.string.menu_expenses), getString(R.string.menu_expenses_desc), R.drawable.ic_expense));
-        addMenuIfAllowed(out, "suppliers", new DashboardItem(DashboardItem.ID_SUPPLIERS, getString(R.string.menu_suppliers), getString(R.string.menu_suppliers_desc), R.drawable.ic_store));
-        addMenuIfAllowed(out, "purchases", new DashboardItem(DashboardItem.ID_PURCHASES, getString(R.string.menu_purchases), getString(R.string.menu_purchases_desc), R.drawable.ic_purchase));
-        addMenuIfAllowed(out, "products", new DashboardItem(DashboardItem.ID_PRODUCTS, getString(R.string.menu_products), getString(R.string.menu_products_desc), R.drawable.ic_box));
-        addMenuIfAllowed(out, "categories", new DashboardItem(DashboardItem.ID_CATEGORIES, getString(R.string.menu_categories), getString(R.string.menu_categories_desc), R.drawable.ic_categories));
-        addMenuIfAllowed(out, "units", new DashboardItem(DashboardItem.ID_UNITS, getString(R.string.menu_units), getString(R.string.menu_units_desc), R.drawable.ic_units));
-        addMenuIfAllowed(out, "product_returns", new DashboardItem(DashboardItem.ID_PRODUCT_RETURNS, getString(R.string.menu_product_returns), getString(R.string.menu_product_returns_desc), R.drawable.ic_return));
-        addMenuIfAllowed(out, "stock_adjustments", new DashboardItem(DashboardItem.ID_STOCK_ADJUSTMENTS, getString(R.string.menu_stock_adjustments), getString(R.string.menu_stock_adjustments_desc), R.drawable.ic_report));
-        addMenuIfAllowed(out, "warehouses", new DashboardItem(DashboardItem.ID_WAREHOUSES, getString(R.string.menu_warehouses), getString(R.string.menu_warehouses_desc), R.drawable.ic_store));
-        addMenuIfAllowed(out, "warehouse_stocks", new DashboardItem(DashboardItem.ID_WAREHOUSE_STOCKS, getString(R.string.menu_warehouse_stocks), getString(R.string.menu_warehouse_stocks_desc), R.drawable.ic_box));
-        addMenuIfAllowed(out, "stock_transfers", new DashboardItem(DashboardItem.ID_STOCK_TRANSFERS, getString(R.string.menu_stock_transfers), getString(R.string.menu_stock_transfers_desc), R.drawable.ic_stockmovement));
-        addMenuIfAllowed(out, "bank_ledgers", new DashboardItem(DashboardItem.ID_BANK_LEDGERS, getString(R.string.menu_bank_ledgers), getString(R.string.menu_bank_ledgers_desc), R.drawable.ic_bank));
-        addMenuIfAllowed(out, "orders", new DashboardItem(DashboardItem.ID_OFFLINE_ORDERS, getString(R.string.menu_offline_orders), getString(R.string.menu_offline_orders_desc), R.drawable.ic_receipt));
+        addMenuIfAllowed(out, ModuleRegistry.POS, new DashboardItem(DashboardItem.ID_POS, getString(R.string.menu_pos), getString(R.string.menu_pos_desc), R.drawable.ic_pos));
+        addMenuIfAllowed(out, ModuleRegistry.ORDERS, new DashboardItem(DashboardItem.ID_ORDERS, getString(R.string.menu_orders), getString(R.string.menu_orders_desc), R.drawable.ic_receipt));
+        addMenuIfAllowed(out, ModuleRegistry.CUSTOMERS, new DashboardItem(DashboardItem.ID_CUSTOMERS, getString(R.string.menu_customers), getString(R.string.menu_customers_desc), R.drawable.ic_people));
+        addMenuIfAllowed(out, ModuleRegistry.PRODUCTS, new DashboardItem(DashboardItem.ID_PRODUCTS, getString(R.string.menu_products), getString(R.string.menu_products_desc), R.drawable.ic_box));
+        addMenuIfAllowed(out, ModuleRegistry.CATEGORIES, new DashboardItem(DashboardItem.ID_CATEGORIES, getString(R.string.menu_categories), getString(R.string.menu_categories_desc), R.drawable.ic_categories));
+        addMenuIfAllowed(out, ModuleRegistry.UNITS, new DashboardItem(DashboardItem.ID_UNITS, getString(R.string.menu_units), getString(R.string.menu_units_desc), R.drawable.ic_units));
+        addMenuIfAllowed(out, ModuleRegistry.SUPPLIERS, new DashboardItem(DashboardItem.ID_SUPPLIERS, getString(R.string.menu_suppliers), getString(R.string.menu_suppliers_desc), R.drawable.ic_store));
+        addMenuIfAllowed(out, ModuleRegistry.PURCHASES, new DashboardItem(DashboardItem.ID_PURCHASES, getString(R.string.menu_purchases), getString(R.string.menu_purchases_desc), R.drawable.ic_purchase));
+        addMenuIfAllowed(out, ModuleRegistry.EXPENSES, new DashboardItem(DashboardItem.ID_EXPENSE, getString(R.string.menu_expenses), getString(R.string.menu_expenses_desc), R.drawable.ic_expense));
+        addMenuIfAllowed(out, ModuleRegistry.REPORTS, new DashboardItem(DashboardItem.ID_REPORTS, getString(R.string.menu_reports), getString(R.string.menu_reports_desc), R.drawable.ic_report));
+        addMenuIfAllowed(out, ModuleRegistry.SETTINGS, new DashboardItem(DashboardItem.ID_SETTINGS, getString(R.string.menu_settings), getString(R.string.menu_settings_desc), R.drawable.ic_settings));
+        addMenuIfAllowed(out, ModuleRegistry.OFFLINE_ORDERS, new DashboardItem(DashboardItem.ID_OFFLINE_ORDERS, getString(R.string.menu_offline_orders), getString(R.string.menu_offline_orders_desc), R.drawable.ic_receipt));
+        addMenuIfAllowed(out, ModuleRegistry.INVENTORY_COUNTS, new DashboardItem(DashboardItem.ID_INVENTORY_COUNTS, getString(R.string.menu_inventory_counts), getString(R.string.menu_inventory_counts_desc), R.drawable.ic_report));
+        addMenuIfAllowed(out, ModuleRegistry.STOCK_ADJUSTMENTS, new DashboardItem(DashboardItem.ID_STOCK_ADJUSTMENTS, getString(R.string.menu_stock_adjustments), getString(R.string.menu_stock_adjustments_desc), R.drawable.ic_report));
+        addMenuIfAllowed(out, ModuleRegistry.PRODUCT_RETURNS, new DashboardItem(DashboardItem.ID_PRODUCT_RETURNS, getString(R.string.menu_product_returns), getString(R.string.menu_product_returns_desc), R.drawable.ic_return));
+        addMenuIfAllowed(out, ModuleRegistry.PURCHASE_RETURNS, new DashboardItem(DashboardItem.ID_PURCHASE_RETURNS, getString(R.string.menu_purchase_returns), getString(R.string.menu_purchase_returns_desc), R.drawable.ic_return));
+        addMenuIfAllowed(out, ModuleRegistry.BANK_ACCOUNTS, new DashboardItem(DashboardItem.ID_BANK_ACCOUNTS, getString(R.string.menu_bank_accounts), getString(R.string.menu_bank_accounts_desc), R.drawable.ic_bank));
+        addMenuIfAllowed(out, ModuleRegistry.BANK_LEDGERS, new DashboardItem(DashboardItem.ID_BANK_LEDGERS, getString(R.string.menu_bank_ledgers), getString(R.string.menu_bank_ledgers_desc), R.drawable.ic_bank));
+        addMenuIfAllowed(out, ModuleRegistry.WAREHOUSES, new DashboardItem(DashboardItem.ID_WAREHOUSES, getString(R.string.menu_warehouses), getString(R.string.menu_warehouses_desc), R.drawable.ic_store));
+        addMenuIfAllowed(out, ModuleRegistry.WAREHOUSE_STOCKS, new DashboardItem(DashboardItem.ID_WAREHOUSE_STOCKS, getString(R.string.menu_warehouse_stocks), getString(R.string.menu_warehouse_stocks_desc), R.drawable.ic_box));
+        addMenuIfAllowed(out, ModuleRegistry.STOCK_TRANSFERS, new DashboardItem(DashboardItem.ID_STOCK_TRANSFERS, getString(R.string.menu_stock_transfers), getString(R.string.menu_stock_transfers_desc), R.drawable.ic_stockmovement));
+        addMenuIfAllowed(out, ModuleRegistry.STOCK_MOVEMENTS, new DashboardItem(DashboardItem.ID_STOCK_MOVEMENTS, getString(R.string.menu_stock_movements), getString(R.string.menu_stock_movements_desc), R.drawable.ic_stockmovement));
+        addMenuIfAllowed(out, ModuleRegistry.VEHICLES, new DashboardItem(DashboardItem.ID_VEHICLES, getString(R.string.menu_vehicles), getString(R.string.menu_vehicles_desc), R.drawable.ic_car));
+        addMenuIfAllowed(out, ModuleRegistry.MECHANICS, new DashboardItem(DashboardItem.ID_MECHANICS, getString(R.string.menu_mechanics), getString(R.string.menu_mechanics_desc), R.drawable.ic_people));
+        addMenuIfAllowed(out, ModuleRegistry.WORK_ORDERS, new DashboardItem(DashboardItem.ID_WORK_ORDERS, getString(R.string.menu_work_orders), getString(R.string.menu_work_orders_desc), R.drawable.ic_service));
+        addMenuIfAllowed(out, ModuleRegistry.SERVICE_HISTORY, new DashboardItem(DashboardItem.ID_SERVICE_HISTORY, getString(R.string.menu_service_history), getString(R.string.menu_service_history_desc), R.drawable.ic_receipt));
+        addMenuIfAllowed(out, ModuleRegistry.SERVICE_PACKAGES, new DashboardItem(DashboardItem.ID_SERVICE_PACKAGES, getString(R.string.menu_service_packages), getString(R.string.menu_service_packages_desc), R.drawable.ic_service));
+        addMenuIfAllowed(out, ModuleRegistry.BOOKINGS, new DashboardItem(DashboardItem.ID_BOOKINGS, getString(R.string.menu_bookings), getString(R.string.menu_bookings_desc), R.drawable.ic_calendar));
         return out;
     }
 

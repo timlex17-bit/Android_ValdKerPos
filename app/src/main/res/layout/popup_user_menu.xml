@@ -42,13 +42,13 @@
     </LinearLayout>
 
     <TextView
-        android:id="@+id/btnChangePassword"
+        android:id="@+id/btnOfflineOrders"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:gravity="center_vertical"
         android:paddingLeft="14dp"
         android:paddingRight="14dp"
-        android:text="🔑   Change Password"
+        android:text="@string/menu_offline_orders"
         android:textStyle="bold"
         android:textColor="#111827"
         android:background="?android:attr/selectableItemBackground" />
