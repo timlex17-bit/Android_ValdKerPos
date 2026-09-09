@@ -1,14 +1,19 @@
 package com.valdker.pos.ui.ownerchat;
 
 import android.content.Context;
+import android.text.TextUtils;
+import android.util.Log;
 
+import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.network.ApiConfig;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.MediaType;
@@ -24,34 +29,44 @@ public class OwnerChatRepository {
         void onError(String error);
     }
 
+    private static final String TAG = "OWNER_CHAT";
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final String ENDPOINT = "api/owner/chat/";
 
-    private final OkHttpClient client = new OkHttpClient();
+    private final OkHttpClient client = new OkHttpClient.Builder()
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(15, TimeUnit.SECONDS)
+            .build();
     private final SessionManager session;
     private final Context ctx;
 
     public OwnerChatRepository(Context ctx, SessionManager session) {
-        this.ctx = ctx;
+        this.ctx = ctx.getApplicationContext();
         this.session = session;
     }
 
-    public void sendChat(String message, ChatCallback cb) {
+    public void sendChat(String message, String conversationId, ChatCallback cb) {
         try {
             JSONObject obj = new JSONObject();
             obj.put("message", message);
+            if (!TextUtils.isEmpty(conversationId)) {
+                obj.put("conversation_id", conversationId.trim());
+            }
 
             String token = session.getToken();
-            if (token == null || token.trim().isEmpty()) {
-                cb.onError("Token kosong. Silakan login ulang.");
+            if (TextUtils.isEmpty(token)) {
+                cb.onError(ctx.getString(R.string.owner_chat_session_expired));
+                return;
+            }
+
+            String shopCode = session.getShopCode();
+            if (TextUtils.isEmpty(shopCode)) {
+                cb.onError(ctx.getString(R.string.owner_chat_shop_context_missing));
                 return;
             }
 
             String auth = token.startsWith("Token ") ? token : ("Token " + token);
-
-            String shopCode = session.getShopCode(); // ✅ pastikan sudah ada di SessionManager
-            if (shopCode == null) shopCode = "";
-
             RequestBody body = RequestBody.create(obj.toString(), JSON);
 
             Request req = new Request.Builder()
@@ -66,7 +81,12 @@ public class OwnerChatRepository {
             client.newCall(req).enqueue(new okhttp3.Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    cb.onError(e.getMessage() != null ? e.getMessage() : "Network error");
+                    Log.e(TAG, "Owner chat network failed", e);
+                    if (e instanceof SocketTimeoutException || e instanceof UnknownHostException) {
+                        cb.onError(ctx.getString(R.string.owner_chat_network_timeout));
+                    } else {
+                        cb.onError(ctx.getString(R.string.owner_chat_unable_contact));
+                    }
                 }
 
                 @Override
@@ -74,38 +94,41 @@ public class OwnerChatRepository {
                     String raw = response.body() != null ? response.body().string() : "";
 
                     if (!response.isSuccessful()) {
-                        cb.onError("HTTP " + response.code() + " " + raw);
+                        Log.w(TAG, "Owner chat failed status=" + response.code() + " body=" + raw);
+                        cb.onError(mapHttpError(response.code()));
                         return;
                     }
 
                     try {
-                        JSONObject js = new JSONObject(raw);
-
-                        OwnerChatResponse res = new OwnerChatResponse();
-                        res.replyText = js.optString("reply_text", "");
-
-                        JSONArray links = js.optJSONArray("links");
-                        if (links != null) {
-                            for (int i = 0; i < links.length(); i++) {
-                                JSONObject l = links.optJSONObject(i);
-                                if (l == null) continue;
-                                OwnerChatResponse.Link link = new OwnerChatResponse.Link();
-                                link.title = l.optString("title", "");
-                                link.url = l.optString("url", "");
-                                res.links.add(link);
-                            }
-                        }
-
-                        cb.onSuccess(res);
-
+                        cb.onSuccess(OwnerChatResponse.fromJson(new JSONObject(raw)));
                     } catch (Exception ex) {
-                        cb.onError("Parse error: " + ex.getMessage());
+                        Log.e(TAG, "Owner chat parse failed body=" + raw, ex);
+                        cb.onError(ctx.getString(R.string.owner_chat_unable_contact));
                     }
                 }
             });
 
         } catch (Exception e) {
-            cb.onError(e.getMessage());
+            Log.e(TAG, "Owner chat request failed", e);
+            cb.onError(ctx.getString(R.string.owner_chat_unable_contact));
+        }
+    }
+
+    private String mapHttpError(int statusCode) {
+        switch (statusCode) {
+            case 400:
+                return ctx.getString(R.string.owner_chat_question_not_processed);
+            case 401:
+                return ctx.getString(R.string.owner_chat_session_expired);
+            case 403:
+                return ctx.getString(R.string.owner_chat_no_permission);
+            case 500:
+            case 502:
+            case 503:
+            case 504:
+                return ctx.getString(R.string.owner_chat_server_error);
+            default:
+                return ctx.getString(R.string.owner_chat_unable_contact);
         }
     }
 }

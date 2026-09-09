@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,13 +32,20 @@ public class OwnerChatActivity extends AppCompatActivity {
 
     private OwnerChatRepository repo;
     private SessionManager session;
+    @Nullable
+    private String conversationId;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_owner_chat);
 
         session = new SessionManager(this);
+        if (!validateAccess()) {
+            finish();
+            return;
+        }
+
+        setContentView(R.layout.activity_owner_chat);
         repo = new OwnerChatRepository(this, session);
 
         rv = findViewById(R.id.rvChat);
@@ -53,32 +61,7 @@ public class OwnerChatActivity extends AppCompatActivity {
         rv.setAdapter(adapter);
 
         btnBack.setOnClickListener(v -> finish());
-
-        // mensajen (opsional)
-        addBotMessage(
-                "Ola Rivaldo 👋\n"
-                        + "Hau asistente Alexan hau prontu atu ajuda ita hodi analiza dadus loja no esplika oinsá uza karakterístika ValdKerPOS.\n\n"
-
-                        + "Hau mos bele ezekuta kualker servisu exemplo halo diskontu,aumenta produtu, halakon produtu no seluk tan.\n\n"
-                        + "Ita bele husu hanesan:\n"
-                        + "• reseita ohin\n"
-                        + "• vendas fulan ida ne'e\n"
-                        + "• despeza fulan ida ne'e\n"
-                        + "• lukru ohin nian\n"
-                        + "• total tranzasaun ohin\n"
-                        + "• produtu ne'ebé fa'an barak liu fulan ida ne'e\n"
-                        + "• stok komesa tun\n"
-                        + "• produtu nebe hotu ona\n"
-                        + "• stok produtu hotu-hotu\n"
-                        + "• movimentu stok ohin\n"
-                        + "• rekomendasaun promosaun fulan ida ne'e\n"
-                        + "• tanba sa lukru tun fulan ida ne'e\n"
-                        + "• oinsá aumenta produtu\n"
-                        + "• oinsá halo retornu sasán\n"
-                        + "• oinsá halo stok opname\n"
-                        + "• oinsá halo kompra\n"
-                        + "• oinsá imprime resibu"
-        );
+        addBotMessage(getString(R.string.owner_chat_welcome));
 
         btnSend.setOnClickListener(v -> sendMessage());
         etMessage.setOnEditorActionListener((v, actionId, event) -> {
@@ -87,24 +70,54 @@ public class OwnerChatActivity extends AppCompatActivity {
         });
     }
 
+    private boolean validateAccess() {
+        if (TextUtils.isEmpty(session.getToken())) {
+            Toast.makeText(this, getString(R.string.owner_chat_session_expired), Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        if (TextUtils.isEmpty(session.getShopCode())) {
+            Toast.makeText(this, getString(R.string.owner_chat_shop_context_missing), Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        if (!canAccessOwnerChat()) {
+            Toast.makeText(this, getString(R.string.owner_chat_no_permission), Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean canAccessOwnerChat() {
+        return session.isOwner() || session.canAccessMenu("owner_chat");
+    }
+
     private void sendMessage() {
         String msg = etMessage.getText().toString().trim();
-        if (TextUtils.isEmpty(msg)) return;
+        if (TextUtils.isEmpty(msg)) {
+            Toast.makeText(this, getString(R.string.owner_chat_empty_message), Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         etMessage.setText("");
 
         addUserMessage(msg);
         setLoading(true);
 
-        repo.sendChat(msg, new OwnerChatRepository.ChatCallback() {
+        repo.sendChat(msg, conversationId, new OwnerChatRepository.ChatCallback() {
             @Override
             public void onSuccess(OwnerChatResponse res) {
                 runOnUiThread(() -> {
                     setLoading(false);
+                    if (res != null && !TextUtils.isEmpty(res.conversationId)) {
+                        conversationId = res.conversationId;
+                    }
+
                     if (res != null && !TextUtils.isEmpty(res.replyText)) {
-                        addBotMessage(res.replyText);
+                        addBotMessage(res.replyText, res.links);
                     } else {
-                        addBotMessage("Laiha resposta husi servidór.");
+                        addBotMessage(getString(R.string.owner_chat_response_unreadable));
                     }
                 });
             }
@@ -113,7 +126,9 @@ public class OwnerChatActivity extends AppCompatActivity {
             public void onError(String error) {
                 runOnUiThread(() -> {
                     setLoading(false);
-                    addBotMessage("❌ Erru: " + error);
+                    addBotMessage(TextUtils.isEmpty(error)
+                            ? getString(R.string.owner_chat_unable_contact)
+                            : error);
                 });
             }
         });
@@ -131,7 +146,11 @@ public class OwnerChatActivity extends AppCompatActivity {
     }
 
     private void addBotMessage(String text) {
-        data.add(OwnerChatMessage.bot(text));
+        addBotMessage(text, null);
+    }
+
+    private void addBotMessage(String text, @Nullable List<OwnerChatResponse.Link> links) {
+        data.add(OwnerChatMessage.bot(text, links));
         adapter.notifyItemInserted(data.size() - 1);
         rv.scrollToPosition(data.size() - 1);
     }

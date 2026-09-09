@@ -1,9 +1,14 @@
 package com.valdker.pos.ui.ownerchat;
 
+import android.content.Intent;
+import android.net.Uri;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -44,7 +49,7 @@ public class OwnerChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         if (holder instanceof UserVH) {
             ((UserVH) holder).tv.setText(msg.text);
         } else if (holder instanceof BotVH) {
-            ((BotVH) holder).tv.setText(msg.text);
+            ((BotVH) holder).bind(msg);
         }
     }
 
@@ -63,9 +68,64 @@ public class OwnerChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     static class BotVH extends RecyclerView.ViewHolder {
         TextView tv;
+        LinearLayout linksContainer;
+
         BotVH(@NonNull View itemView) {
             super(itemView);
             tv = itemView.findViewById(R.id.tvText);
+            linksContainer = itemView.findViewById(R.id.linksContainer);
+        }
+
+        void bind(@NonNull OwnerChatMessage msg) {
+            tv.setText(msg.text);
+            if (linksContainer == null) return;
+
+            linksContainer.removeAllViews();
+            linksContainer.setVisibility(msg.links.isEmpty() ? View.GONE : View.VISIBLE);
+            for (OwnerChatResponse.Link link : msg.links) {
+                if (link == null || TextUtils.isEmpty(link.title) || TextUtils.isEmpty(link.url)) {
+                    continue;
+                }
+                TextView row = new TextView(itemView.getContext());
+                row.setText(link.title);
+                row.setTextColor(0xFF2563EB);
+                row.setTextSize(13f);
+                row.setPadding(12, 8, 12, 8);
+                row.setSingleLine(false);
+                row.setOnClickListener(v -> openSafeUrl(link.url));
+                linksContainer.addView(row);
+            }
+        }
+
+        private void openSafeUrl(@NonNull String rawUrl) {
+            Uri uri;
+            try {
+                uri = Uri.parse(rawUrl.trim());
+            } catch (Exception e) {
+                showUnsupportedLink();
+                return;
+            }
+
+            String scheme = uri.getScheme();
+            if (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme)) {
+                showUnsupportedLink();
+                return;
+            }
+
+            try {
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                itemView.getContext().startActivity(intent);
+            } catch (Exception e) {
+                showUnsupportedLink();
+            }
+        }
+
+        private void showUnsupportedLink() {
+            Toast.makeText(
+                    itemView.getContext(),
+                    itemView.getContext().getString(R.string.owner_chat_link_cannot_open),
+                    Toast.LENGTH_SHORT
+            ).show();
         }
     }
 }
