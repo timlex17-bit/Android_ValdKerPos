@@ -14,7 +14,8 @@ public final class PosDraftMapper {
     public static CartItem toCartItem(@Nullable PosDraftItemEntity item) {
         if (item == null || item.quantity <= 0) return null;
 
-        int productId = parseInt(item.productId);
+        int servicePackageId = parsePackageId(item.productId);
+        int productId = servicePackageId > 0 ? servicePackageId : parseInt(item.productId);
         if (productId <= 0) return null;
 
         CartItem cartItem = new CartItem(
@@ -27,6 +28,13 @@ public final class PosDraftMapper {
                 "",
                 item.itemType
         );
+        if (servicePackageId > 0
+                || "service_package".equalsIgnoreCase(item.itemType)
+                || "servicepackage".equalsIgnoreCase(item.itemType)
+                || "package".equalsIgnoreCase(item.itemType)) {
+            cartItem.servicePackageId = servicePackageId > 0 ? servicePackageId : productId;
+            cartItem.itemType = CartItem.ITEM_TYPE_SERVICE;
+        }
         cartItem.refreshCartKey();
         return cartItem;
     }
@@ -45,6 +53,10 @@ public final class PosDraftMapper {
         entity.price = item.price;
         entity.subtotal = item.price * entity.quantity;
         entity.itemType = CartItem.normalizeItemType(item.itemType);
+        if (item.servicePackageId > 0) {
+            entity.itemType = CartItem.ITEM_TYPE_SERVICE;
+            entity.productId = "package:" + item.servicePackageId;
+        }
         entity.shopId = item.shopId;
         entity.imageUrl = item.imageUrl;
         entity.createdAt = timestamp;
@@ -58,6 +70,12 @@ public final class PosDraftMapper {
         } catch (Exception ignored) {
             return 0;
         }
+    }
+
+    private static int parsePackageId(@Nullable String value) {
+        String clean = safe(value);
+        if (!clean.toLowerCase(java.util.Locale.US).startsWith("package:")) return 0;
+        return parseInt(clean.substring("package:".length()));
     }
 
     @NonNull

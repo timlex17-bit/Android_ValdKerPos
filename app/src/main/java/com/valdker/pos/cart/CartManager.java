@@ -123,7 +123,7 @@ public class CartManager {
     }
 
     public synchronized void setQty(int productId, @NonNull String itemType, int qty) {
-        CartItem item = map.get(CartItem.buildCartKey(productId, itemType));
+        CartItem item = findCartItem(productId, itemType);
         if (item == null) return;
 
         if (qty <= 0) {
@@ -140,8 +140,22 @@ public class CartManager {
         setOrderType(productId, CartItem.ITEM_TYPE_PRODUCT, orderType);
     }
 
+    public synchronized void setQtyByCartKey(@NonNull String cartKey, int qty) {
+        CartItem item = map.get(cartKey);
+        if (item == null) return;
+
+        if (qty <= 0) {
+            map.remove(item.cartKey);
+        } else {
+            item.qty = qty;
+        }
+
+        saveToPrefs();
+        notifyChangedDebounced();
+    }
+
     public synchronized void setOrderType(int productId, @NonNull String itemType, @NonNull String orderType) {
-        CartItem item = map.get(CartItem.buildCartKey(productId, itemType));
+        CartItem item = findCartItem(productId, itemType);
         if (item == null) return;
 
         item.orderType = normalizeTypeOrEmpty(orderType);
@@ -192,7 +206,10 @@ public class CartManager {
     }
 
     public synchronized void remove(int productId, @NonNull String itemType) {
-        map.remove(CartItem.buildCartKey(productId, itemType));
+        CartItem item = findCartItem(productId, itemType);
+        if (item != null) {
+            map.remove(item.cartKey);
+        }
         saveToPrefs();
         notifyChangedDebounced();
     }
@@ -200,6 +217,12 @@ public class CartManager {
     public synchronized void clear() {
         map.clear();
         sp.edit().remove(KEY_CART_JSON).apply();
+        notifyChangedDebounced();
+    }
+
+    public synchronized void removeByCartKey(@NonNull String cartKey) {
+        map.remove(cartKey);
+        saveToPrefs();
         notifyChangedDebounced();
     }
 
@@ -297,6 +320,7 @@ public class CartManager {
             for (CartItem i : map.values()) {
                 JSONObject o = new JSONObject();
                 o.put("productId", i.productId);
+                o.put("servicePackageId", i.servicePackageId);
                 o.put("cartKey", safe(i.cartKey));
                 o.put("shopId", i.shopId);
                 o.put("name", safe(i.name));
@@ -314,7 +338,7 @@ public class CartManager {
     }
 
     public synchronized void add(@NonNull CartItem item) {
-        if (item.productId <= 0) {
+        if (item.productId <= 0 && item.servicePackageId <= 0) {
             Log.w(TAG, "add(CartItem): productId invalid.");
             return;
         }
@@ -324,6 +348,10 @@ public class CartManager {
         }
 
         item.itemType = CartItem.normalizeItemType(item.itemType);
+        if (item.servicePackageId > 0) {
+            item.itemType = CartItem.ITEM_TYPE_SERVICE;
+            if (item.productId <= 0) item.productId = item.servicePackageId;
+        }
         item.refreshCartKey();
 
         CartItem existing = map.get(item.cartKey);
@@ -357,6 +385,12 @@ public class CartManager {
                 if (o == null) continue;
 
                 int id = o.optInt("productId", 0);
+                int servicePackageId = o.optInt("servicePackageId", 0);
+                String rawItemType = o.optString("itemType", "");
+                String normalizedItemType = normalizeItemType(rawItemType);
+                if (id <= 0 && servicePackageId > 0) {
+                    id = servicePackageId;
+                }
                 if (id <= 0) continue;
 
                 int shopId = o.optInt("shopId", 0);
@@ -371,7 +405,12 @@ public class CartManager {
                 );
 
                 item.orderType = normalizeTypeOrEmpty(o.optString("orderType", ""));
-                item.itemType = normalizeItemType(o.optString("itemType", ""));
+                item.itemType = normalizedItemType;
+                item.servicePackageId = servicePackageId;
+                if (isLegacyPackageType(rawItemType)) {
+                    item.itemType = CartItem.ITEM_TYPE_SERVICE;
+                    if (item.servicePackageId <= 0) item.servicePackageId = item.productId;
+                }
                 item.refreshCartKey();
 
                 if (item.qty > 0) map.put(item.cartKey, item);
@@ -389,6 +428,7 @@ public class CartManager {
 
         String v = t.trim().toLowerCase(Locale.US);
         if (ITEM_TYPE_SERVICE.equals(v)) return CartItem.ITEM_TYPE_SERVICE;
+        if (isLegacyPackageType(v)) return CartItem.ITEM_TYPE_SERVICE;
         if (ITEM_TYPE_SPAREPART.equals(v) || "part".equals(v)) return CartItem.ITEM_TYPE_PART;
         return CartItem.ITEM_TYPE_PRODUCT;
     }
@@ -402,8 +442,37 @@ public class CartManager {
         )).toLowerCase(Locale.US);
 
         if (ITEM_TYPE_SERVICE.equals(raw)) return CartItem.ITEM_TYPE_SERVICE;
+        if (isLegacyPackageType(raw)) return CartItem.ITEM_TYPE_SERVICE;
         if (ITEM_TYPE_SPAREPART.equals(raw) || "part".equals(raw)) return CartItem.ITEM_TYPE_PART;
         return CartItem.ITEM_TYPE_PRODUCT;
+    }
+
+    @Nullable
+    private CartItem findCartItem(int productId, @NonNull String itemType) {
+        CartItem item = map.get(CartItem.buildCartKey(productId, itemType));
+        if (item != null) return item;
+
+        String normalizedType = CartItem.normalizeItemType(itemType);
+        for (CartItem candidate : map.values()) {
+            if (candidate.servicePackageId > 0
+                    && candidate.servicePackageId == productId
+                    && CartItem.ITEM_TYPE_SERVICE.equals(normalizedType)) {
+                return candidate;
+            }
+            if (candidate.productId == productId
+                    && CartItem.normalizeItemType(candidate.itemType).equals(normalizedType)) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    private static boolean isLegacyPackageType(@Nullable String value) {
+        if (value == null) return false;
+        String clean = value.trim().toLowerCase(Locale.US);
+        return "service_package".equals(clean)
+                || "servicepackage".equals(clean)
+                || "package".equals(clean);
     }
 
     private String extractAnyString(@NonNull Object obj, @NonNull String... keys) {

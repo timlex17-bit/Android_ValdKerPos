@@ -13,6 +13,7 @@ public class CartItem {
     public static final String ITEM_TYPE_PART = "PART";
 
     public int productId;
+    public int servicePackageId;
     public int shopId;
 
     public String cartKey = "";
@@ -78,6 +79,9 @@ public class CartItem {
 
         switch (value) {
             case "SERVICE":
+            case "SERVICE_PACKAGE":
+            case "SERVICEPACKAGE":
+            case "PACKAGE":
                 return ITEM_TYPE_SERVICE;
             case "SPAREPART":
             case "PART":
@@ -93,7 +97,17 @@ public class CartItem {
         return normalizeItemType(itemType) + ":" + productId;
     }
 
+    @NonNull
+    public static String buildCartKey(int productId, String itemType, int servicePackageId) {
+        String normalizedType = normalizeItemType(itemType);
+        if (servicePackageId > 0) {
+            return normalizedType + ":PACKAGE:" + servicePackageId;
+        }
+        return buildCartKey(productId, normalizedType);
+    }
+
     public void refreshCartKey() {
-        this.cartKey = buildCartKey(this.productId, this.itemType);
+        this.itemType = normalizeItemType(this.itemType);
+        this.cartKey = buildCartKey(this.productId, this.itemType, this.servicePackageId);
     }
 }

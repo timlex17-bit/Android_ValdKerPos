@@ -215,6 +215,11 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
     private ArrayAdapter<PaymentMethodOption> paymentAdapter;
     @Nullable
     private ArrayAdapter<BankAccountOption> bankAdapter;
+    @Nullable
+    private Integer preselectedCustomerId;
+    @NonNull
+    private String preselectedCustomerName = "";
+    private long preselectedCustomerPoints = 0L;
 
     public void setListener(@Nullable Listener l) {
         this.listener = l;
@@ -231,6 +236,17 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
     public void setCustomerOptions(@Nullable List<CustomerOption> items) {
         customerOptions.clear();
         if (items != null) customerOptions.addAll(items);
+        ensurePreselectedCustomerOption();
+        if (customerAdapter != null) customerAdapter.notifyDataSetChanged();
+    }
+
+    public void setPreselectedCustomer(@Nullable Integer customerId,
+                                       @Nullable String customerName,
+                                       long customerPoints) {
+        preselectedCustomerId = customerId != null && customerId > 0 ? customerId : null;
+        preselectedCustomerName = customerName != null ? customerName.trim() : "";
+        preselectedCustomerPoints = Math.max(0L, customerPoints);
+        ensurePreselectedCustomerOption();
         if (customerAdapter != null) customerAdapter.notifyDataSetChanged();
     }
 
@@ -263,10 +279,42 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         if (customerOptions.isEmpty()) {
             customerOptions.add(new CustomerOption(0, getString(R.string.workshop_walk_in_customer), 0));
         }
+        ensurePreselectedCustomerOption();
 
         if (paymentOptions.isEmpty()) {
             paymentOptions.add(new PaymentMethodOption(-1, "", getString(R.string.payment_select_method), false));
         }
+    }
+
+    private void ensurePreselectedCustomerOption() {
+        if (preselectedCustomerId == null || preselectedCustomerId <= 0) return;
+
+        for (CustomerOption option : customerOptions) {
+            if (option != null && option.id == preselectedCustomerId) {
+                return;
+            }
+        }
+
+        String name = preselectedCustomerName.isEmpty()
+                ? "Customer #" + preselectedCustomerId
+                : preselectedCustomerName;
+        int insertIndex = customerOptions.isEmpty() ? 0 : Math.min(1, customerOptions.size());
+        customerOptions.add(insertIndex, new CustomerOption(
+                preselectedCustomerId,
+                name,
+                preselectedCustomerPoints
+        ));
+    }
+
+    private int findPreselectedCustomerIndex() {
+        if (preselectedCustomerId == null || preselectedCustomerId <= 0) return -1;
+        for (int i = 0; i < customerOptions.size(); i++) {
+            CustomerOption option = customerOptions.get(i);
+            if (option != null && option.id == preselectedCustomerId) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     @NonNull
@@ -316,6 +364,10 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         );
         customerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spCustomer.setAdapter(customerAdapter);
+        int preselectedIndex = findPreselectedCustomerIndex();
+        if (preselectedIndex >= 0) {
+            spCustomer.setSelection(preselectedIndex);
+        }
 
         paymentAdapter = new ArrayAdapter<>(
                 requireContext(),
