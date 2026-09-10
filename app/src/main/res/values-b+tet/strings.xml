@@ -1096,4 +1096,18 @@
     <string name="owner_chat_link_cannot_open">Link ida ne e la bele loke.</string>
     <string name="label_vehicle_type">Tipu Veíkulu</string>
 
+    <string name="menu_purchase_returns">Devolusaun Sosa</string>
+    <string name="menu_purchase_returns_desc">Fila fali sasan sosa ba fornesedor</string>
+    <string name="menu_vehicles">Kareta</string>
+    <string name="menu_vehicles_desc">Jere kareta kliente nian</string>
+    <string name="menu_mechanics">Mekaniku</string>
+    <string name="menu_mechanics_desc">Jere mekaniku ofisina nian</string>
+    <string name="menu_work_orders">Orden Servisu</string>
+    <string name="menu_work_orders_desc">Akompanha servisu ofisina</string>
+    <string name="menu_service_history">Istoria Servisu</string>
+    <string name="menu_service_history_desc">Haree servisu kareta nebe remata ona</string>
+    <string name="menu_service_packages">Pakote Servisu</string>
+    <string name="menu_service_packages_desc">Jere pakote servisu</string>
+    <string name="menu_bookings">Rezerva</string>
+    <string name="menu_bookings_desc">Jere marka servisu ofisina</string>
 </resources>

@@ -1104,4 +1104,18 @@
     <string name="owner_chat_link_cannot_open">Link ini tidak dapat dibuka.</string>
     <string name="label_vehicle_type">Jenis Kendaraan</string>
 
+    <string name="menu_purchase_returns">Retur Pembelian</string>
+    <string name="menu_purchase_returns_desc">Kembalikan stok pembelian ke pemasok</string>
+    <string name="menu_vehicles">Kendaraan</string>
+    <string name="menu_vehicles_desc">Kelola kendaraan pelanggan</string>
+    <string name="menu_mechanics">Mekanik</string>
+    <string name="menu_mechanics_desc">Kelola mekanik bengkel</string>
+    <string name="menu_work_orders">Perintah Kerja</string>
+    <string name="menu_work_orders_desc">Pantau pekerjaan bengkel</string>
+    <string name="menu_service_history">Riwayat Servis</string>
+    <string name="menu_service_history_desc">Lihat servis kendaraan yang selesai</string>
+    <string name="menu_service_packages">Paket Servis</string>
+    <string name="menu_service_packages_desc">Kelola paket layanan</string>
+    <string name="menu_bookings">Pemesanan</string>
+    <string name="menu_bookings_desc">Kelola janji temu bengkel</string>
 </resources>
