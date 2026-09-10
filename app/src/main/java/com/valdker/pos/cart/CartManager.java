@@ -9,6 +9,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.valdker.pos.money.Money;
 import com.valdker.pos.models.CartItem;
 import com.valdker.pos.models.Product;
 
@@ -86,16 +87,21 @@ public class CartManager {
         }
 
         String name = safe(p.name);
-        // ProductRepository sudah meresolusi seluruh alias harga dari JSON ke
-        // Product.price, jadi di sini cukup satu field.
-        double price = p.price;
+        // Product.sellPrice membawa teks desimal apa adanya dari API
+        // ("1.75"); Product.price adalah hasil parse double dari alias yang
+        // sama dan dicoba dengan urutan yang sama, jadi keduanya bernilai
+        // sama - teksnya saja yang tidak kehilangan presisi.
+        Money price = safe(p.sellPrice).isEmpty()
+                ? Money.ofDouble(p.price)
+                : Money.of(p.sellPrice);
         String imageUrl = safe(firstNonEmpty(p.imageUrl, p.image_url));
         String itemType = CartItem.normalizeItemType(extractItemType(p));
         String key = CartItem.buildCartKey(id, itemType);
 
         CartItem item = map.get(key);
         if (item == null) {
-            item = new CartItem(id, shopId, name, price, imageUrl, qty);
+            item = new CartItem(id, shopId, name, price.toDouble(), imageUrl, qty);
+            item.setPrice(price);
             item.orderType = "";
             item.itemType = itemType;
             item.refreshCartKey();
@@ -104,7 +110,7 @@ public class CartManager {
             item.qty += qty;
 
             if (!name.isEmpty()) item.name = name;
-            if (price > 0) item.price = price;
+            if (price.isPositive()) item.setPrice(price);
             if (!imageUrl.isEmpty()) item.imageUrl = imageUrl;
             if (shopId > 0) item.shopId = shopId;
             if (!itemType.isEmpty()) item.itemType = itemType;
@@ -235,10 +241,21 @@ public class CartManager {
         return total;
     }
 
-    public synchronized double getTotalAmount() {
-        double total = 0.0;
-        for (CartItem i : map.values()) total += (i.price * i.qty);
+    /** Total keranjang yang eksak. */
+    @NonNull
+    public synchronized Money getTotal() {
+        Money total = Money.zero();
+        for (CartItem i : map.values()) total = total.plus(i.lineTotal());
         return total;
+    }
+
+    /**
+     * @deprecated pakai {@link #getTotal()}. Penjumlahannya sudah eksak;
+     * konversi ke double hanya terjadi di akhir.
+     */
+    @Deprecated
+    public synchronized double getTotalAmount() {
+        return getTotal().toDouble();
     }
 
     public synchronized void reload() {
@@ -323,6 +340,7 @@ public class CartManager {
                 o.put("shopId", i.shopId);
                 o.put("name", safe(i.name));
                 o.put("price", i.price);
+                o.put("priceDecimal", i.price().toPlainString());
                 o.put("imageUrl", safe(i.imageUrl));
                 o.put("qty", i.qty);
                 o.put("orderType", normalizeTypeOrEmpty(i.orderType));
@@ -359,7 +377,7 @@ public class CartManager {
             existing.qty += item.qty;
 
             if (!safe(item.name).isEmpty()) existing.name = item.name;
-            if (item.price > 0) existing.price = item.price;
+            if (item.price().isPositive()) existing.setPrice(item.price());
             if (!safe(item.imageUrl).isEmpty()) existing.imageUrl = item.imageUrl;
             if (item.shopId > 0) existing.shopId = item.shopId;
             if (!safe(item.orderType).isEmpty()) existing.orderType = normalizeTypeOrEmpty(item.orderType);
@@ -401,6 +419,12 @@ public class CartManager {
                         o.optString("imageUrl", ""),
                         o.optInt("qty", 0)
                 );
+                // Keranjang yang tersimpan sebelum migrasi ini hanya punya
+                // "price"; kalau ada "priceDecimal" itu yang dipakai.
+                String storedDecimal = o.optString("priceDecimal", "");
+                if (!storedDecimal.trim().isEmpty()) {
+                    item.setPrice(Money.of(storedDecimal));
+                }
 
                 item.orderType = normalizeTypeOrEmpty(o.optString("orderType", ""));
                 item.itemType = normalizedItemType;

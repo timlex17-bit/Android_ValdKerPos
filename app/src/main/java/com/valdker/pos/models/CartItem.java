@@ -2,6 +2,8 @@ package com.valdker.pos.models;
 
 import androidx.annotation.NonNull;
 
+import com.valdker.pos.money.Money;
+
 public class CartItem {
 
     public static final String ORDER_TYPE_DINE_IN = "DINE_IN";
@@ -18,7 +20,20 @@ public class CartItem {
 
     public String cartKey = "";
     public String name;
+
+    /**
+     * Harga satuan sebagai double. Dipertahankan karena 40 tempat masih
+     * membacanya langsung; {@link #priceDecimal} adalah nilai yang otoritatif
+     * dan keduanya selalu disinkronkan lewat {@link #setPrice}.
+     */
     public double price;
+
+    /**
+     * Harga satuan sebagai teks desimal eksak ("1.75"), bentuk yang sama
+     * dengan yang dikirim backend. Ini sumber kebenaran untuk semua
+     * perhitungan; {@link #price} hanya turunannya.
+     */
+    public String priceDecimal = "";
     public String imageUrl;
     public int qty;
 
@@ -59,7 +74,7 @@ public class CartItem {
         this.productId = productId;
         this.shopId = shopId;
         this.name = name;
-        this.price = price;
+        setPrice(Money.ofDouble(price));
         this.imageUrl = imageUrl;
         this.qty = qty;
         this.orderType = orderType;
@@ -67,8 +82,35 @@ public class CartItem {
         this.cartKey = buildCartKey(this.productId, this.itemType);
     }
 
+    /** Menyetel harga satuan dan menjaga kedua representasi tetap sinkron. */
+    public void setPrice(@NonNull Money value) {
+        this.priceDecimal = value.toPlainString();
+        this.price = value.toDouble();
+    }
+
+    /** Harga satuan yang otoritatif. */
+    @NonNull
+    public Money price() {
+        // priceDecimal kosong hanya untuk item yang dibaca dari keranjang
+        // tersimpan versi lama, sebelum field ini ada.
+        return priceDecimal == null || priceDecimal.trim().isEmpty()
+                ? Money.ofDouble(price)
+                : Money.of(priceDecimal);
+    }
+
+    /** Total baris yang eksak: qty x harga satuan. */
+    @NonNull
+    public Money lineTotal() {
+        return price().times(qty);
+    }
+
+    /**
+     * @deprecated pakai {@link #lineTotal()}. Dipertahankan untuk pemanggil
+     * yang belum dimigrasi; nilainya sudah dihitung eksak lalu baru dikonversi.
+     */
+    @Deprecated
     public double getLineTotal() {
-        return price * qty;
+        return lineTotal().toDouble();
     }
 
     @NonNull
