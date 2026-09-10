@@ -12,13 +12,13 @@ di perangkat** ditandai ✅; yang hanya temuan ditandai dengan tingkat keparahan
 
 ## Ringkasan
 
-Lima commit di sesi ini menutup empat dari lima blocker rilis. Yang tersisa dan
-paling besar adalah aritmetika uang dengan `double` — sengaja tidak saya sentuh
-karena harus dikerjakan sendirian.
+Blocker uang (`double`) sudah ditutup di putaran tersendiri, lima lapis dengan
+satu commit per lapis. Yang tersisa sebagai blocker rilis adalah cakupan test
+dan crash reporting.
 
 | Prioritas | Status |
 |---|---|
-| P1.1 uang pakai `double` | ❌ **BELUM** — dipetakan, tidak dikerjakan (alasan di bawah) |
+| P1.1 uang pakai `double` | ✅ **selesai** — 5 lapis, `BigDecimal` skala 2, migrasi Room 14→15 diuji upgrade di perangkat |
 | P1.2 order bisa hilang | ✅ selesai, diverifikasi dengan membunuh proses di tengah request |
 | P1.3 idempotency | ✅ terverifikasi sudah benar (dikerjakan sesi sebelumnya) |
 | P2.1 modul & plan | ✅ sebagian — kode mati dibuang; ketidakcocokan kontrak dilaporkan |
@@ -34,17 +34,51 @@ karena harus dikerjakan sendirian.
 
 | No | Temuan | File:baris | Bukti / dampak |
 |---|---|---|---|
-| B-1 | **Seluruh aritmetika uang memakai `double`.** Belum diperbaiki. | `cart/CartManager.java:240-244` (`getTotalAmount()`), `:92`; `ui/checkout/NativeCheckoutDialogFragment.java` (29 pemakaian `double`); `ui/CartFragment.java` (40); `workshop/WorkshopPOSFragment.java` (24); `local/PendingOrderEntity.java:60-65` (6 field `double`); `local/ValoraLocalDatabase.java` (23 kolom `REAL`) | `double` tidak bisa merepresentasikan desimal uang secara tepat. Efek paling konkret sudah terlihat: `NativeCheckoutDialogFragment.java:558` menolak pembayaran saat `cashReceived < totalNow`, sehingga uang pas bisa ditolak karena galat pembulatan. `BigDecimal` hanya dipakai untuk validasi input (`MainActivity.java:2705`, `ui/shift/ShiftOpenDialogFragment.java:69`), tidak pernah untuk hitungan. |
+| ~~B-1~~ | ~~Aritmetika uang memakai `double`~~ — **SELESAI**, lihat bagian "Migrasi uang" | — | — |
 | B-2 | **Nol test.** 2 file test template untuk ~61.000 baris. | `app/src/test/java/com/valdker/pos/ExampleUnitTest.java`, `app/src/androidTest/.../ExampleInstrumentedTest.java` | Ini prasyarat B-1: migrasi uang tanpa test adalah tebak-tebakan. |
 | B-3 | **Tidak ada crash reporting.** Nol referensi Crashlytics/Sentry di `app/build.gradle`. | `app/build.gradle` (dependencies) | Setelah rilis, crash di lapangan tidak terlihat. |
 
-### Kenapa B-1 tidak saya kerjakan
+### Migrasi uang (`double` → `BigDecimal`) — SELESAI
 
-Prompt sendiri meminta ini dikerjakan bertahap dengan test tiap langkah dan
-**tidak dicampur perbaikan lain**. Sesi ini sudah memuat write-ahead dan R8 —
-dua perubahan yang menyentuh jalur checkout yang sama. Menumpuk migrasi
-`BigDecimal` di atasnya berarti kalau ada selisih kas nanti, tidak ada cara tahu
-penyebabnya yang mana. Urutan yang benar ada di bagian 7.
+Dikerjakan sebagai putaran tersendiri dalam lima lapis, satu commit per lapis.
+
+**Representasi: `BigDecimal` skala 2.** Backend menyimpan setiap nilai uang
+sebagai `DecimalField(max_digits=12, decimal_places=2)` dan mengirimkannya
+sebagai string desimal, jadi `BigDecimal` memetakan satu-lawan-satu dan nilai
+menyeberang tanpa langkah konversi. Satuan terkecil (`long` sen) akan menambah
+konversi di setiap batas — JSON, Room, tampilan — dan tiap konversi adalah
+tempat baru untuk salah.
+
+**Pembulatan: `HALF_EVEN`, bukan `HALF_UP`.** Ini menyimpang dari kebiasaan POS
+dan disengaja. Backend membulatkan pajak dengan
+`(base * percent / 100).quantize(Decimal("0.01"))` (`pos/serializers.py:2004`),
+dan konteks `decimal` bawaan Python adalah `ROUND_HALF_EVEN`. `HALF_UP` akan
+berbeda satu sen tepat di batas .005, dan komentar di serializer menyatakan
+server akan menjadi otoritatif atas pajak di "Stage B" — selisih itu akan
+berubah dari peringatan log menjadi nilai yang ditimpa.
+
+**Catatan arsitektur yang menentukan prioritas:** server **menghitung ulang**
+`subtotal` dan `total` dari `items[].price × quantity` lalu menimpa kiriman
+klien (`pos/serializers.py:2014-2015`). Jadi yang menentukan angka tersimpan
+bukan field `total` yang dikirim, melainkan presisi harga baris.
+
+| Lapis | Isi | Commit |
+|---|---|---|
+| 1 | Kelas `Money` + 23 unit test | `71ae992` |
+| 2 | Aritmetika keranjang (`CartManager`, `CartItem`) + 7 test | `3cb2b94` |
+| 3 | Dialog checkout dan tiga pembuat payload | `bf57fab` |
+| 4 | 9 kolom uang order belum tersinkron → TEXT, migrasi Room 14→15 | `3ef9ed5` |
+| 5 | Pemformatan layar dan struk | `90b29d1` |
+
+**Sisa yang belum dimigrasi:** 14 kolom `REAL` di tabel `cached_*`
+(`cached_orders` 4, `cached_order_items` 3, `cached_stock_transfer_items` 3,
+`cached_payments` 1, `cached_purchase_items` 1, `cached_product_return_items` 1,
+`products` 1). Semuanya salinan tampilan yang di-refresh dari server, bukan uang
+yang belum tersinkron — karena itu ditinggal di lapis berikutnya, bukan karena
+terlewat. Pemformatan di luar uang order juga belum disentuh:
+`ui/inventorycount/InventoryCountDetailActivity.java:221`,
+`ui/purchases/PurchaseItemDraftAdapter.java:77`,
+`ui/reports/ReportResultAdapter.java:153`, `ui/reports/ReportsFragment.java:582`.
 
 ---
 
@@ -252,11 +286,58 @@ Rebrand Valora tetap ditunda sesuai instruksi: `applicationId` tidak disentuh.
 
 ---
 
+## Bukti uji uang — layar vs server
+
+Backend lokal, emulator API 36. "Layar" = angka yang dibaca kasir; "Server" =
+baris yang tersimpan setelah checkout.
+
+| Kasus | Layar | Server | Hasil |
+|---|---|---|---|
+| 3 item @ 0.10 | total `$0.30`, uang pas `0.30` diterima, kembalian `$0.00` | `subtotal=0.30 total=0.30`, item `price=0.10 qty=3` | cocok |
+| 0.10 + 0.20 (dua baris) | total `$0.30`, uang pas `0.30` diterima | `subtotal=0.30 total=0.30` | cocok |
+| Kembalian 100.00 untuk 87.65 | `Troka: $12.35` | `subtotal=87.65 total=87.65`, payment `87.65` | cocok |
+| Pajak 11% dari 0.30 | Android mengirim `tax=0.00` | server: `expected_tax=0.03`, tersimpan `0.00` + peringatan mismatch | **tidak cocok — Android tidak punya pajak** |
+| Diskon 10% dari 99.99 | tidak bisa diuji lewat UI | — | hanya unit test: `10.00` |
+| Split 33.33+33.33+33.34 | tidak bisa diuji lewat UI | — | hanya unit test: `100.00`, sisa `0.00` |
+
+Tiga kasus terakhir **tidak bisa dijalankan end-to-end** karena Android tidak
+punya UI diskon, pajak, maupun split payment — ketiganya dipaku nol / satu
+pembayaran di semua jalur. Aritmetikanya diuji di `MoneyTest`.
+
+Kasus pajak diverifikasi runtime dan hasilnya konkret: dengan
+`POSSettings.tax_percent = 11` pada basis 0.30, server mencatat
+`Order tax mismatch: client_tax=0.00 expected_tax=0.03` lalu menyimpan `0.00`.
+Begitu backend masuk "Stage B" dan menjadi otoritatif atas pajak, **total setiap
+order Android akan berubah**. (Nilai `tax_percent` toko uji sudah saya kembalikan
+ke 0.)
+
+### Uji migrasi Room 14 → 15
+
+Bukan dibaca dari kode, tapi dengan upgrade di perangkat:
+
+1. Build v14 dipasang, jaringan dimatikan, dibuat order offline 3 × 0.10.
+2. Isi tabel v14: `pending_order_items.total = 0.30000000000000004` — bug ini
+   memang tersimpan di penjualan yang belum tersinkron.
+3. Build v15 dipasang **di atasnya** (tanpa uninstall).
+4. Hasil: `user_version` 14 → 15, kolom REAL → TEXT, order **masih ada** dengan
+   `localOrderId` dan status `PENDING_SYNC` yang sama, dan `total` menjadi
+   `'0.30'`.
+5. Jaringan dinyalakan: order hasil migrasi tersinkron ke server sebagai
+   `subtotal=0.30 total=0.30`, item `price=0.10 qty=3`.
+
+Tidak ada order yang hilang.
+
+---
+
 ## Yang tidak bisa saya verifikasi
 
 - **Perilaku di perangkat fisik** — seluruh pengujian di emulator API 36.
   Pencetakan struk Bluetooth **TIDAK TERVERIFIKASI**: emulator tidak punya
-  printer termal.
+  printer termal. Yang perlu diperiksa di perangkat asli setelah migrasi uang:
+  struk harus mencetak `0.30` bukan `0.3` atau `0.30000000000000004`, kolom
+  Subtotal/Discount/Tax/Total/Paid/Change harus sejajar, dan struk cetak ulang
+  dari layar Pesanan Offline harus menampilkan angka yang sama dengan struk
+  aslinya.
 - **Build release terhadap backend lokal** — release memblokir HTTP polos
   (benar), jadi verifikasi R8 dilakukan lewat build debug yang di-minify plus
   pemeriksaan statis pada dex release. Perilaku release penuh terhadap backend
