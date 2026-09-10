@@ -2121,27 +2121,27 @@ public class MainActivity extends AppCompatActivity
         for (NativeCheckoutDialogFragment.CheckoutItem item : result.items) {
             if (item == null) continue;
             sb.append("[L]<b>").append(safeTrim(item.productName)).append("</b>[R]<b>")
-                    .append(String.format(Locale.US, "$%.2f", item.lineTotal))
+                    .append("$").append(item.lineTotalMoney.toPlainString())
                     .append("</b>\n");
             sb.append("[L]").append(Math.max(0, item.quantity))
                     .append(" x ")
-                    .append(String.format(Locale.US, "$%.2f", item.unitPrice))
+                    .append("$").append(item.unitPriceMoney.toPlainString())
                     .append("\n\n");
         }
 
         sb.append("[C]--------------------------------\n");
-        sb.append("[L]Subtotal[R]").append(String.format(Locale.US, "$%.2f", result.subtotal)).append("\n");
+        sb.append("[L]Subtotal[R]").append("$").append(result.subtotalMoney.toPlainString()).append("\n");
         sb.append("[L]Discount[R]$0.00\n");
         sb.append("[L]VAT / Tax[R]$0.00\n");
         if (result.deliveryFee > 0) {
-            sb.append("[L]Delivery Fee[R]").append(String.format(Locale.US, "$%.2f", result.deliveryFee)).append("\n");
+            sb.append("[L]Delivery Fee[R]").append("$").append(result.deliveryFeeMoney.toPlainString()).append("\n");
         }
         sb.append("[C]--------------------------------\n");
-        sb.append("[L]<b>Total</b>[R]<b>").append(String.format(Locale.US, "$%.2f", result.totalAmount)).append("</b>\n");
+        sb.append("[L]<b>Total</b>[R]<b>").append("$").append(result.totalAmountMoney.toPlainString()).append("</b>\n");
         sb.append("[L]Payment[R]").append(safeTrim(result.paymentMethodCode)).append("\n");
         if (result.cashReceived > 0) {
-            sb.append("[L]Paid[R]").append(String.format(Locale.US, "$%.2f", result.cashReceived)).append("\n");
-            sb.append("[L]Change[R]").append(String.format(Locale.US, "$%.2f", result.changeAmount)).append("\n");
+            sb.append("[L]Paid[R]").append("$").append(result.cashReceivedMoney.toPlainString()).append("\n");
+            sb.append("[L]Change[R]").append("$").append(result.changeAmountMoney.toPlainString()).append("\n");
         }
         sb.append("[C]--------------------------------\n");
         sb.append("[C]Thank you for your purchase\n");

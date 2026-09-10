@@ -827,10 +827,28 @@ public class OfflineOrderRepository {
         }
         // Payload sudah membawa teks desimal setelah migrasi uang; dibaca apa
         // adanya supaya tidak bolak-balik lewat double.
-        order.subtotal = Money.of(payload.optString("subtotal", "")).toPlainString();
-        order.discount = Money.of(payload.optString("discount", "")).toPlainString();
-        order.tax = Money.of(payload.optString("tax", "")).toPlainString();
-        order.total = Money.of(payload.optString("total", "")).toPlainString();
+        Money discount = Money.of(payload.optString("discount", ""));
+        Money tax = Money.of(payload.optString("tax", ""));
+        Money deliveryFee = Money.of(payload.optString("delivery_fee", ""));
+
+        // Payload retail tidak memuat subtotal/total sama sekali - server yang
+        // menghitungnya. Tanpa cadangan ini, layar Pesanan Offline menampilkan
+        // $0.00 untuk penjualan retail yang belum tersinkron. Rumusnya sama
+        // dengan milik server: sum(price x qty) + ongkir - diskon + pajak.
+        Money subtotal = Money.of(payload.optString("subtotal", ""));
+        if (!subtotal.isPositive()) {
+            subtotal = sumItemLineTotals(payload);
+        }
+
+        Money total = Money.of(payload.optString("total", ""));
+        if (!total.isPositive()) {
+            total = subtotal.plus(deliveryFee).minus(discount).plus(tax);
+        }
+
+        order.subtotal = subtotal.toPlainString();
+        order.discount = discount.toPlainString();
+        order.tax = tax.toPlainString();
+        order.total = total.toPlainString();
         Money paid = firstPositiveMoney(
                 Money.of(firstPayment(payload).optString("amount", "")),
                 Money.of(payload.optString("cash_received", "")),
@@ -887,6 +905,22 @@ public class OfflineOrderRepository {
             out.add(entity);
         }
         return out;
+    }
+
+    /** Menjumlahkan harga baris dari payload, meniru perhitungan server. */
+    @NonNull
+    private static Money sumItemLineTotals(@NonNull JSONObject payload) {
+        Money sum = Money.zero();
+        JSONArray items = payload.optJSONArray("items");
+        if (items == null) return sum;
+        for (int i = 0; i < items.length(); i++) {
+            JSONObject item = items.optJSONObject(i);
+            if (item == null) continue;
+            Money price = Money.of(item.optString("price", ""));
+            int qty = Math.max(0, firstInt(item, "quantity", "qty"));
+            sum = sum.plus(price.times(qty));
+        }
+        return sum;
     }
 
     @NonNull

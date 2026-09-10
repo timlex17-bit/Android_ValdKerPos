@@ -1,5 +1,7 @@
 package com.valdker.pos.print;
 
+import com.valdker.pos.money.Money;
+
 public class ReceiptFormatter {
 
     public static String build(OrderData o) {
@@ -53,8 +55,12 @@ public class ReceiptFormatter {
         return s == null ? "" : s.trim();
     }
 
+    /**
+     * %.2f membulatkan HALF_UP dan berbeda dari server pada batas .005.
+     * Struk harus menampilkan angka yang sama dengan yang dikirim.
+     */
     private static String fmt(double v) {
-        return String.format(java.util.Locale.US, "%.2f", Math.max(0, v));
+        return Money.ofDouble(v).orZeroIfNegative().toPlainString();
     }
 
     private static String typeLabel(String t) {

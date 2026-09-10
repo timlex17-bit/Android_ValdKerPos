@@ -201,7 +201,7 @@ public class PendingOrdersAdapter extends RecyclerView.Adapter<PendingOrdersAdap
             meta += "  |  Attempts: " + order.syncAttemptCount;
         }
         holder.meta.setText(meta);
-        holder.total.setText(String.format(Locale.US, "$%.2f", order.total));
+        holder.total.setText(("$" + order.totalMoney().toPlainString()));
 
         String error = safe(order.lastSyncError);
         boolean shopMismatch = listener.isShopMismatch(order);
@@ -265,9 +265,9 @@ public class PendingOrdersAdapter extends RecyclerView.Adapter<PendingOrdersAdap
                     .append("  ")
                     .append(item.quantity)
                     .append(" x ")
-                    .append(String.format(Locale.US, "$%.2f", item.price))
+                    .append("$").append(item.priceMoney().toPlainString())
                     .append(" = ")
-                    .append(String.format(Locale.US, "$%.2f", item.total));
+                    .append("$").append(item.totalMoney().toPlainString());
             if (!safe(item.itemType).isEmpty()) {
                 out.append("  ").append(safe(item.itemType));
             }

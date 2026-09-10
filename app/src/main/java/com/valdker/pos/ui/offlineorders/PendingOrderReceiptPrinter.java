@@ -1,5 +1,7 @@
 package com.valdker.pos.ui.offlineorders;
 
+import com.valdker.pos.money.Money;
+
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
@@ -350,7 +352,7 @@ final class PendingOrderReceiptPrinter {
 
     @NonNull
     private static String formatMoney(double value) {
-        return String.format(Locale.US, "$%.2f", Math.max(0d, value));
+        return "$" + Money.ofDouble(value).orZeroIfNegative().toPlainString();
     }
 
     private static double optDouble(@Nullable JSONObject object, @NonNull String key) {

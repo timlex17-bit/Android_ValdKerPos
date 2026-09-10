@@ -34,6 +34,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.valdker.pos.R;
+import com.valdker.pos.money.Money;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.drafts.PosDraftEntity;
 import com.valdker.pos.drafts.PosDraftItemEntity;
@@ -1320,14 +1321,25 @@ public class RetailPOSFragment extends Fragment {
         return totalQty;
     }
 
-    public double getGrandTotalAmount() {
-        double total = 0d;
+    @NonNull
+    public Money getGrandTotalMoney() {
+        Money total = Money.zero();
 
         for (RetailProductItem item : scannedProducts) {
             if (item != null) {
-                total += (item.price * getScannedQty(item.id));
+                total = total.plus(Money.ofDouble(item.price).times(getScannedQty(item.id)));
             }
         }
+        return total;
+    }
+
+    /**
+     * @deprecated pakai {@link #getGrandTotalMoney()}; penjumlahannya sudah
+     * eksak dan konversi hanya di akhir.
+     */
+    @Deprecated
+    public double getGrandTotalAmount() {
+        double total = getGrandTotalMoney().toDouble();
 
         return total;
     }
@@ -1453,7 +1465,7 @@ public class RetailPOSFragment extends Fragment {
         }
 
         if (txtGrandTotal != null) {
-            txtGrandTotal.setText(String.format(Locale.US, "$%.2f", total));
+            txtGrandTotal.setText(getGrandTotalMoney().format());
         }
 
         if (txtSectionSubtitle != null) {

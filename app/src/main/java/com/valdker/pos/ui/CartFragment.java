@@ -1312,30 +1312,30 @@ public class CartFragment extends Fragment {
             else if (CartManager.TYPE_DELIVERY.equals(type)) typeLabel = "(^ DELIVERY)";
 
             sb.append("[L]<b>").append(name).append("</b>[R]<b>")
-                    .append(String.format(Locale.US, "$%.2f", line))
+                    .append("$").append(Money.ofDouble(line).toPlainString())
                     .append("</b>\n");
 
             if (!typeLabel.isEmpty()) sb.append("[L]").append(typeLabel).append("\n");
 
             sb.append("[L]").append(qty)
                     .append(" x ")
-                    .append(String.format(Locale.US, "$%.2f", price))
+                    .append("$").append(Money.ofDouble(price).toPlainString())
                     .append("\n\n");
         }
 
         sb.append("[C]--------------------------------\n");
 
-        sb.append("[L]Subtotal[R]").append(String.format(Locale.US, "$%.2f", subtotal)).append("\n");
-        sb.append("[L]Discount[R]").append(String.format(Locale.US, "$%.2f", 0.00)).append("\n");
-        sb.append("[L]VAT / Tax[R]").append(String.format(Locale.US, "$%.2f", 0.00)).append("\n");
-        if (deliveryFee > 0) sb.append("[L]Delivery Fee[R]").append(String.format(Locale.US, "$%.2f", deliveryFee)).append("\n");
+        sb.append("[L]Subtotal[R]").append(("$" + Money.ofDouble(subtotal).toPlainString())).append("\n");
+        sb.append("[L]Discount[R]").append(("$" + Money.ofDouble(0.00).toPlainString())).append("\n");
+        sb.append("[L]VAT / Tax[R]").append(("$" + Money.ofDouble(0.00).toPlainString())).append("\n");
+        if (deliveryFee > 0) sb.append("[L]Delivery Fee[R]").append(("$" + Money.ofDouble(deliveryFee).toPlainString())).append("\n");
 
         sb.append("[C]--------------------------------\n");
-        sb.append("[L]<b>Total</b>[R]<b>").append(String.format(Locale.US, "$%.2f", total)).append("</b>\n");
+        sb.append("[L]<b>Total</b>[R]<b>").append(("$" + Money.ofDouble(total).toPlainString())).append("</b>\n");
         sb.append("[L]Payment[R]").append(paymentMethod).append("\n");
         if (cashReceived > 0) {
-            sb.append("[L]Paid[R]").append(String.format(Locale.US, "$%.2f", cashReceived)).append("\n");
-            sb.append("[L]Change[R]").append(String.format(Locale.US, "$%.2f", changeAmount)).append("\n");
+            sb.append("[L]Paid[R]").append(("$" + Money.ofDouble(cashReceived).toPlainString())).append("\n");
+            sb.append("[L]Change[R]").append(("$" + Money.ofDouble(changeAmount).toPlainString())).append("\n");
         }
         sb.append("[C]--------------------------------\n");
 
