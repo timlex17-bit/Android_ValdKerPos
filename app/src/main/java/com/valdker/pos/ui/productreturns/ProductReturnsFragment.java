@@ -7,7 +7,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.text.Editable;
 import android.text.TextWatcher;
-import java.lang.reflect.Field;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -126,21 +125,18 @@ public class ProductReturnsFragment extends BaseFragment {
         for (ProductReturn item : allData) {
             if (item == null) continue;
 
-            String haystack =
-                    (
-                            getFieldValue(item, "invoice_number") + " " +
-                                    getFieldValue(item, "invoiceNumber") + " " +
-                                    getFieldValue(item, "invoice_id") + " " +
-                                    getFieldValue(item, "invoice_title") + " " +
-                                    getFieldValue(item, "note") + " " +
-                                    getFieldValue(item, "customer_name") + " " +
-                                    getFieldValue(item, "returned_by") + " " +
-                                    getFieldValue(item, "order_reference")
-                    ).toLowerCase();
+            // Dibaca langsung dari field ProductReturn; nama-nama snake_case
+            // yang dulu ditebak lewat refleksi tidak pernah ada di model ini.
+            String haystack = (
+                    nullToEmpty(item.invoiceNumber) + " "
+                            + nullToEmpty(item.note) + " "
+                            + (item.customer != null ? nullToEmpty(item.customer.name) : "") + " "
+                            + (item.returnedBy != null ? nullToEmpty(item.returnedBy.username) : "")
+            ).toLowerCase();
 
             boolean matchesQuery = q.isEmpty() || haystack.contains(q);
             boolean matchesDate = dateRangeFilter == null
-                    || dateRangeFilter.matches(item.returnedAt, getFieldValue(item, "returned_at"), getFieldValue(item, "created_at"));
+                    || dateRangeFilter.matches(item.returnedAt, item.returnedAt, item.returnedAt);
 
             if (matchesQuery && matchesDate) {
                 data.add(item);
@@ -155,14 +151,8 @@ public class ProductReturnsFragment extends BaseFragment {
     }
 
     @NonNull
-    private String getFieldValue(@NonNull ProductReturn item, @NonNull String fieldName) {
-        try {
-            Field field = item.getClass().getField(fieldName);
-            Object value = field.get(item);
-            return value == null ? "" : String.valueOf(value);
-        } catch (Exception ignored) {
-            return "";
-        }
+    private String nullToEmpty(@Nullable String value) {
+        return value == null ? "" : value;
     }
 
     private void bindViews(@NonNull View view) {

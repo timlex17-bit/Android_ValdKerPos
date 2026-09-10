@@ -62,7 +62,8 @@ android {
                 logger.warn("keystore.properties tidak ditemukan - APK release TIDAK akan ditandatangani.")
             }
 
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
             buildConfigField "String", "BASE_URL", "\"${releaseBaseUrl}\""

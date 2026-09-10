@@ -25,8 +25,6 @@ import com.valdker.pos.utils.InsetsHelper;
 import com.valdker.pos.utils.NetworkUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -252,7 +250,7 @@ public class PurchasesFragment extends BaseFragment {
             if (item == null) continue;
             boolean matchesQuery = !hasQuery || matchesPurchase(item, q);
             boolean matchesDate = dateRangeFilter == null
-                    || dateRangeFilter.matches(item.purchaseDate, extractFieldAsString(item, "createdAt"), extractFieldAsString(item, "created_at"));
+                    || dateRangeFilter.matches(item.purchaseDate, item.purchaseDate, item.purchaseDate);
             if (matchesQuery && matchesDate) {
                 filtered.add(item);
             }
@@ -277,45 +275,18 @@ public class PurchasesFragment extends BaseFragment {
     }
 
     private boolean matchesPurchase(@NonNull PurchaseLite item, @NonNull String q) {
-        if (containsText(item, "invoiceNumber", q)) return true;
-        if (containsText(item, "invoice_id", q)) return true;
-        if (containsText(item, "supplierName", q)) return true;
-        if (containsText(item, "supplier_name", q)) return true;
-        if (containsText(item, "status", q)) return true;
-        if (containsText(item, "date", q)) return true;
-        if (containsText(item, "createdAt", q)) return true;
-        if (containsText(item, "created_at", q)) return true;
-        if (containsText(item, "note", q)) return true;
-        if (containsText(item, "notes", q)) return true;
-        if (containsText(item, "total", q)) return true;
-        if (containsText(item, "grandTotal", q)) return true;
-        return false;
+        // Dulu field dicari lewat refleksi dengan sederet nama tebakan. Dari
+        // seluruh tebakan itu hanya supplierName yang benar-benar ada di
+        // PurchaseLite, jadi pencarian faktanya cuma menyentuh nama pemasok.
+        // Sekarang dibaca langsung dari field yang memang ada.
+        return contains(item.invoiceId, q)
+                || contains(item.supplierName, q)
+                || contains(item.purchaseDate, q)
+                || contains(item.totalCost, q);
     }
 
-    private boolean containsText(@NonNull Object obj, @NonNull String fieldName, @NonNull String q) {
-        String value = extractFieldAsString(obj, fieldName);
+    private boolean contains(@Nullable String value, @NonNull String q) {
         return value != null && value.toLowerCase(Locale.US).contains(q);
-    }
-
-    @Nullable
-    private String extractFieldAsString(@NonNull Object obj, @NonNull String fieldName) {
-        try {
-            Field f = obj.getClass().getDeclaredField(fieldName);
-            f.setAccessible(true);
-            Object v = f.get(obj);
-            return v == null ? null : String.valueOf(v);
-        } catch (Exception ignored) {
-        }
-
-        try {
-            String getter = "get" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
-            Method m = obj.getClass().getMethod(getter);
-            Object v = m.invoke(obj);
-            return v == null ? null : String.valueOf(v);
-        } catch (Exception ignored) {
-        }
-
-        return null;
     }
 
     private void showLoading(boolean loading) {

@@ -16,7 +16,6 @@ import com.google.android.material.button.MaterialButton;
 import com.valdker.pos.R;
 import com.valdker.pos.models.Product;
 
-import java.lang.reflect.Field;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
@@ -67,29 +66,15 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
     public void onBindViewHolder(@NonNull VH h, int position) {
         Product p = items.get(position);
 
-        String name = safeString(readAnyField(p, new String[]{
-                "name", "title", "product_name"
-        }));
+        String name = safeString(p.name);
         h.tvName.setText(name.isEmpty() ? "-" : name);
 
-        Object priceObj = readAnyField(p, new String[]{
-                "price",
-                "selling_price", "sell_price", "sale_price",
-                "unit_price",
-                "price_usd", "usd_price",
-                "harga",
-                "final_price", "finalPrice",
-                "price_after_discount", "priceAfterDiscount"
-        });
-
-        double priceVal = toDouble(priceObj);
+        // ProductRepository sudah meresolusi seluruh alias harga dari JSON ke
+        // Product.price sebelum objeknya sampai ke adapter ini.
+        double priceVal = p.price;
         h.tvPrice.setText(priceVal > 0 ? usd.format(priceVal) : "-");
 
-        Object stockObj = readAnyField(p, new String[]{
-                "stock", "qty", "quantity", "current_stock"
-        });
-        int stockVal = toInt(stockObj);
-        h.tvStock.setText("Stock: " + stockVal);
+        h.tvStock.setText("Stock: " + p.stock);
 
         bindImage(h, p);
         applyBusinessUi(h);
@@ -113,13 +98,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
 
         h.img.setVisibility(View.VISIBLE);
 
-        Object imgObj = readAnyField(p, new String[]{
-                "image", "img", "photo", "thumbnail", "thumb",
-                "image_url", "imageUrl", "product_image", "productImage",
-                "picture", "pic", "url"
-        });
-
-        String imgUrl = safeString(imgObj);
+        String imgUrl = safeString(p.imageUrl);
+        if (imgUrl.isEmpty()) imgUrl = safeString(p.image_url);
 
         if (imgUrl.isEmpty()) {
             h.img.setImageResource(R.drawable.bg_image_placeholder);
@@ -155,32 +135,6 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
     @Override
     public int getItemCount() {
         return items != null ? items.size() : 0;
-    }
-
-    private Object readAnyField(Object obj, String[] candidates) {
-        if (obj == null) return null;
-
-        Class<?> c = obj.getClass();
-
-        for (String key : candidates) {
-            try {
-                Field f = c.getField(key);
-                f.setAccessible(true);
-                Object v = f.get(obj);
-                if (v != null) return v;
-            } catch (Throwable ignored) {
-            }
-
-            try {
-                Field f = c.getDeclaredField(key);
-                f.setAccessible(true);
-                Object v = f.get(obj);
-                if (v != null) return v;
-            } catch (Throwable ignored) {
-            }
-        }
-
-        return null;
     }
 
     private String safeString(Object v) {

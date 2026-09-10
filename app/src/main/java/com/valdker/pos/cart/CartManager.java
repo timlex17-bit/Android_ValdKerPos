@@ -15,7 +15,6 @@ import com.valdker.pos.models.Product;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -58,10 +57,8 @@ public class CartManager {
     }
 
     private int extractShopId(@NonNull Product p) {
-        return (int) extractAnyDouble(p,
-                "shopId",
-                "shop_id"
-        );
+        // shopId dan shop_id selalu diisi bersamaan oleh ProductRepository.
+        return p.shopId;
     }
 
     public static synchronized CartManager getInstance(Context context) {
@@ -72,7 +69,7 @@ public class CartManager {
     public synchronized void add(@NonNull Product p, int qty) {
         if (qty <= 0) qty = 1;
 
-        int id = (int) extractAnyDouble(p, "id", "productId");
+        int id = (int) parseNumeric(p.id);
         if (id <= 0) {
             Log.w(TAG, "add(): product id invalid.");
             return;
@@ -81,17 +78,18 @@ public class CartManager {
         int shopId = extractShopId(p);
 
         Log.d(TAG, "add(): productId=" + id
-                + ", name=" + safe(extractAnyString(p, "name", "title", "product_name"))
+                + ", name=" + safe(p.name)
                 + ", extractedShopId=" + shopId);
 
         if (shopId <= 0) {
             Log.w(TAG, "add(): shop id missing on product. Cart item may become invalid in multi-tenant mode.");
         }
 
-        String name = safe(extractAnyString(p, "name", "title", "product_name"));
-        double price = extractAnyDouble(p, "price", "selling_price", "sell_price", "sale_price", "unit_price",
-                "price_usd", "usd_price", "amount");
-        String imageUrl = safe(extractAnyString(p, "imageUrl", "image_url", "image", "photo", "thumbnail", "icon_url"));
+        String name = safe(p.name);
+        // ProductRepository sudah meresolusi seluruh alias harga dari JSON ke
+        // Product.price, jadi di sini cukup satu field.
+        double price = p.price;
+        String imageUrl = safe(firstNonEmpty(p.imageUrl, p.image_url));
         String itemType = CartItem.normalizeItemType(extractItemType(p));
         String key = CartItem.buildCartKey(id, itemType);
 
@@ -435,11 +433,7 @@ public class CartManager {
 
     @NonNull
     private String extractItemType(@NonNull Product p) {
-        String raw = safe(extractAnyString(p,
-                "itemType",
-                "item_type",
-                "type"
-        )).toLowerCase(Locale.US);
+        String raw = safe(p.itemType).toLowerCase(Locale.US);
 
         if (ITEM_TYPE_SERVICE.equals(raw)) return CartItem.ITEM_TYPE_SERVICE;
         if (isLegacyPackageType(raw)) return CartItem.ITEM_TYPE_SERVICE;
@@ -475,53 +469,31 @@ public class CartManager {
                 || "package".equals(clean);
     }
 
-    private String extractAnyString(@NonNull Object obj, @NonNull String... keys) {
-        Object v = extractAnyField(obj, keys);
-        return v == null ? "" : String.valueOf(v);
+    @NonNull
+    private String firstNonEmpty(@Nullable String a, @Nullable String b) {
+        String first = safe(a);
+        return first.isEmpty() ? safe(b) : first;
     }
 
-    private double extractAnyDouble(@NonNull Object obj, @NonNull String... keys) {
-        Object v = extractAnyField(obj, keys);
-        if (v == null) return 0.0;
-        if (v instanceof Number) return ((Number) v).doubleValue();
-
+    /**
+     * Membaca angka dari nilai yang bisa saja datang sebagai teks berformat
+     * ("$1,750", "1750 USD"). Menggantikan pembacaan lewat refleksi yang dulu
+     * dipakai di sini: nama field ikut diobfuscate begitu R8 menyala, dan
+     * seluruh harga akan diam-diam terbaca 0.00.
+     */
+    private double parseNumeric(@Nullable String raw) {
+        String s = safe(raw)
+                .replace("$", "")
+                .replace("USD", "")
+                .replace("usd", "")
+                .replace(",", "")
+                .trim();
+        if (s.isEmpty()) return 0.0;
         try {
-            String s = String.valueOf(v).trim()
-                    .replace("$", "")
-                    .replace("USD", "")
-                    .replace("usd", "")
-                    .replace(",", "")
-                    .trim();
-            if (s.isEmpty()) return 0.0;
             return Double.parseDouble(s);
         } catch (Exception ignored) {
             return 0.0;
         }
-    }
-
-    private Object extractAnyField(@NonNull Object obj, @NonNull String... keys) {
-        Class<?> c = obj.getClass();
-
-        for (String key : keys) {
-            if (key == null) continue;
-
-            try {
-                Field f = c.getField(key);
-                f.setAccessible(true);
-                Object v = f.get(obj);
-                if (v != null) return v;
-            } catch (Throwable ignored) {
-            }
-
-            try {
-                Field f = c.getDeclaredField(key);
-                f.setAccessible(true);
-                Object v = f.get(obj);
-                if (v != null) return v;
-            } catch (Throwable ignored) {
-            }
-        }
-        return null;
     }
 
     private String normalizeTypeOrEmpty(@Nullable String t) {
