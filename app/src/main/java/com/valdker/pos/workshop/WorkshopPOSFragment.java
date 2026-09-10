@@ -62,6 +62,7 @@ import com.valdker.pos.models.Shop;
 import com.valdker.pos.network.WorkshopModuleApi;
 import com.valdker.pos.repositories.CheckoutConfigRepository;
 import com.valdker.pos.repositories.MasterDataRepository;
+import com.valdker.pos.money.Money;
 import com.valdker.pos.repositories.OfflineOrderRepository;
 import com.valdker.pos.repositories.OrderRepository;
 import com.valdker.pos.repositories.ProductRepository;
@@ -2996,12 +2997,23 @@ public class WorkshopPOSFragment extends Fragment
         if (txtGrandTotal != null) txtGrandTotal.setText(formatMoney(grandTotal));
     }
 
-    private double getCartGrandTotal() {
-        double total = 0.0;
+    @NonNull
+    private Money getCartGrandTotalMoney() {
+        Money total = Money.zero();
         for (WorkshopCartItem item : cartItems) {
-            total += item.getLineTotal();
+            if (item == null) continue;
+            total = total.plus(Money.ofDouble(item.getPrice()).times(item.getQuantity()));
         }
         return total;
+    }
+
+    /**
+     * @deprecated pakai {@link #getCartGrandTotalMoney()}. Penjumlahannya sudah
+     * eksak; konversi ke double hanya di akhir.
+     */
+    @Deprecated
+    private double getCartGrandTotal() {
+        return getCartGrandTotalMoney().toDouble();
     }
 
     private void handleCheckout() {
@@ -3459,10 +3471,13 @@ public class WorkshopPOSFragment extends Fragment
                                                  @Nullable String selectedCustomerName,
                                                  @Nullable String selectedVehicleTypeCode) throws Exception {
 
-        double subtotal = getCartGrandTotal();
-        double discount = 0.0;
-        double tax = 0.0;
-        double total = subtotal + deliveryFee;
+        Money subtotalMoney = getCartGrandTotalMoney();
+        Money discountMoney = Money.zero();
+        Money taxMoney = Money.zero();
+        Money totalMoney = subtotalMoney.plus(Money.ofDouble(deliveryFee));
+
+        double subtotal = subtotalMoney.toDouble();
+        double total = totalMoney.toDouble();
 
         JSONObject payload = new JSONObject();
         payload.put("device_time", currentDeviceTimeIso());
@@ -3490,10 +3505,11 @@ public class WorkshopPOSFragment extends Fragment
         putNullableLong(payload, "work_order", selectedWorkOrderId);
 
         payload.put("payment_method", paymentMethod);
-        payload.put("subtotal", subtotal);
-        payload.put("discount", discount);
-        payload.put("tax", tax);
-        payload.put("total", total);
+        // String desimal, bukan double: JSONObject akan menulis ekspansi biner.
+        payload.put("subtotal", subtotalMoney.toPlainString());
+        payload.put("discount", discountMoney.toPlainString());
+        payload.put("tax", taxMoney.toPlainString());
+        payload.put("total", totalMoney.toPlainString());
 
         StringBuilder notes = new StringBuilder();
         notes.append("Workshop order");
@@ -3562,8 +3578,10 @@ public class WorkshopPOSFragment extends Fragment
             itemObj.put("item_type", backendItemType);
             itemObj.put("name", item.getName());
             itemObj.put("quantity", item.getQuantity());
-            itemObj.put("price", item.getPrice());
-            itemObj.put("subtotal", item.getLineTotal());
+            // Server menghitung ulang total dari harga baris ini.
+            Money unitPrice = Money.ofDouble(item.getPrice());
+            itemObj.put("price", unitPrice.toPlainString());
+            itemObj.put("subtotal", unitPrice.times(item.getQuantity()).toPlainString());
             itemsArray.put(itemObj);
         }
         payload.put("items", itemsArray);
@@ -3578,7 +3596,7 @@ public class WorkshopPOSFragment extends Fragment
         }
 
         paymentObj.put("method_code", paymentMethod);
-        paymentObj.put("amount", total);
+        paymentObj.put("amount", totalMoney.toPlainString());
 
         if (bankAccountId != null && bankAccountId > 0) {
             paymentObj.put("bank_account_id", bankAccountId);

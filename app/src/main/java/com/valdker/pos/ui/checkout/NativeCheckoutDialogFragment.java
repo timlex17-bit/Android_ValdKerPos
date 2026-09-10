@@ -20,6 +20,7 @@ import androidx.fragment.app.DialogFragment;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.valdker.pos.R;
+import com.valdker.pos.money.Money;
 import com.valdker.pos.utils.Toast;
 
 import java.text.NumberFormat;
@@ -73,6 +74,10 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         public final double unitPrice;
         public final double lineTotal;
 
+        /** Nilai otoritatif; field double di atas hanya turunannya. */
+        @NonNull public final Money unitPriceMoney;
+        @NonNull public final Money lineTotalMoney;
+
         public CheckoutItem(long productId,
                             @NonNull String productName,
                             int quantity,
@@ -83,6 +88,8 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
             this.quantity = quantity;
             this.unitPrice = unitPrice;
             this.lineTotal = lineTotal;
+            this.unitPriceMoney = Money.ofDouble(unitPrice);
+            this.lineTotalMoney = Money.ofDouble(lineTotal);
         }
     }
 
@@ -102,6 +109,13 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         public double totalAmount;
         public double cashReceived;
         public double changeAmount;
+
+        /** Nilai otoritatif; field double di atas hanya turunannya. */
+        @NonNull public Money subtotalMoney = Money.zero();
+        @NonNull public Money deliveryFeeMoney = Money.zero();
+        @NonNull public Money totalAmountMoney = Money.zero();
+        @NonNull public Money cashReceivedMoney = Money.zero();
+        @NonNull public Money changeAmountMoney = Money.zero();
 
         @NonNull public String tableNumber;
         @NonNull public String deliveryAddress;
@@ -138,6 +152,11 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
             this.totalAmount = totalAmount;
             this.cashReceived = cashReceived;
             this.changeAmount = changeAmount;
+            this.subtotalMoney = Money.ofDouble(subtotal);
+            this.deliveryFeeMoney = Money.ofDouble(deliveryFee);
+            this.totalAmountMoney = Money.ofDouble(totalAmount);
+            this.cashReceivedMoney = Money.ofDouble(cashReceived);
+            this.changeAmountMoney = Money.ofDouble(changeAmount);
             this.tableNumber = tableNumber;
             this.deliveryAddress = deliveryAddress;
             this.items = items;
@@ -329,10 +348,10 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         Bundle args = getArguments() != null ? getArguments() : new Bundle();
 
         final double baseSubtotal = args.getDouble(ARG_TOTAL, 0.0);
+        final Money baseSubtotalMoney = Money.ofDouble(baseSubtotal);
         final boolean needTable = args.getBoolean(ARG_NEED_TABLE, false);
         final boolean needDelivery = args.getBoolean(ARG_NEED_DELIVERY, false);
 
-        final NumberFormat usd = NumberFormat.getCurrencyInstance(Locale.US);
 
         TextView tvTotal = view.findViewById(R.id.tvTotalAmount);
 
@@ -406,29 +425,30 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         };
 
         final Runnable updateTotals = () -> {
-            double fee = (needDelivery && etFee != null) ? parseMoney(safe(etFee.getText())) : 0.0;
-            fee = Math.max(0.0, fee);
+            Money fee = (needDelivery && etFee != null)
+                    ? Money.of(safe(etFee.getText())).orZeroIfNegative()
+                    : Money.zero();
 
-            double totalNow = baseSubtotal + fee;
+            Money totalNow = baseSubtotalMoney.plus(fee);
 
             if (tvTotal != null) {
-                tvTotal.setText(usd.format(totalNow));
+                tvTotal.setText(totalNow.format());
             }
 
             PaymentMethodOption selectedMethod = getSelectedPaymentMethod(spPaymentMethod);
             boolean isCash = selectedMethod != null && "CASH".equalsIgnoreCase(selectedMethod.code);
 
             if (isCash && tvChange != null && etCash != null) {
-                double cash = parseMoney(safe(etCash.getText()));
+                Money cash = Money.of(safe(etCash.getText()));
 
-                if (cash <= 0) {
-                    tvChange.setText(getString(R.string.checkout_change_format, usd.format(0.0)));
-                } else if (cash < totalNow) {
-                    double shortage = totalNow - cash;
-                    tvChange.setText(getString(R.string.checkout_shortage_format, usd.format(shortage)));
+                if (!cash.isPositive()) {
+                    tvChange.setText(getString(R.string.checkout_change_format, Money.zero().format()));
+                } else if (cash.isLessThan(totalNow)) {
+                    tvChange.setText(getString(R.string.checkout_shortage_format,
+                            totalNow.minus(cash).format()));
                 } else {
-                    double change = cash - totalNow;
-                    tvChange.setText(getString(R.string.checkout_change_format, usd.format(change)));
+                    tvChange.setText(getString(R.string.checkout_change_format,
+                            cash.minus(totalNow).format()));
                 }
             }
         };
@@ -491,7 +511,7 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
             });
         }
 
-        if (tvTotal != null) tvTotal.setText(usd.format(baseSubtotal));
+        if (tvTotal != null) tvTotal.setText(baseSubtotalMoney.format());
         updateCustomerInfo.run();
         applyPaymentUi.run();
 
@@ -515,15 +535,21 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                     return;
                 }
 
-                double deliveryFee = (needDelivery && etFee != null) ? parseMoney(safe(etFee.getText())) : 0.0;
-                deliveryFee = Math.max(0.0, deliveryFee);
+                Money deliveryFeeMoney = (needDelivery && etFee != null)
+                        ? Money.of(safe(etFee.getText())).orZeroIfNegative()
+                        : Money.zero();
 
-                double totalNow = baseSubtotal + deliveryFee;
+                Money totalNowMoney = baseSubtotalMoney.plus(deliveryFeeMoney);
 
-                double cashReceived = parseMoney(etCash != null ? safe(etCash.getText()) : "");
-                double changeAmount = "CASH".equalsIgnoreCase(selectedMethod.code)
-                        ? Math.max(0.0, cashReceived - totalNow)
-                        : 0.0;
+                Money cashReceivedMoney = Money.of(etCash != null ? safe(etCash.getText()) : "");
+                Money changeAmountMoney = "CASH".equalsIgnoreCase(selectedMethod.code)
+                        ? cashReceivedMoney.minus(totalNowMoney).orZeroIfNegative()
+                        : Money.zero();
+
+                double deliveryFee = deliveryFeeMoney.toDouble();
+                double totalNow = totalNowMoney.toDouble();
+                double cashReceived = cashReceivedMoney.toDouble();
+                double changeAmount = changeAmountMoney.toDouble();
 
                 String table = (needTable && etTable != null) ? safe(etTable.getText()) : "";
                 String addr = (needDelivery && etAddr != null) ? safe(etAddr.getText()) : "";
@@ -547,7 +573,7 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                 }
 
                 if ("CASH".equalsIgnoreCase(selectedMethod.code)) {
-                    if (cashReceived <= 0) {
+                    if (!cashReceivedMoney.isPositive()) {
                         if (etCash != null) {
                             etCash.setError(getString(R.string.msg_cash_received_required));
                             etCash.requestFocus();
@@ -555,7 +581,9 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                         return;
                     }
 
-                    if (cashReceived < totalNow) {
+                    // Perbandingan eksak: dengan double, uang pas untuk total
+                    // hasil 0.1+0.2 tampak kurang dan pembayaran ditolak.
+                    if (cashReceivedMoney.isLessThan(totalNowMoney)) {
                         if (etCash != null) {
                             etCash.setError(getString(R.string.msg_cash_received_less_total));
                             etCash.requestFocus();
@@ -623,6 +651,12 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                             addr,
                             safeItems
                     );
+                    // Nilai eksak, bukan hasil bolak-balik lewat double.
+                    result.subtotalMoney = baseSubtotalMoney;
+                    result.deliveryFeeMoney = deliveryFeeMoney;
+                    result.totalAmountMoney = totalNowMoney;
+                    result.cashReceivedMoney = cashReceivedMoney;
+                    result.changeAmountMoney = changeAmountMoney;
                     bankListener.onConfirmBank(result);
                 }
 
@@ -661,18 +695,6 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
     private String safe(@Nullable CharSequence cs) {
         if (cs == null) return "";
         return cs.toString().trim();
-    }
-
-    private double parseMoney(@Nullable String s) {
-        try {
-            if (s == null) return 0.0;
-            String t = s.trim();
-            if (t.isEmpty()) return 0.0;
-            t = t.replace("$", "").replace(",", "");
-            return Double.parseDouble(t);
-        } catch (Exception e) {
-            return 0.0;
-        }
     }
 
     private abstract static class SimpleTextWatcher implements TextWatcher {

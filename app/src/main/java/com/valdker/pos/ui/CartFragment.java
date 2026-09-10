@@ -21,6 +21,7 @@ import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.cart.CartManager;
 import com.valdker.pos.models.CartItem;
+import com.valdker.pos.money.Money;
 import com.valdker.pos.models.Customer;
 import com.valdker.pos.repositories.CheckoutConfigRepository;
 import com.valdker.pos.repositories.CustomerRepository;
@@ -587,14 +588,17 @@ public class CartFragment extends Fragment {
             return;
         }
 
-        final double subtotal = calcSubtotal(snapshot);
-        final double feeSafe = Math.max(0, result.deliveryFee);
-        final double total = subtotal + (hasDelivery ? feeSafe : 0);
+        final Money subtotalMoney = calcSubtotal(snapshot);
+        final Money feeSafeMoney = result.deliveryFeeMoney.orZeroIfNegative();
 
         final boolean hasDeliveryFinal = hasDelivery;
-        final double deliveryFeeFinal = hasDeliveryFinal ? feeSafe : 0;
-        final double subtotalFinal = subtotal;
-        final double totalFinal = total;
+        final Money deliveryFeeMoney = hasDeliveryFinal ? feeSafeMoney : Money.zero();
+        final Money totalMoney = subtotalMoney.plus(deliveryFeeMoney);
+
+        // Dipertahankan untuk pemanggil cetak struk yang belum dimigrasi.
+        final double deliveryFeeFinal = deliveryFeeMoney.toDouble();
+        final double subtotalFinal = subtotalMoney.toDouble();
+        final double totalFinal = totalMoney.toDouble();
 
         final String paymentCodeFinal = result.paymentMethodCode != null
                 ? result.paymentMethodCode.trim().toUpperCase(Locale.US)
@@ -612,10 +616,10 @@ public class CartFragment extends Fragment {
             }
             payload.put("device_time", currentDeviceTimeIso());
             payload.put("payment_method", paymentCodeFinal);
-            payload.put("subtotal", String.format(Locale.US, "%.2f", subtotalFinal));
-            payload.put("discount", "0.00");
-            payload.put("tax", "0.00");
-            payload.put("total", String.format(Locale.US, "%.2f", totalFinal));
+            payload.put("subtotal", subtotalMoney.toPlainString());
+            payload.put("discount", Money.zero().toPlainString());
+            payload.put("tax", Money.zero().toPlainString());
+            payload.put("total", totalMoney.toPlainString());
             payload.put("notes", "Checkout from Android");
             payload.put("is_paid", true);
 
@@ -634,7 +638,7 @@ public class CartFragment extends Fragment {
             payload.put("default_order_type", overallType);
             payload.put("table_number", tableFinal);
             payload.put("delivery_address", addrFinal);
-            payload.put("delivery_fee", String.format(Locale.US, "%.2f", deliveryFeeFinal));
+            payload.put("delivery_fee", deliveryFeeMoney.toPlainString());
 
             Log.d(TAG, "snapshot size = " + snapshot.size());
 
@@ -656,7 +660,7 @@ public class CartFragment extends Fragment {
 
                 one.put("product", it.productId);
                 one.put("quantity", Math.max(1, it.qty));
-                one.put("price", String.format(Locale.US, "%.2f", Math.max(0, it.price)));
+                one.put("price", it.price().orZeroIfNegative().toPlainString());
 
                 String ot;
                 if ("restaurant".equalsIgnoreCase(businessType)) {
@@ -691,7 +695,7 @@ public class CartFragment extends Fragment {
             } else {
                 paymentObj.put("bank_account_id", JSONObject.NULL);
             }
-            paymentObj.put("amount", String.format(Locale.US, "%.2f", totalFinal));
+            paymentObj.put("amount", totalMoney.toPlainString());
             paymentObj.put("reference_number", result.referenceNumber != null ? result.referenceNumber : "");
             paymentObj.put("note", result.paymentNote != null ? result.paymentNote : "");
 
@@ -1341,10 +1345,12 @@ public class CartFragment extends Fragment {
         return sb.toString();
     }
 
-    private double calcSubtotal(@NonNull List<CartItem> items) {
-        double total = 0.0;
+    @NonNull
+    private Money calcSubtotal(@NonNull List<CartItem> items) {
+        Money total = Money.zero();
         for (CartItem it : items) {
-            total += (Math.max(0, it.price) * Math.max(0, it.qty));
+            if (it == null || it.qty <= 0) continue;
+            total = total.plus(it.price().orZeroIfNegative().times(it.qty));
         }
         return total;
     }
@@ -1360,7 +1366,7 @@ public class CartFragment extends Fragment {
         if (rv != null) rv.setVisibility(empty ? View.GONE : View.VISIBLE);
         if (tvEmpty != null) tvEmpty.setVisibility(empty ? View.VISIBLE : View.GONE);
 
-        if (tvSubtotal != null) tvSubtotal.setText(usd.format(cart.getTotalAmount()));
+        if (tvSubtotal != null) tvSubtotal.setText(cart.getTotal().format());
 
         if (btnContinuePayment != null) btnContinuePayment.setEnabled(!empty && !cancelInProgress);
         if (btnCancelOrder != null) btnCancelOrder.setEnabled(!empty && !cancelInProgress);

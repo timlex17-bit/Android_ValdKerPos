@@ -2185,16 +2185,19 @@ public class MainActivity extends AppCompatActivity
             body.put("delivery_address", safeTrim(result.deliveryAddress));
         }
 
-        if (result.deliveryFee > 0) {
-            body.put("delivery_fee", result.deliveryFee);
+        // Semua nilai uang dikirim sebagai string desimal. Menaruh double ke
+        // JSONObject menuliskan ekspansi binernya apa adanya, mis.
+        // 0.30000000000000004.
+        if (result.deliveryFeeMoney.isPositive()) {
+            body.put("delivery_fee", result.deliveryFeeMoney.toPlainString());
         }
 
-        if (result.cashReceived > 0) {
-            body.put("cash_received", result.cashReceived);
+        if (result.cashReceivedMoney.isPositive()) {
+            body.put("cash_received", result.cashReceivedMoney.toPlainString());
         }
 
-        if (result.changeAmount > 0) {
-            body.put("change_amount", result.changeAmount);
+        if (result.changeAmountMoney.isPositive()) {
+            body.put("change_amount", result.changeAmountMoney.toPlainString());
         }
 
         JSONArray items = new JSONArray();
@@ -2206,7 +2209,9 @@ public class MainActivity extends AppCompatActivity
             JSONObject line = new JSONObject();
             line.put("product", item.productId);
             line.put("quantity", item.quantity);
-            line.put("price", item.unitPrice);
+            // Server menghitung ulang subtotal dan total dari harga baris ini,
+            // jadi presisinya di sinilah yang menentukan angka di server.
+            line.put("price", item.unitPriceMoney.toPlainString());
             items.put(line);
         }
         body.put("items", items);
@@ -2230,7 +2235,7 @@ public class MainActivity extends AppCompatActivity
             payment.put("note", safeTrim(result.paymentNote));
         }
 
-        payment.put("amount", result.totalAmount);
+        payment.put("amount", result.totalAmountMoney.toPlainString());
         payments.put(payment);
         body.put("payments", payments);
 
