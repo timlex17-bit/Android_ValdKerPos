@@ -281,17 +281,11 @@ public class SessionManager {
         return normalizePlan(prefs.getString(KEY_PLAN, "basic"));
     }
 
-    public boolean isBasic() {
-        return "basic".equals(getPlan());
-    }
-
-    public boolean isPro() {
-        return "pro".equals(getPlan());
-    }
-
-    public boolean isEnterprise() {
-        return "enterprise".equals(getPlan());
-    }
+    // isBasic()/isPro()/isEnterprise() dihapus: nol pemanggil, padahal bentuknya
+    // seperti kontrol akses. Gerbang yang sebenarnya adalah canAccessModule(),
+    // yang memakai effective_modules dari server - plan sudah diperhitungkan di
+    // sana oleh backend (lihat MODULE_MATRIX.md). Menambahkan aturan plan di
+    // klien hanya akan jadi salinan kedua yang cepat basi.
 
     public boolean canAccessModule(@Nullable String key) {
         String moduleKey = normalizeModuleKey(key);
