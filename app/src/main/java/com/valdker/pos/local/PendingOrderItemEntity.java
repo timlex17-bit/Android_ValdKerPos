@@ -1,6 +1,8 @@
 package com.valdker.pos.local;
 
 import androidx.annotation.NonNull;
+
+import com.valdker.pos.money.Money;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.Index;
@@ -42,9 +44,13 @@ public class PendingOrderItemEntity {
     public String barcode = "";
 
     public int quantity = 0;
-    public double price = 0d;
-    public double discount = 0d;
-    public double total = 0d;
+    // Teks desimal, alasannya sama seperti di PendingOrderEntity.
+    @NonNull public String price = "0.00";
+    @NonNull public String discount = "0.00";
+    @NonNull public String total = "0.00";
+
+    @NonNull public Money priceMoney() { return Money.of(price); }
+    @NonNull public Money totalMoney() { return Money.of(total); }
 
     @NonNull
     public String note = "";

@@ -14,6 +14,7 @@ import com.valdker.pos.SessionManager;
 import com.valdker.pos.local.PendingOrderEntity;
 import com.valdker.pos.local.PendingOrderItemEntity;
 import com.valdker.pos.local.ValoraLocalDatabase;
+import com.valdker.pos.money.Money;
 import com.valdker.pos.utils.ErrorHandler;
 import com.valdker.pos.utils.NetworkUtils;
 
@@ -824,16 +825,19 @@ public class OfflineOrderRepository {
         if (order.bankAccountId == null) {
             order.bankAccountId = firstNullableInt(payload, "bank_account_id", "bank_account");
         }
-        order.subtotal = optDouble(payload, "subtotal");
-        order.discount = optDouble(payload, "discount");
-        order.tax = optDouble(payload, "tax");
-        order.total = optDouble(payload, "total");
-        order.paidAmount = firstPositive(
-                optDouble(firstPayment(payload), "amount"),
-                optDouble(payload, "cash_received"),
-                order.total
+        // Payload sudah membawa teks desimal setelah migrasi uang; dibaca apa
+        // adanya supaya tidak bolak-balik lewat double.
+        order.subtotal = Money.of(payload.optString("subtotal", "")).toPlainString();
+        order.discount = Money.of(payload.optString("discount", "")).toPlainString();
+        order.tax = Money.of(payload.optString("tax", "")).toPlainString();
+        order.total = Money.of(payload.optString("total", "")).toPlainString();
+        Money paid = firstPositiveMoney(
+                Money.of(firstPayment(payload).optString("amount", "")),
+                Money.of(payload.optString("cash_received", "")),
+                order.totalMoney()
         );
-        order.changeAmount = optDouble(payload, "change_amount");
+        order.paidAmount = paid.toPlainString();
+        order.changeAmount = Money.of(payload.optString("change_amount", "")).toPlainString();
         order.orderType = firstNonEmpty(
                 payload.optString("default_order_type", ""),
                 firstItem(payload).optString("order_type", "")
@@ -870,18 +874,27 @@ public class OfflineOrderRepository {
             entity.sku = item.optString("sku", "");
             entity.barcode = firstNonEmpty(item.optString("barcode", ""), item.optString("code", ""));
             entity.quantity = Math.max(0, firstInt(item, "quantity", "qty"));
-            entity.price = optDouble(item, "price");
-            entity.discount = optDouble(item, "discount");
-            entity.total = firstPositive(
-                    optDouble(item, "total"),
-                    optDouble(item, "subtotal"),
-                    optDouble(item, "line_total"),
-                    entity.price * entity.quantity
-            );
+            Money unitPrice = Money.of(item.optString("price", ""));
+            entity.price = unitPrice.toPlainString();
+            entity.discount = Money.of(item.optString("discount", "")).toPlainString();
+            entity.total = firstPositiveMoney(
+                    Money.of(item.optString("total", "")),
+                    Money.of(item.optString("subtotal", "")),
+                    Money.of(item.optString("line_total", "")),
+                    unitPrice.times(entity.quantity)
+            ).toPlainString();
             entity.note = item.optString("note", "");
             out.add(entity);
         }
         return out;
+    }
+
+    @NonNull
+    private static Money firstPositiveMoney(@NonNull Money... candidates) {
+        for (Money m : candidates) {
+            if (m != null && m.isPositive()) return m;
+        }
+        return Money.zero();
     }
 
     @NonNull

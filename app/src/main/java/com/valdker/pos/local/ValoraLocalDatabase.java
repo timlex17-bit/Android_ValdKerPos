@@ -43,8 +43,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
                 CachedRoleEntity.class,
                 CachedMenuPermissionEntity.class
         },
-        version = 14,
-        exportSchema = false
+        version = 15,
+        exportSchema = true
 )
 public abstract class ValoraLocalDatabase extends RoomDatabase {
 
@@ -498,6 +498,69 @@ public abstract class ValoraLocalDatabase extends RoomDatabase {
     public abstract CachedUserDao cachedUserDao();
     public abstract CachedMenuPermissionDao cachedMenuPermissionDao();
 
+    /**
+     * Kolom uang pada order yang belum tersinkron: REAL -> TEXT desimal.
+     *
+     * Nilai lama dikonversi dengan printf('%.2f', ...) sehingga baris yang
+     * tersimpan sebagai 0.30000000000000004 menjadi "0.30". Tabel dibuat ulang
+     * karena SQLite tidak bisa mengubah tipe kolom lewat ALTER; datanya disalin,
+     * bukan dibuang - baris di sini adalah penjualan yang belum sampai ke server.
+     */
+    static final Migration MIGRATION_14_15 = new Migration(14, 15) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("PRAGMA foreign_keys=OFF");
+
+            db.execSQL("CREATE TABLE IF NOT EXISTS `pending_orders_new` (`localOrderId` TEXT NOT NULL, `rawPayloadJson` TEXT NOT NULL, `clientOrderId` TEXT NOT NULL DEFAULT '', `businessType` TEXT NOT NULL, `shopId` INTEGER NOT NULL, `shopCode` TEXT NOT NULL, `shopName` TEXT NOT NULL, `apiBaseUrl` TEXT NOT NULL, `createdByUserId` TEXT NOT NULL, `createdByUsername` TEXT NOT NULL, `customerId` INTEGER, `paymentMethodId` INTEGER, `bankAccountId` INTEGER, `subtotal` TEXT NOT NULL, `discount` TEXT NOT NULL, `tax` TEXT NOT NULL, `total` TEXT NOT NULL, `paidAmount` TEXT NOT NULL, `changeAmount` TEXT NOT NULL, `orderType` TEXT NOT NULL, `note` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `syncStatus` TEXT NOT NULL, `syncAttemptCount` INTEGER NOT NULL, `lastSyncError` TEXT NOT NULL, PRIMARY KEY(`localOrderId`))");
+
+            db.execSQL("INSERT INTO `pending_orders_new` ("
+                    + "`localOrderId`,`rawPayloadJson`,`clientOrderId`,`businessType`,`shopId`,`shopCode`,"
+                    + "`shopName`,`apiBaseUrl`,`createdByUserId`,`createdByUsername`,`customerId`,"
+                    + "`paymentMethodId`,`bankAccountId`,`subtotal`,`discount`,`tax`,`total`,`paidAmount`,"
+                    + "`changeAmount`,`orderType`,`note`,`createdAt`,`updatedAt`,`syncStatus`,"
+                    + "`syncAttemptCount`,`lastSyncError`) "
+                    + "SELECT `localOrderId`,`rawPayloadJson`,`clientOrderId`,`businessType`,`shopId`,`shopCode`,"
+                    + "`shopName`,`apiBaseUrl`,`createdByUserId`,`createdByUsername`,`customerId`,"
+                    + "`paymentMethodId`,`bankAccountId`,"
+                    + "printf('%.2f', COALESCE(`subtotal`, 0)),"
+                    + "printf('%.2f', COALESCE(`discount`, 0)),"
+                    + "printf('%.2f', COALESCE(`tax`, 0)),"
+                    + "printf('%.2f', COALESCE(`total`, 0)),"
+                    + "printf('%.2f', COALESCE(`paidAmount`, 0)),"
+                    + "printf('%.2f', COALESCE(`changeAmount`, 0)),"
+                    + "`orderType`,`note`,`createdAt`,`updatedAt`,`syncStatus`,`syncAttemptCount`,`lastSyncError` "
+                    + "FROM `pending_orders`");
+
+            db.execSQL("DROP TABLE `pending_orders`");
+            db.execSQL("ALTER TABLE `pending_orders_new` RENAME TO `pending_orders`");
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_pending_orders_syncStatus` ON `pending_orders` (`syncStatus`)");
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_pending_orders_businessType` ON `pending_orders` (`businessType`)");
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_pending_orders_shopId` ON `pending_orders` (`shopId`)");
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_pending_orders_shopCode` ON `pending_orders` (`shopCode`)");
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_pending_orders_clientOrderId` ON `pending_orders` (`clientOrderId`)");
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_pending_orders_createdAt` ON `pending_orders` (`createdAt`)");
+
+            db.execSQL("CREATE TABLE IF NOT EXISTS `pending_order_items_new` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `localOrderId` TEXT NOT NULL, `productId` INTEGER NOT NULL, `itemType` TEXT NOT NULL, `name` TEXT NOT NULL, `sku` TEXT NOT NULL, `barcode` TEXT NOT NULL, `quantity` INTEGER NOT NULL, `price` TEXT NOT NULL, `discount` TEXT NOT NULL, `total` TEXT NOT NULL, `note` TEXT NOT NULL, FOREIGN KEY(`localOrderId`) REFERENCES `pending_orders`(`localOrderId`) ON UPDATE NO ACTION ON DELETE CASCADE )");
+
+            db.execSQL("INSERT INTO `pending_order_items_new` ("
+                    + "`id`,`localOrderId`,`productId`,`itemType`,`name`,`sku`,`barcode`,`quantity`,"
+                    + "`price`,`discount`,`total`,`note`) "
+                    + "SELECT `id`,`localOrderId`,`productId`,`itemType`,`name`,`sku`,`barcode`,`quantity`,"
+                    + "printf('%.2f', COALESCE(`price`, 0)),"
+                    + "printf('%.2f', COALESCE(`discount`, 0)),"
+                    + "printf('%.2f', COALESCE(`total`, 0)),"
+                    + "`note` FROM `pending_order_items`");
+
+            db.execSQL("DROP TABLE `pending_order_items`");
+            db.execSQL("ALTER TABLE `pending_order_items_new` RENAME TO `pending_order_items`");
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_pending_order_items_localOrderId` ON `pending_order_items` (`localOrderId`)");
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_pending_order_items_productId` ON `pending_order_items` (`productId`)");
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_pending_order_items_itemType` ON `pending_order_items` (`itemType`)");
+
+            db.execSQL("PRAGMA foreign_keys=ON");
+        }
+    };
+
     @NonNull
     public static ValoraLocalDatabase getInstance(@NonNull Context context) {
         if (instance == null) {
@@ -508,7 +571,7 @@ public abstract class ValoraLocalDatabase extends RoomDatabase {
                                     ValoraLocalDatabase.class,
                                     "valora_local_master.db"
                             )
-                            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14)
+                            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15)
                             .build();
                 }
             }

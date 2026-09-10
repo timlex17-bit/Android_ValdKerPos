@@ -25,6 +25,14 @@ android {
 
     defaultConfig {
         applicationId "com.valdker.pos"
+
+        // Skema Room diekspor supaya migrasi bisa ditulis dari skema yang
+        // benar-benar diharapkan Room, dan bisa diuji, bukan ditebak.
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
         minSdk 24
         targetSdk 36
         // Dinaikkan manual tiap rilis; Play menolak upload dengan versionCode

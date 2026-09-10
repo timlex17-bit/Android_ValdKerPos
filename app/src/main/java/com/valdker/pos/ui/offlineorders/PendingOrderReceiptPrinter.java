@@ -156,12 +156,14 @@ final class PendingOrderReceiptPrinter {
         String label = labelForStatus(order.syncStatus);
         String customer = customerLabel(payload);
         String payment = paymentLabel(payload, order);
-        double subtotal = positiveOr(order.subtotal, optDouble(payload, "subtotal"));
-        double discount = positiveOr(order.discount, optDouble(payload, "discount"));
-        double tax = positiveOr(order.tax, optDouble(payload, "tax"));
-        double total = positiveOr(order.total, optDouble(payload, "total"));
-        double paid = positiveOr(order.paidAmount, paymentAmount(payload));
-        double change = positiveOr(order.changeAmount, optDouble(payload, "change_amount"));
+        // Kolom uang di Room kini teks desimal; dibaca lewat Money lalu baru
+        // dikonversi untuk DTO struk yang masih memakai double (lapis 5).
+        double subtotal = positiveOr(order.subtotalMoney().toDouble(), optDouble(payload, "subtotal"));
+        double discount = positiveOr(order.discountMoney().toDouble(), optDouble(payload, "discount"));
+        double tax = positiveOr(order.taxMoney().toDouble(), optDouble(payload, "tax"));
+        double total = positiveOr(order.totalMoney().toDouble(), optDouble(payload, "total"));
+        double paid = positiveOr(order.paidAmountMoney().toDouble(), paymentAmount(payload));
+        double change = positiveOr(order.changeAmountMoney().toDouble(), optDouble(payload, "change_amount"));
         String tableNumber = payload.optString("table_number", "");
         String deliveryAddress = payload.optString("delivery_address", "");
 
@@ -245,11 +247,11 @@ final class PendingOrderReceiptPrinter {
             item.quantity = entity != null && entity.quantity > 0
                     ? entity.quantity
                     : Math.max(0, firstInt(raw, "quantity", "qty"));
-            item.price = entity != null && entity.price > 0d
-                    ? entity.price
+            item.price = entity != null && entity.priceMoney().isPositive()
+                    ? entity.priceMoney().toDouble()
                     : optDouble(raw, "price");
-            item.total = entity != null && entity.total > 0d
-                    ? entity.total
+            item.total = entity != null && entity.totalMoney().isPositive()
+                    ? entity.totalMoney().toDouble()
                     : firstPositive(optDouble(raw, "total"), optDouble(raw, "subtotal"), item.price * item.quantity);
             items.add(item);
         }
