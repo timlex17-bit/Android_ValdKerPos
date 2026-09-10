@@ -160,6 +160,15 @@ public class RetailPOSFragment extends Fragment {
         return fragment;
     }
 
+    /**
+     * Draft yang sedang aktif. Dipakai MainActivity untuk mengikat
+     * client_order_id ke satu draft, supaya kunci yang ditahan lintas retry
+     * tidak pernah terbawa ke keranjang draft lain.
+     */
+    public long getActiveDraftId() {
+        return activeDraftId;
+    }
+
     public void clearAfterCheckout() {
         try {
             Log.i(TAG, "checkout cleanup started pos=retail");

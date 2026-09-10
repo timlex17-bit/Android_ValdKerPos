@@ -84,6 +84,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -132,6 +133,12 @@ public class WorkshopPOSFragment extends Fragment
     private boolean checkoutOfflineNoticeShown = false;
     private boolean checkoutNoLocalDataNoticeShown = false;
     private boolean checkoutSubmitting = false;
+
+    // Satu kunci idempotensi per draft, dipertahankan lintas percobaan supaya
+    // retry manual memakai kunci yang sama dan dedup di server bisa bekerja.
+    // Harus berupa peta, bukan satu slot: kasir bisa berpindah draft lalu
+    // kembali, dan draft yang ditinggalkan wajib menemukan kunci lamanya utuh.
+    private final Map<Long, String> pendingWorkshopClientOrderIds = new ConcurrentHashMap<>();
 
     private final List<PaymentMethodItem> checkoutPaymentMethods = new ArrayList<>();
     private final List<BankAccountItem> checkoutBankAccounts = new ArrayList<>();
@@ -3243,7 +3250,13 @@ public class WorkshopPOSFragment extends Fragment
                     getSelectedVehicleTypeCode()
             );
             List<WorkshopCartItem> receiptItems = new ArrayList<>(cartItems);
-            String clientOrderId = OfflineOrderRepository.newClientOrderId(appCtx);
+            final long draftIdForKey = activeDraftId;
+            String heldClientOrderId = pendingWorkshopClientOrderIds.get(draftIdForKey);
+            if (heldClientOrderId == null) {
+                heldClientOrderId = OfflineOrderRepository.newClientOrderId(appCtx);
+                pendingWorkshopClientOrderIds.put(draftIdForKey, heldClientOrderId);
+            }
+            String clientOrderId = heldClientOrderId;
             OfflineOrderRepository.ensureClientOrderId(payload, clientOrderId);
             String localOrderId = clientOrderId;
             Log.i(TAG, "Workshop order submit client_order_id=" + clientOrderId);
@@ -3252,6 +3265,10 @@ public class WorkshopPOSFragment extends Fragment
                 @Override
                 public void onSuccess(@NonNull JSONObject response) {
                     checkoutSubmitting = false;
+                    // Order sudah tersimpan di server: checkout berikutnya harus pakai kunci baru.
+                    // Ditaruh di sini, bukan di onCheckoutSubmitSuccess(), supaya cabang
+                    // "fragment sudah detach" di bawah juga ikut terbersihkan.
+                    pendingWorkshopClientOrderIds.remove(draftIdForKey);
                     new OfflineOrderRepository(appCtx).syncPendingOrders(token);
                     if (isAdded()) {
                         setCheckoutLoading(false);
@@ -3285,7 +3302,7 @@ public class WorkshopPOSFragment extends Fragment
                     }
 
                     if (OfflineOrderRepository.shouldSaveOffline(appCtx, statusCode, message)) {
-                        saveWorkshopOrderOffline(localOrderId, payload, result, receiptItems, appCtx);
+                        saveWorkshopOrderOffline(localOrderId, payload, result, receiptItems, appCtx, draftIdForKey);
                         return;
                     }
 
@@ -3317,7 +3334,8 @@ public class WorkshopPOSFragment extends Fragment
                                           @NonNull JSONObject payload,
                                           @NonNull NativeCheckoutDialogFragment.BankCheckoutResult result,
                                           @NonNull List<WorkshopCartItem> receiptItems,
-                                          @NonNull Context appCtx) {
+                                          @NonNull Context appCtx,
+                                          long draftIdForKey) {
         new OfflineOrderRepository(appCtx).savePendingOrder(
                 localOrderId,
                 payload,
@@ -3326,6 +3344,9 @@ public class WorkshopPOSFragment extends Fragment
                     @Override
                     public void onSuccess(@NonNull String savedLocalOrderId, boolean inserted) {
                         checkoutSubmitting = false;
+                        // Kunci sudah tersimpan di Room dan akan dipakai ulang oleh sync
+                        // otomatis, jadi aman dibuang dari memori di sini.
+                        pendingWorkshopClientOrderIds.remove(draftIdForKey);
                         if (isAdded()) {
                             setCheckoutLoading(false);
                         }

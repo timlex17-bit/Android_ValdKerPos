@@ -98,6 +98,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -149,6 +150,17 @@ public class MainActivity extends AppCompatActivity
     private volatile boolean logoutFlowRunning = false;
     private volatile boolean retailOrderSubmitting = false;
     private volatile boolean retailCheckoutDialogOpening = false;
+
+    // Satu kunci idempotensi per draft, dipertahankan lintas percobaan supaya
+    // retry manual memakai kunci yang sama dan dedup di server bisa bekerja.
+    // Harus berupa peta, bukan satu slot: kasir bisa berpindah draft lalu
+    // kembali, dan draft yang ditinggalkan wajib menemukan kunci lamanya utuh.
+    // Entri dibuang saat draft itu benar-benar tersimpan.
+    private final Map<Long, String> pendingRetailClientOrderIds = new ConcurrentHashMap<>();
+
+    // Idem untuk jalur restoran/legacy. Dipegang di sini, bukan di CartFragment,
+    // karena fragment itu dibuat ulang tiap kali overlay keranjang dibuka.
+    private final Map<Long, String> pendingCartClientOrderIds = new ConcurrentHashMap<>();
 
     private volatile boolean categoriesAppliedFromOnline = false;
 
@@ -1362,8 +1374,26 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    /**
+     * Draft restoran/legacy dimiliki activity ini, bukan CartFragment, jadi
+     * kunci idempotensinya juga ditahan di sini agar selamat dari pembuatan
+     * ulang fragment keranjang.
+     */
+    @NonNull
+    @Override
+    public String obtainClientOrderIdForActiveDraft() {
+        final long draftId = activeDraftId;
+        String held = pendingCartClientOrderIds.get(draftId);
+        if (held == null) {
+            held = OfflineOrderRepository.newClientOrderId(getApplicationContext());
+            pendingCartClientOrderIds.put(draftId, held);
+        }
+        return held;
+    }
+
     @Override
     public void onCartOrderFinished() {
+        pendingCartClientOrderIds.remove(activeDraftId);
         if (isWorkshopBusiness() || isRetailBusiness()) {
             CartManager.getInstance(this).clear();
             Log.i(TAG, "cart cleanup success pos=" + safeTrim(businessType) + " reason=cart_order_finished");
@@ -1642,7 +1672,13 @@ public class MainActivity extends AppCompatActivity
         }
 
         retailOrderSubmitting = true;
-        final String clientOrderId = OfflineOrderRepository.newClientOrderId(getApplicationContext());
+        final long draftIdForKey = resolveRetailActiveDraftId();
+        String heldClientOrderId = pendingRetailClientOrderIds.get(draftIdForKey);
+        if (heldClientOrderId == null) {
+            heldClientOrderId = OfflineOrderRepository.newClientOrderId(getApplicationContext());
+            pendingRetailClientOrderIds.put(draftIdForKey, heldClientOrderId);
+        }
+        final String clientOrderId = heldClientOrderId;
         OfflineOrderRepository.ensureClientOrderId(payload, clientOrderId);
         final String localOrderId = clientOrderId;
         Log.i(TAG, "Retail order submit client_order_id=" + clientOrderId);
@@ -1754,7 +1790,20 @@ public class MainActivity extends AppCompatActivity
         cleanupRetailAfterCheckout("offline_save_success");
     }
 
+    /**
+     * Draft retail dimiliki RetailPOSFragment, bukan activity ini.
+     * Pola pengambilannya sama dengan clearAfterCheckout() di bawah.
+     */
+    private long resolveRetailActiveDraftId() {
+        Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
+        if (current instanceof RetailPOSFragment) {
+            return ((RetailPOSFragment) current).getActiveDraftId();
+        }
+        return 0L;
+    }
+
     private void cleanupRetailAfterCheckout(@NonNull String reason) {
+        pendingRetailClientOrderIds.remove(resolveRetailActiveDraftId());
         Log.i(TAG, "checkout cleanup started pos=retail reason=" + reason);
         Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
         if (current instanceof RetailPOSFragment) {

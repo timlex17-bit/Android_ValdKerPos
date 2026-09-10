@@ -139,6 +139,11 @@ public class OfflineOrderRepository {
 
     public static void ensureClientOrderId(@NonNull JSONObject payload,
                                            @NonNull String clientOrderId) {
+        // Jangan timpa kunci yang sudah ada. Payload yang sedang dikirim ulang
+        // harus membawa kunci yang SAMA, kalau tidak dedup di server tidak kena.
+        String existing = safe(payload.optString("client_order_id", ""));
+        if (!existing.isEmpty()) return;
+
         String clean = safe(clientOrderId);
         if (clean.isEmpty()) clean = newClientOrderId();
 

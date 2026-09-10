@@ -46,6 +46,18 @@ public class CartFragment extends Fragment {
 
     public interface DraftLifecycleHost {
         void onCartOrderFinished();
+
+        /**
+         * Kunci idempotensi untuk draft yang sedang aktif: dicetak sekali lalu
+         * dipakai ulang selama draft itu belum tersimpan.
+         *
+         * Kuncinya dipegang host, bukan fragment ini, karena CartFragment
+         * dibuat ulang setiap kali overlay keranjang dibuka — kalau disimpan di
+         * sini, kunci hilang begitu kasir menutup keranjang, dan percobaan
+         * berikutnya untuk draft yang sama akan mencetak kunci baru.
+         */
+        @NonNull
+        String obtainClientOrderIdForActiveDraft();
     }
 
     private interface ReceiptPrintCallback {
@@ -323,13 +335,31 @@ public class CartFragment extends Fragment {
         mainHandler.post(this::closeOverlaySafely);
     }
 
-    private void finishActiveDraftAndClearCart() {
-        Log.i(TAG, "checkout cleanup started pos=" + businessType);
-
+    @Nullable
+    private DraftLifecycleHost resolveDraftLifecycleHost() {
         DraftLifecycleHost host = draftLifecycleHostRef != null ? draftLifecycleHostRef.get() : null;
         if (host == null && getActivity() instanceof DraftLifecycleHost) {
             host = (DraftLifecycleHost) getActivity();
         }
+        return host;
+    }
+
+    @NonNull
+    private String obtainClientOrderId(@NonNull android.content.Context appCtx) {
+        DraftLifecycleHost host = resolveDraftLifecycleHost();
+        if (host != null) {
+            return host.obtainClientOrderIdForActiveDraft();
+        }
+        // Tanpa host tidak ada tempat menahan kunci lintas percobaan; cetak baru
+        // supaya checkout tetap jalan (perilaku sebelum patch ini).
+        Log.w(TAG, "Draft lifecycle host unavailable; client_order_id tidak bisa ditahan lintas percobaan.");
+        return OfflineOrderRepository.newClientOrderId(appCtx);
+    }
+
+    private void finishActiveDraftAndClearCart() {
+        Log.i(TAG, "checkout cleanup started pos=" + businessType);
+
+        DraftLifecycleHost host = resolveDraftLifecycleHost();
 
         if (host != null) {
             host.onCartOrderFinished();
@@ -679,7 +709,7 @@ public class CartFragment extends Fragment {
             return;
         }
 
-        final String clientOrderId = OfflineOrderRepository.newClientOrderId(appCtx);
+        final String clientOrderId = obtainClientOrderId(appCtx);
         OfflineOrderRepository.ensureClientOrderId(payload, clientOrderId);
         final String localOrderId = clientOrderId;
         Log.i(TAG, "Checkout submit client_order_id=" + clientOrderId);
