@@ -3261,10 +3261,63 @@ public class WorkshopPOSFragment extends Fragment
             String localOrderId = clientOrderId;
             Log.i(TAG, "Workshop order submit client_order_id=" + clientOrderId);
 
-            orderRepository.createOrder(token, payload, new OrderRepository.CreateCallback() {
+            // WRITE-AHEAD: simpan dulu ke Room, baru kirim.
+            final String writeAheadLocalOrderId = localOrderId;
+            new OfflineOrderRepository(appCtx).savePendingOrder(
+                    writeAheadLocalOrderId,
+                    payload,
+                    POS_TYPE_WORKSHOP,
+                    new OfflineOrderRepository.SaveCallback() {
+                        @Override
+                        public void onSuccess(@NonNull String savedLocalOrderId, boolean inserted) {
+                            Log.i(TAG, "Workshop order write-ahead saved localOrderId=" + savedLocalOrderId
+                                    + " inserted=" + inserted);
+                            sendWorkshopOrderAfterWriteAhead(savedLocalOrderId, payload, token, appCtx,
+                                    result, receiptItems, draftIdForKey);
+                        }
+
+                        @Override
+                        public void onError(@NonNull String message) {
+                            checkoutSubmitting = false;
+                            Log.e(TAG, "Workshop order write-ahead FAILED, submit dibatalkan: " + message);
+                            if (isAdded()) {
+                                setCheckoutLoading(false);
+                                Toast.makeText(requireContext(),
+                                        "Failed to save local order: " + message,
+                                        Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    }
+            );
+
+        } catch (Exception e) {
+            checkoutSubmitting = false;
+            if (isAdded()) {
+                setCheckoutLoading(false);
+                ErrorHandler.handleApiError(requireContext(), "Error checkout: " + e.getMessage());
+            } else {
+                Log.e(TAG, "Workshop checkout error after detach", e);
+            }
+        }
+    }
+
+    private void sendWorkshopOrderAfterWriteAhead(@NonNull String localOrderId,
+                                                  @NonNull JSONObject payload,
+                                                  @NonNull String token,
+                                                  @NonNull Context appCtx,
+                                                  @NonNull NativeCheckoutDialogFragment.BankCheckoutResult result,
+                                                  @NonNull List<WorkshopCartItem> receiptItems,
+                                                  long draftIdForKey) {
+        if (orderRepository == null) {
+            checkoutSubmitting = false;
+            Log.e(TAG, "orderRepository null setelah write-ahead");
+            return;
+        }
+        orderRepository.createOrder(token, payload, new OrderRepository.CreateCallback() {
                 @Override
                 public void onSuccess(@NonNull JSONObject response) {
                     checkoutSubmitting = false;
+                    new OfflineOrderRepository(appCtx).markWriteAheadSynced(localOrderId);
                     // Order sudah tersimpan di server: checkout berikutnya harus pakai kunci baru.
                     // Ditaruh di sini, bukan di onCheckoutSubmitSuccess(), supaya cabang
                     // "fragment sudah detach" di bawah juga ikut terbersihkan.
@@ -3293,6 +3346,8 @@ public class WorkshopPOSFragment extends Fragment
                     }
 
                     if (ErrorHandler.isDeviceTimeValidationError(statusCode, message)) {
+                        new OfflineOrderRepository(appCtx)
+                                .markWriteAheadNeedsReview(localOrderId, "device_time rejected");
                         if (isAdded()) {
                             ErrorHandler.showDeviceTimeDialog(requireContext());
                         } else {
@@ -3302,11 +3357,14 @@ public class WorkshopPOSFragment extends Fragment
                     }
 
                     if (OfflineOrderRepository.shouldSaveOffline(appCtx, statusCode, message)) {
-                        saveWorkshopOrderOffline(localOrderId, payload, result, receiptItems, appCtx, draftIdForKey);
+                        // Sudah tersimpan PENDING_SYNC oleh write-ahead.
+                        finishWorkshopAfterOfflineSave(localOrderId, payload, result, receiptItems, appCtx, draftIdForKey);
                         return;
                     }
 
-                    Log.i(TAG, "cleanup skipped because save/submit failed pos=workshop statusCode=" + statusCode);
+                    new OfflineOrderRepository(appCtx).markWriteAheadFailed(localOrderId, "HTTP " + statusCode);
+                    Log.i(TAG, "cart kept because server rejected pos=workshop statusCode=" + statusCode
+                            + " (order tersimpan lokal)");
                     if (isAdded()) {
                         if (statusCode == 400
                                 && message != null
@@ -3322,69 +3380,44 @@ public class WorkshopPOSFragment extends Fragment
                     }
                 }
             });
-
-        } catch (Exception e) {
-            checkoutSubmitting = false;
-            setCheckoutLoading(false);
-            ErrorHandler.handleApiError(requireContext(), "Error checkout: " + e.getMessage());
-        }
     }
 
-    private void saveWorkshopOrderOffline(@NonNull String localOrderId,
-                                          @NonNull JSONObject payload,
-                                          @NonNull NativeCheckoutDialogFragment.BankCheckoutResult result,
-                                          @NonNull List<WorkshopCartItem> receiptItems,
-                                          @NonNull Context appCtx,
-                                          long draftIdForKey) {
-        new OfflineOrderRepository(appCtx).savePendingOrder(
-                localOrderId,
-                payload,
-                POS_TYPE_WORKSHOP,
-                new OfflineOrderRepository.SaveCallback() {
-                    @Override
-                    public void onSuccess(@NonNull String savedLocalOrderId, boolean inserted) {
-                        checkoutSubmitting = false;
-                        // Kunci sudah tersimpan di Room dan akan dipakai ulang oleh sync
-                        // otomatis, jadi aman dibuang dari memori di sini.
-                        pendingWorkshopClientOrderIds.remove(draftIdForKey);
-                        if (isAdded()) {
-                            setCheckoutLoading(false);
-                        }
-                        tryAutoPrintOfflineWorkshopReceipt(
-                                appCtx,
-                                receiptItems,
-                                result,
-                                offlineReceiptNumber(savedLocalOrderId, payload),
-                                payload.optString("device_time", ""),
-                                result -> showOfflineReceiptResult(appCtx, result)
-                        );
-                        if (isAdded()) {
-                            completeWorkshopCheckoutLocallyAfterOfflineSave(result.paymentMethodCode);
-                        } else if (cartManager != null) {
-                            Log.i(TAG, "checkout cleanup started pos=workshop reason=offline_save_success_detached");
-                            if (posDraftRepository != null && activeDraftId > 0L) {
-                                completeActiveWorkshopDraftCheckout();
-                            }
-                            cartManager.clear();
-                            Log.i(TAG, "cart cleanup success pos=workshop reason=offline_save_success_detached");
-                        }
-                    }
-
-                    @Override
-                    public void onError(@NonNull String message) {
-                        checkoutSubmitting = false;
-                        Log.i(TAG, "cleanup skipped because save/submit failed pos=workshop local_save_error=" + message);
-                        if (isAdded()) {
-                            setCheckoutLoading(false);
-                            Toast.makeText(requireContext(),
-                                    "Failed to save local order: " + message,
-                                    Toast.LENGTH_LONG).show();
-                        } else {
-                            Log.e(TAG, "Failed to save detached workshop order locally: " + message);
-                        }
-                    }
-                }
+    /**
+     * Order sudah tersimpan lokal oleh write-ahead; ini hanya menutup transaksi
+     * di layar (cetak struk offline, bersihkan keranjang).
+     */
+    private void finishWorkshopAfterOfflineSave(@NonNull String localOrderId,
+                                                @NonNull JSONObject payload,
+                                                @NonNull NativeCheckoutDialogFragment.BankCheckoutResult result,
+                                                @NonNull List<WorkshopCartItem> receiptItems,
+                                                @NonNull Context appCtx,
+                                                long draftIdForKey) {
+        checkoutSubmitting = false;
+        pendingWorkshopClientOrderIds.remove(draftIdForKey);
+        if (isAdded()) {
+            setCheckoutLoading(false);
+        }
+        tryAutoPrintOfflineWorkshopReceipt(
+                appCtx,
+                receiptItems,
+                result,
+                offlineReceiptNumber(localOrderId, payload),
+                payload.optString("device_time", ""),
+                printResult -> showOfflineReceiptResult(appCtx, printResult)
         );
+        if (isAdded()) {
+            Toast.makeText(requireContext(),
+                    OfflineOrderRepository.MESSAGE_ORDER_SAVED_LOCALLY,
+                    Toast.LENGTH_LONG).show();
+            completeWorkshopCheckoutLocallyAfterOfflineSave(result.paymentMethodCode);
+        } else if (cartManager != null) {
+            Log.i(TAG, "checkout cleanup started pos=workshop reason=offline_save_success_detached");
+            if (posDraftRepository != null && activeDraftId > 0L) {
+                completeActiveWorkshopDraftCheckout();
+            }
+            cartManager.clear();
+            Log.i(TAG, "cart cleanup success pos=workshop reason=offline_save_success_detached");
+        }
     }
 
     private void completeWorkshopCheckoutLocallyAfterOfflineSave(@NonNull String paymentMethodCode) {

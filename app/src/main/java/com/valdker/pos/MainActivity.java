@@ -1683,8 +1683,44 @@ public class MainActivity extends AppCompatActivity
         final String localOrderId = clientOrderId;
         Log.i(TAG, "Retail order submit client_order_id=" + clientOrderId);
 
+        // WRITE-AHEAD: order ditulis ke Room SEBELUM request dikirim. Kalau
+        // aplikasi mati di antara tap bayar dan callback, penjualannya tetap ada
+        // di perangkat dan ikut sync berikutnya. Sebelumnya penulisan baru
+        // terjadi setelah request gagal, sehingga order bisa lenyap sama sekali.
+        new OfflineOrderRepository(getApplicationContext()).savePendingOrder(
+                localOrderId,
+                payload,
+                "retail",
+                new OfflineOrderRepository.SaveCallback() {
+                    @Override
+                    public void onSuccess(@NonNull String savedLocalOrderId, boolean inserted) {
+                        Log.i(TAG, "Retail order write-ahead saved localOrderId=" + savedLocalOrderId
+                                + " inserted=" + inserted);
+                        sendRetailOrderAfterWriteAhead(savedLocalOrderId, payload, result, token);
+                    }
+
+                    @Override
+                    public void onError(@NonNull String message) {
+                        // Tidak bisa menulis dulu berarti tidak boleh mengirim:
+                        // order yang terkirim tanpa jejak lokal persis bug yang
+                        // sedang diperbaiki di sini.
+                        retailOrderSubmitting = false;
+                        Log.e(TAG, "Retail order write-ahead FAILED, submit dibatalkan: " + message);
+                        Toast.makeText(MainActivity.this,
+                                "Failed to save local order: " + message,
+                                Toast.LENGTH_LONG).show();
+                    }
+                }
+        );
+    }
+
+    private void sendRetailOrderAfterWriteAhead(@NonNull String localOrderId,
+                                                @NonNull JSONObject payload,
+                                                @NonNull NativeCheckoutDialogFragment.BankCheckoutResult result,
+                                                @NonNull String token) {
         if (!isNetworkAvailable()) {
-            saveRetailOrderOffline(localOrderId, payload, result);
+            // Sudah tersimpan sebagai PENDING_SYNC; tinggal tutup transaksinya.
+            finishRetailAfterOfflineSave(localOrderId, payload, result);
             return;
         }
 
@@ -1696,6 +1732,8 @@ public class MainActivity extends AppCompatActivity
                 payload,
                 response -> {
                     retailOrderSubmitting = false;
+                    new OfflineOrderRepository(getApplicationContext())
+                            .markWriteAheadSynced(localOrderId);
                     syncPendingOrdersIfOnline();
 
                     String invoice = response.optString("invoice_number", "");
@@ -1727,16 +1765,26 @@ public class MainActivity extends AppCompatActivity
                     String body = extractVolleyErrorBody(error);
                     Log.e(TAG, "Retail order failed status_code=" + statusCode
                             + " detail=" + safeLogDetail(body), error);
+                    OfflineOrderRepository repo =
+                            new OfflineOrderRepository(getApplicationContext());
+
                     if (ErrorHandler.isDeviceTimeValidationError(statusCode, body)
                             || ErrorHandler.isDeviceTimeValidationError(statusCode, detail)) {
+                        // Jangan biarkan sync otomatis mengirim ulang: payload
+                        // offline melewati pemeriksaan jam di backend, jadi retry
+                        // justru akan meloloskan order yang barusan ditolak.
+                        repo.markWriteAheadNeedsReview(localOrderId, "device_time rejected");
                         ErrorHandler.showDeviceTimeDialog(MainActivity.this);
                         return;
                     }
                     if (OfflineOrderRepository.shouldSaveOffline(MainActivity.this, error)) {
-                        saveRetailOrderOffline(localOrderId, payload, result);
+                        // Sudah tersimpan PENDING_SYNC oleh write-ahead.
+                        finishRetailAfterOfflineSave(localOrderId, payload, result);
                         return;
                     }
-                    Log.i(TAG, "cleanup skipped because save/submit failed pos=retail statusCode=" + statusCode);
+                    repo.markWriteAheadFailed(localOrderId, "HTTP " + statusCode);
+                    Log.i(TAG, "cart kept because server rejected pos=retail statusCode=" + statusCode
+                            + " (order tersimpan lokal, akan diulang oleh sync)");
                     ErrorHandler.handleApiError(MainActivity.this, error);
                 }
         ) {
@@ -1754,39 +1802,23 @@ public class MainActivity extends AppCompatActivity
         ApiClient.getInstance(this).add(req);
     }
 
-    private void saveRetailOrderOffline(@NonNull String localOrderId,
-                                        @NonNull JSONObject payload,
-                                        @NonNull NativeCheckoutDialogFragment.BankCheckoutResult result) {
-        new OfflineOrderRepository(getApplicationContext()).savePendingOrder(
-                localOrderId,
-                payload,
-                "retail",
-                new OfflineOrderRepository.SaveCallback() {
-                    @Override
-                    public void onSuccess(@NonNull String savedLocalOrderId, boolean inserted) {
-                        retailOrderSubmitting = false;
-                        tryAutoPrintOfflineRetailReceipt(
-                                result,
-                                offlineReceiptNumber(savedLocalOrderId, payload),
-                                payload.optString("device_time", ""),
-                                result -> showOfflineReceiptResult(result)
-                        );
-                        cleanupRetailAfterCheckout("offline_save_success");
-                    }
-
-                    @Override
-                    public void onError(@NonNull String message) {
-                        retailOrderSubmitting = false;
-                        Log.i(TAG, "cleanup skipped because save/submit failed pos=retail local_save_error=" + message);
-                        Toast.makeText(MainActivity.this,
-                                "Failed to save local order: " + message,
-                                Toast.LENGTH_LONG).show();
-                    }
-                }
+    /**
+     * Order sudah tersimpan lokal oleh write-ahead; ini hanya menutup transaksi
+     * di layar (cetak struk offline, bersihkan keranjang).
+     */
+    private void finishRetailAfterOfflineSave(@NonNull String localOrderId,
+                                              @NonNull JSONObject payload,
+                                              @NonNull NativeCheckoutDialogFragment.BankCheckoutResult result) {
+        retailOrderSubmitting = false;
+        tryAutoPrintOfflineRetailReceipt(
+                result,
+                offlineReceiptNumber(localOrderId, payload),
+                payload.optString("device_time", ""),
+                printResult -> showOfflineReceiptResult(printResult)
         );
-    }
-
-    private void clearRetailAfterOfflineSave() {
+        Toast.makeText(MainActivity.this,
+                OfflineOrderRepository.MESSAGE_ORDER_SAVED_LOCALLY,
+                Toast.LENGTH_LONG).show();
         cleanupRetailAfterCheckout("offline_save_success");
     }
 

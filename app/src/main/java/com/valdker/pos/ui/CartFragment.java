@@ -713,11 +713,58 @@ public class CartFragment extends Fragment {
         OfflineOrderRepository.ensureClientOrderId(payload, clientOrderId);
         final String localOrderId = clientOrderId;
         Log.i(TAG, "Checkout submit client_order_id=" + clientOrderId);
+
+        // WRITE-AHEAD: simpan dulu ke Room, baru kirim. Kalau proses dimatikan
+        // sebelum callback tiba, penjualannya tidak ikut hilang.
+        new OfflineOrderRepository(appCtx).savePendingOrder(
+                localOrderId,
+                payload,
+                businessType,
+                new OfflineOrderRepository.SaveCallback() {
+                    @Override
+                    public void onSuccess(@NonNull String savedLocalOrderId, boolean inserted) {
+                        Log.i(TAG, "Checkout write-ahead saved localOrderId=" + savedLocalOrderId
+                                + " inserted=" + inserted);
+                        sendCheckoutAfterWriteAhead(savedLocalOrderId, payload, appCtx, token, snapshot,
+                                result, paymentCodeFinal, subtotalFinal, deliveryFeeFinal, totalFinal,
+                                tableFinal, addrFinal);
+                    }
+
+                    @Override
+                    public void onError(@NonNull String message) {
+                        Log.e(TAG, "Checkout write-ahead FAILED, submit dibatalkan: " + message);
+                        mainHandler.post(() -> {
+                            if (isAdded()) {
+                                Toast.makeText(requireContext(),
+                                        "Failed to save local order: " + message,
+                                        Toast.LENGTH_LONG).show();
+                            }
+                            if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
+                        });
+                    }
+                }
+        );
+    }
+
+    private void sendCheckoutAfterWriteAhead(@NonNull String localOrderId,
+                                             @NonNull JSONObject payload,
+                                             @NonNull Context appCtx,
+                                             @NonNull String token,
+                                             @NonNull List<CartItem> snapshot,
+                                             @NonNull NativeCheckoutDialogFragment.BankCheckoutResult result,
+                                             @NonNull String paymentCodeFinal,
+                                             double subtotalFinal,
+                                             double deliveryFeeFinal,
+                                             double totalFinal,
+                                             @NonNull String tableFinal,
+                                             @NonNull String addrFinal) {
         OrderRepository repo = new OrderRepository(appCtx);
         repo.createOrder(token, payload, new OrderRepository.CreateCallback() {
             @Override
             public void onSuccess(@NonNull JSONObject response) {
-                new OfflineOrderRepository(appCtx).syncPendingOrders(token);
+                OfflineOrderRepository offlineRepo = new OfflineOrderRepository(appCtx);
+                offlineRepo.markWriteAheadSynced(localOrderId);
+                offlineRepo.syncPendingOrders(token);
                 mainHandler.post(() -> {
                     Context toastContext = getContext();
                     if (toastContext != null) {
@@ -758,9 +805,12 @@ public class CartFragment extends Fragment {
 
             @Override
             public void onError(int statusCode, @NonNull String message) {
+                OfflineOrderRepository offlineRepo = new OfflineOrderRepository(appCtx);
+
                 if (OfflineOrderRepository.shouldSaveOffline(appCtx, statusCode, message)
                         && !ErrorHandler.isDeviceTimeValidationError(statusCode, message)) {
-                    saveCheckoutOffline(
+                    // Sudah tersimpan PENDING_SYNC oleh write-ahead.
+                    finishCheckoutAfterOfflineSave(
                             localOrderId,
                             payload,
                             appCtx,
@@ -778,8 +828,14 @@ public class CartFragment extends Fragment {
                     return;
                 }
 
-                Log.i(TAG, "cleanup skipped because save/submit failed pos=" + businessType
-                        + " statusCode=" + statusCode);
+                if (ErrorHandler.isDeviceTimeValidationError(statusCode, message)) {
+                    offlineRepo.markWriteAheadNeedsReview(localOrderId, "device_time rejected");
+                } else {
+                    offlineRepo.markWriteAheadFailed(localOrderId, "HTTP " + statusCode);
+                }
+
+                Log.i(TAG, "cart kept because server rejected pos=" + businessType
+                        + " statusCode=" + statusCode + " (order tersimpan lokal)");
                 mainHandler.post(() -> {
                     if (!isAdded()) return;
                     if (ErrorHandler.isDeviceTimeValidationError(statusCode, message)) {
@@ -794,67 +850,53 @@ public class CartFragment extends Fragment {
         });
     }
 
-    private void saveCheckoutOffline(@NonNull String localOrderId,
-                                     @NonNull JSONObject payload,
-                                     @NonNull Context appCtx,
-                                     @NonNull List<CartItem> snapshot,
-                                     @NonNull String paymentMethod,
-                                     double subtotal,
-                                     double deliveryFee,
-                                     double total,
-                                     @NonNull String tableNumber,
-                                     @NonNull String deliveryAddress,
-                                     @NonNull String customerName,
-                                     double cashReceived,
-                                     double changeAmount) {
-        new OfflineOrderRepository(appCtx).savePendingOrder(
-                localOrderId,
-                payload,
-                businessType,
-                new OfflineOrderRepository.SaveCallback() {
-                    @Override
-                    public void onSuccess(@NonNull String savedLocalOrderId, boolean inserted) {
-                        String offlineReceiptNumber = offlineReceiptNumber(savedLocalOrderId, payload);
-                        tryAutoPrintOfflineReceipt(
-                                appCtx,
-                                new SessionManager(appCtx).getToken(),
-                                snapshot,
-                                paymentMethod,
-                                subtotal,
-                                deliveryFee,
-                                total,
-                                tableNumber,
-                                deliveryAddress,
-                                offlineReceiptNumber,
-                                customerName,
-                                cashReceived,
-                                changeAmount,
-                                payload.optString("device_time", ""),
-                                result -> showOfflineReceiptResult(appCtx, result)
-                        );
-                        finishActiveDraftAndClearCart();
-                        if (isAdded()) {
-                            render();
-                            closeOverlaySafely();
-                        } else {
-                            CartManager.getInstance(appCtx).clear();
-                        }
-                        if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
-                    }
-
-                    @Override
-                    public void onError(@NonNull String message) {
-                        Log.i(TAG, "cleanup skipped because save/submit failed pos=" + businessType
-                                + " local_save_error=" + message);
-                        if (isAdded()) {
-                            Toast.makeText(requireContext(),
-                                    "Failed to save local order: " + message,
-                                    Toast.LENGTH_LONG).show();
-                        }
-                        if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
-                    }
-                }
+    /**
+     * Order sudah tersimpan lokal oleh write-ahead; ini hanya menutup transaksi
+     * di layar (cetak struk offline, bersihkan keranjang).
+     */
+    private void finishCheckoutAfterOfflineSave(@NonNull String localOrderId,
+                                                @NonNull JSONObject payload,
+                                                @NonNull Context appCtx,
+                                                @NonNull List<CartItem> snapshot,
+                                                @NonNull String paymentMethod,
+                                                double subtotal,
+                                                double deliveryFee,
+                                                double total,
+                                                @NonNull String tableNumber,
+                                                @NonNull String deliveryAddress,
+                                                @NonNull String customerName,
+                                                double cashReceived,
+                                                double changeAmount) {
+        tryAutoPrintOfflineReceipt(
+                appCtx,
+                new SessionManager(appCtx).getToken(),
+                snapshot,
+                paymentMethod,
+                subtotal,
+                deliveryFee,
+                total,
+                tableNumber,
+                deliveryAddress,
+                offlineReceiptNumber(localOrderId, payload),
+                customerName,
+                cashReceived,
+                changeAmount,
+                payload.optString("device_time", ""),
+                printResult -> showOfflineReceiptResult(appCtx, printResult)
         );
+        finishActiveDraftAndClearCart();
+        mainHandler.post(() -> {
+            if (isAdded()) {
+                Toast.makeText(requireContext(),
+                        OfflineOrderRepository.MESSAGE_ORDER_SAVED_LOCALLY,
+                        Toast.LENGTH_LONG).show();
+                render();
+                closeOverlaySafely();
+            } else {
+                CartManager.getInstance(appCtx).clear();
+            }
+            if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
+        });
     }
 
     private void syncPendingOrdersIfOnline() {

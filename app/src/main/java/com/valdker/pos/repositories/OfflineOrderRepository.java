@@ -231,6 +231,67 @@ public class OfflineOrderRepository {
         });
     }
 
+    /**
+     * Tandai order write-ahead sebagai sudah diterima server.
+     *
+     * Dipakai setelah POST sukses pada pola write-ahead: barisnya sudah ditulis
+     * ke Room sebelum request dikirim, jadi yang tersisa hanya menutupnya.
+     * Kalau langkah ini gagal, order paling banter tersinkron ulang dan dedup
+     * `client_order_id` di server menahannya - jauh lebih aman daripada order
+     * yang tidak pernah tercatat sama sekali.
+     */
+    public void markWriteAheadSynced(@NonNull String localOrderId) {
+        String clean = safe(localOrderId);
+        if (clean.isEmpty()) return;
+        executor.execute(() -> {
+            try {
+                db.pendingOrderDao().markSynced(clean, System.currentTimeMillis());
+                Log.i(TAG, "Write-ahead order marked synced localOrderId=" + clean);
+            } catch (Exception e) {
+                Log.e(TAG, "Unable to mark write-ahead order synced localOrderId=" + clean, e);
+            }
+        });
+    }
+
+    /**
+     * Server menjawab dengan status HTTP tapi menolak order.
+     * FAILED masih ikut terjaring sync berikutnya (sampai MAX_SYNC_ATTEMPTS),
+     * jadi kegagalan sementara seperti 5xx tetap punya kesempatan.
+     */
+    public void markWriteAheadFailed(@NonNull String localOrderId, @Nullable String error) {
+        String clean = safe(localOrderId);
+        if (clean.isEmpty()) return;
+        executor.execute(() -> {
+            try {
+                db.pendingOrderDao().markFailed(clean, System.currentTimeMillis(), safe(error));
+                Log.w(TAG, "Write-ahead order marked failed localOrderId=" + clean + " error=" + safe(error));
+            } catch (Exception e) {
+                Log.e(TAG, "Unable to mark write-ahead order failed localOrderId=" + clean, e);
+            }
+        });
+    }
+
+    /**
+     * Order ditolak karena sesuatu yang tidak boleh diulang otomatis - jam
+     * perangkat melenceng, misalnya. Sync otomatis mengirim ulang dengan
+     * `is_offline_sync=true`, dan backend melewati pemeriksaan jam untuk
+     * payload offline, jadi retry otomatis justru akan meloloskan order yang
+     * baru saja ditolak. NEEDS_REVIEW menahannya sampai ada orang yang menilai.
+     */
+    public void markWriteAheadNeedsReview(@NonNull String localOrderId, @Nullable String error) {
+        String clean = safe(localOrderId);
+        if (clean.isEmpty()) return;
+        executor.execute(() -> {
+            try {
+                db.pendingOrderDao().markNeedsReviewNoAttemptIncrement(
+                        clean, System.currentTimeMillis(), safe(error));
+                Log.w(TAG, "Write-ahead order needs review localOrderId=" + clean + " error=" + safe(error));
+            } catch (Exception e) {
+                Log.e(TAG, "Unable to mark write-ahead order for review localOrderId=" + clean, e);
+            }
+        });
+    }
+
     public void syncPendingOrders(@Nullable String token) {
         syncPendingOrders(token, null);
     }
