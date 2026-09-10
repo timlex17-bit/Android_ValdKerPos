@@ -2,6 +2,21 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
+// Kredensial signing dibaca dari keystore.properties yang di-gitignore.
+// Kalau file itu tidak ada (mesin dev / CI tanpa rahasia), build release tetap
+// jalan tapi menghasilkan APK unsigned seperti sebelumnya - tidak ada yang rusak.
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+def hasKeystore = keystorePropertiesFile.exists()
+if (hasKeystore) {
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+}
+
+// URL backend per build type. Default menjaga perilaku lama; override lewat
+// gradle.properties atau -PdebugBaseUrl=... tanpa menyentuh kode.
+def debugBaseUrl = project.findProperty("debugBaseUrl") ?: "https://api.valdker.web.id/api/"
+def releaseBaseUrl = project.findProperty("releaseBaseUrl") ?: "https://api.valdker.web.id/api/"
+
 android {
     namespace 'com.valdker.pos'
     compileSdk {
@@ -12,8 +27,10 @@ android {
         applicationId "com.valdker.pos"
         minSdk 24
         targetSdk 36
-        versionCode 1
-        versionName "1.0"
+        // Dinaikkan manual tiap rilis; Play menolak upload dengan versionCode
+        // yang sudah dipakai. versionName mengikuti semver rilis.
+        versionCode 2
+        versionName "1.0.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -22,16 +39,33 @@ android {
         buildConfig true
     }
 
+    signingConfigs {
+        release {
+            if (hasKeystore) {
+                storeFile rootProject.file(keystoreProperties["storeFile"])
+                storePassword keystoreProperties["storePassword"]
+                keyAlias keystoreProperties["keyAlias"]
+                keyPassword keystoreProperties["keyPassword"]
+            }
+        }
+    }
+
     buildTypes {
         debug {
-            buildConfigField "String", "BASE_URL", "\"https://api.valdker.web.id/api/\""
+            buildConfigField "String", "BASE_URL", "\"${debugBaseUrl}\""
         }
 
         release {
+            if (hasKeystore) {
+                signingConfig signingConfigs.release
+            } else {
+                logger.warn("keystore.properties tidak ditemukan - APK release TIDAK akan ditandatangani.")
+            }
+
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
-            buildConfigField "String", "BASE_URL", "\"https://api.valdker.web.id/api/\""
+            buildConfigField "String", "BASE_URL", "\"${releaseBaseUrl}\""
         }
     }
 
