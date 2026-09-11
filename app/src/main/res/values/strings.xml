@@ -1117,4 +1117,6 @@
     <string name="msg_split_exceeds_total">Split payments exceed the order total.</string>
     <string name="msg_split_amount_required">Enter an amount for every split payment.</string>
     <string name="msg_split_bank_unsupported">Split payments cannot use a method that needs a bank account yet. Choose cash for the split lines.</string>
+    <string name="nav_reports">Reports</string>
+    <string name="nav_ai">AI</string>
 </resources>

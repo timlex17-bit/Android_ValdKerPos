@@ -1,0 +1,16 @@
+<!-- Reports - terisi (state terpilih) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+  <path
+      android:pathData="M4.05,14.15 A1.55,1.55 0 0 1 7.1499999999999995,14.15 V18.45 A1.55,1.55 0 0 1 4.05,18.45 Z"
+      android:fillColor="#FFFFFF"/>
+  <path
+      android:pathData="M10.45,5.55 A1.55,1.55 0 0 1 13.55,5.55 V18.45 A1.55,1.55 0 0 1 10.45,18.45 Z"
+      android:fillColor="#FFFFFF"/>
+  <path
+      android:pathData="M16.849999999999998,9.950000000000001 A1.55,1.55 0 0 1 19.95,9.950000000000001 V18.45 A1.55,1.55 0 0 1 16.849999999999998,18.45 Z"
+      android:fillColor="#FFFFFF"/>
+</vector>

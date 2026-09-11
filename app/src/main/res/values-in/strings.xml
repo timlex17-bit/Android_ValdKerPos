@@ -1134,4 +1134,6 @@
     <string name="msg_split_exceeds_total">Pembayaran terbagi melebihi total order.</string>
     <string name="msg_split_amount_required">Isi nominal untuk setiap pembayaran terbagi.</string>
     <string name="msg_split_bank_unsupported">Pembayaran terbagi belum mendukung metode yang butuh rekening bank. Pakai tunai untuk baris terbagi.</string>
+    <string name="nav_reports">Laporan</string>
+    <string name="nav_ai">AI</string>
 </resources>

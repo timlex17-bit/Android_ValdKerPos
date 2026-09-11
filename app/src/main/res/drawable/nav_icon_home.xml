@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Terisi saat terpilih, garis luar saat tidak - konvensi Material 3.
+     Warnanya tetap dari app:itemIconTint (@color/bottom_nav_selector). -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/ic_nav_home_filled" android:state_checked="true"/>
+    <item android:drawable="@drawable/ic_nav_home" />
+</selector>
