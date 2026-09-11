@@ -1,6 +1,6 @@
 package com.valdker.pos.ui;
 
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.app.Dialog;
 import android.graphics.Color;
 import android.os.Build;
@@ -30,6 +30,8 @@ import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
@@ -379,7 +381,7 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
             Toast.makeText(this, AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE, Toast.LENGTH_SHORT).show();
             return;
         }
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setTitle(getString(R.string.bank_delete_title))
                 .setMessage(getString(
                         R.string.bank_delete_message,

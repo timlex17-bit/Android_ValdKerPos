@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Gaya bersama untuk semua dialog formulir (yang muncul dari tombol "+").
+
+  Sebelumnya tiap dialog menyalin sendiri boxBackgroundMode dan empat atribut
+  sudut, jadi 33 kolom isian di 9 berkas harus diubah serentak setiap kali
+  tampilannya disetel. Semua itu kini berasal dari satu tempat.
+
+  Susunan dialog tidak diubah - judul, kartu bagian, urutan kolom, dan letak
+  tombol tetap seperti sekarang.
+-->
+<resources>
+
+    <!-- ============ Kolom isian ============ -->
+
+    <style name="Widget.Valora.TextField"
+        parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <!-- 16dp membuat kolom setinggi 56dp terbaca seperti kapsul. -->
+        <item name="boxCornerRadiusTopStart">12dp</item>
+        <item name="boxCornerRadiusTopEnd">12dp</item>
+        <item name="boxCornerRadiusBottomStart">12dp</item>
+        <item name="boxCornerRadiusBottomEnd">12dp</item>
+        <item name="boxBackgroundColor">@android:color/white</item>
+        <item name="boxStrokeColor">@color/field_stroke</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="hintTextColor">@color/valora_green</item>
+        <item name="android:textColorHint">@color/valora_muted</item>
+    </style>
+
+    <!-- ============ Tombol dialog ============ -->
+
+    <!--
+      Kedua gaya ini WAJIB mewarisi varian .Dialog. Bilah tombol dialog
+      menaruh tombolnya lewat <include>, dan layout_width/layout_height-nya
+      hanya datang dari gaya - mewarisi Widget.Material3.Button biasa
+      membuat inflate m3_alert_dialog gagal dengan
+      "You must supply a layout_width attribute".
+    -->
+    <style name="Widget.Valora.Dialog.Button.Positive"
+        parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="backgroundTint">@color/valora_green</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:minWidth">96dp</item>
+    </style>
+
+    <style name="Widget.Valora.Dialog.Button.Negative"
+        parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/valora_muted</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <!--
+      Tombol sekunder di dalam badan dialog (mis. "Pilih Ikon"). Bawaannya
+      memakai colorPrimary #60E66C, yang hanya 1,9:1 terhadap putih.
+    -->
+    <style name="Widget.Valora.Dialog.Button.Outlined"
+        parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:textColor">@color/valora_green</item>
+        <item name="strokeColor">#DFE4EC</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <!-- ============ Dialog ============ -->
+
+    <!--
+      Sama seperti tombol: atribut ini memberi gaya pada TextView judul, jadi
+      induknya harus gaya widget yang membawa layout_width/layout_height,
+      bukan sekadar TextAppearance.
+    -->
+    <style name="MaterialAlertDialog.Valora.Title.Text"
+        parent="MaterialAlertDialog.Material3.Title.Text">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/valora_ink</item>
+    </style>
+
+    <style name="ShapeAppearance.Valora.Dialog" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">28dp</item>
+    </style>
+
+    <style name="ThemeOverlay.Valora.Dialog"
+        parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="alertDialogStyle">@style/MaterialAlertDialog.Valora</item>
+        <item name="materialAlertDialogTitleTextStyle">
+            @style/MaterialAlertDialog.Valora.Title.Text</item>
+        <item name="buttonBarPositiveButtonStyle">
+            @style/Widget.Valora.Dialog.Button.Positive</item>
+        <item name="buttonBarNegativeButtonStyle">
+            @style/Widget.Valora.Dialog.Button.Negative</item>
+        <item name="buttonBarNeutralButtonStyle">
+            @style/Widget.Valora.Dialog.Button.Negative</item>
+        <!-- Kolom isian di dalam dialog ikut gaya yang sama. -->
+        <item name="textInputStyle">@style/Widget.Valora.TextField</item>
+        <item name="colorPrimary">@color/valora_green</item>
+    </style>
+
+    <style name="MaterialAlertDialog.Valora"
+        parent="MaterialAlertDialog.Material3">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.Valora.Dialog</item>
+        <item name="backgroundTint">@color/valora_surface</item>
+    </style>
+
+</resources>

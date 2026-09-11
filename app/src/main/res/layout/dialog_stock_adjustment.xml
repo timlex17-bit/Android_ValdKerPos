@@ -87,15 +87,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:hint="Old stock *"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="#FFFFFF"
-                        app:boxStrokeColor="#D1D5DB"
-                        app:boxCornerRadiusTopStart="16dp"
-                        app:boxCornerRadiusTopEnd="16dp"
-                        app:boxCornerRadiusBottomStart="16dp"
-                        app:boxCornerRadiusBottomEnd="16dp"
-                        app:hintTextColor="#6B7280">
+                        android:hint="Old stock *">
 
                         <EditText
                             android:id="@+id/etOldStock"
@@ -116,15 +108,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:hint="New stock *"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="#FFFFFF"
-                        app:boxStrokeColor="#D1D5DB"
-                        app:boxCornerRadiusTopStart="16dp"
-                        app:boxCornerRadiusTopEnd="16dp"
-                        app:boxCornerRadiusBottomStart="16dp"
-                        app:boxCornerRadiusBottomEnd="16dp"
-                        app:hintTextColor="#6B7280">
+                        android:hint="New stock *">
 
                         <EditText
                             android:id="@+id/etNewStock"
@@ -170,15 +154,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:hint="Note"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="#FFFFFF"
-                        app:boxStrokeColor="#D1D5DB"
-                        app:boxCornerRadiusTopStart="16dp"
-                        app:boxCornerRadiusTopEnd="16dp"
-                        app:boxCornerRadiusBottomStart="16dp"
-                        app:boxCornerRadiusBottomEnd="16dp"
-                        app:hintTextColor="#6B7280">
+                        android:hint="Note">
 
                         <EditText
                             android:id="@+id/etNote"

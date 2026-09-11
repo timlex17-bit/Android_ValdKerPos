@@ -1,6 +1,6 @@
 package com.valdker.pos.ui.warehousestocks;
 
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.Editable;
@@ -22,6 +22,8 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.valdker.pos.BuildConfig;
@@ -516,7 +518,7 @@ public class WarehouseStocksFragment extends BaseFragment {
 
         updateQuantityPreview(etQuantity, tvQuantityPreview, selectedUnit[0]);
 
-        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+        AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(isEdit ? getString(R.string.dialog_edit_warehouse_stock_title) : getString(R.string.dialog_add_warehouse_stock_title))
                 .setView(dialogView)
                 .setNegativeButton(getString(R.string.action_cancel), null)
@@ -905,7 +907,7 @@ public class WarehouseStocksFragment extends BaseFragment {
 
         listView.setAdapter(pickerAdapter);
 
-        AlertDialog pickerDialog = new AlertDialog.Builder(requireContext())
+        AlertDialog pickerDialog = new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(title)
                 .setView(container)
                 .setNegativeButton(getString(R.string.action_cancel), null)
@@ -1000,7 +1002,7 @@ public class WarehouseStocksFragment extends BaseFragment {
             Toast.makeText(requireContext(), AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE, Toast.LENGTH_SHORT).show();
             return;
         }
-        new AlertDialog.Builder(requireContext())
+        new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(getString(R.string.dialog_delete_warehouse_stock_title))
                 .setMessage(getString(R.string.dialog_delete_warehouse_stock_message, safeText(stock.getProductName())))
                 .setNegativeButton(getString(R.string.action_cancel), null)

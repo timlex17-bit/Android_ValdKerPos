@@ -1,6 +1,6 @@
 package com.valdker.pos.ui.warehouses;
 
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -21,6 +21,8 @@ import com.valdker.pos.utils.InsetsHelper;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
@@ -249,7 +251,7 @@ public class WarehousesFragment extends BaseFragment {
             cbDefault.setChecked(false);
         }
 
-        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+        AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(isEdit ? getString(R.string.dialog_edit_warehouse_title) : getString(R.string.dialog_add_warehouse_title))
                 .setView(dialogView)
                 .setNegativeButton(getString(R.string.action_cancel), null)
@@ -351,7 +353,7 @@ public class WarehousesFragment extends BaseFragment {
             Toast.makeText(requireContext(), AdminMasterCacheRepository.INTERNET_REQUIRED_MESSAGE, Toast.LENGTH_SHORT).show();
             return;
         }
-        new AlertDialog.Builder(requireContext())
+        new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(getString(R.string.dialog_delete_warehouse_title))
                 .setMessage(getString(R.string.dialog_delete_warehouse_message, warehouse.getName()))
                 .setNegativeButton(getString(R.string.action_cancel), null)

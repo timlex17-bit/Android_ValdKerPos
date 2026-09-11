@@ -52,15 +52,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                android:hint="@string/supplier_dialog_name"
-                app:boxBackgroundMode="outline"
-                app:boxBackgroundColor="#FFFFFF"
-                app:boxStrokeColor="#D1D5DB"
-                app:boxCornerRadiusTopStart="16dp"
-                app:boxCornerRadiusTopEnd="16dp"
-                app:boxCornerRadiusBottomStart="16dp"
-                app:boxCornerRadiusBottomEnd="16dp"
-                app:hintTextColor="#6B7280">
+                android:hint="@string/supplier_dialog_name">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etSupplierName"
@@ -75,15 +67,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:hint="@string/supplier_dialog_contact"
-                app:boxBackgroundMode="outline"
-                app:boxBackgroundColor="#FFFFFF"
-                app:boxStrokeColor="#D1D5DB"
-                app:boxCornerRadiusTopStart="16dp"
-                app:boxCornerRadiusTopEnd="16dp"
-                app:boxCornerRadiusBottomStart="16dp"
-                app:boxCornerRadiusBottomEnd="16dp"
-                app:hintTextColor="#6B7280">
+                android:hint="@string/supplier_dialog_contact">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etSupplierContact"
@@ -98,15 +82,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:hint="@string/supplier_dialog_phone"
-                app:boxBackgroundMode="outline"
-                app:boxBackgroundColor="#FFFFFF"
-                app:boxStrokeColor="#D1D5DB"
-                app:boxCornerRadiusTopStart="16dp"
-                app:boxCornerRadiusTopEnd="16dp"
-                app:boxCornerRadiusBottomStart="16dp"
-                app:boxCornerRadiusBottomEnd="16dp"
-                app:hintTextColor="#6B7280">
+                android:hint="@string/supplier_dialog_phone">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etSupplierCell"
@@ -121,15 +97,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:hint="@string/supplier_dialog_email"
-                app:boxBackgroundMode="outline"
-                app:boxBackgroundColor="#FFFFFF"
-                app:boxStrokeColor="#D1D5DB"
-                app:boxCornerRadiusTopStart="16dp"
-                app:boxCornerRadiusTopEnd="16dp"
-                app:boxCornerRadiusBottomStart="16dp"
-                app:boxCornerRadiusBottomEnd="16dp"
-                app:hintTextColor="#6B7280">
+                android:hint="@string/supplier_dialog_email">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etSupplierEmail"
@@ -144,15 +112,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:hint="@string/supplier_dialog_address"
-                app:boxBackgroundMode="outline"
-                app:boxBackgroundColor="#FFFFFF"
-                app:boxStrokeColor="#D1D5DB"
-                app:boxCornerRadiusTopStart="16dp"
-                app:boxCornerRadiusTopEnd="16dp"
-                app:boxCornerRadiusBottomStart="16dp"
-                app:boxCornerRadiusBottomEnd="16dp"
-                app:hintTextColor="#6B7280">
+                android:hint="@string/supplier_dialog_address">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etSupplierAddress"

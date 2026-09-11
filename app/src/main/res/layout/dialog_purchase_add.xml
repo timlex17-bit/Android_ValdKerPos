@@ -125,15 +125,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="14dp"
-                                android:hint="Invoice ID (optional)"
-                                app:boxBackgroundColor="#FFFFFF"
-                                app:boxBackgroundMode="outline"
-                                app:boxCornerRadiusBottomEnd="16dp"
-                                app:boxCornerRadiusBottomStart="16dp"
-                                app:boxCornerRadiusTopEnd="16dp"
-                                app:boxCornerRadiusTopStart="16dp"
-                                app:boxStrokeColor="#D1D5DB"
-                                app:hintTextColor="#6B7280">
+                                android:hint="Invoice ID (optional)">
 
                                 <com.google.android.material.textfield.TextInputEditText
                                     android:id="@+id/etInvoice"
@@ -148,15 +140,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="12dp"
-                                android:hint="Note (optional)"
-                                app:boxBackgroundColor="#FFFFFF"
-                                app:boxBackgroundMode="outline"
-                                app:boxCornerRadiusBottomEnd="16dp"
-                                app:boxCornerRadiusBottomStart="16dp"
-                                app:boxCornerRadiusTopEnd="16dp"
-                                app:boxCornerRadiusTopStart="16dp"
-                                app:boxStrokeColor="#D1D5DB"
-                                app:hintTextColor="#6B7280">
+                                android:hint="Note (optional)">
 
                                 <com.google.android.material.textfield.TextInputEditText
                                     android:id="@+id/etNote"
@@ -266,15 +250,7 @@
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
-                                    android:hint="Qty"
-                                    app:boxBackgroundColor="#FFFFFF"
-                                    app:boxBackgroundMode="outline"
-                                    app:boxCornerRadiusBottomEnd="16dp"
-                                    app:boxCornerRadiusBottomStart="16dp"
-                                    app:boxCornerRadiusTopEnd="16dp"
-                                    app:boxCornerRadiusTopStart="16dp"
-                                    app:boxStrokeColor="#D1D5DB"
-                                    app:hintTextColor="#6B7280">
+                                    android:hint="Qty">
 
                                     <com.google.android.material.textfield.TextInputEditText
                                         android:id="@+id/etQty"
@@ -290,15 +266,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
                                     android:layout_marginStart="10dp"
-                                    android:hint="Cost price"
-                                    app:boxBackgroundColor="#FFFFFF"
-                                    app:boxBackgroundMode="outline"
-                                    app:boxCornerRadiusBottomEnd="16dp"
-                                    app:boxCornerRadiusBottomStart="16dp"
-                                    app:boxCornerRadiusTopEnd="16dp"
-                                    app:boxCornerRadiusTopStart="16dp"
-                                    app:boxStrokeColor="#D1D5DB"
-                                    app:hintTextColor="#6B7280">
+                                    android:hint="Cost price">
 
                                     <com.google.android.material.textfield.TextInputEditText
                                         android:id="@+id/etCost"

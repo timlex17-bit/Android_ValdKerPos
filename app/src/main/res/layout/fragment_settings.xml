@@ -191,15 +191,7 @@
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="14dp"
-                            app:boxBackgroundMode="outline"
-                            app:boxCornerRadiusBottomEnd="16dp"
-                            app:boxCornerRadiusBottomStart="16dp"
-                            app:boxCornerRadiusTopEnd="16dp"
-                            app:boxCornerRadiusTopStart="16dp"
-                            app:boxStrokeColor="#E5E7EB"
-                            app:boxStrokeWidth="1dp"
-                            app:hintTextColor="#6B7280">
+                            android:layout_marginTop="14dp">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etBaseUrl"
@@ -494,15 +486,7 @@
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="14dp"
-                            app:boxBackgroundMode="outline"
-                            app:boxCornerRadiusBottomEnd="16dp"
-                            app:boxCornerRadiusBottomStart="16dp"
-                            app:boxCornerRadiusTopEnd="16dp"
-                            app:boxCornerRadiusTopStart="16dp"
-                            app:boxStrokeColor="#E5E7EB"
-                            app:boxStrokeWidth="1dp"
-                            app:hintTextColor="#6B7280">
+                            android:layout_marginTop="14dp">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etShopName"
@@ -516,15 +500,7 @@
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            app:boxBackgroundMode="outline"
-                            app:boxCornerRadiusBottomEnd="16dp"
-                            app:boxCornerRadiusBottomStart="16dp"
-                            app:boxCornerRadiusTopEnd="16dp"
-                            app:boxCornerRadiusTopStart="16dp"
-                            app:boxStrokeColor="#E5E7EB"
-                            app:boxStrokeWidth="1dp"
-                            app:hintTextColor="#6B7280">
+                            android:layout_marginTop="10dp">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etShopAddress"
@@ -538,15 +514,7 @@
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            app:boxBackgroundMode="outline"
-                            app:boxCornerRadiusBottomEnd="16dp"
-                            app:boxCornerRadiusBottomStart="16dp"
-                            app:boxCornerRadiusTopEnd="16dp"
-                            app:boxCornerRadiusTopStart="16dp"
-                            app:boxStrokeColor="#E5E7EB"
-                            app:boxStrokeWidth="1dp"
-                            app:hintTextColor="#6B7280">
+                            android:layout_marginTop="10dp">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etShopPhone"
@@ -561,15 +529,7 @@
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            app:boxBackgroundMode="outline"
-                            app:boxCornerRadiusBottomEnd="16dp"
-                            app:boxCornerRadiusBottomStart="16dp"
-                            app:boxCornerRadiusTopEnd="16dp"
-                            app:boxCornerRadiusTopStart="16dp"
-                            app:boxStrokeColor="#E5E7EB"
-                            app:boxStrokeWidth="1dp"
-                            app:hintTextColor="#6B7280">
+                            android:layout_marginTop="10dp">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etShopEmail"

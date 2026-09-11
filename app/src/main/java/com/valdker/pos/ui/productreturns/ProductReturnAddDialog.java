@@ -133,21 +133,6 @@ public class ProductReturnAddDialog extends DialogFragment {
                 .setPositiveButton("Save", null)
                 .create();
 
-        dialog.setOnShowListener(dlg -> {
-            View positiveBtn = dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE);
-            View negativeBtn = dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEGATIVE);
-
-            if (positiveBtn instanceof TextView) {
-                ((TextView) positiveBtn).setTextColor(0xFF22C55E);
-            }
-            if (negativeBtn instanceof TextView) {
-                ((TextView) negativeBtn).setTextColor(0xFF22C55E);
-            }
-            if (positiveBtn != null && positiveBtn.getParent() instanceof View) {
-                ((View) positiveBtn.getParent()).setBackgroundColor(0xFFF9FAFB);
-            }
-        });
-
         return dialog;
     }
 

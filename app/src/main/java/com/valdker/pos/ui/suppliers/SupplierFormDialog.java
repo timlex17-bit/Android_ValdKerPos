@@ -113,11 +113,7 @@ public class SupplierFormDialog extends DialogFragment {
                 negativeButton.setAlpha(1f);
             }
 
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(0xFF22C55E);
-            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(0xFF22C55E);
 
-            View buttonBar = (View) dialog.getButton(AlertDialog.BUTTON_POSITIVE).getParent();
-            buttonBar.setBackgroundColor(0xFFF9FAFB);
 
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(btn -> {
                 String name = getTrimmed(etName);

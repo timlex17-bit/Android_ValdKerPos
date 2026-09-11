@@ -1,6 +1,6 @@
 package com.valdker.pos.ui.workshop;
 
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -17,6 +17,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.valdker.pos.ModuleRegistry;
@@ -160,7 +162,7 @@ public class ServicePackageActivity extends AppCompatActivity implements Service
 
     @Override
     public void onDelete(@NonNull ServicePackageResponse item) {
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setTitle("Delete Service Package")
                 .setMessage("Delete \"" + item.name + "\"?")
                 .setPositiveButton(getString(R.string.action_delete), (dialog, which) -> deleteServicePackage(item))
@@ -190,7 +192,7 @@ public class ServicePackageActivity extends AppCompatActivity implements Service
             swActive.setChecked(true);
         }
 
-        AlertDialog dialog = new AlertDialog.Builder(this)
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                 .setView(view)
                 .setPositiveButton(isEdit ? getString(R.string.action_update) : getString(R.string.action_create), null)
                 .setNegativeButton(getString(R.string.action_cancel), null)

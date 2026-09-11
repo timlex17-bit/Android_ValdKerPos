@@ -173,15 +173,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="14dp"
-                            android:hint="Qty Return"
-                            app:boxBackgroundMode="outline"
-                            app:boxBackgroundColor="#FFFFFF"
-                            app:boxStrokeColor="#D1D5DB"
-                            app:boxCornerRadiusTopStart="16dp"
-                            app:boxCornerRadiusTopEnd="16dp"
-                            app:boxCornerRadiusBottomStart="16dp"
-                            app:boxCornerRadiusBottomEnd="16dp"
-                            app:hintTextColor="#6B7280">
+                            android:hint="Qty Return">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etQty"
@@ -197,15 +189,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
-                            android:hint="Unit Price"
-                            app:boxBackgroundMode="outline"
-                            app:boxBackgroundColor="#FFFFFF"
-                            app:boxStrokeColor="#D1D5DB"
-                            app:boxCornerRadiusTopStart="16dp"
-                            app:boxCornerRadiusTopEnd="16dp"
-                            app:boxCornerRadiusBottomStart="16dp"
-                            app:boxCornerRadiusBottomEnd="16dp"
-                            app:hintTextColor="#6B7280">
+                            android:hint="Unit Price">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etUnitPrice"
@@ -286,15 +270,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="14dp"
-                            android:hint="Qty Return"
-                            app:boxBackgroundMode="outline"
-                            app:boxBackgroundColor="#FFFFFF"
-                            app:boxStrokeColor="#D1D5DB"
-                            app:boxCornerRadiusTopStart="16dp"
-                            app:boxCornerRadiusTopEnd="16dp"
-                            app:boxCornerRadiusBottomStart="16dp"
-                            app:boxCornerRadiusBottomEnd="16dp"
-                            app:hintTextColor="#6B7280">
+                            android:hint="Qty Return">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etManualQty"
@@ -310,15 +286,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
-                            android:hint="Unit Price"
-                            app:boxBackgroundMode="outline"
-                            app:boxBackgroundColor="#FFFFFF"
-                            app:boxStrokeColor="#D1D5DB"
-                            app:boxCornerRadiusTopStart="16dp"
-                            app:boxCornerRadiusTopEnd="16dp"
-                            app:boxCornerRadiusBottomStart="16dp"
-                            app:boxCornerRadiusBottomEnd="16dp"
-                            app:hintTextColor="#6B7280">
+                            android:hint="Unit Price">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etManualUnitPrice"
@@ -349,15 +317,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:hint="Reason / note"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="#FFFFFF"
-                        app:boxStrokeColor="#D1D5DB"
-                        app:boxCornerRadiusTopStart="16dp"
-                        app:boxCornerRadiusTopEnd="16dp"
-                        app:boxCornerRadiusBottomStart="16dp"
-                        app:boxCornerRadiusBottomEnd="16dp"
-                        app:hintTextColor="#6B7280">
+                        android:hint="Reason / note">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etNote"

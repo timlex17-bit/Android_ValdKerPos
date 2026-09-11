@@ -57,15 +57,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:hint="Name *"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="#FFFFFF"
-                        app:boxStrokeColor="#D1D5DB"
-                        app:boxCornerRadiusTopStart="16dp"
-                        app:boxCornerRadiusTopEnd="16dp"
-                        app:boxCornerRadiusBottomStart="16dp"
-                        app:boxCornerRadiusBottomEnd="16dp"
-                        app:hintTextColor="#6B7280">
+                        android:hint="Name *">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etProdName"
@@ -82,17 +74,9 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:hint="SKU (optional)"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="#FFFFFF"
-                        app:boxStrokeColor="#D1D5DB"
-                        app:boxCornerRadiusTopStart="16dp"
-                        app:boxCornerRadiusTopEnd="16dp"
-                        app:boxCornerRadiusBottomStart="16dp"
-                        app:boxCornerRadiusBottomEnd="16dp"
                         app:endIconMode="custom"
                         app:endIconDrawable="@drawable/barcode_generate"
-                        app:endIconContentDescription="Scan SKU"
-                        app:hintTextColor="#6B7280">
+                        app:endIconContentDescription="Scan SKU">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etProdSku"
@@ -109,17 +93,9 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:hint="Code *"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="#FFFFFF"
-                        app:boxStrokeColor="#D1D5DB"
-                        app:boxCornerRadiusTopStart="16dp"
-                        app:boxCornerRadiusTopEnd="16dp"
-                        app:boxCornerRadiusBottomStart="16dp"
-                        app:boxCornerRadiusBottomEnd="16dp"
                         app:endIconMode="custom"
                         app:endIconDrawable="@drawable/ic_barcode"
-                        app:endIconContentDescription="Scan Code"
-                        app:hintTextColor="#6B7280">
+                        app:endIconContentDescription="Scan Code">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etProdCode"
@@ -199,15 +175,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:hint="Description"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="#FFFFFF"
-                        app:boxStrokeColor="#D1D5DB"
-                        app:boxCornerRadiusTopStart="16dp"
-                        app:boxCornerRadiusTopEnd="16dp"
-                        app:boxCornerRadiusBottomStart="16dp"
-                        app:boxCornerRadiusBottomEnd="16dp"
-                        app:hintTextColor="#6B7280">
+                        android:hint="Description">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etProdDesc"
@@ -252,15 +220,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:hint="Stock *"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="#FFFFFF"
-                        app:boxStrokeColor="#D1D5DB"
-                        app:boxCornerRadiusTopStart="16dp"
-                        app:boxCornerRadiusTopEnd="16dp"
-                        app:boxCornerRadiusBottomStart="16dp"
-                        app:boxCornerRadiusBottomEnd="16dp"
-                        app:hintTextColor="#6B7280">
+                        android:hint="Stock *">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etProdStock"
@@ -275,15 +235,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:hint="Buy price * (e.g. 1.50)"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="#FFFFFF"
-                        app:boxStrokeColor="#D1D5DB"
-                        app:boxCornerRadiusTopStart="16dp"
-                        app:boxCornerRadiusTopEnd="16dp"
-                        app:boxCornerRadiusBottomStart="16dp"
-                        app:boxCornerRadiusBottomEnd="16dp"
-                        app:hintTextColor="#6B7280">
+                        android:hint="Buy price * (e.g. 1.50)">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etProdBuy"
@@ -298,15 +250,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:hint="Sell price * (e.g. 2.50)"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="#FFFFFF"
-                        app:boxStrokeColor="#D1D5DB"
-                        app:boxCornerRadiusTopStart="16dp"
-                        app:boxCornerRadiusTopEnd="16dp"
-                        app:boxCornerRadiusBottomStart="16dp"
-                        app:boxCornerRadiusBottomEnd="16dp"
-                        app:hintTextColor="#6B7280">
+                        android:hint="Sell price * (e.g. 2.50)">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etProdSell"
@@ -321,15 +265,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:hint="Weight * (e.g. 0.35)"
-                        app:boxBackgroundMode="outline"
-                        app:boxBackgroundColor="#FFFFFF"
-                        app:boxStrokeColor="#D1D5DB"
-                        app:boxCornerRadiusTopStart="16dp"
-                        app:boxCornerRadiusTopEnd="16dp"
-                        app:boxCornerRadiusBottomStart="16dp"
-                        app:boxCornerRadiusBottomEnd="16dp"
-                        app:hintTextColor="#6B7280">
+                        android:hint="Weight * (e.g. 0.35)">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etProdWeight"

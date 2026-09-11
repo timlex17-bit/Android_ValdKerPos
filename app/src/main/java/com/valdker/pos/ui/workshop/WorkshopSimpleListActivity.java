@@ -1,6 +1,6 @@
 package com.valdker.pos.ui.workshop;
 
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -19,6 +19,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
@@ -213,7 +215,7 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
         boolean isEdit = row != null;
         selectedRelationIds.clear();
         View view = buildFormView(row);
-        AlertDialog dialog = new AlertDialog.Builder(this)
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                 .setView(view)
                 .setPositiveButton(isEdit ? getString(R.string.action_update) : getString(R.string.action_create), null)
                 .setNegativeButton(getString(R.string.action_cancel), null)
@@ -488,7 +490,7 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
             Toast.makeText(this, "Cannot delete item without a valid id.", Toast.LENGTH_LONG).show();
             return;
         }
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setTitle("Delete " + screenTitle())
                 .setMessage("Delete \"" + row.title + "\"?")
                 .setPositiveButton(getString(R.string.action_delete), (dialog, which) -> delete(row))

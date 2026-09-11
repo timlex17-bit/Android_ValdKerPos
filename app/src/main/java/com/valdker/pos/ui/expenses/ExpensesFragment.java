@@ -1,6 +1,6 @@
 package com.valdker.pos.ui.expenses;
 
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
@@ -20,6 +20,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
@@ -390,7 +392,7 @@ public class ExpensesFragment extends BaseFragment {
                 ? R.string.btn_save
                 : R.string.btn_create;
 
-        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+        AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(getString(titleRes))
                 .setView(form)
                 .setNegativeButton(getString(R.string.btn_cancel), (d, w) -> d.dismiss())
@@ -484,7 +486,7 @@ public class ExpensesFragment extends BaseFragment {
             return;
         }
 
-        new AlertDialog.Builder(requireContext())
+        new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Delete Expense")
                 .setMessage("Delete \"" + safeText(e.name) + "\"?")
                 .setNegativeButton("Cancel", null)

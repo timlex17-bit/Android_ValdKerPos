@@ -344,18 +344,8 @@ public class ProductFormDialog extends DialogFragment {
             View positiveBtn = dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE);
             View negativeBtn = dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEGATIVE);
 
-            if (positiveBtn instanceof android.widget.TextView) {
-                ((android.widget.TextView) positiveBtn).setTextColor(0xFF22C55E);
-            }
 
-            if (negativeBtn instanceof android.widget.TextView) {
-                ((android.widget.TextView) negativeBtn).setTextColor(0xFF22C55E);
-            }
 
-            if (positiveBtn != null && positiveBtn.getParent() instanceof View) {
-                View buttonBar = (View) positiveBtn.getParent();
-                buttonBar.setBackgroundColor(0xFFF9FAFB);
-            }
 
             dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE)
                     .setOnClickListener(btn -> {

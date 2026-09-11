@@ -1,6 +1,6 @@
 package com.valdker.pos.ui.units;
 
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -21,6 +21,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
@@ -367,7 +369,7 @@ public class UnitsFragment extends BaseFragment {
             etName.setText(edit.name);
         }
 
-        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+        AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(edit == null
                         ? getString(R.string.title_add_unit)
                         : getString(R.string.title_edit_unit))
@@ -519,7 +521,7 @@ public class UnitsFragment extends BaseFragment {
             return;
         }
 
-        new AlertDialog.Builder(requireContext())
+        new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(getString(R.string.title_delete_unit))
                 .setMessage(getString(R.string.msg_delete_unit_confirm, safeText(u.name)))
                 .setNegativeButton(getString(R.string.action_cancel), (d, w) -> d.dismiss())

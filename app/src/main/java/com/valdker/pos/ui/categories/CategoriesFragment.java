@@ -1,6 +1,6 @@
 package com.valdker.pos.ui.categories;
 
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
@@ -31,6 +31,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Cache;
@@ -505,7 +507,7 @@ public class CategoriesFragment extends BaseFragment {
             });
         }
 
-        AlertDialog dialog = new AlertDialog.Builder(formContext)
+        AlertDialog dialog = new MaterialAlertDialogBuilder(formContext)
                 .setTitle(edit == null
                         ? getString(R.string.title_add_category)
                         : getString(R.string.title_edit_category))
@@ -706,7 +708,7 @@ public class CategoriesFragment extends BaseFragment {
             return;
         }
 
-        new AlertDialog.Builder(requireContext())
+        new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(getString(R.string.title_delete_category))
                 .setMessage(getString(R.string.msg_delete_category_confirm, c.name))
                 .setNegativeButton(getString(R.string.action_cancel), (d, w) -> d.dismiss())

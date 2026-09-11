@@ -1,6 +1,6 @@
 package com.valdker.pos.ui.stocktransfers;
 
-import android.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.Editable;
@@ -26,6 +26,8 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.valdker.pos.BarcodeScannerDialogFragment;
@@ -615,7 +617,7 @@ public class StockTransfersFragment extends BaseFragment {
                 selectedUnit[0]
         );
 
-        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+        AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(isEdit ? getString(R.string.dialog_edit_stock_transfer_title) : getString(R.string.dialog_add_stock_transfer_title))
                 .setView(dialogView)
                 .setNegativeButton(getString(R.string.action_cancel), null)
@@ -1145,7 +1147,7 @@ public class StockTransfersFragment extends BaseFragment {
 
         listView.setAdapter(pickerAdapter);
 
-        AlertDialog pickerDialog = new AlertDialog.Builder(requireContext())
+        AlertDialog pickerDialog = new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(title)
                 .setView(container)
                 .setNegativeButton(getString(R.string.action_cancel), null)
@@ -1213,7 +1215,7 @@ public class StockTransfersFragment extends BaseFragment {
 
         listView.setAdapter(pickerAdapter);
 
-        AlertDialog pickerDialog = new AlertDialog.Builder(requireContext())
+        AlertDialog pickerDialog = new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(title)
                 .setView(container)
                 .setNegativeButton(getString(R.string.action_cancel), null)
@@ -1299,7 +1301,7 @@ public class StockTransfersFragment extends BaseFragment {
 
     private void confirmComplete(StockTransfer transfer) {
         if (!ensureOnlineForAction()) return;
-        new AlertDialog.Builder(requireContext())
+        new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(getString(R.string.dialog_complete_stock_transfer_title))
                 .setMessage(getString(R.string.dialog_complete_stock_transfer_message, safeText(transfer.getReferenceNo())))
                 .setNegativeButton(getString(R.string.action_cancel), null)
@@ -1333,7 +1335,7 @@ public class StockTransfersFragment extends BaseFragment {
 
     private void confirmCancel(StockTransfer transfer) {
         if (!ensureOnlineForAction()) return;
-        new AlertDialog.Builder(requireContext())
+        new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(getString(R.string.dialog_cancel_stock_transfer_title))
                 .setMessage(getString(R.string.dialog_cancel_stock_transfer_message, safeText(transfer.getReferenceNo())))
                 .setNegativeButton(getString(R.string.action_no), null)
@@ -1367,7 +1369,7 @@ public class StockTransfersFragment extends BaseFragment {
 
     private void confirmDelete(StockTransfer transfer) {
         if (!ensureOnlineForAction()) return;
-        new AlertDialog.Builder(requireContext())
+        new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(getString(R.string.dialog_delete_stock_transfer_title))
                 .setMessage(getString(R.string.dialog_delete_stock_transfer_message, safeText(transfer.getReferenceNo())))
                 .setNegativeButton(getString(R.string.action_cancel), null)

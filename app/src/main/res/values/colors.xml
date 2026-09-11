@@ -11,4 +11,16 @@
     <color name="orange_400_fallback">#059814</color>
     <color name="gray_200_fallback">#E5E7EB</color>
 
+    <!--
+      Hijau merek versi gelap, dipakai untuk teks dan tombol di atas putih.
+      #60E66C yang dipakai bilah status hanya mencapai rasio kontras 1,9:1
+      terhadap putih, jadi tidak terbaca sebagai label tombol. Yang ini 5,5:1.
+    -->
+    <color name="valora_green">#0E7A33</color>
+    <color name="valora_ink">#0F172A</color>
+    <!-- Enam dialog formulir sudah memakai nada ini untuk badannya; jendela
+         dialog ikut memakainya supaya tidak ada seam di bilah tombol. -->
+    <color name="valora_surface">#F9FAFB</color>
+    <color name="valora_muted">#64748B</color>
+
 </resources>
