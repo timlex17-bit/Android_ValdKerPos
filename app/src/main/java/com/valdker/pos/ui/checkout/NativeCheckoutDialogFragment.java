@@ -10,7 +10,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -41,6 +43,15 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
     private EditText etDiscountValue;
     @Nullable
     private Spinner spDiscountMode;
+    @Nullable
+    private LinearLayout containerSplit;
+    @Nullable
+    private TextView tvSplitRemaining;
+    @Nullable
+    private Button btnAddSplit;
+
+    /** Baris pembayaran tambahan yang sedang ditampilkan. */
+    private final List<View> splitRows = new ArrayList<>();
 
     private static final int DISCOUNT_MODE_AMOUNT = 0;
     private static final int DISCOUNT_MODE_PERCENT = 1;
@@ -56,6 +67,21 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                        @NonNull String customerName,
                        long customerPoints,
                        @NonNull List<CheckoutItem> items);
+    }
+
+    /** Satu baris pembayaran tambahan pada order yang dibayar terbagi. */
+    public static class SplitPayment {
+        @Nullable public final Integer paymentMethodId;
+        @NonNull public final String methodCode;
+        @NonNull public final Money amount;
+
+        public SplitPayment(@Nullable Integer paymentMethodId,
+                            @NonNull String methodCode,
+                            @NonNull Money amount) {
+            this.paymentMethodId = paymentMethodId;
+            this.methodCode = methodCode;
+            this.amount = amount;
+        }
     }
 
     public interface BankListener {
@@ -131,6 +157,13 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         @NonNull public Money totalAmountMoney = Money.zero();
         @NonNull public Money cashReceivedMoney = Money.zero();
         @NonNull public Money changeAmountMoney = Money.zero();
+
+        /**
+         * Pembayaran tambahan di luar metode utama. Kosong berarti order ini
+         * dibayar dengan satu metode saja - perilaku sebelum split payment ada.
+         * Metode utama menanggung sisanya: total - jumlah baris di sini.
+         */
+        @NonNull public List<SplitPayment> splitPayments = new ArrayList<>();
 
         @NonNull public String tableNumber;
         @NonNull public String deliveryAddress;
@@ -374,6 +407,9 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         tvBreakdown = view.findViewById(R.id.tvTotalBreakdown);
         etDiscountValue = view.findViewById(R.id.etDiscountValue);
         spDiscountMode = view.findViewById(R.id.spDiscountMode);
+        containerSplit = view.findViewById(R.id.containerSplitPayments);
+        tvSplitRemaining = view.findViewById(R.id.tvSplitRemaining);
+        btnAddSplit = view.findViewById(R.id.btnAddSplitPayment);
 
         Spinner spCustomer = view.findViewById(R.id.spCustomer);
         TextView tvCustomerPointsInfo = view.findViewById(R.id.tvCustomerPointsInfo);
@@ -470,21 +506,23 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                 tvTotal.setText(totalNow.format());
             }
             renderBreakdown(totals, taxPercent);
+            renderSplitRemaining(totals.total(), getSelectedPaymentMethod(spPaymentMethod));
 
             PaymentMethodOption selectedMethod = getSelectedPaymentMethod(spPaymentMethod);
             boolean isCash = selectedMethod != null && "CASH".equalsIgnoreCase(selectedMethod.code);
 
             if (isCash && tvChange != null && etCash != null) {
                 Money cash = Money.of(safe(etCash.getText()));
+                Money due = totalNow.minus(splitPaymentsTotal());
 
                 if (!cash.isPositive()) {
                     tvChange.setText(getString(R.string.checkout_change_format, Money.zero().format()));
-                } else if (cash.isLessThan(totalNow)) {
+                } else if (cash.isLessThan(due)) {
                     tvChange.setText(getString(R.string.checkout_shortage_format,
-                            totalNow.minus(cash).format()));
+                            due.minus(cash).format()));
                 } else {
                     tvChange.setText(getString(R.string.checkout_change_format,
-                            cash.minus(totalNow).format()));
+                            cash.minus(due).format()));
                 }
             }
         };
@@ -568,6 +606,37 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
             });
         }
 
+        if (btnAddSplit != null && containerSplit != null) {
+            btnAddSplit.setOnClickListener(v -> {
+                View row = LayoutInflater.from(requireContext())
+                        .inflate(R.layout.item_split_payment, containerSplit, false);
+
+                Spinner sp = row.findViewById(R.id.spSplitMethod);
+                ArrayAdapter<PaymentMethodOption> rowAdapter = new ArrayAdapter<>(
+                        requireContext(), android.R.layout.simple_spinner_item, paymentOptions);
+                rowAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                sp.setAdapter(rowAdapter);
+
+                EditText amount = row.findViewById(R.id.etSplitAmount);
+                amount.addTextChangedListener(new SimpleTextWatcher() {
+                    @Override
+                    public void afterTextChanged(Editable e) {
+                        updateTotals.run();
+                    }
+                });
+
+                row.findViewById(R.id.btnRemoveSplit).setOnClickListener(x -> {
+                    containerSplit.removeView(row);
+                    splitRows.remove(row);
+                    updateTotals.run();
+                });
+
+                containerSplit.addView(row);
+                splitRows.add(row);
+                updateTotals.run();
+            });
+        }
+
         if (tvTotal != null) tvTotal.setText(baseSubtotalMoney.format());
         updateCustomerInfo.run();
         updateTotals.run();
@@ -613,9 +682,14 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                         baseSubtotalMoney, typedDiscount, deliveryFeeMoney, taxPercent);
                 Money totalNowMoney = confirmTotals.total();
 
+                // Dengan pembayaran terbagi, tunai hanya menanggung porsi metode
+                // utama - bukan seluruh total. Membandingkannya dengan total
+                // penuh akan menolak pembayaran yang sebenarnya sudah lunas.
+                Money primaryShare = totalNowMoney.minus(splitPaymentsTotal());
+
                 Money cashReceivedMoney = Money.of(etCash != null ? safe(etCash.getText()) : "");
                 Money changeAmountMoney = "CASH".equalsIgnoreCase(selectedMethod.code)
-                        ? cashReceivedMoney.minus(totalNowMoney).orZeroIfNegative()
+                        ? cashReceivedMoney.minus(primaryShare).orZeroIfNegative()
                         : Money.zero();
 
                 double deliveryFee = deliveryFeeMoney.toDouble();
@@ -644,6 +718,35 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                     return;
                 }
 
+                // Pembayaran terbagi: setiap baris wajib berisi nominal, dan
+                // jumlahnya tidak boleh melewati total - metode utama yang
+                // menanggung sisanya, jadi sisa negatif berarti salah input.
+                if (!splitRows.isEmpty()) {
+                    if (hasEmptySplitRow()) {
+                        Toast.makeText(requireContext(),
+                                getString(R.string.msg_split_amount_required),
+                                Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    // Metode yang mewajibkan rekening bank belum didukung pada
+                    // baris terbagi - barisnya tidak punya pemilih rekening.
+                    // Diblokir di sini supaya kasir dapat pesan yang jelas
+                    // alih-alih penolakan mentah dari server.
+                    if (hasSplitRowRequiringBank()) {
+                        Toast.makeText(requireContext(),
+                                getString(R.string.msg_split_bank_unsupported),
+                                Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    if (splitPaymentsTotal().isGreaterThanOrEqual(totalNowMoney)
+                            && !splitPaymentsTotal().equals(totalNowMoney)) {
+                        Toast.makeText(requireContext(),
+                                getString(R.string.msg_split_exceeds_total),
+                                Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                }
+
                 if ("CASH".equalsIgnoreCase(selectedMethod.code)) {
                     if (!cashReceivedMoney.isPositive()) {
                         if (etCash != null) {
@@ -655,7 +758,7 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
 
                     // Perbandingan eksak: dengan double, uang pas untuk total
                     // hasil 0.1+0.2 tampak kurang dan pembayaran ditolak.
-                    if (cashReceivedMoney.isLessThan(totalNowMoney)) {
+                    if (cashReceivedMoney.isLessThan(primaryShare)) {
                         if (etCash != null) {
                             etCash.setError(getString(R.string.msg_cash_received_less_total));
                             etCash.requestFocus();
@@ -731,6 +834,7 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                     result.totalAmountMoney = totalNowMoney;
                     result.cashReceivedMoney = cashReceivedMoney;
                     result.changeAmountMoney = changeAmountMoney;
+                    result.splitPayments = collectSplitPayments();
                     bankListener.onConfirmBank(result);
                 }
 
@@ -785,6 +889,71 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
             }
         }
         return Money.of(raw).orZeroIfNegative();
+    }
+
+    /**
+     * Sisa yang ditanggung metode utama: total dikurangi seluruh baris
+     * tambahan. Baris ini hanya muncul kalau kasir memang membagi pembayaran.
+     */
+    private void renderSplitRemaining(@NonNull Money total, @Nullable PaymentMethodOption primary) {
+        if (tvSplitRemaining == null) return;
+        if (splitRows.isEmpty()) {
+            tvSplitRemaining.setVisibility(View.GONE);
+            return;
+        }
+        Money remaining = total.minus(splitPaymentsTotal());
+        String label = primary != null ? primary.label : "-";
+        tvSplitRemaining.setText(getString(R.string.checkout_split_remaining, label, remaining.format()));
+        tvSplitRemaining.setVisibility(View.VISIBLE);
+    }
+
+    /** Jumlah seluruh baris pembayaran tambahan yang terisi. */
+    @NonNull
+    private Money splitPaymentsTotal() {
+        Money sum = Money.zero();
+        for (View row : splitRows) {
+            EditText amount = row.findViewById(R.id.etSplitAmount);
+            sum = sum.plus(Money.of(safe(amount.getText())).orZeroIfNegative());
+        }
+        return sum;
+    }
+
+    /** Baris pembayaran tambahan yang terisi, siap dikirim ke payload. */
+    @NonNull
+    private List<SplitPayment> collectSplitPayments() {
+        List<SplitPayment> out = new ArrayList<>();
+        for (View row : splitRows) {
+            Spinner sp = row.findViewById(R.id.spSplitMethod);
+            EditText amount = row.findViewById(R.id.etSplitAmount);
+            Money value = Money.of(safe(amount.getText()));
+            if (!value.isPositive()) continue;
+            Object sel = sp.getSelectedItem();
+            if (sel instanceof PaymentMethodOption) {
+                PaymentMethodOption m = (PaymentMethodOption) sel;
+                out.add(new SplitPayment(m.id > 0 ? m.id : null, m.code, value));
+            }
+        }
+        return out;
+    }
+
+    /** True kalau ada baris terbagi memakai metode yang butuh rekening bank. */
+    private boolean hasSplitRowRequiringBank() {
+        for (View row : splitRows) {
+            Spinner sp = row.findViewById(R.id.spSplitMethod);
+            Object sel = sp.getSelectedItem();
+            if (sel instanceof PaymentMethodOption && ((PaymentMethodOption) sel).requiresBankAccount) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasEmptySplitRow() {
+        for (View row : splitRows) {
+            EditText amount = row.findViewById(R.id.etSplitAmount);
+            if (!Money.of(safe(amount.getText())).isPositive()) return true;
+        }
+        return false;
     }
 
     private boolean isPercentDiscountMode() {

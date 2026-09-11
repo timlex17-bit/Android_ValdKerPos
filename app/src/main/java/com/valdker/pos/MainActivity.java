@@ -72,6 +72,7 @@ import com.valdker.pos.network.ApiConfig;
 import com.valdker.pos.repositories.CheckoutConfigRepository;
 import com.valdker.pos.repositories.CustomerRepository;
 import com.valdker.pos.repositories.MasterDataRepository;
+import com.valdker.pos.money.Money;
 import com.valdker.pos.repositories.OfflineOrderRepository;
 import com.valdker.pos.repositories.ShiftRepository;
 import com.valdker.pos.repositories.ShopRepository;
@@ -2241,8 +2242,22 @@ public class MainActivity extends AppCompatActivity
             payment.put("note", safeTrim(result.paymentNote));
         }
 
-        payment.put("amount", result.totalAmountMoney.toPlainString());
+        // Metode utama menanggung sisa setelah pembayaran terbagi.
+        Money splitTotal = Money.zero();
+        for (NativeCheckoutDialogFragment.SplitPayment sp : result.splitPayments) {
+            splitTotal = splitTotal.plus(sp.amount);
+        }
+        payment.put("amount", result.totalAmountMoney.minus(splitTotal).toPlainString());
         payments.put(payment);
+
+        for (NativeCheckoutDialogFragment.SplitPayment sp : result.splitPayments) {
+            JSONObject extra = new JSONObject();
+            extra.put("payment_method_id", sp.paymentMethodId != null ? sp.paymentMethodId : JSONObject.NULL);
+            extra.put("bank_account_id", JSONObject.NULL);
+            extra.put("amount", sp.amount.toPlainString());
+            payments.put(extra);
+        }
+
         body.put("payments", payments);
 
         return body;

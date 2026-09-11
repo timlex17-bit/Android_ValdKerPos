@@ -1119,4 +1119,11 @@
     <string name="checkout_discount_mode_amount">$</string>
     <string name="checkout_discount_mode_percent">%</string>
     <string name="msg_discount_exceeds_subtotal">Diskontu labele liu subtotál.</string>
+    <string name="checkout_split_label">Pagamentu fahe</string>
+    <string name="checkout_split_add">+ Aumenta pagamentu</string>
+    <string name="checkout_split_remove">Hasai</string>
+    <string name="checkout_split_remaining">Resta ba %1$s: %2$s</string>
+    <string name="msg_split_exceeds_total">Pagamentu fahe liu tan totál order nian.</string>
+    <string name="msg_split_amount_required">Hakerek montante ba pagamentu fahe hotu.</string>
+    <string name="msg_split_bank_unsupported">Pagamentu fahe seidauk suporta metodu hanesan banku. Uza osan iha liña fahe.</string>
 </resources>

@@ -707,11 +707,26 @@ public class CartFragment extends Fragment {
             } else {
                 paymentObj.put("bank_account_id", JSONObject.NULL);
             }
-            paymentObj.put("amount", totalMoney.toPlainString());
+            Money splitTotal = Money.zero();
+            for (NativeCheckoutDialogFragment.SplitPayment sp : result.splitPayments) {
+                splitTotal = splitTotal.plus(sp.amount);
+            }
+            // Metode utama menanggung sisa setelah pembayaran terbagi.
+            paymentObj.put("amount", totalMoney.minus(splitTotal).toPlainString());
             paymentObj.put("reference_number", result.referenceNumber != null ? result.referenceNumber : "");
             paymentObj.put("note", result.paymentNote != null ? result.paymentNote : "");
 
             paymentsArr.put(paymentObj);
+
+            for (NativeCheckoutDialogFragment.SplitPayment sp : result.splitPayments) {
+                JSONObject extra = new JSONObject();
+                extra.put("payment_method_id", sp.paymentMethodId != null ? sp.paymentMethodId : JSONObject.NULL);
+                extra.put("bank_account_id", JSONObject.NULL);
+                extra.put("amount", sp.amount.toPlainString());
+                extra.put("reference_number", "");
+                extra.put("note", "");
+                paymentsArr.put(extra);
+            }
 
             Log.d(TAG, "FINAL itemsArr = " + itemsArr.toString());
             payload.put("items", itemsArr);

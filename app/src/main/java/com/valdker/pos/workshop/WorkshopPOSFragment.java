@@ -3260,7 +3260,8 @@ public class WorkshopPOSFragment extends Fragment
                     result.paymentNote,
                     result.customerId,
                     result.customerName,
-                    getSelectedVehicleTypeCode()
+                    getSelectedVehicleTypeCode(),
+                    result.splitPayments
             );
             List<WorkshopCartItem> receiptItems = new ArrayList<>(cartItems);
             final long draftIdForKey = activeDraftId;
@@ -3470,7 +3471,8 @@ public class WorkshopPOSFragment extends Fragment
                                                  @Nullable String paymentNote,
                                                  @Nullable Integer selectedCustomerId,
                                                  @Nullable String selectedCustomerName,
-                                                 @Nullable String selectedVehicleTypeCode) throws Exception {
+                                                 @Nullable String selectedVehicleTypeCode,
+                                                 @NonNull java.util.List<NativeCheckoutDialogFragment.SplitPayment> splitPayments) throws Exception {
 
         Money subtotalMoney = getCartGrandTotalMoney();
         OrderTotals workshopTotals = OrderTotals.of(
@@ -3602,7 +3604,12 @@ public class WorkshopPOSFragment extends Fragment
         }
 
         paymentObj.put("method_code", paymentMethod);
-        paymentObj.put("amount", totalMoney.toPlainString());
+        Money splitTotal = Money.zero();
+        for (NativeCheckoutDialogFragment.SplitPayment sp : splitPayments) {
+            splitTotal = splitTotal.plus(sp.amount);
+        }
+        // Metode utama menanggung sisa setelah pembayaran terbagi.
+        paymentObj.put("amount", totalMoney.minus(splitTotal).toPlainString());
 
         if (bankAccountId != null && bankAccountId > 0) {
             paymentObj.put("bank_account_id", bankAccountId);
@@ -3612,6 +3619,17 @@ public class WorkshopPOSFragment extends Fragment
         paymentObj.put("note", paymentNote != null ? paymentNote : "");
 
         paymentsArray.put(paymentObj);
+
+        for (NativeCheckoutDialogFragment.SplitPayment sp : splitPayments) {
+            JSONObject extra = new JSONObject();
+            extra.put("payment_method_id", sp.paymentMethodId != null ? sp.paymentMethodId : JSONObject.NULL);
+            extra.put("method_code", sp.methodCode);
+            extra.put("amount", sp.amount.toPlainString());
+            extra.put("reference_number", "");
+            extra.put("note", "");
+            paymentsArray.put(extra);
+        }
+
         payload.put("payments", paymentsArray);
 
         return payload;

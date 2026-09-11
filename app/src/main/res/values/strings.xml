@@ -1110,4 +1110,11 @@
     <string name="checkout_discount_mode_amount">$</string>
     <string name="checkout_discount_mode_percent">%</string>
     <string name="msg_discount_exceeds_subtotal">Discount cannot exceed the subtotal.</string>
+    <string name="checkout_split_label">Split payment</string>
+    <string name="checkout_split_add">+ Add payment</string>
+    <string name="checkout_split_remove">Remove</string>
+    <string name="checkout_split_remaining">Remaining for %1$s: %2$s</string>
+    <string name="msg_split_exceeds_total">Split payments exceed the order total.</string>
+    <string name="msg_split_amount_required">Enter an amount for every split payment.</string>
+    <string name="msg_split_bank_unsupported">Split payments cannot use a method that needs a bank account yet. Choose cash for the split lines.</string>
 </resources>

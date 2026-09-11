@@ -1127,4 +1127,11 @@
     <string name="checkout_discount_mode_amount">$</string>
     <string name="checkout_discount_mode_percent">%</string>
     <string name="msg_discount_exceeds_subtotal">Diskon tidak boleh melebihi subtotal.</string>
+    <string name="checkout_split_label">Pembayaran terbagi</string>
+    <string name="checkout_split_add">+ Tambah pembayaran</string>
+    <string name="checkout_split_remove">Hapus</string>
+    <string name="checkout_split_remaining">Sisa untuk %1$s: %2$s</string>
+    <string name="msg_split_exceeds_total">Pembayaran terbagi melebihi total order.</string>
+    <string name="msg_split_amount_required">Isi nominal untuk setiap pembayaran terbagi.</string>
+    <string name="msg_split_bank_unsupported">Pembayaran terbagi belum mendukung metode yang butuh rekening bank. Pakai tunai untuk baris terbagi.</string>
 </resources>
