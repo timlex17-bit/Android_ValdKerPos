@@ -2185,6 +2185,12 @@ public class MainActivity extends AppCompatActivity
             body.put("delivery_address", safeTrim(result.deliveryAddress));
         }
 
+        // Payload retail tidak mengirim subtotal/total (server menghitungnya),
+        // tapi diskon dan pajak WAJIB dikirim: server memakai keduanya apa
+        // adanya dalam total = subtotal + ongkir - diskon + pajak.
+        body.put("discount", result.discountMoney.toPlainString());
+        body.put("tax", result.taxMoney.toPlainString());
+
         // Semua nilai uang dikirim sebagai string desimal. Menaruh double ke
         // JSONObject menuliskan ekspansi binernya apa adanya, mis.
         // 0.30000000000000004.

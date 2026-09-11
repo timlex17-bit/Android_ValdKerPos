@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:clipToPadding="false"
@@ -17,10 +18,21 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:paddingBottom="16dp"
             android:text="@string/amount_zero_usd"
             android:textSize="22sp"
             android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvTotalBreakdown"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingTop="4dp"
+            android:paddingBottom="16dp"
+            android:textSize="13sp"
+            android:visibility="gone"
+            tools:text="Subtotal $10.00  ·  Tax 11% $1.10"
+            tools:visibility="visible" />
 
         <TextView
             android:id="@+id/tvCustomerLabel"

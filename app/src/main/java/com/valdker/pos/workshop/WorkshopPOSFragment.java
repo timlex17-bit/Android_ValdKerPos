@@ -63,6 +63,7 @@ import com.valdker.pos.network.WorkshopModuleApi;
 import com.valdker.pos.repositories.CheckoutConfigRepository;
 import com.valdker.pos.repositories.MasterDataRepository;
 import com.valdker.pos.money.Money;
+import com.valdker.pos.money.OrderTotals;
 import com.valdker.pos.repositories.OfflineOrderRepository;
 import com.valdker.pos.repositories.OrderRepository;
 import com.valdker.pos.repositories.ProductRepository;
@@ -3472,9 +3473,14 @@ public class WorkshopPOSFragment extends Fragment
                                                  @Nullable String selectedVehicleTypeCode) throws Exception {
 
         Money subtotalMoney = getCartGrandTotalMoney();
-        Money discountMoney = Money.zero();
-        Money taxMoney = Money.zero();
-        Money totalMoney = subtotalMoney.plus(Money.ofDouble(deliveryFee));
+        OrderTotals workshopTotals = OrderTotals.of(
+                subtotalMoney,
+                Money.zero(),
+                Money.ofDouble(deliveryFee),
+                sessionManager != null ? sessionManager.getTaxPercent() : java.math.BigDecimal.ZERO);
+        Money discountMoney = workshopTotals.discount();
+        Money taxMoney = workshopTotals.tax();
+        Money totalMoney = workshopTotals.total();
 
         double subtotal = subtotalMoney.toDouble();
         double total = totalMoney.toDouble();

@@ -20,9 +20,12 @@ import androidx.fragment.app.DialogFragment;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.valdker.pos.R;
+import com.valdker.pos.SessionManager;
+import com.valdker.pos.money.OrderTotals;
 import com.valdker.pos.money.Money;
 import com.valdker.pos.utils.Toast;
 
+import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +34,9 @@ import java.util.Locale;
 public class NativeCheckoutDialogFragment extends DialogFragment {
 
     private static final String TAG = "NATIVE_CHECKOUT";
+
+    @Nullable
+    private TextView tvBreakdown;
 
     public interface Listener {
         void onConfirm(@NonNull String paymentMethod,
@@ -112,6 +118,8 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
 
         /** Nilai otoritatif; field double di atas hanya turunannya. */
         @NonNull public Money subtotalMoney = Money.zero();
+        @NonNull public Money discountMoney = Money.zero();
+        @NonNull public Money taxMoney = Money.zero();
         @NonNull public Money deliveryFeeMoney = Money.zero();
         @NonNull public Money totalAmountMoney = Money.zero();
         @NonNull public Money cashReceivedMoney = Money.zero();
@@ -349,11 +357,14 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
 
         final double baseSubtotal = args.getDouble(ARG_TOTAL, 0.0);
         final Money baseSubtotalMoney = Money.ofDouble(baseSubtotal);
+        // POSSettings.tax_percent milik toko; nol berarti tidak ada baris pajak.
+        final BigDecimal taxPercent = new SessionManager(requireContext()).getTaxPercent();
         final boolean needTable = args.getBoolean(ARG_NEED_TABLE, false);
         final boolean needDelivery = args.getBoolean(ARG_NEED_DELIVERY, false);
 
 
         TextView tvTotal = view.findViewById(R.id.tvTotalAmount);
+        tvBreakdown = view.findViewById(R.id.tvTotalBreakdown);
 
         Spinner spCustomer = view.findViewById(R.id.spCustomer);
         TextView tvCustomerPointsInfo = view.findViewById(R.id.tvCustomerPointsInfo);
@@ -429,11 +440,14 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                     ? Money.of(safe(etFee.getText())).orZeroIfNegative()
                     : Money.zero();
 
-            Money totalNow = baseSubtotalMoney.plus(fee);
+            OrderTotals totals = OrderTotals.of(
+                    baseSubtotalMoney, currentDiscount(baseSubtotalMoney), fee, taxPercent);
+            Money totalNow = totals.total();
 
             if (tvTotal != null) {
                 tvTotal.setText(totalNow.format());
             }
+            renderBreakdown(totals, taxPercent);
 
             PaymentMethodOption selectedMethod = getSelectedPaymentMethod(spPaymentMethod);
             boolean isCash = selectedMethod != null && "CASH".equalsIgnoreCase(selectedMethod.code);
@@ -539,7 +553,9 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                         ? Money.of(safe(etFee.getText())).orZeroIfNegative()
                         : Money.zero();
 
-                Money totalNowMoney = baseSubtotalMoney.plus(deliveryFeeMoney);
+                OrderTotals confirmTotals = OrderTotals.of(
+                        baseSubtotalMoney, currentDiscount(baseSubtotalMoney), deliveryFeeMoney, taxPercent);
+                Money totalNowMoney = confirmTotals.total();
 
                 Money cashReceivedMoney = Money.of(etCash != null ? safe(etCash.getText()) : "");
                 Money changeAmountMoney = "CASH".equalsIgnoreCase(selectedMethod.code)
@@ -652,8 +668,10 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                             safeItems
                     );
                     // Nilai eksak, bukan hasil bolak-balik lewat double.
-                    result.subtotalMoney = baseSubtotalMoney;
-                    result.deliveryFeeMoney = deliveryFeeMoney;
+                    result.subtotalMoney = confirmTotals.subtotal();
+                    result.discountMoney = confirmTotals.discount();
+                    result.taxMoney = confirmTotals.tax();
+                    result.deliveryFeeMoney = confirmTotals.deliveryFee();
                     result.totalAmountMoney = totalNowMoney;
                     result.cashReceivedMoney = cashReceivedMoney;
                     result.changeAmountMoney = changeAmountMoney;
@@ -689,6 +707,42 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         Object obj = spinner.getSelectedItem();
         if (obj instanceof BankAccountOption) return (BankAccountOption) obj;
         return null;
+    }
+
+    /**
+     * Diskon yang sedang berlaku. Tugas 1 belum punya input diskon, jadi selalu
+     * nol; Tugas 2 mengisinya dari field di layar.
+     */
+    @NonNull
+    private Money currentDiscount(@NonNull Money subtotal) {
+        return Money.zero();
+    }
+
+    /** Rincian di bawah angka total: subtotal, diskon, dan pajak bila ada. */
+    private void renderBreakdown(@NonNull OrderTotals totals, @NonNull BigDecimal taxPercent) {
+        if (tvBreakdown == null) return;
+        if (!totals.hasTax() && !totals.hasDiscount() && !totals.deliveryFee().isPositive()) {
+            tvBreakdown.setVisibility(View.GONE);
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(getString(R.string.checkout_line_subtotal)).append(' ')
+                .append(totals.subtotal().format());
+        if (totals.hasDiscount()) {
+            sb.append("  ·  ").append(getString(R.string.checkout_line_discount)).append(' ')
+                    .append(totals.discount().format());
+        }
+        if (totals.deliveryFee().isPositive()) {
+            sb.append("  ·  ").append(getString(R.string.checkout_line_delivery)).append(' ')
+                    .append(totals.deliveryFee().format());
+        }
+        if (totals.hasTax()) {
+            sb.append("  ·  ").append(getString(R.string.checkout_line_tax))
+                    .append(' ').append(taxPercent.stripTrailingZeros().toPlainString()).append("%  ")
+                    .append(totals.tax().format());
+        }
+        tvBreakdown.setText(sb.toString());
+        tvBreakdown.setVisibility(View.VISIBLE);
     }
 
     @NonNull

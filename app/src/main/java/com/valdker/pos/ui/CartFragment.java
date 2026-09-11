@@ -22,6 +22,7 @@ import com.valdker.pos.SessionManager;
 import com.valdker.pos.cart.CartManager;
 import com.valdker.pos.models.CartItem;
 import com.valdker.pos.money.Money;
+import com.valdker.pos.money.OrderTotals;
 import com.valdker.pos.models.Customer;
 import com.valdker.pos.repositories.CheckoutConfigRepository;
 import com.valdker.pos.repositories.CustomerRepository;
@@ -593,11 +594,22 @@ public class CartFragment extends Fragment {
 
         final boolean hasDeliveryFinal = hasDelivery;
         final Money deliveryFeeMoney = hasDeliveryFinal ? feeSafeMoney : Money.zero();
-        final Money totalMoney = subtotalMoney.plus(deliveryFeeMoney);
+
+        // Rumus yang sama dengan server, termasuk urutan: pajak dihitung dari
+        // (subtotal - diskon), lalu ongkir ditambahkan setelahnya.
+        final OrderTotals orderTotals = OrderTotals.of(
+                subtotalMoney,
+                result.discountMoney,
+                deliveryFeeMoney,
+                new SessionManager(appCtx).getTaxPercent());
+        final Money discountMoney = orderTotals.discount();
+        final Money taxMoney = orderTotals.tax();
+        final Money totalMoney = orderTotals.total();
 
         // Dipertahankan untuk pemanggil cetak struk yang belum dimigrasi.
         final double deliveryFeeFinal = deliveryFeeMoney.toDouble();
         final double subtotalFinal = subtotalMoney.toDouble();
+        final double discountFinal = discountMoney.toDouble();
         final double totalFinal = totalMoney.toDouble();
 
         final String paymentCodeFinal = result.paymentMethodCode != null
@@ -617,8 +629,8 @@ public class CartFragment extends Fragment {
             payload.put("device_time", currentDeviceTimeIso());
             payload.put("payment_method", paymentCodeFinal);
             payload.put("subtotal", subtotalMoney.toPlainString());
-            payload.put("discount", Money.zero().toPlainString());
-            payload.put("tax", Money.zero().toPlainString());
+            payload.put("discount", discountMoney.toPlainString());
+            payload.put("tax", taxMoney.toPlainString());
             payload.put("total", totalMoney.toPlainString());
             payload.put("notes", "Checkout from Android");
             payload.put("is_paid", true);
@@ -730,7 +742,7 @@ public class CartFragment extends Fragment {
                         Log.i(TAG, "Checkout write-ahead saved localOrderId=" + savedLocalOrderId
                                 + " inserted=" + inserted);
                         sendCheckoutAfterWriteAhead(savedLocalOrderId, payload, appCtx, token, snapshot,
-                                result, paymentCodeFinal, subtotalFinal, deliveryFeeFinal, totalFinal,
+                                result, paymentCodeFinal, subtotalFinal, discountFinal, deliveryFeeFinal, totalFinal,
                                 tableFinal, addrFinal);
                     }
 
@@ -758,6 +770,7 @@ public class CartFragment extends Fragment {
                                              @NonNull NativeCheckoutDialogFragment.BankCheckoutResult result,
                                              @NonNull String paymentCodeFinal,
                                              double subtotalFinal,
+                                             double discountFinal,
                                              double deliveryFeeFinal,
                                              double totalFinal,
                                              @NonNull String tableFinal,
@@ -787,6 +800,7 @@ public class CartFragment extends Fragment {
                         snapshot,
                         paymentCodeFinal,
                         subtotalFinal,
+                        discountFinal,
                         deliveryFeeFinal,
                         totalFinal,
                         tableFinal,
@@ -821,6 +835,7 @@ public class CartFragment extends Fragment {
                             snapshot,
                             paymentCodeFinal,
                             subtotalFinal,
+                            discountFinal,
                             deliveryFeeFinal,
                             totalFinal,
                             tableFinal,
@@ -864,6 +879,7 @@ public class CartFragment extends Fragment {
                                                 @NonNull List<CartItem> snapshot,
                                                 @NonNull String paymentMethod,
                                                 double subtotal,
+                                                double discount,
                                                 double deliveryFee,
                                                 double total,
                                                 @NonNull String tableNumber,
@@ -877,6 +893,7 @@ public class CartFragment extends Fragment {
                 snapshot,
                 paymentMethod,
                 subtotal,
+                discount,
                 deliveryFee,
                 total,
                 tableNumber,
@@ -957,6 +974,7 @@ public class CartFragment extends Fragment {
                                      @NonNull List<CartItem> items,
                                      @NonNull String paymentMethod,
                                      double subtotal,
+                                     double discount,
                                      double deliveryFee,
                                      double total,
                                      @NonNull String tableNumber,
@@ -971,6 +989,7 @@ public class CartFragment extends Fragment {
                 items,
                 paymentMethod,
                 subtotal,
+                discount,
                 deliveryFee,
                 total,
                 tableNumber,
@@ -991,6 +1010,7 @@ public class CartFragment extends Fragment {
                                             @NonNull List<CartItem> items,
                                             @NonNull String paymentMethod,
                                             double subtotal,
+                                            double discount,
                                             double deliveryFee,
                                             double total,
                                             @NonNull String tableNumber,
@@ -1008,6 +1028,7 @@ public class CartFragment extends Fragment {
                 items,
                 paymentMethod,
                 subtotal,
+                discount,
                 deliveryFee,
                 total,
                 tableNumber,
@@ -1028,6 +1049,7 @@ public class CartFragment extends Fragment {
                                  @NonNull List<CartItem> items,
                                  @NonNull String paymentMethod,
                                  double subtotal,
+                                 double discount,
                                  double deliveryFee,
                                  double total,
                                  @NonNull String tableNumber,
@@ -1090,6 +1112,7 @@ public class CartFragment extends Fragment {
                 items,
                 paymentMethod,
                 subtotal,
+                discount,
                 deliveryFee,
                 total,
                 tableNumber,
@@ -1123,6 +1146,7 @@ public class CartFragment extends Fragment {
                                 items,
                                 paymentMethod,
                                 subtotal,
+                                discount,
                                 deliveryFee,
                                 total,
                                 tableNumber,
@@ -1245,6 +1269,7 @@ public class CartFragment extends Fragment {
                                     @NonNull List<CartItem> items,
                                     @NonNull String paymentMethod,
                                     double subtotal,
+                                    double discount,
                                     double deliveryFee,
                                     double total,
                                     @NonNull String tableNumber,

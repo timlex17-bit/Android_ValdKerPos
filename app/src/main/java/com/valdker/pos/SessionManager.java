@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 
 import org.json.JSONArray;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -55,6 +56,12 @@ public class SessionManager {
     private static final String KEY_PLAN = "plan";
     private static final String KEY_EFFECTIVE_MODULES_JSON = "effective_modules_json";
     private static final String KEY_FEATURES_JSON = "features_json";
+
+    /**
+     * Persentase pajak toko, dari POSSettings.tax_percent di backend. Disimpan
+     * sebagai teks desimal ("11.00") supaya tidak melewati double sama sekali.
+     */
+    private static final String KEY_TAX_PERCENT = "tax_percent";
 
     private static final String KEY_TOKEN = "token";
     private static final String KEY_USERNAME = "username";
@@ -274,6 +281,44 @@ public class SessionManager {
                 .putString(KEY_BUSINESS_TYPE, normalized)
                 .putString(KEY_SHOP_BUSINESS_TYPE, normalized)
                 .apply();
+    }
+
+    /**
+     * Menyimpan persentase pajak toko. Sumbernya
+     * {@code shop.pos_settings.tax_percent} pada respons login dan
+     * {@code pos_settings.tax_percent} pada GET /api/shop/me/.
+     */
+    public void setTaxPercent(@Nullable String raw) {
+        String clean = raw == null ? "" : raw.trim();
+        if (clean.isEmpty()) {
+            prefs.edit().remove(KEY_TAX_PERCENT).apply();
+            return;
+        }
+        try {
+            // Dinormalkan lewat BigDecimal supaya "11", "11.0" dan "11.00"
+            // tersimpan dalam satu bentuk.
+            prefs.edit().putString(KEY_TAX_PERCENT, new BigDecimal(clean).toPlainString()).apply();
+        } catch (NumberFormatException e) {
+            Log.w(TAG, "tax_percent tidak bisa dibaca: " + clean);
+            prefs.edit().remove(KEY_TAX_PERCENT).apply();
+        }
+    }
+
+    /** Persentase pajak toko; nol berarti toko ini tidak memungut pajak. */
+    @NonNull
+    public BigDecimal getTaxPercent() {
+        String raw = prefs.getString(KEY_TAX_PERCENT, "");
+        if (raw == null || raw.trim().isEmpty()) return BigDecimal.ZERO;
+        try {
+            return new BigDecimal(raw.trim());
+        } catch (NumberFormatException e) {
+            return BigDecimal.ZERO;
+        }
+    }
+
+    /** True kalau toko memungut pajak, sehingga barisnya perlu ditampilkan. */
+    public boolean hasTaxPercent() {
+        return getTaxPercent().signum() > 0;
     }
 
     @NonNull
@@ -762,6 +807,7 @@ public class SessionManager {
         editor.remove(KEY_PLAN);
         editor.remove(KEY_EFFECTIVE_MODULES_JSON);
         editor.remove(KEY_FEATURES_JSON);
+        editor.remove(KEY_TAX_PERCENT);
 
         editor.apply();
     }

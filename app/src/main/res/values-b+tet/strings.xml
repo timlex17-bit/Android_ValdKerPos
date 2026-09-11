@@ -1110,4 +1110,8 @@
     <string name="menu_service_packages_desc">Jere pakote servisu</string>
     <string name="menu_bookings">Rezerva</string>
     <string name="menu_bookings_desc">Jere marka servisu ofisina</string>
+    <string name="checkout_line_subtotal">Subtotál</string>
+    <string name="checkout_line_discount">Diskontu</string>
+    <string name="checkout_line_delivery">Entrega</string>
+    <string name="checkout_line_tax">Taxa</string>
 </resources>

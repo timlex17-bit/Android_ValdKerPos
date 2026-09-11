@@ -330,6 +330,7 @@ public class LoginActivity extends AppCompatActivity {
             String businessType = response.optString("shop_business_type", "");
             String plan = response.optString("plan", "");
             JSONObject features = new JSONObject();
+            String taxPercent = "";
 
             if (shop != null) {
                 if (businessType == null || businessType.trim().isEmpty()) {
@@ -345,6 +346,11 @@ public class LoginActivity extends AppCompatActivity {
                 JSONObject f = shop.optJSONObject("features");
                 if (f != null) {
                     features = f;
+                }
+
+                JSONObject posSettings = shop.optJSONObject("pos_settings");
+                if (posSettings != null) {
+                    taxPercent = posSettings.optString("tax_percent", "");
                 }
             }
             if ((businessType == null || businessType.trim().isEmpty()) && user != null) {
@@ -470,6 +476,7 @@ public class LoginActivity extends AppCompatActivity {
                     perms,
                     menuPermissions
             );
+            sm.setTaxPercent(taxPercent);
             new AuthCacheRepository(this).saveCurrentSessionFromLogin(response);
 
             CartManager cartManager = CartManager.getInstance(getApplicationContext());

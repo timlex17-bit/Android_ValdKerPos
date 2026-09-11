@@ -283,6 +283,13 @@ public class ShopRepository {
         s.updatedAt = firstNonEmpty(o.optString("updated_at", ""), o.optString("updatedAt", ""));
         s.lastSyncAt = System.currentTimeMillis();
         s.allCategoryIconUrl = normalizeMediaUrl(ctx, o.optString("all_category_icon_url", null));
+
+        // GET /api/shop/me/ membawa pos_settings.tax_percent. Disegarkan di sini
+        // supaya perubahan pajak dari dashboard sampai ke kasir tanpa login ulang.
+        JSONObject posSettings = o.optJSONObject("pos_settings");
+        if (posSettings != null) {
+            new SessionManager(ctx).setTaxPercent(posSettings.optString("tax_percent", ""));
+        }
         return s;
     }
 

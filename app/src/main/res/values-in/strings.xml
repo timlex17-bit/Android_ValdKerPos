@@ -1118,4 +1118,8 @@
     <string name="menu_service_packages_desc">Kelola paket layanan</string>
     <string name="menu_bookings">Pemesanan</string>
     <string name="menu_bookings_desc">Kelola janji temu bengkel</string>
+    <string name="checkout_line_subtotal">Subtotal</string>
+    <string name="checkout_line_discount">Diskon</string>
+    <string name="checkout_line_delivery">Ongkir</string>
+    <string name="checkout_line_tax">Pajak</string>
 </resources>
