@@ -1114,4 +1114,9 @@
     <string name="checkout_line_discount">Diskontu</string>
     <string name="checkout_line_delivery">Entrega</string>
     <string name="checkout_line_tax">Taxa</string>
+    <string name="checkout_discount_label">Diskontu</string>
+    <string name="checkout_discount_hint">0.00</string>
+    <string name="checkout_discount_mode_amount">$</string>
+    <string name="checkout_discount_mode_percent">%</string>
+    <string name="msg_discount_exceeds_subtotal">Diskontu labele liu subtotál.</string>
 </resources>

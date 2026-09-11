@@ -37,6 +37,13 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
 
     @Nullable
     private TextView tvBreakdown;
+    @Nullable
+    private EditText etDiscountValue;
+    @Nullable
+    private Spinner spDiscountMode;
+
+    private static final int DISCOUNT_MODE_AMOUNT = 0;
+    private static final int DISCOUNT_MODE_PERCENT = 1;
 
     public interface Listener {
         void onConfirm(@NonNull String paymentMethod,
@@ -365,6 +372,8 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
 
         TextView tvTotal = view.findViewById(R.id.tvTotalAmount);
         tvBreakdown = view.findViewById(R.id.tvTotalBreakdown);
+        etDiscountValue = view.findViewById(R.id.etDiscountValue);
+        spDiscountMode = view.findViewById(R.id.spDiscountMode);
 
         Spinner spCustomer = view.findViewById(R.id.spCustomer);
         TextView tvCustomerPointsInfo = view.findViewById(R.id.tvCustomerPointsInfo);
@@ -423,6 +432,19 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         );
         bankAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spBankAccount.setAdapter(bankAdapter);
+
+        if (spDiscountMode != null) {
+            ArrayAdapter<String> discountModeAdapter = new ArrayAdapter<>(
+                    requireContext(),
+                    android.R.layout.simple_spinner_item,
+                    new String[]{
+                            getString(R.string.checkout_discount_mode_amount),
+                            getString(R.string.checkout_discount_mode_percent)
+                    }
+            );
+            discountModeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spDiscountMode.setAdapter(discountModeAdapter);
+        }
 
         final Runnable updateCustomerInfo = () -> {
             CustomerOption customer = getSelectedCustomer(spCustomer);
@@ -525,8 +547,30 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
             });
         }
 
+        if (etDiscountValue != null) {
+            etDiscountValue.addTextChangedListener(new SimpleTextWatcher() {
+                @Override
+                public void afterTextChanged(Editable s) {
+                    updateTotals.run();
+                }
+            });
+        }
+        if (spDiscountMode != null) {
+            spDiscountMode.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
+                    updateTotals.run();
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+                }
+            });
+        }
+
         if (tvTotal != null) tvTotal.setText(baseSubtotalMoney.format());
         updateCustomerInfo.run();
+        updateTotals.run();
         applyPaymentUi.run();
 
         androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
@@ -553,8 +597,20 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                         ? Money.of(safe(etFee.getText())).orZeroIfNegative()
                         : Money.zero();
 
+                // Diskon yang diketik lebih besar dari subtotal ditolak, bukan
+                // dijepit diam-diam: kasir harus melihat angkanya salah.
+                Money typedDiscount = currentDiscount(baseSubtotalMoney);
+                if (typedDiscount.isGreaterThanOrEqual(baseSubtotalMoney)
+                        && !typedDiscount.equals(baseSubtotalMoney)) {
+                    if (etDiscountValue != null) {
+                        etDiscountValue.setError(getString(R.string.msg_discount_exceeds_subtotal));
+                        etDiscountValue.requestFocus();
+                    }
+                    return;
+                }
+
                 OrderTotals confirmTotals = OrderTotals.of(
-                        baseSubtotalMoney, currentDiscount(baseSubtotalMoney), deliveryFeeMoney, taxPercent);
+                        baseSubtotalMoney, typedDiscount, deliveryFeeMoney, taxPercent);
                 Money totalNowMoney = confirmTotals.total();
 
                 Money cashReceivedMoney = Money.of(etCash != null ? safe(etCash.getText()) : "");
@@ -710,12 +766,30 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
     }
 
     /**
-     * Diskon yang sedang berlaku. Tugas 1 belum punya input diskon, jadi selalu
-     * nol; Tugas 2 mengisinya dari field di layar.
+     * Diskon yang sedang diketik kasir, dalam nominal maupun persen.
+     * Nilainya tidak dijepit di sini - {@link OrderTotals} yang menjepit, dan
+     * konfirmasi menolak kalau melebihi subtotal, supaya kasir melihat
+     * kesalahannya alih-alih angkanya diam-diam diganti.
      */
     @NonNull
     private Money currentDiscount(@NonNull Money subtotal) {
-        return Money.zero();
+        if (etDiscountValue == null) return Money.zero();
+        String raw = safe(etDiscountValue.getText());
+        if (raw.isEmpty()) return Money.zero();
+
+        if (isPercentDiscountMode()) {
+            try {
+                return OrderTotals.discountFromPercent(subtotal, new BigDecimal(raw));
+            } catch (NumberFormatException e) {
+                return Money.zero();
+            }
+        }
+        return Money.of(raw).orZeroIfNegative();
+    }
+
+    private boolean isPercentDiscountMode() {
+        return spDiscountMode != null
+                && spDiscountMode.getSelectedItemPosition() == DISCOUNT_MODE_PERCENT;
     }
 
     /** Rincian di bawah angka total: subtotal, diskon, dan pajak bila ada. */

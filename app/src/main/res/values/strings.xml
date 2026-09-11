@@ -1105,4 +1105,9 @@
     <string name="checkout_line_discount">Discount</string>
     <string name="checkout_line_delivery">Delivery</string>
     <string name="checkout_line_tax">Tax</string>
+    <string name="checkout_discount_label">Discount</string>
+    <string name="checkout_discount_hint">0.00</string>
+    <string name="checkout_discount_mode_amount">$</string>
+    <string name="checkout_discount_mode_percent">%</string>
+    <string name="msg_discount_exceeds_subtotal">Discount cannot exceed the subtotal.</string>
 </resources>

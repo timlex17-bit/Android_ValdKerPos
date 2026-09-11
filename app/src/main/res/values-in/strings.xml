@@ -1122,4 +1122,9 @@
     <string name="checkout_line_discount">Diskon</string>
     <string name="checkout_line_delivery">Ongkir</string>
     <string name="checkout_line_tax">Pajak</string>
+    <string name="checkout_discount_label">Diskon</string>
+    <string name="checkout_discount_hint">0.00</string>
+    <string name="checkout_discount_mode_amount">$</string>
+    <string name="checkout_discount_mode_percent">%</string>
+    <string name="msg_discount_exceeds_subtotal">Diskon tidak boleh melebihi subtotal.</string>
 </resources>

@@ -35,6 +35,36 @@
             tools:visibility="visible" />
 
         <TextView
+            android:id="@+id/tvDiscountLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="4dp"
+            android:text="@string/checkout_discount_label"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="12dp">
+
+            <EditText
+                android:id="@+id/etDiscountValue"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/checkout_discount_hint"
+                android:importantForAutofill="no"
+                android:inputType="numberDecimal" />
+
+            <Spinner
+                android:id="@+id/spDiscountMode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="88dp" />
+        </LinearLayout>
+
+        <TextView
             android:id="@+id/tvCustomerLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
