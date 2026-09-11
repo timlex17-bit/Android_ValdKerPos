@@ -22,7 +22,7 @@ dan crash reporting.
 | P1.2 order bisa hilang | ✅ selesai, diverifikasi dengan membunuh proses di tengah request |
 | P1.3 idempotency | ✅ terverifikasi sudah benar (dikerjakan sesi sebelumnya) |
 | P2.1 modul & plan | ✅ sebagian — kode mati dibuang; ketidakcocokan kontrak dilaporkan |
-| P2.2 paritas business type | ❌ temuan saja |
+| P2.2 paritas business type | ⚠️ pajak, diskon, split kini ada di ketiganya; sisa perbedaan di bagian "Fitur yang belum selesai" |
 | P2.3 hak akses staff | ⚠️ premis prompt tidak berlaku untuk Android (lihat MAJOR-4) |
 | P3.1 signingConfig | ✅ selesai, APK bertanda tangan diverifikasi `apksigner` |
 | P3.2 R8 + refleksi | ✅ selesai, harga diverifikasi benar dengan R8 aktif |
@@ -235,9 +235,16 @@ seperti kontrol akses.
    | Split payment | ❌ | ❌ | ❌ |
    | Retur | lewat modul terpisah | lewat modul terpisah | backend melarang untuk RESTAURANT |
 
-3. **Split payment** — `enable_split_payment` dibaca (`MainActivity.java:479`)
-   lalu tidak dipakai untuk apa pun. Array `payments` selalu satu elemen.
-4. **Diskon & pajak** — belum ada UI di jalur mana pun.
+3. **Split payment** — sudah ada (`5af3b9e`), dengan dua batas: baris terbagi
+   belum bisa memakai metode yang butuh rekening bank (tidak ada pemilih
+   rekening di barisnya, jadi diblokir dengan pesan), dan flag
+   `enable_split_payment` masih dibaca tanpa dipakai untuk menyembunyikan
+   fiturnya.
+4. **Diskon & pajak** — sudah ada (`664e7b4`, `35f4386`). Diskon masih pada
+   tingkat order saja; diskon per-item belum ada. Pratinjau rincian menampilkan
+   diskon yang sudah dijepit ke subtotal sementara field masih memuat angka
+   aslinya — konfirmasi tetap diblokir, jadi tidak ada order salah yang bisa
+   dibuat.
 5. **`TAKE_OUT` vs `TAKEAWAY`** — POS mengirim `TAKE_OUT` (`cart/CartManager.java:33`),
    filter laporan mengirim `TAKEAWAY` (`ui/reports/ReportsFragment.java:194`).
 6. **Sinkronisasi latar belakang** — WorkManager jadi dependensi tapi nol pemakaian.
@@ -283,6 +290,60 @@ M-9 (`EncryptedSharedPreferences`).
 POS restoran, diskon, split payment, konflik stok.
 
 Rebrand Valora tetap ditunda sesuai instruksi: `applicationId` tidak disentuh.
+
+---
+
+## Pajak, diskon, dan split payment
+
+Tiga fitur yang sebelumnya dipaku nol di Android kini terimplementasi, masing-
+masing satu commit, diverifikasi terhadap backend lokal.
+
+### Pajak (`664e7b4`)
+
+Android dulu **selalu** mengirim `tax=0.00`. Setiap toko dengan
+`POSSettings.tax_percent` terkonfigurasi sudah tidak sinkron: backend mencatat
+`Order tax mismatch` lalu menyimpan nol milik klien. Begitu backend masuk
+"Stage B" dan server jadi otoritatif, selisih itu berubah dari baris log menjadi
+total yang tidak pernah dilihat kasir.
+
+`tax_percent` dibaca dari `shop.pos_settings.tax_percent` saat login dan
+disegarkan dari `pos_settings.tax_percent` pada `GET /api/shop/me/`, jadi
+perubahan dari dashboard sampai ke kasir tanpa login ulang. Disimpan sebagai
+teks desimal, tidak pernah lewat `double`.
+
+`OrderTotals` (`money/OrderTotals.java`) memusatkan rumusnya dan meniru server
+persis, termasuk urutan yang menentukan: **pajak dikenakan pada
+(subtotal − diskon)**, bukan subtotal kotor, dan ongkir ditambahkan setelah
+pajak — bukan ikut dipajaki.
+
+### Diskon (`35f4386`)
+
+Input diskon di dialog checkout, nominal maupun persen, mengalir lewat
+`OrderTotals` yang sama dengan payload dan struk. Diskon melebihi subtotal
+**ditolak saat konfirmasi** dengan pesan di field, bukan dijepit diam-diam.
+
+### Split payment (`5af3b9e`)
+
+Baris pembayaran tambahan bisa ditambahkan; metode utama menanggung sisanya.
+
+Membagi pembayaran juga mengubah arti "uang cukup": pemeriksaan tunai dulu
+membandingkan uang yang diterima dengan **total penuh**, sehingga kasir yang
+membagi order 100.00 lalu menyerahkan porsi tunai 33.34 akan ditolak. Sekarang
+tunai diperiksa terhadap porsi metode utama.
+
+## Bukti uji — layar vs server (pajak, diskon, split)
+
+Backend lokal, toko uji `BEMORI`, emulator API 36.
+
+| Kasus | Layar | Server | Hasil |
+|---|---|---|---|
+| Pajak 11% dari 10.00 | `Subtotál $10.00 · Taxa 11% $1.10`, total `$11.10`, uang pas 11.10 diterima | `subtotal=10.00 discount=0.00 tax=1.10 total=11.10` | cocok |
+| Diskon 10% dari 99.99 + pajak 11% | `Subtotál $99.99 · Diskontu $10.00 · Taxa 11% $9.90`, total `$99.89`, kembalian `$0.11` dari 100.00 | `subtotal=99.99 discount=10.00 tax=9.90 total=99.89` | cocok |
+| Diskon 999 pada subtotal 10.00 | konfirmasi ditolak, error di field | tidak ada order dibuat | benar |
+| Split 33.33 + 33.33 dari 100.00 | `Resta ba Cash: $33.34`, kembalian `$0.00` | tiga pembayaran `33.34 + 33.33 + 33.33 = 100.00`, sisa `0.00` | cocok |
+
+**Peringatan `Order tax mismatch` di backend berhenti muncul** — nol kemunculan
+sepanjang seluruh sesi uji setelah perubahan ini.
 
 ---
 
