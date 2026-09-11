@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Satu warna aksen per modul dashboard. Warnanya dikelompokkan menurut
+  domain - penjualan biru-nila, katalog ungu, orang toska, pembelian kuning,
+  uang hijau, retur merah, gudang biru-sian, bengkel merah muda - supaya
+  modul yang bersaudara terlihat bersaudara tanpa dua tile pun kembar warna.
+
+  Tile memakai warna ini dua kali: penuh untuk ikonnya, dan versi sangat
+  pucat (dihitung di DashboardAdapter) untuk kotak di belakang ikon.
+-->
+<resources>
+    <!-- Penjualan -->
+    <color name="mod_pos">#4F46E5</color>
+    <color name="mod_orders">#2563EB</color>
+    <color name="mod_offline_orders">#3B82F6</color>
+
+    <!-- Katalog -->
+    <color name="mod_products">#7C3AED</color>
+    <color name="mod_categories">#9333EA</color>
+    <color name="mod_units">#C026D3</color>
+
+    <!-- Orang -->
+    <color name="mod_customers">#0D9488</color>
+    <color name="mod_suppliers">#0891B2</color>
+
+    <!-- Pembelian -->
+    <color name="mod_purchases">#D97706</color>
+
+    <!-- Uang -->
+    <color name="mod_expenses">#059669</color>
+    <color name="mod_bank_accounts">#16A34A</color>
+    <color name="mod_bank_ledgers">#047857</color>
+
+    <!-- Wawasan -->
+    <color name="mod_reports">#0284C7</color>
+    <color name="mod_stock_movements">#0369A1</color>
+
+    <!-- Sistem -->
+    <color name="mod_settings">#475569</color>
+
+    <!-- Operasi stok -->
+    <color name="mod_inventory_counts">#65A30D</color>
+    <color name="mod_stock_adjustments">#CA8A04</color>
+    <color name="mod_warehouses">#1D4ED8</color>
+    <color name="mod_warehouse_stocks">#0E7490</color>
+    <color name="mod_stock_transfers">#7E22CE</color>
+
+    <!-- Retur -->
+    <color name="mod_product_returns">#DC2626</color>
+    <color name="mod_purchase_returns">#EA580C</color>
+
+    <!-- Bengkel -->
+    <color name="mod_vehicles">#E11D48</color>
+    <color name="mod_mechanics">#B45309</color>
+    <color name="mod_work_orders">#BE185D</color>
+    <color name="mod_service_history">#6D28D9</color>
+    <color name="mod_service_packages">#DB2777</color>
+    <color name="mod_bookings">#F59E0B</color>
+</resources>

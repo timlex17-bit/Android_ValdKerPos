@@ -7,7 +7,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.card.MaterialCardView;
 
 import com.valdker.pos.R;
 
@@ -47,6 +51,15 @@ public class DashboardAdapter extends RecyclerView.Adapter<DashboardAdapter.VH> 
 
         holder.icon.setImageResource(item.iconRes);
 
+        int accent = ContextCompat.getColor(holder.itemView.getContext(), item.accentRes);
+        holder.icon.setColorFilter(accent);
+        if (holder.iconContainer != null) {
+            // Kotak di belakang ikon memakai warna yang sama, dipucatkan, jadi
+            // setiap modul punya satu identitas warna dan bukan dua.
+            holder.iconContainer.setCardBackgroundColor(
+                    ColorUtils.setAlphaComponent(accent, ICON_BACKDROP_ALPHA));
+        }
+
         holder.itemView.setOnClickListener(v -> listener.onClick(item));
     }
 
@@ -55,13 +68,18 @@ public class DashboardAdapter extends RecyclerView.Adapter<DashboardAdapter.VH> 
         return data.size();
     }
 
+    /** Sekitar 17% - terbaca jelas berwarna tanpa melawan ikon di atasnya. */
+    private static final int ICON_BACKDROP_ALPHA = 44;
+
     static class VH extends RecyclerView.ViewHolder {
+        MaterialCardView iconContainer;
         ImageView icon;
         TextView tvTitle;
         TextView tvSubtitle;
 
         VH(@NonNull View itemView) {
             super(itemView);
+            iconContainer = itemView.findViewById(R.id.iconContainer);
             icon = itemView.findViewById(R.id.imgTileIcon);
             tvTitle = itemView.findViewById(R.id.tvTileTitle);
             tvSubtitle = itemView.findViewById(R.id.tvTileSubtitle);

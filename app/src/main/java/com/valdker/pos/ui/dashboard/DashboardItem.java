@@ -1,10 +1,13 @@
 package com.valdker.pos.ui.dashboard;
 
+import androidx.annotation.ColorRes;
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 
 /**
  * Simple model for a dashboard grid item.
- * Holds the unique id, UI texts, and icon resource.
+ * Holds the unique id, UI texts, icon resource, and the accent colour the
+ * tile paints that icon with.
  */
 public class DashboardItem {
 
@@ -44,12 +47,21 @@ public class DashboardItem {
     public final int id;
     @NonNull public final String title;
     @NonNull public final String subtitle;
-    public final int iconRes;
+    @DrawableRes public final int iconRes;
 
-    public DashboardItem(int id, @NonNull String title, @NonNull String subtitle, int iconRes) {
+    /**
+     * Accent colour for this module, from {@code res/values/module_colors.xml}.
+     * The tile uses it for the icon itself and, faded, for the rounded square
+     * behind it, so one value drives the whole swatch.
+     */
+    @ColorRes public final int accentRes;
+
+    public DashboardItem(int id, @NonNull String title, @NonNull String subtitle,
+                         @DrawableRes int iconRes, @ColorRes int accentRes) {
         this.id = id;
         this.title = title;
         this.subtitle = subtitle;
         this.iconRes = iconRes;
+        this.accentRes = accentRes;
     }
 }
