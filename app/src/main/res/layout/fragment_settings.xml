@@ -559,6 +559,56 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
+                <!--
+                  Server yang sedang dituju aplikasi. Ditaruh di layar, bukan
+                  hanya di logcat, supaya siapa pun bisa melihat apakah sesi
+                  ini menunjuk ke produksi atau ke backend lokal tanpa perlu
+                  membaca log mentah.
+                -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:backgroundTint="@android:color/white"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#DFE4EC"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_backend_label"
+                            android:textColor="@color/valora_muted"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvBackendUrl"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:textColor="@color/valora_ink"
+                            android:textIsSelectable="true"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/tvBackendOrigin"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:textColor="@color/valora_muted"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
                 <Space
                     android:layout_width="match_parent"
                     android:layout_height="24dp" />

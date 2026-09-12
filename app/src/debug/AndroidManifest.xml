@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Overlay khusus debug. tools:replace diperlukan karena src/main menyetel
+  android:usesCleartextTraffic="false"; tanpa ini penggabungan manifest gagal
+  alih-alih menghasilkan build debug yang bisa menjangkau backend lokal.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <application
+        android:networkSecurityConfig="@xml/network_security_config"
+        tools:replace="android:networkSecurityConfig" />
+</manifest>

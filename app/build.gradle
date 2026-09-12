@@ -12,9 +12,17 @@ if (hasKeystore) {
     keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
 }
 
-// URL backend per build type. Default menjaga perilaku lama; override lewat
-// gradle.properties atau -PdebugBaseUrl=... tanpa menyentuh kode.
-def debugBaseUrl = project.findProperty("debugBaseUrl") ?: "https://api.valdker.web.id/api/"
+// URL backend per build type.
+//
+// Build DEBUG default ke backend lokal, bukan produksi. Sebelumnya defaultnya
+// produksi, jadi setiap build debug - termasuk yang dipakai untuk menguji -
+// menembak server sungguhan kecuali seseorang ingat menambahkan flag. Arahnya
+// dibalik: menembak produksi dari build debug kini harus diminta eksplisit
+// lewat -PdebugBaseUrl=..., sementara lupa memberi flag berakhir di localhost
+// yang paling buruk hanya gagal tersambung.
+//
+// 10.0.2.2 adalah alias emulator Android untuk loopback mesin host.
+def debugBaseUrl = project.findProperty("debugBaseUrl") ?: "http://10.0.2.2:8000/api/"
 def releaseBaseUrl = project.findProperty("releaseBaseUrl") ?: "https://api.valdker.web.id/api/"
 
 android {

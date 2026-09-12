@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Hanya varian DEBUG. Berkas ini tidak boleh dipindahkan ke src/main:
+  src/main menyetel android:usesCleartextTraffic="false" dan itu yang
+  melindungi build rilis. Yang diizinkan di sini hanya host loopback
+  pengembangan - 10.0.2.2 (alias emulator untuk mesin host), 127.0.0.1, dan
+  localhost - bukan "semua host", supaya build debug pun tetap menolak
+  HTTP polos ke internet.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">127.0.0.1</domain>
+        <domain includeSubdomains="true">localhost</domain>
+    </domain-config>
+</network-security-config>

@@ -83,11 +83,37 @@ public class SettingsFragment extends BaseFragment {
         super(R.layout.fragment_settings);
     }
 
+    /**
+     * Menampilkan server yang sedang dituju aplikasi.
+     *
+     * <p>Ada di layar dan bukan hanya di logcat karena inilah satu-satunya
+     * tempat seseorang bisa memastikan sebuah sesi menunjuk ke backend lokal
+     * dan bukan ke produksi, tanpa menyambungkan perangkat ke komputer.
+     */
+    private void bindBackendUrl(@NonNull View view) {
+        android.widget.TextView tvUrl = view.findViewById(R.id.tvBackendUrl);
+        android.widget.TextView tvOrigin = view.findViewById(R.id.tvBackendOrigin);
+        if (tvUrl == null && tvOrigin == null) return;
+
+        com.valdker.pos.SessionManager session =
+                new com.valdker.pos.SessionManager(requireContext());
+
+        if (tvUrl != null) {
+            tvUrl.setText(com.valdker.pos.network.ApiConfig.base(session));
+        }
+        if (tvOrigin != null) {
+            tvOrigin.setText(getString(R.string.settings_backend_origin,
+                    com.valdker.pos.network.ApiConfig.originLabel(session)));
+        }
+    }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         applyTopInset(view.findViewById(R.id.topBar));
+
+        bindBackendUrl(view);
 
         rootSettings = view.findViewById(R.id.rootSettings);
 

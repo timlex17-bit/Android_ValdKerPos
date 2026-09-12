@@ -1158,4 +1158,9 @@
         <item quantity="other">%1$d order aktif</item>
     </plurals>
 
+
+    <!-- Server aktif, ditampilkan di Settings -->
+    <string name="settings_backend_label">SERVER</string>
+    <string name="settings_backend_origin">Sumber: %1$s</string>
+
 </resources>

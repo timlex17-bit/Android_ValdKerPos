@@ -29,6 +29,29 @@ public final class ApiConfig {
         return base;
     }
 
+    /**
+     * Dari mana base URL yang sedang dipakai berasal.
+     *
+     * <p>Ada dua sumber dan keduanya bisa mengejutkan: nilai yang tersimpan di
+     * sesi mengalahkan {@code BuildConfig.BASE_URL}, jadi build yang
+     * dikompilasi untuk lokal tetap bisa menunjuk ke tempat lain kalau sesi
+     * lama menyimpan alamat lain. Label ini dipakai layar Settings supaya
+     * perbedaan itu terlihat, bukan tersembunyi.
+     */
+    @NonNull
+    public static String originLabel(@NonNull SessionManager session) {
+        if (session.hasStoredBaseUrl()) {
+            return "sesi tersimpan";
+        }
+        return BuildConfig.DEBUG ? "bawaan build debug" : "bawaan build rilis";
+    }
+
+    /** Satu baris siap tampil/log: alamat aktif beserta asalnya. */
+    @NonNull
+    public static String describe(@NonNull SessionManager session) {
+        return base(session) + " (" + originLabel(session) + ")";
+    }
+
     @NonNull
     public static String url(@NonNull SessionManager session, @NonNull String path) {
         String base = base(session);

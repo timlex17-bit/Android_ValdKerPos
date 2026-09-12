@@ -821,6 +821,19 @@ public class SessionManager {
         prefs.edit().remove(KEY_BASE_URL).apply();
     }
 
+    /**
+     * Apakah ada base URL yang benar-benar tersimpan di sesi.
+     *
+     * <p>Dibutuhkan terpisah karena {@link #getBaseUrl()} sudah jatuh ke
+     * {@code BuildConfig.BASE_URL} sendiri, sehingga ia tidak pernah kosong
+     * dan tidak bisa dipakai untuk membedakan "sesi menyimpan alamat" dari
+     * "pakai bawaan build".
+     */
+    public boolean hasStoredBaseUrl() {
+        String saved = prefs.getString(KEY_BASE_URL, null);
+        return saved != null && !saved.trim().isEmpty();
+    }
+
     @NonNull
     public String getBaseUrl() {
         String saved = prefs.getString(KEY_BASE_URL, null);

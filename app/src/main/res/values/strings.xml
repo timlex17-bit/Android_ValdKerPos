@@ -1141,4 +1141,9 @@
         <item quantity="other">%1$d active orders</item>
     </plurals>
 
+
+    <!-- Server aktif, ditampilkan di Settings -->
+    <string name="settings_backend_label">SERVER</string>
+    <string name="settings_backend_origin">Source: %1$s</string>
+
 </resources>
