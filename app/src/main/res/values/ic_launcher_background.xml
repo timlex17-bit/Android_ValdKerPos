@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#6204BF</color>
+    <!--
+      Ikon peluncur sengaja tetap hijau: itu yang dicari pengguna di
+      layar utama ponselnya. Warna ini TIDAK ikut skema ungu aplikasi.
+      Perhatikan bahwa ikon adaptif memakai warna dari berkas INI,
+      bukan res/drawable/ic_launcher_background.xml yang tidak dirujuk.
+    -->
+    <color name="ic_launcher_background">#22C55E</color>
 </resources>
