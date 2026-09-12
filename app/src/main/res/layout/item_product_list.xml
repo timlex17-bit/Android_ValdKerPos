@@ -74,7 +74,7 @@
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:text="$12.00"
-                android:textColor="#16A34A"
+                android:textColor="#6204BF"
                 android:textSize="15sp"
                 android:textStyle="bold" />
 
@@ -136,13 +136,13 @@
                     android:padding="0dp"
                     android:text="+"
                     android:textAllCaps="false"
-                    android:textColor="#16A34A"
+                    android:textColor="#6204BF"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     app:backgroundTint="#FFFFFF"
                     app:cornerRadius="12dp"
                     app:elevation="0dp"
-                    app:strokeColor="#BBF7D0"
+                    app:strokeColor="#D8B6F9"
                     app:strokeWidth="1dp" />
             </LinearLayout>
         </LinearLayout>

@@ -197,7 +197,7 @@
                 android:textStyle="bold"
                 android:textSize="16sp"
                 android:textColor="@android:color/white"
-                android:backgroundTint="#F97316"
+                android:backgroundTint="#6204BF"
                 app:cornerRadius="14dp" />
 
             <!-- Cancel order (outline orange) -->
@@ -210,11 +210,11 @@
                 android:textAllCaps="false"
                 android:textStyle="bold"
                 android:textSize="16sp"
-                android:textColor="#F97316"
+                android:textColor="#6204BF"
                 android:backgroundTint="@android:color/white"
                 app:cornerRadius="14dp"
                 app:strokeWidth="2dp"
-                app:strokeColor="#F97316" />
+                app:strokeColor="#6204BF" />
 
         </LinearLayout>
 

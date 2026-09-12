@@ -41,8 +41,8 @@ public final class SystemBarsFix {
 
         WindowCompat.setDecorFitsSystemWindows(window, false);
 
-        int statusBarGreen = ContextCompat.getColor(activity, R.color.status_bar_green);
-        window.setStatusBarColor(statusBarGreen);
+        int statusBarBrand = ContextCompat.getColor(activity, R.color.status_bar_brand);
+        window.setStatusBarColor(statusBarBrand);
         window.setNavigationBarColor(Color.TRANSPARENT);
 
         WindowInsetsControllerCompat controller =
@@ -51,7 +51,8 @@ public final class SystemBarsFix {
         if (controller != null) {
             controller.show(WindowInsetsCompat.Type.statusBars());
             controller.show(WindowInsetsCompat.Type.navigationBars());
-            controller.setAppearanceLightStatusBars(true);
+            // Bilah status ungu gelap: ikonnya harus terang agar terbaca.
+            controller.setAppearanceLightStatusBars(false);
             controller.setAppearanceLightNavigationBars(true);
         }
 
@@ -72,7 +73,7 @@ public final class SystemBarsFix {
 
         if (BuildConfig.DEBUG) {
             Log.d("STATUS_BAR_THEME", "screen=" + screenName
-                    + " color=status_bar_green icons=dark");
+                    + " color=status_bar_brand icons=dark");
             Log.d("SYSTEM_BARS", screenName
                     + ": helper attached"
                     + " fallbackStatus=" + fallbackStatus

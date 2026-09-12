@@ -109,7 +109,7 @@ public class StockTransferAdapter extends RecyclerView.Adapter<StockTransferAdap
 
     private void applyStatusStyle(TextView tvStatus, String status) {
         if ("COMPLETED".equalsIgnoreCase(status) || "COMPLETE".equalsIgnoreCase(status)) {
-            tvStatus.setTextColor(Color.parseColor("#16A34A"));
+            tvStatus.setTextColor(Color.parseColor("#6204BF"));
             tvStatus.setBackgroundResource(R.drawable.bg_stock_transfer_status_completed);
         } else if ("CANCELLED".equalsIgnoreCase(status) || "CANCELED".equalsIgnoreCase(status)) {
             tvStatus.setTextColor(Color.parseColor("#DC2626"));

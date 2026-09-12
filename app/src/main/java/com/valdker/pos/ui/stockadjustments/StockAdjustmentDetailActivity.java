@@ -100,7 +100,7 @@ public class StockAdjustmentDetailActivity extends AppCompatActivity {
                 tvDiff.setText(sign + diff);
 
                 if (diff > 0) {
-                    tvDiff.setTextColor(Color.parseColor("#16A34A"));
+                    tvDiff.setTextColor(Color.parseColor("#6204BF"));
                 } else if (diff < 0) {
                     tvDiff.setTextColor(Color.parseColor("#DC2626"));
                 } else {

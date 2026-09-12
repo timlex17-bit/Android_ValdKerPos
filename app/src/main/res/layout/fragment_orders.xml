@@ -23,7 +23,7 @@
                 android:id="@+id/topBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#22C55E"
+                android:background="#6204BF"
                 android:elevation="4dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"

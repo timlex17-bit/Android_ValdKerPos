@@ -302,7 +302,7 @@ public class PendingOrdersAdapter extends RecyclerView.Adapter<PendingOrdersAdap
             return Color.parseColor("#B91C1C");
         }
         if (OfflineOrderRepository.STATUS_SYNCED.equals(status)) {
-            return Color.parseColor("#047857");
+            return Color.parseColor("#50039B");
         }
         if (OfflineOrderRepository.STATUS_SYNCING.equals(status)) {
             return Color.parseColor("#2563EB");

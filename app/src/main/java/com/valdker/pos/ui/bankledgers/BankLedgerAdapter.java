@@ -71,8 +71,8 @@ public class BankLedgerAdapter extends RecyclerView.Adapter<BankLedgerAdapter.Vi
         holder.tvDescription.setText(context.getString(R.string.bank_ledger_description_format, description));
 
         if (ledger.isIn()) {
-            holder.tvDirection.setBackgroundColor(Color.parseColor("#DCFCE7"));
-            holder.tvDirection.setTextColor(Color.parseColor("#16A34A"));
+            holder.tvDirection.setBackgroundColor(Color.parseColor("#EBD9FD"));
+            holder.tvDirection.setTextColor(Color.parseColor("#6204BF"));
         } else if (ledger.isOut()) {
             holder.tvDirection.setBackgroundColor(Color.parseColor("#FFEDD5"));
             holder.tvDirection.setTextColor(Color.parseColor("#C2410C"));

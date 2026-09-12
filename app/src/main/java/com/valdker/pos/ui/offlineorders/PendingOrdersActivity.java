@@ -149,7 +149,7 @@ public class PendingOrdersActivity extends AppCompatActivity {
         tvPendingCount = addSummaryCard(summaryRow, "Pending", "#92400E", "#FEF3C7");
         tvFailedCount = addSummaryCard(summaryRow, "Failed", "#B91C1C", "#FEE2E2");
         tvNeedsReviewCount = addSummaryCard(summaryRow, "Review", "#7C2D12", "#FFEDD5");
-        tvSyncedCount = addSummaryCard(summaryRow, "Synced", "#047857", "#D1FAE5");
+        tvSyncedCount = addSummaryCard(summaryRow, "Synced", "#50039B", "#EBD9FD");
 
         HorizontalScrollView filterScroll = new HorizontalScrollView(this);
         filterScroll.setHorizontalScrollBarEnabled(false);

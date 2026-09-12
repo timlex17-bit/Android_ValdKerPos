@@ -37,7 +37,7 @@
                 android:layout_height="wrap_content"
                 android:text="PAID"
                 android:textStyle="bold"
-                android:textColor="#16A34A"
+                android:textColor="#6204BF"
                 android:textSize="12sp" />
         </LinearLayout>
 

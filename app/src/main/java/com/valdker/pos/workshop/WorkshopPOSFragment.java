@@ -298,7 +298,7 @@ public class WorkshopPOSFragment extends Fragment
         WindowCompat.setDecorFitsSystemWindows(window, false);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            window.setStatusBarColor(Color.parseColor("#22C55E"));
+            window.setStatusBarColor(Color.parseColor("#6204BF"));
             window.setNavigationBarColor(Color.WHITE);
         }
 
@@ -531,9 +531,9 @@ public class WorkshopPOSFragment extends Fragment
     private void applyDraftChipStyle(@NonNull Chip chip, boolean active, @NonNull String name, int count) {
         chip.setChecked(active);
         chip.setText((active ? "\u25CF " : "") + name + " \u2022 " + Math.max(0, count));
-        chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor(active ? "#DCFCE7" : "#FFFFFF")));
-        chip.setChipStrokeColor(ColorStateList.valueOf(Color.parseColor(active ? "#86EFAC" : "#E2E8F0")));
-        chip.setTextColor(Color.parseColor(active ? "#166534" : "#334155"));
+        chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor(active ? "#EBD9FD" : "#FFFFFF")));
+        chip.setChipStrokeColor(ColorStateList.valueOf(Color.parseColor(active ? "#BB80F4" : "#E2E8F0")));
+        chip.setTextColor(Color.parseColor(active ? "#3C0375" : "#334155"));
         chip.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
     }
 
@@ -703,15 +703,15 @@ public class WorkshopPOSFragment extends Fragment
 
         chip.setChecked(active);
         chip.setText(active ? "\u25CF " + label : label);
-        chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor(active ? "#DCFCE7" : "#FFFFFF")));
-        chip.setChipStrokeColor(ColorStateList.valueOf(Color.parseColor(active ? "#86EFAC" : "#E2E8F0")));
-        chip.setTextColor(Color.parseColor(active ? "#166534" : "#334155"));
+        chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor(active ? "#EBD9FD" : "#FFFFFF")));
+        chip.setChipStrokeColor(ColorStateList.valueOf(Color.parseColor(active ? "#BB80F4" : "#E2E8F0")));
+        chip.setTextColor(Color.parseColor(active ? "#3C0375" : "#334155"));
         chip.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
     }
 
     private void styleAddDraftChip(@NonNull Chip chip) {
         chip.setChecked(false);
-        chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor("#22C55E")));
+        chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor("#6204BF")));
         chip.setTextColor(Color.WHITE);
         chip.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
     }
@@ -1982,16 +1982,16 @@ public class WorkshopPOSFragment extends Fragment
         button.setInsetTop(0);
         button.setInsetBottom(0);
         button.setPadding(dp(8), 0, dp(8), 0);
-        button.setTextColor(Color.parseColor("#16A34A"));
-        button.setStrokeColor(ColorStateList.valueOf(Color.parseColor("#86EFAC")));
-        button.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#ECFDF3")));
+        button.setTextColor(Color.parseColor("#6204BF"));
+        button.setStrokeColor(ColorStateList.valueOf(Color.parseColor("#BB80F4")));
+        button.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#F5ECFE")));
         button.setCornerRadius(dp(12));
         return button;
     }
 
     private void styleWorkshopInfoDialog(@NonNull AlertDialog dialog) {
         if (dialog.getButton(AlertDialog.BUTTON_POSITIVE) != null) {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.parseColor("#16A34A"));
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.parseColor("#6204BF"));
         }
         if (dialog.getButton(AlertDialog.BUTTON_NEGATIVE) != null) {
             dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.parseColor("#64748B"));

@@ -55,7 +55,7 @@ public class StockAdjustmentsAdapter extends RecyclerView.Adapter<StockAdjustmen
         h.tvDiff.setText("Diff: " + sign + d);
 
         if (d > 0) {
-            h.tvDiff.setTextColor(Color.parseColor("#16A34A"));
+            h.tvDiff.setTextColor(Color.parseColor("#6204BF"));
         } else if (d < 0) {
             h.tvDiff.setTextColor(Color.parseColor("#DC2626"));
         } else {

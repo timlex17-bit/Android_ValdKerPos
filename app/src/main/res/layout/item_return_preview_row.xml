@@ -45,11 +45,11 @@
             android:ellipsize="end"
             android:text="Edit Qty"
             android:textAllCaps="false"
-            android:textColor="#22C55E"
+            android:textColor="#6204BF"
             android:textSize="14sp"
             android:textStyle="bold"
             app:cornerRadius="14dp"
-            app:strokeColor="#22C55E"
+            app:strokeColor="#6204BF"
             app:strokeWidth="1dp" />
 
         <Space
@@ -67,7 +67,7 @@
             android:insetBottom="0dp"
             android:maxLines="1"
             android:ellipsize="end"
-            android:backgroundTint="#22C55E"
+            android:backgroundTint="#6204BF"
             android:text="Remove"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"

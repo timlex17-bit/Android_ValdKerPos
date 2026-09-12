@@ -206,7 +206,7 @@
                 android:textColor="#FFFFFF"
                 android:textSize="15sp"
                 android:textStyle="bold"
-                app:backgroundTint="#22C55E"
+                app:backgroundTint="#6204BF"
                 app:cornerRadius="16dp"
                 app:elevation="0dp" />
         </LinearLayout>

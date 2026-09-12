@@ -110,7 +110,7 @@
                         android:textSize="14sp"
                         android:textStyle="bold"
                         app:checkedIconVisible="false"
-                        app:chipBackgroundColor="#22C55E"
+                        app:chipBackgroundColor="#6204BF"
                         app:chipCornerRadius="17dp"
                         app:chipMinHeight="34dp"
                         app:chipStrokeWidth="0dp"
@@ -147,14 +147,14 @@
                         android:ellipsize="end"
                         android:maxLines="1"
                         android:text="@string/draft_a_preview"
-                        android:textColor="#166534"
+                        android:textColor="#3C0375"
                         android:textSize="12sp"
                         android:textStyle="bold"
                         app:checkedIconVisible="false"
-                        app:chipBackgroundColor="#DCFCE7"
+                        app:chipBackgroundColor="#EBD9FD"
                         app:chipCornerRadius="17dp"
                         app:chipMinHeight="34dp"
-                        app:chipStrokeColor="#86EFAC"
+                        app:chipStrokeColor="#BB80F4"
                         app:chipStrokeWidth="1dp"
                         app:ensureMinTouchTargetSize="false" />
 
@@ -482,7 +482,7 @@
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:text="@string/amount_zero_usd"
-                    android:textColor="#16A34A"
+                    android:textColor="#6204BF"
                     android:textSize="22sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -507,10 +507,10 @@
                 android:textColor="#FFFFFF"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                app:backgroundTint="#22C55E"
+                app:backgroundTint="#6204BF"
                 app:cornerRadius="16dp"
                 app:elevation="0dp"
-                app:rippleColor="#2222C55E" />
+                app:rippleColor="#226204BF" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

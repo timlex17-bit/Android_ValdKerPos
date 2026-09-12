@@ -5,7 +5,7 @@
   Abu-abu sangat muda saat diam, hijau merek saat difokus.
 -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:color="@color/valora_green" android:state_focused="true"/>
+    <item android:color="@color/valora_accent" android:state_focused="true"/>
     <item android:color="#CBD5E1" android:state_hovered="true"/>
     <item android:color="#E9EDF3" android:state_enabled="false"/>
     <item android:color="#DFE4EC"/>

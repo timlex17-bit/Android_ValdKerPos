@@ -260,7 +260,7 @@ public class RetailPOSFragment extends Fragment {
         WindowCompat.setDecorFitsSystemWindows(window, false);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            window.setStatusBarColor(Color.parseColor("#22C55E"));
+            window.setStatusBarColor(Color.parseColor("#6204BF"));
             window.setNavigationBarColor(Color.WHITE);
         }
 
@@ -446,9 +446,9 @@ public class RetailPOSFragment extends Fragment {
     private void applyDraftChipStyle(@NonNull Chip chip, boolean active, @NonNull String name, int count) {
         chip.setChecked(active);
         chip.setText((active ? "\u25CF " : "") + name + " \u2022 " + Math.max(0, count));
-        chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor(active ? "#DCFCE7" : "#FFFFFF")));
-        chip.setChipStrokeColor(ColorStateList.valueOf(Color.parseColor(active ? "#86EFAC" : "#E2E8F0")));
-        chip.setTextColor(Color.parseColor(active ? "#166534" : "#334155"));
+        chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor(active ? "#EBD9FD" : "#FFFFFF")));
+        chip.setChipStrokeColor(ColorStateList.valueOf(Color.parseColor(active ? "#BB80F4" : "#E2E8F0")));
+        chip.setTextColor(Color.parseColor(active ? "#3C0375" : "#334155"));
         chip.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
     }
 
@@ -784,15 +784,15 @@ public class RetailPOSFragment extends Fragment {
 
         chip.setChecked(active);
         chip.setText(active ? "\u25CF " + label : label);
-        chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor(active ? "#DCFCE7" : "#FFFFFF")));
-        chip.setChipStrokeColor(ColorStateList.valueOf(Color.parseColor(active ? "#86EFAC" : "#E2E8F0")));
-        chip.setTextColor(Color.parseColor(active ? "#166534" : "#334155"));
+        chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor(active ? "#EBD9FD" : "#FFFFFF")));
+        chip.setChipStrokeColor(ColorStateList.valueOf(Color.parseColor(active ? "#BB80F4" : "#E2E8F0")));
+        chip.setTextColor(Color.parseColor(active ? "#3C0375" : "#334155"));
         chip.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
     }
 
     private void styleAddDraftChip(@NonNull Chip chip) {
         chip.setChecked(false);
-        chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor("#22C55E")));
+        chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor("#6204BF")));
         chip.setTextColor(Color.WHITE);
         chip.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
     }

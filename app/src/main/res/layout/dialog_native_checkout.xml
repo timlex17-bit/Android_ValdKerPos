@@ -83,7 +83,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
                 android:text="@string/checkout_points_zero"
-            android:textColor="#065F46"
+            android:textColor="#3C0375"
             android:textStyle="bold" />
 
         <TextView

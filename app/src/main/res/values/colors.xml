@@ -3,20 +3,22 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <color name="brand_orange">#60E66C</color>
-    <color name="brand_orange_light">#059814</color>
-    <color name="status_bar_green">#60E66C</color>
-
-    <color name="orange_200_fallback">#60E66C</color>
-    <color name="orange_400_fallback">#059814</color>
-    <color name="gray_200_fallback">#E5E7EB</color>
-
     <!--
-      Hijau merek versi gelap, dipakai untuk teks dan tombol di atas putih.
-      #60E66C yang dipakai bilah status hanya mencapai rasio kontras 1,9:1
-      terhadap putih, jadi tidak terbaca sebagai label tombol. Yang ini 5,5:1.
+      Warna merek aplikasi. Ungu #6204BF mencapai kontras 9,17:1 terhadap
+      putih, jadi satu nilai ini aman dipakai sekaligus sebagai latar tombol
+      (teks putih di atasnya) dan sebagai warna teks di atas putih. Hijau
+      lama tidak bisa begitu: #60E66C hanya 1,9:1, sehingga dulu perlu nada
+      gelap terpisah hanya agar label tombol terbaca.
+
+      status_bar_brand dipisah namanya karena dipakai untuk bilah sistem,
+      yang mungkin perlu berbeda dari warna tombol di kemudian hari.
     -->
-    <color name="valora_green">#0E7A33</color>
+    <color name="brand_primary">#6204BF</color>
+    <color name="brand_primary_dark">#50039B</color>
+    <color name="status_bar_brand">#6204BF</color>
+
+    <!-- Dipakai gaya dialog bersama; lihat values/styles_dialog.xml. -->
+    <color name="valora_accent">@color/brand_primary</color>
     <color name="valora_ink">#0F172A</color>
     <!-- Enam dialog formulir sudah memakai nada ini untuk badannya; jendela
          dialog ikut memakainya supaya tidak ada seam di bilah tombol. -->

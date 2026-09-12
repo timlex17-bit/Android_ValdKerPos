@@ -91,7 +91,7 @@
 <!--                    android:background="@drawable/bg_chip_green"-->
 <!--                    android:gravity="center"-->
 <!--                    android:text="Draft"-->
-<!--                    android:textColor="#166534"-->
+<!--                    android:textColor="#3C0375"-->
 <!--                    android:textSize="11sp"-->
 <!--                    android:textStyle="bold" />-->
 <!--            </LinearLayout>-->
@@ -215,7 +215,7 @@
 <!--            android:background="@drawable/bg_stat_green"-->
 <!--            android:gravity="center"-->
 <!--            android:text="Add-on\n$0.00"-->
-<!--            android:textColor="#166534"-->
+<!--            android:textColor="#3C0375"-->
 <!--            android:textSize="13sp"-->
 <!--            android:textStyle="bold" />-->
 
@@ -285,7 +285,7 @@
 <!--                        android:layout_width="match_parent"-->
 <!--                        android:layout_height="wrap_content"-->
 <!--                        android:text="$0.00"-->
-<!--                        android:textColor="#16A34A"-->
+<!--                        android:textColor="#6204BF"-->
 <!--                        android:textSize="24sp"-->
 <!--                        android:textStyle="bold" />-->
 <!--                </LinearLayout>-->
@@ -299,7 +299,7 @@
 <!--                    android:textColor="#FFFFFF"-->
 <!--                    android:textSize="15sp"-->
 <!--                    android:textStyle="bold"-->
-<!--                    app:backgroundTint="#22C55E"-->
+<!--                    app:backgroundTint="#6204BF"-->
 <!--                    app:cornerRadius="17dp" />-->
 <!--            </LinearLayout>-->
 
@@ -334,13 +334,13 @@
 <!--                    android:layout_weight="1"-->
 <!--                    android:text="Add-on"-->
 <!--                    android:textAllCaps="false"-->
-<!--                    android:textColor="#166534"-->
+<!--                    android:textColor="#3C0375"-->
 <!--                    android:textSize="11sp"-->
 <!--                    android:textStyle="bold"-->
-<!--                    app:backgroundTint="#DCFCE7"-->
+<!--                    app:backgroundTint="#EBD9FD"-->
 <!--                    app:cornerRadius="14dp"-->
 <!--                    app:icon="@drawable/ic_service"-->
-<!--                    app:iconTint="#16A34A" />-->
+<!--                    app:iconTint="#6204BF" />-->
 
 <!--                <com.google.android.material.button.MaterialButton-->
 <!--                    android:id="@+id/btnAddProduct"-->
@@ -356,7 +356,7 @@
 <!--                    app:backgroundTint="#FFEDD5"-->
 <!--                    app:cornerRadius="14dp"-->
 <!--                    app:icon="@drawable/ic_bag"-->
-<!--                    app:iconTint="#F97316" />-->
+<!--                    app:iconTint="#6204BF" />-->
 <!--            </LinearLayout>-->
 
 <!--        </LinearLayout>-->

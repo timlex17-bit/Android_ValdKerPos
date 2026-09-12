@@ -92,7 +92,7 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
         WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().setStatusBarColor(Color.parseColor("#22C55E"));
+            getWindow().setStatusBarColor(Color.parseColor("#6204BF"));
         }
 
         WindowInsetsControllerCompat controller =

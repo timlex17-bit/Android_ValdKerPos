@@ -73,7 +73,7 @@
             android:minHeight="0dp"
             android:text="@string/splash_back"
             android:textAllCaps="false"
-            android:textColor="#166534"
+            android:textColor="#3C0375"
             android:textSize="16sp"
             android:textStyle="bold" />
 

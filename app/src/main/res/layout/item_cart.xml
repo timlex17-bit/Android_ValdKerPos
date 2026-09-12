@@ -53,11 +53,11 @@
                 android:drawableBottom="@drawable/ic_remove"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:textColor="#F97316"
+                android:textColor="#6204BF"
                 android:backgroundTint="@android:color/white"
                 app:cornerRadius="21dp"
                 app:strokeWidth="2dp"
-                app:strokeColor="#F97316" />
+                app:strokeColor="#6204BF" />
 
             <!-- Quantity -->
             <TextView
@@ -79,7 +79,7 @@
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="@android:color/white"
-                android:backgroundTint="#F97316"
+                android:backgroundTint="#6204BF"
                 app:cornerRadius="21dp" />
 
         </LinearLayout>
@@ -116,7 +116,7 @@
         android:text="$0.00"
         android:textSize="15sp"
         android:textStyle="bold"
-        android:textColor="#F97316" />
+        android:textColor="#6204BF" />
 
     <!-- ✅ Order type chips (NOW uses FULL width to the right edge) -->
     <HorizontalScrollView

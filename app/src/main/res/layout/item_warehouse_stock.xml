@@ -76,7 +76,7 @@
                 android:paddingEnd="10dp"
                 android:paddingBottom="5dp"
                 android:text="@string/label_normal"
-                android:textColor="#16A34A"
+                android:textColor="#6204BF"
                 android:textSize="12sp"
                 android:textStyle="bold" />
 

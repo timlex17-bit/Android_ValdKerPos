@@ -83,7 +83,7 @@ public class WarehouseStockAdapter extends RecyclerView.Adapter<WarehouseStockAd
             holder.tvLowStockBadge.setBackgroundResource(R.drawable.bg_badge_low_stock);
         } else {
             holder.tvLowStockBadge.setText(holder.itemView.getContext().getString(R.string.label_normal));
-            holder.tvLowStockBadge.setTextColor(Color.parseColor("#16A34A"));
+            holder.tvLowStockBadge.setTextColor(Color.parseColor("#6204BF"));
             holder.tvLowStockBadge.setBackgroundResource(R.drawable.bg_badge_normal);
         }
 

@@ -228,8 +228,8 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.VH> {
     }
 
     private static void applyChipStyle(@NonNull Chip chip, boolean checked) {
-        int bgChecked = Color.parseColor("#FDE68A");
-        int strokeChecked = Color.parseColor("#FB923C");
+        int bgChecked = Color.parseColor("#EBD9FD");
+        int strokeChecked = Color.parseColor("#9D48F1");
         int bgNormal = Color.WHITE;
         int strokeNormal = Color.parseColor("#E5E7EB");
 

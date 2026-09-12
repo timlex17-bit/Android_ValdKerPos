@@ -94,12 +94,12 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.VH> {
 
     private void applySelectedStyle(@NonNull VH h, boolean isSelected, boolean hasRemoteIcon) {
         if (isSelected) {
-            h.cardCategory.setCardBackgroundColor(Color.parseColor("#F97316"));
+            h.cardCategory.setCardBackgroundColor(Color.parseColor("#6204BF"));
             h.tvName.setTextColor(Color.WHITE);
 
             if (h.iconWrapper.getVisibility() == View.VISIBLE) {
                 h.iconWrapper.setBackgroundTintList(
-                        ColorStateList.valueOf(Color.parseColor("#FB923C"))
+                        ColorStateList.valueOf(Color.parseColor("#9D48F1"))
                 );
 
                 if (!hasRemoteIcon) {

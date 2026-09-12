@@ -466,7 +466,7 @@ public class SettingsFragment extends BaseFragment {
         }
 
         if (dot != null && tvPrinterStatus != null) {
-            dot.setBackgroundResource(connectedLike ? R.drawable.bg_status_dot_green : R.drawable.bg_status_dot_red);
+            dot.setBackgroundResource(connectedLike ? R.drawable.bg_status_dot_brand : R.drawable.bg_status_dot_red);
             tvPrinterStatus.setText(connectedLike
                     ? getString(R.string.settings_printer_connected)
                     : getString(R.string.settings_printer_not_connected));

@@ -1,11 +1,18 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="Theme.ValdKer" parent="Theme.Material3.Light.NoActionBar">
-        <item name="colorPrimary">#60E66C</item>
-        <item name="colorPrimaryContainer">#60E66C</item>
+        <item name="colorPrimary">#6204BF</item>
+        <item name="colorPrimaryContainer">#6204BF</item>
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
 
-        <item name="android:statusBarColor">#60E66C</item>
+        <item name="android:statusBarColor">#6204BF</item>
+        <!--
+          targetSdk 36 membuat android:statusBarColor tidak berlaku di
+          Android 15+, jadi yang terlihat di balik bilah status adalah
+          layout layar itu sendiri. Mayoritas layar berlatar terang,
+          maka bawaannya ikon gelap. Layar yang mengecat strip ungu
+          sendiri memanggil setAppearanceLightStatusBars(false).
+        -->
         <item name="android:windowLightStatusBar">true</item>
 
         <item name="android:navigationBarColor">#FFFFFF</item>

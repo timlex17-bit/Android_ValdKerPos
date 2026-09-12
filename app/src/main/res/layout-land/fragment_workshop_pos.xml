@@ -115,7 +115,7 @@
                         android:textSize="15sp"
                         android:textStyle="bold"
                         app:checkedIconVisible="false"
-                        app:chipBackgroundColor="#22C55E"
+                        app:chipBackgroundColor="#6204BF"
                         app:chipCornerRadius="15dp"
                         app:chipMinHeight="30dp"
                         app:chipStrokeWidth="0dp"
@@ -151,14 +151,14 @@
                             android:maxLines="1"
                             android:minHeight="30dp"
                             android:text="@string/draft_a_preview"
-                            android:textColor="#166534"
+                            android:textColor="#3C0375"
                             android:textSize="11sp"
                             android:textStyle="bold"
                             app:checkedIconVisible="false"
-                            app:chipBackgroundColor="#DCFCE7"
+                            app:chipBackgroundColor="#EBD9FD"
                             app:chipCornerRadius="15dp"
                             app:chipMinHeight="30dp"
-                            app:chipStrokeColor="#86EFAC"
+                            app:chipStrokeColor="#BB80F4"
                             app:chipStrokeWidth="1dp"
                             app:ensureMinTouchTargetSize="false" />
 
@@ -238,7 +238,7 @@
                         android:paddingEnd="6dp"
                         android:text="@string/action_change"
                         android:textAllCaps="false"
-                        android:textColor="#16A34A"
+                        android:textColor="#6204BF"
                         android:textSize="11sp"
                         android:textStyle="bold"
                         app:backgroundTint="@android:color/transparent" />
@@ -372,7 +372,7 @@
                 android:gravity="center"
                 android:maxLines="1"
                 android:text="@string/amount_zero_usd"
-                android:textColor="#16A34A"
+                android:textColor="#6204BF"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 tools:text="$40.99" />
@@ -388,7 +388,7 @@
                 android:gravity="center"
                 android:maxLines="1"
                 android:text="@string/amount_zero_usd"
-                android:textColor="#16A34A"
+                android:textColor="#6204BF"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 tools:text="$40.99" />
@@ -403,7 +403,7 @@
                 android:gravity="center"
                 android:maxLines="1"
                 android:text="@string/amount_zero_usd"
-                android:textColor="#16A34A"
+                android:textColor="#6204BF"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 tools:text="$40.99" />
@@ -451,7 +451,7 @@
                         android:gravity="center_vertical"
                         android:maxLines="1"
                         android:text="@string/amount_zero_usd"
-                        android:textColor="#16A34A"
+                        android:textColor="#6204BF"
                         android:textSize="20sp"
                         android:textStyle="bold"
                         tools:text="$1,240.99" />
@@ -473,7 +473,7 @@
                         android:textColor="#FFFFFF"
                         android:textSize="13sp"
                         android:textStyle="bold"
-                        app:backgroundTint="#22C55E"
+                        app:backgroundTint="#6204BF"
                         app:cornerRadius="14dp"
                         app:elevation="0dp" />
                 </LinearLayout>
@@ -499,12 +499,12 @@
                         android:paddingEnd="1dp"
                         android:text="@string/label_package"
                         android:textAllCaps="false"
-                        android:textColor="#16A34A"
+                        android:textColor="#6204BF"
                         android:textSize="9sp"
                         android:textStyle="bold"
-                        app:backgroundTint="#ECFDF3"
+                        app:backgroundTint="#F5ECFE"
                         app:cornerRadius="12dp"
-                        app:strokeColor="#86EFAC"
+                        app:strokeColor="#BB80F4"
                         app:strokeWidth="1dp" />
 
                     <com.google.android.material.button.MaterialButton
@@ -521,12 +521,12 @@
                         android:paddingEnd="1dp"
                         android:text="@string/label_service"
                         android:textAllCaps="false"
-                        android:textColor="#16A34A"
+                        android:textColor="#6204BF"
                         android:textSize="9sp"
                         android:textStyle="bold"
-                        app:backgroundTint="#ECFDF3"
+                        app:backgroundTint="#F5ECFE"
                         app:cornerRadius="12dp"
-                        app:strokeColor="#86EFAC"
+                        app:strokeColor="#BB80F4"
                         app:strokeWidth="1dp" />
 
                     <com.google.android.material.button.MaterialButton
@@ -543,12 +543,12 @@
                         android:paddingEnd="1dp"
                         android:text="@string/label_part"
                         android:textAllCaps="false"
-                        android:textColor="#16A34A"
+                        android:textColor="#6204BF"
                         android:textSize="9sp"
                         android:textStyle="bold"
-                        app:backgroundTint="#ECFDF3"
+                        app:backgroundTint="#F5ECFE"
                         app:cornerRadius="12dp"
-                        app:strokeColor="#86EFAC"
+                        app:strokeColor="#BB80F4"
                         app:strokeWidth="1dp" />
 
                     <com.google.android.material.button.MaterialButton
@@ -565,12 +565,12 @@
                         android:paddingEnd="1dp"
                         android:text="@string/label_product"
                         android:textAllCaps="false"
-                        android:textColor="#16A34A"
+                        android:textColor="#6204BF"
                         android:textSize="9sp"
                         android:textStyle="bold"
-                        app:backgroundTint="#ECFDF3"
+                        app:backgroundTint="#F5ECFE"
                         app:cornerRadius="12dp"
-                        app:strokeColor="#86EFAC"
+                        app:strokeColor="#BB80F4"
                         app:strokeWidth="1dp" />
                 </LinearLayout>
             </LinearLayout>

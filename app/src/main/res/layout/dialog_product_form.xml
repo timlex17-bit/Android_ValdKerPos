@@ -394,11 +394,11 @@
                         android:layout_marginTop="14dp"
                         android:text="Select Product Image"
                         android:textAllCaps="false"
-                        android:textColor="#22C55E"
+                        android:textColor="#6204BF"
                         android:textSize="15sp"
                         android:textStyle="bold"
                         app:cornerRadius="16dp"
-                        app:strokeColor="#22C55E"
+                        app:strokeColor="#6204BF"
                         app:strokeWidth="1dp" />
 
                     <com.google.android.material.card.MaterialCardView
