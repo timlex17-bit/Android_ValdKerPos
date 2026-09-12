@@ -1119,4 +1119,26 @@
     <string name="msg_split_bank_unsupported">Split payments cannot use a method that needs a bank account yet. Choose cash for the split lines.</string>
     <string name="nav_reports">Reports</string>
     <string name="nav_ai">AI</string>
+
+    <!-- Dine-in: pemilih meja dan pelayan -->
+    <string name="table_picker_title">Select Table</string>
+    <string name="table_picker_clear">Clear</string>
+    <string name="table_picker_empty">No active tables yet.</string>
+    <string name="table_picker_error">Could not load tables (HTTP %1$d).</string>
+    <string name="table_picker_seats">%1$d seats</string>
+    <string name="table_status_occupied">Occupied</string>
+    <string name="table_status_empty">Free</string>
+    <string name="waiter_picker_title">Select Waiter</string>
+    <string name="waiter_picker_clear">Clear</string>
+    <string name="waiter_picker_empty">No active staff.</string>
+    <string name="waiter_picker_error">Could not load waiters (HTTP %1$d).</string>
+    <string name="waiter_active_tables">Tables %1$s</string>
+    <string name="dinein_table_label">Table</string>
+    <string name="dinein_waiter_label">Waiter</string>
+    <string name="dinein_unset">Not set</string>
+    <plurals name="waiter_active_orders">
+        <item quantity="one">%1$d active order</item>
+        <item quantity="other">%1$d active orders</item>
+    </plurals>
+
 </resources>

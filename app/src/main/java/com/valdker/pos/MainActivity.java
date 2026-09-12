@@ -186,6 +186,17 @@ public class MainActivity extends AppCompatActivity
     private final List<PosDraftEntity> posDrafts = new ArrayList<>();
     private final Map<Long, Integer> draftItemCounts = new HashMap<>();
     private long activeDraftId = 0L;
+
+    /**
+     * Cermin baca-saja dari kolom meja/pelayan milik draft aktif. Sumber
+     * kebenarannya baris draft di Room; cermin ini hanya supaya UI bisa
+     * membacanya di main thread tanpa menyentuh database, dan disegarkan
+     * setiap kali snapshot draft dimuat - termasuk saat kasir berpindah draft.
+     */
+    @Nullable private Long activeDraftTableId = null;
+    @Nullable private String activeDraftTableName = null;
+    @Nullable private Long activeDraftWaiterId = null;
+    @Nullable private String activeDraftWaiterName = null;
     private boolean loadingDraftFromRoom = false;
     private boolean initialDraftLoadPending = true;
 
@@ -1185,6 +1196,7 @@ public class MainActivity extends AppCompatActivity
         draftItemCounts.clear();
         draftItemCounts.putAll(snapshot.itemCounts);
         activeDraftId = snapshot.activeDraft != null ? snapshot.activeDraft.id : 0L;
+        mirrorDineInFromDraft(snapshot.activeDraft);
 
         renderDraftChips();
 
@@ -1372,6 +1384,83 @@ public class MainActivity extends AppCompatActivity
                 });
             } catch (Exception e) {
                 Log.e(TAG, "Failed to persist main POS draft", e);
+            }
+        });
+    }
+
+    private void mirrorDineInFromDraft(@Nullable com.valdker.pos.drafts.PosDraftEntity draft) {
+        activeDraftTableId = draft != null ? draft.tableId : null;
+        activeDraftTableName = draft != null ? draft.tableName : null;
+        activeDraftWaiterId = draft != null ? draft.waiterId : null;
+        activeDraftWaiterName = draft != null ? draft.waiterName : null;
+    }
+
+    @Nullable
+    @Override
+    public Long dineInTableIdForActiveDraft() {
+        return activeDraftTableId;
+    }
+
+    @Nullable
+    @Override
+    public String dineInTableNameForActiveDraft() {
+        return activeDraftTableName;
+    }
+
+    @Nullable
+    @Override
+    public Long dineInWaiterIdForActiveDraft() {
+        return activeDraftWaiterId;
+    }
+
+    @Nullable
+    @Override
+    public String dineInWaiterNameForActiveDraft() {
+        return activeDraftWaiterName;
+    }
+
+    @Override
+    public void setDineInTableForActiveDraft(@Nullable Long tableId, @Nullable String tableName) {
+        final long draftId = activeDraftId;
+        activeDraftTableId = tableId;
+        activeDraftTableName = tableName;
+        persistDineIn(draftId, true, tableId, tableName);
+    }
+
+    @Override
+    public void setDineInWaiterForActiveDraft(@Nullable Long waiterId, @Nullable String waiterName) {
+        final long draftId = activeDraftId;
+        activeDraftWaiterId = waiterId;
+        activeDraftWaiterName = waiterName;
+        persistDineIn(draftId, false, waiterId, waiterName);
+    }
+
+    /**
+     * draftId di-snapshot di pemanggil, bukan dibaca lagi di dalam executor:
+     * kasir bisa berpindah draft sebelum tulisan ini sempat jalan, dan
+     * membaca activeDraftId belakangan akan menulis ke draft yang salah.
+     */
+    private void persistDineIn(long draftId,
+                               boolean isTable,
+                               @Nullable Long id,
+                               @Nullable String name) {
+        PosDraftRepository repository = posDraftRepository;
+        if (repository == null || draftId <= 0L) {
+            Log.w(TAG, "Tidak bisa menyimpan meja/pelayan: draft aktif tidak ada (draftId="
+                    + draftId + ")");
+            return;
+        }
+        draftExecutor.execute(() -> {
+            try {
+                if (isTable) {
+                    repository.setDraftTable(draftId, id, name);
+                } else {
+                    repository.setDraftWaiter(draftId, id, name);
+                }
+                Log.i(TAG, "dine-in saved draftId=" + draftId
+                        + (isTable ? " table=" : " waiter=") + id);
+            } catch (Exception e) {
+                Log.e(TAG, "Gagal menyimpan meja/pelayan draftId=" + draftId, e);
             }
         });
     }

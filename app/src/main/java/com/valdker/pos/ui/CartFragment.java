@@ -28,6 +28,10 @@ import com.valdker.pos.repositories.CheckoutConfigRepository;
 import com.valdker.pos.repositories.CustomerRepository;
 import com.valdker.pos.repositories.MasterDataRepository;
 import com.valdker.pos.repositories.OfflineOrderRepository;
+import com.valdker.pos.restaurant.RestaurantOrderSync;
+import com.valdker.pos.restaurant.RestaurantRepository;
+import com.valdker.pos.restaurant.TablePickerDialogFragment;
+import com.valdker.pos.restaurant.WaiterPickerDialogFragment;
 import com.valdker.pos.repositories.OrderRepository;
 import com.valdker.pos.ui.checkout.BankAccountItem;
 import com.valdker.pos.ui.checkout.NativeCheckoutDialogFragment;
@@ -44,7 +48,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class CartFragment extends Fragment {
+public class CartFragment extends Fragment
+        implements TablePickerDialogFragment.Listener,
+        WaiterPickerDialogFragment.Listener {
 
     public interface DraftLifecycleHost {
         void onCartOrderFinished();
@@ -60,11 +66,42 @@ public class CartFragment extends Fragment {
          */
         @NonNull
         String obtainClientOrderIdForActiveDraft();
+
+        /**
+         * Meja dan pelayan draft yang sedang aktif, atau {@code null} kalau
+         * belum dipilih.
+         *
+         * <p>Alasannya sama persis dengan client_order_id di atas: nilainya
+         * milik DRAFT, bukan milik layar. Satu meja boleh punya beberapa bill
+         * terbuka, jadi kasir wajar bolak-balik antar draft; menahan meja di
+         * field CartFragment atau Activity membuat dua draft saling menukar
+         * mejanya begitu kasir berpindah. Host membacanya dari baris draft di
+         * Room, yang juga membuatnya selamat dari proses yang dimatikan.
+         */
+        @Nullable
+        Long dineInTableIdForActiveDraft();
+
+        @Nullable
+        String dineInTableNameForActiveDraft();
+
+        @Nullable
+        Long dineInWaiterIdForActiveDraft();
+
+        @Nullable
+        String dineInWaiterNameForActiveDraft();
+
+        void setDineInTableForActiveDraft(@Nullable Long tableId, @Nullable String tableName);
+
+        void setDineInWaiterForActiveDraft(@Nullable Long waiterId, @Nullable String waiterName);
     }
 
     private interface ReceiptPrintCallback {
         void onComplete(@NonNull com.valdker.pos.print.BluetoothPrinterManager.PrintResult result);
     }
+
+    private View rowDineIn;
+    private com.google.android.material.button.MaterialButton btnPickTable;
+    private com.google.android.material.button.MaterialButton btnPickWaiter;
 
     private static final String TAG = "CART_FRAGMENT";
     private static final String TAG_NATIVE_CHECKOUT = "NATIVE_CHECKOUT";
@@ -195,6 +232,28 @@ public class CartFragment extends Fragment {
         );
 
         if (rv != null) rv.setAdapter(adapter);
+
+        rowDineIn = view.findViewById(R.id.rowDineInAssignment);
+        btnPickTable = view.findViewById(R.id.btnPickTable);
+        btnPickWaiter = view.findViewById(R.id.btnPickWaiter);
+
+        if (btnPickTable != null) {
+            btnPickTable.setOnClickListener(v -> {
+                DraftLifecycleHost host = resolveDraftLifecycleHost();
+                TablePickerDialogFragment.newInstance(
+                                host != null ? host.dineInTableIdForActiveDraft() : null)
+                        .show(getChildFragmentManager(), "table_picker");
+            });
+        }
+
+        if (btnPickWaiter != null) {
+            btnPickWaiter.setOnClickListener(v -> {
+                DraftLifecycleHost host = resolveDraftLifecycleHost();
+                WaiterPickerDialogFragment.newInstance(
+                                host != null ? host.dineInWaiterIdForActiveDraft() : null)
+                        .show(getChildFragmentManager(), "waiter_picker");
+            });
+        }
 
         if (btnClose != null) btnClose.setOnClickListener(v -> closeOverlaySafely());
 
@@ -649,6 +708,18 @@ public class CartFragment extends Fragment {
 
             payload.put("default_order_type", overallType);
             payload.put("table_number", tableFinal);
+
+            // Meja/pelayan diambil dari DRAFT, bukan dari state layar, supaya
+            // bill yang dibuka bergantian tidak saling menukar mejanya.
+            if (isRestaurantBusiness()) {
+                DraftLifecycleHost dineInHost = resolveDraftLifecycleHost();
+                RestaurantOrderSync.attachDineInFields(
+                        payload,
+                        canUseModule(RestaurantRepository.MODULE_TABLES) && dineInHost != null
+                                ? dineInHost.dineInTableIdForActiveDraft() : null,
+                        canUseModule(RestaurantRepository.MODULE_WAITERS) && dineInHost != null
+                                ? dineInHost.dineInWaiterIdForActiveDraft() : null);
+            }
             payload.put("delivery_address", addrFinal);
             payload.put("delivery_fee", deliveryFeeMoney.toPlainString());
 
@@ -794,6 +865,11 @@ public class CartFragment extends Fragment {
         repo.createOrder(token, payload, new OrderRepository.CreateCallback() {
             @Override
             public void onSuccess(@NonNull JSONObject response) {
+                // 201 saja bukan bukti bahwa meja/pelayan tersimpan: DRF
+                // membuang field yang tidak dikenal tanpa bersuara.
+                RestaurantOrderSync.reconcileAfterCreate(
+                        appCtx, token, payload, response, "checkout");
+
                 OfflineOrderRepository offlineRepo = new OfflineOrderRepository(appCtx);
                 offlineRepo.markWriteAheadSynced(localOrderId);
                 offlineRepo.syncPendingOrders(token);
@@ -1412,6 +1488,74 @@ public class CartFragment extends Fragment {
         if (btnCancelOrder != null) btnCancelOrder.setEnabled(!empty && !cancelInProgress);
 
         if (empty) cancelInProgress = false;
+
+        renderDineInRow();
+    }
+
+    /**
+     * Baris meja/pelayan hanya hidup untuk shop restoran yang modulnya
+     * diizinkan. Kedua tombol disembunyikan sendiri-sendiri karena "tables"
+     * dan "waiters" adalah dua kunci modul terpisah dan bisa menyala tidak
+     * bersamaan; barisnya sendiri hilang kalau dua-duanya mati.
+     */
+    private void renderDineInRow() {
+        if (rowDineIn == null) return;
+
+        boolean tablesOn = canUseModule(RestaurantRepository.MODULE_TABLES);
+        boolean waitersOn = canUseModule(RestaurantRepository.MODULE_WAITERS);
+
+        if (!isRestaurantBusiness() || (!tablesOn && !waitersOn)) {
+            rowDineIn.setVisibility(View.GONE);
+            return;
+        }
+
+        rowDineIn.setVisibility(View.VISIBLE);
+        DraftLifecycleHost host = resolveDraftLifecycleHost();
+
+        if (btnPickTable != null) {
+            btnPickTable.setVisibility(tablesOn ? View.VISIBLE : View.GONE);
+            String name = host != null ? host.dineInTableNameForActiveDraft() : null;
+            btnPickTable.setText(getString(R.string.dinein_table_label) + ": "
+                    + (name != null && !name.trim().isEmpty()
+                            ? name.trim()
+                            : getString(R.string.dinein_unset)));
+        }
+
+        if (btnPickWaiter != null) {
+            btnPickWaiter.setVisibility(waitersOn ? View.VISIBLE : View.GONE);
+            String name = host != null ? host.dineInWaiterNameForActiveDraft() : null;
+            btnPickWaiter.setText(getString(R.string.dinein_waiter_label) + ": "
+                    + (name != null && !name.trim().isEmpty()
+                            ? name.trim()
+                            : getString(R.string.dinein_unset)));
+        }
+    }
+
+    private boolean canUseModule(@NonNull String moduleKey) {
+        if (!isAdded()) return false;
+        return new com.valdker.pos.SessionManager(requireContext()).canAccessModule(moduleKey);
+    }
+
+    @Override
+    public void onTablePicked(@Nullable Long tableId, @Nullable String tableName) {
+        DraftLifecycleHost host = resolveDraftLifecycleHost();
+        if (host == null) {
+            Log.w(TAG, "Meja tidak bisa disimpan: draft lifecycle host tidak tersedia.");
+            return;
+        }
+        host.setDineInTableForActiveDraft(tableId, tableName);
+        renderDineInRow();
+    }
+
+    @Override
+    public void onWaiterPicked(@Nullable Long waiterId, @Nullable String waiterName) {
+        DraftLifecycleHost host = resolveDraftLifecycleHost();
+        if (host == null) {
+            Log.w(TAG, "Pelayan tidak bisa disimpan: draft lifecycle host tidak tersedia.");
+            return;
+        }
+        host.setDineInWaiterForActiveDraft(waiterId, waiterName);
+        renderDineInRow();
     }
 
     @NonNull

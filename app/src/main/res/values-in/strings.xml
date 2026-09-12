@@ -1136,4 +1136,26 @@
     <string name="msg_split_bank_unsupported">Pembayaran terbagi belum mendukung metode yang butuh rekening bank. Pakai tunai untuk baris terbagi.</string>
     <string name="nav_reports">Laporan</string>
     <string name="nav_ai">AI</string>
+
+    <!-- Dine-in: pemilih meja dan pelayan -->
+    <string name="table_picker_title">Pilih Meja</string>
+    <string name="table_picker_clear">Kosongkan</string>
+    <string name="table_picker_empty">Belum ada meja aktif.</string>
+    <string name="table_picker_error">Gagal memuat meja (HTTP %1$d).</string>
+    <string name="table_picker_seats">%1$d kursi</string>
+    <string name="table_status_occupied">Terisi</string>
+    <string name="table_status_empty">Kosong</string>
+    <string name="waiter_picker_title">Pilih Pelayan</string>
+    <string name="waiter_picker_clear">Kosongkan</string>
+    <string name="waiter_picker_empty">Tidak ada staff aktif.</string>
+    <string name="waiter_picker_error">Gagal memuat pelayan (HTTP %1$d).</string>
+    <string name="waiter_active_tables">Meja %1$s</string>
+    <string name="dinein_table_label">Meja</string>
+    <string name="dinein_waiter_label">Pelayan</string>
+    <string name="dinein_unset">Belum dipilih</string>
+    <plurals name="waiter_active_orders">
+        <item quantity="one">%1$d order aktif</item>
+        <item quantity="other">%1$d order aktif</item>
+    </plurals>
+
 </resources>

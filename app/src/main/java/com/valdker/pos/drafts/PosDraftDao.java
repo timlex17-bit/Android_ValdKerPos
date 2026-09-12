@@ -53,6 +53,29 @@ public interface PosDraftDao {
     @Query("UPDATE pos_drafts SET updatedAt = :updatedAt WHERE id = :draftId")
     void touchDraft(long draftId, long updatedAt);
 
+    @Query("SELECT * FROM pos_drafts WHERE id = :draftId LIMIT 1")
+    @Nullable
+    PosDraftEntity getDraft(long draftId);
+
+    /**
+     * Ditulis sebagai UPDATE terarah, bukan lewat {@code updateDraft(entity)}:
+     * baris draft juga disentuh alur lain (nama, isActive), dan menulis ulang
+     * seluruh baris dari salinan lama akan menimpa perubahan itu.
+     */
+    @Query("UPDATE pos_drafts SET tableId = :tableId, tableName = :tableName, "
+            + "updatedAt = :updatedAt WHERE id = :draftId")
+    void setDraftTable(long draftId,
+                       @Nullable Long tableId,
+                       @Nullable String tableName,
+                       long updatedAt);
+
+    @Query("UPDATE pos_drafts SET waiterId = :waiterId, waiterName = :waiterName, "
+            + "updatedAt = :updatedAt WHERE id = :draftId")
+    void setDraftWaiter(long draftId,
+                        @Nullable Long waiterId,
+                        @Nullable String waiterName,
+                        long updatedAt);
+
     @Transaction
     default void setActiveDraft(long draftId, @NonNull String posType, long updatedAt) {
         clearActiveDraft(posType, updatedAt);

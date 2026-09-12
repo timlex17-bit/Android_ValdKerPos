@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dipakai bersama oleh pemilih meja dan pemilih pelayan; yang berbeda hanya
+     adapter dan layout manager-nya. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="180dp"
+    android:paddingStart="4dp"
+    android:paddingEnd="4dp">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvPicker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="420dp"
+        android:clipToPadding="false"
+        android:paddingBottom="4dp"
+        android:overScrollMode="never" />
+
+    <ProgressBar
+        android:id="@+id/pbPicker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="48dp" />
+
+    <TextView
+        android:id="@+id/tvPickerMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="40dp"
+        android:gravity="center"
+        android:padding="16dp"
+        android:textColor="@color/valora_muted"
+        android:textSize="14sp"
+        android:visibility="gone" />
+
+</FrameLayout>

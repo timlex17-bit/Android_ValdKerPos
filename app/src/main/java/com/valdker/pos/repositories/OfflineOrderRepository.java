@@ -643,6 +643,11 @@ public class OfflineOrderRepository {
             new OrderRepository(appContext).createOrder(token, payload, new OrderRepository.CreateCallback() {
                 @Override
                 public void onSuccess(@NonNull JSONObject response) {
+                    // Jalur offline memakai payload yang sama, jadi ia bisa
+                    // kehilangan meja/pelayan dengan cara yang sama diam-diamnya.
+                    com.valdker.pos.restaurant.RestaurantOrderSync.reconcileAfterCreate(
+                            appContext, token, payload, response, "offline_sync");
+
                     executor.execute(() -> {
                         db.pendingOrderDao().markSynced(order.localOrderId, System.currentTimeMillis());
                         Log.i(TAG, "Pending order synced localOrderId=" + order.localOrderId

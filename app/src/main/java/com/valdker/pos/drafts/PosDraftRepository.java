@@ -105,6 +105,28 @@ public class PosDraftRepository {
         dao.touchDraft(draftId, now);
     }
 
+    /**
+     * Meja dan pelayan draft dine-in. Semua pemanggil harus lewat sini, dengan
+     * draftId yang eksplisit - tidak ada varian "draft yang sedang aktif",
+     * justru supaya tidak ada jalur yang diam-diam menulis ke draft yang salah
+     * saat kasir berpindah bill.
+     */
+    public void setDraftTable(long draftId, @Nullable Long tableId, @Nullable String tableName) {
+        if (draftId <= 0L) return;
+        dao.setDraftTable(draftId, tableId, tableName, System.currentTimeMillis());
+    }
+
+    public void setDraftWaiter(long draftId, @Nullable Long waiterId, @Nullable String waiterName) {
+        if (draftId <= 0L) return;
+        dao.setDraftWaiter(draftId, waiterId, waiterName, System.currentTimeMillis());
+    }
+
+    @Nullable
+    public PosDraftEntity getDraft(long draftId) {
+        if (draftId <= 0L) return null;
+        return dao.getDraft(draftId);
+    }
+
     public void upsertDraftItem(@NonNull PosDraftItemEntity item) {
         long now = item.updatedAt > 0L ? item.updatedAt : System.currentTimeMillis();
         item.updatedAt = now;

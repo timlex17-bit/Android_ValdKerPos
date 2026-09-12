@@ -1128,4 +1128,26 @@
     <string name="msg_split_bank_unsupported">Pagamentu fahe seidauk suporta metodu hanesan banku. Uza osan iha liña fahe.</string>
     <string name="nav_reports">Relatóriu</string>
     <string name="nav_ai">AI</string>
+
+    <!-- Dine-in: pemilih meja dan pelayan -->
+    <string name="table_picker_title">Hili Meza</string>
+    <string name="table_picker_clear">Hamamuk</string>
+    <string name="table_picker_empty">Seidauk iha meza aktivu.</string>
+    <string name="table_picker_error">La konsege foti meza (HTTP %1$d).</string>
+    <string name="table_picker_seats">kadeira %1$d</string>
+    <string name="table_status_occupied">Okupadu</string>
+    <string name="table_status_empty">Mamuk</string>
+    <string name="waiter_picker_title">Hili Empregadu</string>
+    <string name="waiter_picker_clear">Hamamuk</string>
+    <string name="waiter_picker_empty">Laiha funsionariu aktivu.</string>
+    <string name="waiter_picker_error">La konsege foti empregadu (HTTP %1$d).</string>
+    <string name="waiter_active_tables">Meza %1$s</string>
+    <string name="dinein_table_label">Meza</string>
+    <string name="dinein_waiter_label">Empregadu</string>
+    <string name="dinein_unset">Seidauk hili</string>
+    <plurals name="waiter_active_orders">
+        <item quantity="one">orden aktivu %1$d</item>
+        <item quantity="other">orden aktivu %1$d</item>
+    </plurals>
+
 </resources>

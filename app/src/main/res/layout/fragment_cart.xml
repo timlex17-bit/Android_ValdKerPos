@@ -125,6 +125,48 @@
             android:layout_height="1dp"
             android:background="#11000000" />
 
+        <!-- Meja & pelayan dine-in. Hanya terlihat pada shop restoran yang
+             modul "tables"/"waiters"-nya hidup; tiap tombol disembunyikan
+             sendiri-sendiri karena kedua modul bisa menyala terpisah. -->
+        <LinearLayout
+            android:id="@+id/rowDineInAssignment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:visibility="gone">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPickTable"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:textAlignment="viewStart"
+                android:textAllCaps="false"
+                android:textColor="@color/valora_ink"
+                app:cornerRadius="12dp"
+                app:strokeColor="#DFE4EC" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPickWaiter"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:textAlignment="viewStart"
+                android:textAllCaps="false"
+                android:textColor="@color/valora_ink"
+                app:cornerRadius="12dp"
+                app:strokeColor="#DFE4EC" />
+
+        </LinearLayout>
+
         <!-- ✅ CONTENT AREA (mengisi ruang, supaya footer tetap di bawah) -->
         <FrameLayout
             android:id="@+id/cartContent"

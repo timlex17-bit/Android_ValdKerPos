@@ -111,6 +111,11 @@ dependencies {
     implementation libs.activity
     implementation libs.constraintlayout
     testImplementation libs.junit
+    // org.json pada unit test lokal hanyalah stub android.jar yang melempar
+    // "not mocked" begitu dipanggil. Implementasi asli ini membuat parser
+    // JSON bisa diuji apa adanya, tanpa mengaktifkan returnDefaultValues
+    // yang justru menyembunyikan perilaku sebenarnya.
+    testImplementation 'org.json:json:20231013'
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
 }
