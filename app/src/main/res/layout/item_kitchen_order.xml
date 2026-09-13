@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Satu order di papan dapur.
+
+  Meja adalah hal pertama yang dicari kru dapur, jadi ia yang paling besar -
+  bukan nomor invoice. Item-itemnya dimasukkan ke itemContainer dari kode
+  (bukan RecyclerView bersarang): jumlah item per order kecil, dan daftar
+  bersarang yang bisa menggulir sendiri di dalam daftar yang menggulir adalah
+  sumber gulir macet yang tidak sebanding manfaatnya di sini.
+-->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="@color/surface"
+    app:cardCornerRadius="@dimen/radius_surface"
+    app:cardElevation="1dp"
+    app:strokeColor="@color/stroke"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- ===== Kepala order ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/surface_subtle"
+            android:baselineAligned="false"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvKitchenTable"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="@color/text_primary"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    tools:text="Meja A1" />
+
+                <TextView
+                    android:id="@+id/tvKitchenOrderMeta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    tools:text="INV000000000001 . Pelayan: Ana Waiter" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvKitchenItemCount"
+                style="@style/TextAppearance.Valora.Badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_pill"
+                android:backgroundTint="@color/brand_primary"
+                android:gravity="center"
+                android:minWidth="34dp"
+                android:paddingStart="12dp"
+                android:paddingTop="6dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="6dp"
+                android:textSize="14sp"
+                tools:text="3" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/stroke" />
+
+        <LinearLayout
+            android:id="@+id/itemContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

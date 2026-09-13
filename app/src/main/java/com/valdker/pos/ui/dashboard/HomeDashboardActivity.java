@@ -54,6 +54,7 @@ import com.valdker.pos.shop.ShopEvents;
 import com.valdker.pos.ui.BankAccountActivity;
 import com.valdker.pos.ui.expenses.ExpensesFragment;
 import com.valdker.pos.ui.inventorycount.InventoryCountsFragment;
+import com.valdker.pos.ui.kitchen.KitchenDisplayActivity;
 import com.valdker.pos.ui.offlineorders.PendingOrdersActivity;
 import com.valdker.pos.ui.orders.OrdersFragment;
 import com.valdker.pos.ui.ownerchat.OwnerChatActivity;
@@ -901,6 +902,10 @@ public class HomeDashboardActivity extends AppCompatActivity {
                 startActivity(new Intent(this, PendingOrdersActivity.class));
                 break;
 
+            case DashboardItem.ID_KITCHEN_DISPLAY:
+                startActivity(new Intent(this, KitchenDisplayActivity.class));
+                break;
+
             case DashboardItem.ID_VEHICLES:
                 startActivity(new Intent(this, VehiclesActivity.class));
                 break;
@@ -994,6 +999,8 @@ public class HomeDashboardActivity extends AppCompatActivity {
                 return ModuleRegistry.BANK_LEDGERS;
             case DashboardItem.ID_OFFLINE_ORDERS:
                 return ModuleRegistry.OFFLINE_ORDERS;
+            case DashboardItem.ID_KITCHEN_DISPLAY:
+                return ModuleRegistry.KITCHEN_DISPLAY;
             case DashboardItem.ID_VEHICLES:
                 return ModuleRegistry.VEHICLES;
             case DashboardItem.ID_MECHANICS:
@@ -1211,6 +1218,9 @@ public class HomeDashboardActivity extends AppCompatActivity {
         addMenuIfAllowed(out, ModuleRegistry.REPORTS, new DashboardItem(DashboardItem.ID_REPORTS, getString(R.string.menu_reports), getString(R.string.menu_reports_desc), R.drawable.ic_mod_reports, R.color.mod_reports));
         addMenuIfAllowed(out, ModuleRegistry.SETTINGS, new DashboardItem(DashboardItem.ID_SETTINGS, getString(R.string.menu_settings), getString(R.string.menu_settings_desc), R.drawable.ic_mod_settings, R.color.mod_settings));
         addMenuIfAllowed(out, ModuleRegistry.OFFLINE_ORDERS, new DashboardItem(DashboardItem.ID_OFFLINE_ORDERS, getString(R.string.menu_offline_orders), getString(R.string.menu_offline_orders_desc), R.drawable.ic_mod_offline_orders, R.color.mod_offline_orders));
+        // Gerbangnya business_types=[RESTAURANT] di backend, jadi tile ini
+        // hanya lolos addMenuIfAllowed() pada shop restoran.
+        addMenuIfAllowed(out, ModuleRegistry.KITCHEN_DISPLAY, new DashboardItem(DashboardItem.ID_KITCHEN_DISPLAY, getString(R.string.menu_kitchen_display), getString(R.string.menu_kitchen_display_desc), R.drawable.ic_mod_kitchen_display, R.color.mod_kitchen_display));
         addMenuIfAllowed(out, ModuleRegistry.INVENTORY_COUNTS, new DashboardItem(DashboardItem.ID_INVENTORY_COUNTS, getString(R.string.menu_inventory_counts), getString(R.string.menu_inventory_counts_desc), R.drawable.ic_mod_inventory_counts, R.color.mod_inventory_counts));
         addMenuIfAllowed(out, ModuleRegistry.STOCK_ADJUSTMENTS, new DashboardItem(DashboardItem.ID_STOCK_ADJUSTMENTS, getString(R.string.menu_stock_adjustments), getString(R.string.menu_stock_adjustments_desc), R.drawable.ic_mod_stock_adjustments, R.color.mod_stock_adjustments));
         addMenuIfAllowed(out, ModuleRegistry.PRODUCT_RETURNS, new DashboardItem(DashboardItem.ID_PRODUCT_RETURNS, getString(R.string.menu_product_returns), getString(R.string.menu_product_returns_desc), R.drawable.ic_mod_product_returns, R.color.mod_product_returns));

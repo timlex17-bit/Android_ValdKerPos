@@ -43,6 +43,7 @@ public class DashboardItem {
     public static final int ID_SERVICE_HISTORY = 1104;
     public static final int ID_SERVICE_PACKAGES = 1105;
     public static final int ID_BOOKINGS = 1106;
+    public static final int ID_KITCHEN_DISPLAY = 1201;
 
     public final int id;
     @NonNull public final String title;

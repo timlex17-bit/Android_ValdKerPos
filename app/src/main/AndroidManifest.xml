@@ -87,6 +87,17 @@
             android:name=".ui.ownerchat.OwnerChatActivity"
             android:exported="false" />
 
+        <!--
+          Papan dapur. Dibiarkan menyala berjam-jam di dinding dapur, jadi
+          perubahan konfigurasi (rotasi tablet, keyboard dilepas) ditangani
+          sendiri alih-alih membuat Activity dibuat ulang dan polling-nya
+          dimulai dari nol setiap kali.
+        -->
+        <activity
+            android:name=".ui.kitchen.KitchenDisplayActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:exported="false" />
+
         <activity
             android:name=".ui.productreturns.ProductReturnDetailActivity"
             android:exported="false" />

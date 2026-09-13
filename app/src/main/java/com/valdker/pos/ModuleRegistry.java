@@ -31,6 +31,9 @@ public final class ModuleRegistry {
     public static final String SERVICE_PACKAGES = "service_packages";
     public static final String BOOKINGS = "bookings";
 
+    /** Modul restoran; business_types=[RESTAURANT] di backend. */
+    public static final String KITCHEN_DISPLAY = "kitchen_display";
+
     private ModuleRegistry() {
     }
 }

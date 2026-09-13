@@ -56,4 +56,7 @@
     <color name="mod_service_history">#6D28D9</color>
     <color name="mod_service_packages">#DB2777</color>
     <color name="mod_bookings">#F59E0B</color>
+
+    <!-- Restoran -->
+    <color name="mod_kitchen_display">#EA580C</color>
 </resources>

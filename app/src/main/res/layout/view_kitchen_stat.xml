@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Satu angka ringkasan di bilah atas papan dapur. Angkanya besar (26sp) karena
+  inilah satu-satunya bagian layar yang dibaca dari seberang ruangan.
+-->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="3dp"
+    android:layout_marginEnd="3dp"
+    app:cardBackgroundColor="@color/surface_subtle"
+    app:cardCornerRadius="@dimen/radius_surface_sm"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/stroke"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="10dp">
+
+        <View
+            android:id="@+id/kitchenStatBar"
+            android:layout_width="5dp"
+            android:layout_height="34dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/bg_soft_block"
+            android:backgroundTint="@color/text_tertiary" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvKitchenStatValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autoSizeMaxTextSize="26sp"
+                android:autoSizeMinTextSize="16sp"
+                android:autoSizeTextType="uniform"
+                android:maxLines="1"
+                android:text="@string/pos_zero_count"
+                android:textColor="@color/text_primary"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                tools:text="7" />
+
+            <TextView
+                android:id="@+id/tvKitchenStatLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                tools:text="Menunggu" />
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
