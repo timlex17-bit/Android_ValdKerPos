@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.valdker.pos.R;
+import com.valdker.pos.money.Money;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -144,8 +145,12 @@ public class WorkshopWorkspaceAdapter extends RecyclerView.Adapter<RecyclerView.
             btnRemove.setOnClickListener(v -> listener.onRemoveItem(item));
         }
 
+        /**
+         * Lewat Money (BigDecimal), bukan "%.2f": pembulatannya harus sama
+         * dengan yang dipakai keranjang dan struk.
+         */
         private String formatMoney(double value) {
-            return String.format(Locale.US, "$%.2f", value);
+            return "$" + Money.ofDouble(value).toPlainString();
         }
     }
 }

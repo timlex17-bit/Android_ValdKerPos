@@ -21,6 +21,7 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.valdker.pos.R;
+import com.valdker.pos.money.Money;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.base.BaseFragment;
 import com.valdker.pos.repositories.ReportCacheRepository;
@@ -575,13 +576,29 @@ public class ReportsFragment extends BaseFragment {
         return "";
     }
 
+    /**
+     * Nominal dari server sudah berupa desimal eksak; diformat lewat Money
+     * (BigDecimal), bukan Double.parseDouble lalu "%.2f". Jalur double
+     * membulatkan HALF_UP dan berbeda dari server pada batas .005, sehingga
+     * angka di layar bisa satu sen berbeda dari angka di database.
+     */
     @NonNull
     private static String formatMoney(@Nullable String raw) {
         if (TextUtils.isEmpty(raw)) return "$0.00";
+        Money parsed = Money.of(raw);
+        if (parsed.isZero() && !isZeroText(raw)) return raw;
+        return "$" + parsed.toPlainString();
+    }
+
+    /** Membedakan "nol sungguhan" dari teks yang gagal diurai. */
+    private static boolean isZeroText(@Nullable String raw) {
+        if (raw == null) return false;
+        String clean = raw.trim();
+        if (clean.isEmpty()) return false;
         try {
-            return String.format(Locale.US, "$%.2f", Double.parseDouble(raw));
+            return new java.math.BigDecimal(clean).signum() == 0;
         } catch (Exception ignored) {
-            return raw;
+            return false;
         }
     }
 

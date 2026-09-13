@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.valdker.pos.R;
+import com.valdker.pos.money.Money;
 
 import java.util.List;
 import java.util.Locale;
@@ -71,13 +72,14 @@ public class PurchaseItemDraftAdapter extends RecyclerView.Adapter<PurchaseItemD
         }
     }
 
+    /**
+     * Diformat lewat Money (BigDecimal) dengan pembulatan yang sama dengan
+     * seluruh aplikasi. "%.2f" membulatkan HALF_UP dan berbeda pada batas
+     * .005 - termasuk dari angka yang dikirim ke server.
+     */
     @NonNull
     private String formatMoneyValue(double value) {
-        try {
-            return String.format(Locale.US, "%.2f", value);
-        } catch (Exception ignored) {
-            return "0.00";
-        }
+        return Money.ofDouble(value).toPlainString();
     }
 
     @Override

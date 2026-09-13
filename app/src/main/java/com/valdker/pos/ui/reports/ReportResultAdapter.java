@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.valdker.pos.R;
+import com.valdker.pos.money.Money;
 
 import org.json.JSONObject;
 
@@ -146,13 +147,29 @@ public class ReportResultAdapter extends RecyclerView.Adapter<ReportResultAdapte
         return "";
     }
 
+    /**
+     * Nominal dari server sudah berupa desimal eksak; diformat lewat Money
+     * (BigDecimal), bukan Double.parseDouble lalu "%.2f". Jalur double
+     * membulatkan HALF_UP dan berbeda dari server pada batas .005, sehingga
+     * angka di layar bisa satu sen berbeda dari angka di database.
+     */
     @NonNull
     private static String money(@Nullable String raw) {
         if (TextUtils.isEmpty(raw) || "-".equals(raw)) return "$0.00";
+        Money parsed = Money.of(raw);
+        if (parsed.isZero() && !isZeroText(raw)) return raw;
+        return "$" + parsed.toPlainString();
+    }
+
+    /** Membedakan "nol sungguhan" dari teks yang gagal diurai. */
+    private static boolean isZeroText(@Nullable String raw) {
+        if (raw == null) return false;
+        String clean = raw.trim();
+        if (clean.isEmpty()) return false;
         try {
-            return String.format(Locale.US, "$%.2f", Double.parseDouble(raw));
+            return new java.math.BigDecimal(clean).signum() == 0;
         } catch (Exception ignored) {
-            return raw;
+            return false;
         }
     }
 
