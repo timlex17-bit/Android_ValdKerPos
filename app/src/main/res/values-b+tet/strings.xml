@@ -1350,4 +1350,5 @@
     <string name="checkout_section_payment">Pagamentu</string>
     <string name="checkout_section_discount">Deskontu no kliente</string>
     <string name="checkout_total_due">Total atu selu</string>
+    <string name="receipt_thank_you">Obrigado ba order ona iha!</string>
 </resources>

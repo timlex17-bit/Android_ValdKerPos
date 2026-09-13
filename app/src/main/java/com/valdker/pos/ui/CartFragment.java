@@ -22,6 +22,9 @@ import com.valdker.pos.SessionManager;
 import com.valdker.pos.cart.CartManager;
 import com.valdker.pos.models.CartItem;
 import com.valdker.pos.money.Money;
+import com.valdker.pos.print.ReceiptBuilder;
+import com.valdker.pos.print.ReceiptContent;
+import com.valdker.pos.print.ReceiptPayloadReader;
 import com.valdker.pos.money.OrderTotals;
 import com.valdker.pos.models.Customer;
 import com.valdker.pos.repositories.CheckoutConfigRepository;
@@ -931,20 +934,37 @@ public class CartFragment extends Fragment
         final String clientOrderId = obtainClientOrderId(appCtx);
         OfflineOrderRepository.ensureClientOrderId(payload, clientOrderId);
         final String localOrderId = clientOrderId;
+
+        // Salinan payload berisi keterangan yang hanya dibutuhkan struk: nama
+        // pelayan, nama pelanggan, nama tiap metode bayar, uang yang
+        // diserahkan, dan kembaliannya. Kontrak API tidak mengenal satu pun
+        // dari itu - server hanya menerima id - dan kunci-kunci ini dibuang
+        // lagi sebelum payload dikirim, lihat ReceiptPayloadReader.
+        //
+        // Yang disimpan ke Room adalah salinan ini, sehingga struk cetak ulang
+        // membaca keterangan yang sama persis dengan struk aslinya.
+        final JSONObject receiptPayload = ReceiptPayloadReader.withLocalExtras(
+                payload,
+                dineInWaiterNameForReceipt(),
+                receiptCustomerName(result.customerName),
+                paymentLabelsForReceipt(result, paymentCodeFinal),
+                result.cashReceivedMoney,
+                result.changeAmountMoney);
         Log.i(TAG, "Checkout submit client_order_id=" + clientOrderId);
 
         // WRITE-AHEAD: simpan dulu ke Room, baru kirim. Kalau proses dimatikan
         // sebelum callback tiba, penjualannya tidak ikut hilang.
         new OfflineOrderRepository(appCtx).savePendingOrder(
                 localOrderId,
-                payload,
+                receiptPayload,
                 businessType,
                 new OfflineOrderRepository.SaveCallback() {
                     @Override
                     public void onSuccess(@NonNull String savedLocalOrderId, boolean inserted) {
                         Log.i(TAG, "Checkout write-ahead saved localOrderId=" + savedLocalOrderId
                                 + " inserted=" + inserted);
-                        sendCheckoutAfterWriteAhead(savedLocalOrderId, payload, appCtx, token, snapshot,
+                        sendCheckoutAfterWriteAhead(savedLocalOrderId, payload, receiptPayload,
+                                appCtx, token, snapshot,
                                 result, paymentCodeFinal, subtotalFinal, discountFinal, deliveryFeeFinal, totalFinal,
                                 tableFinal, addrFinal);
                     }
@@ -967,6 +987,7 @@ public class CartFragment extends Fragment
 
     private void sendCheckoutAfterWriteAhead(@NonNull String localOrderId,
                                              @NonNull JSONObject payload,
+                                             @NonNull JSONObject receiptPayload,
                                              @NonNull Context appCtx,
                                              @NonNull String token,
                                              @NonNull List<CartItem> snapshot,
@@ -1002,22 +1023,7 @@ public class CartFragment extends Fragment
                         ? invoiceFromApi.trim()
                         : "INV-" + System.currentTimeMillis();
 
-                tryAutoPrintReceipt(
-                        appCtx,
-                        token,
-                        snapshot,
-                        paymentCodeFinal,
-                        subtotalFinal,
-                        discountFinal,
-                        deliveryFeeFinal,
-                        totalFinal,
-                        tableFinal,
-                        addrFinal,
-                        invoiceFinal,
-                        result.customerName != null ? result.customerName : "",
-                        result.cashReceived,
-                        result.changeAmount
-                );
+                tryPrintReceipt(appCtx, token, receiptPayload, invoiceFinal, "", null, true);
 
                 finishActiveDraftAndClearCart();
 
@@ -1038,7 +1044,7 @@ public class CartFragment extends Fragment
                     // Sudah tersimpan PENDING_SYNC oleh write-ahead.
                     finishCheckoutAfterOfflineSave(
                             localOrderId,
-                            payload,
+                            receiptPayload,
                             appCtx,
                             snapshot,
                             paymentCodeFinal,
@@ -1095,23 +1101,15 @@ public class CartFragment extends Fragment
                                                 @NonNull String customerName,
                                                 double cashReceived,
                                                 double changeAmount) {
-        tryAutoPrintOfflineReceipt(
+        Log.i(TAG, "Offline receipt print started order=" + offlineReceiptNumber(localOrderId, payload));
+        tryPrintReceipt(
                 appCtx,
                 new SessionManager(appCtx).getToken(),
-                snapshot,
-                paymentMethod,
-                subtotal,
-                discount,
-                deliveryFee,
-                total,
-                tableNumber,
-                deliveryAddress,
+                payload,
                 offlineReceiptNumber(localOrderId, payload),
-                customerName,
-                cashReceived,
-                changeAmount,
-                payload.optString("device_time", ""),
-                printResult -> showOfflineReceiptResult(appCtx, printResult)
+                "OFFLINE / PENDING SYNC",
+                printResult -> showOfflineReceiptResult(appCtx, printResult),
+                false
         );
         finishActiveDraftAndClearCart();
         mainHandler.post(() -> {
@@ -1177,97 +1175,20 @@ public class CartFragment extends Fragment
         mainHandler.post(() -> Toast.makeText(appCtx, message, Toast.LENGTH_LONG).show());
     }
 
-    private void tryAutoPrintReceipt(@NonNull Context appCtx,
-                                     @NonNull String token,
-                                     @NonNull List<CartItem> items,
-                                     @NonNull String paymentMethod,
-                                     double subtotal,
-                                     double discount,
-                                     double deliveryFee,
-                                     double total,
-                                     @NonNull String tableNumber,
-                                     @NonNull String deliveryAddress,
-                                     @NonNull String invoiceNumber,
-                                     @NonNull String customerName,
-                                     double cashReceived,
-                                     double changeAmount) {
-        tryPrintReceipt(
-                appCtx,
-                token,
-                items,
-                paymentMethod,
-                subtotal,
-                discount,
-                deliveryFee,
-                total,
-                tableNumber,
-                deliveryAddress,
-                invoiceNumber,
-                customerName,
-                cashReceived,
-                changeAmount,
-                "",
-                "",
-                null,
-                true
-        );
-    }
-
-    private void tryAutoPrintOfflineReceipt(@NonNull Context appCtx,
-                                            @NonNull String token,
-                                            @NonNull List<CartItem> items,
-                                            @NonNull String paymentMethod,
-                                            double subtotal,
-                                            double discount,
-                                            double deliveryFee,
-                                            double total,
-                                            @NonNull String tableNumber,
-                                            @NonNull String deliveryAddress,
-                                            @NonNull String invoiceNumber,
-                                            @NonNull String customerName,
-                                            double cashReceived,
-                                            double changeAmount,
-                                            @NonNull String deviceTime,
-                                            @NonNull ReceiptPrintCallback callback) {
-        Log.i(TAG, "Offline receipt print started order=" + invoiceNumber);
-        tryPrintReceipt(
-                appCtx,
-                token,
-                items,
-                paymentMethod,
-                subtotal,
-                discount,
-                deliveryFee,
-                total,
-                tableNumber,
-                deliveryAddress,
-                invoiceNumber,
-                customerName,
-                cashReceived,
-                changeAmount,
-                "OFFLINE / PENDING SYNC",
-                deviceTime,
-                callback,
-                false
-        );
-    }
-
+    /**
+     * Mencetak struk dari payload order.
+     *
+     * <p>Semua yang tercetak datang dari payload yang sama dengan yang
+     * disimpan ke Room, dibaca lewat ReceiptPayloadReader dan disusun
+     * ReceiptBuilder. Sebelumnya fungsi ini menerima selusin double dan
+     * menyusun barisnya sendiri, sementara cetak ulang membaca payload dan
+     * menyusun barisnya sendiri pula - dan keduanya sudah menyimpang.
+     */
     private void tryPrintReceipt(@NonNull Context appCtx,
                                  @NonNull String token,
-                                 @NonNull List<CartItem> items,
-                                 @NonNull String paymentMethod,
-                                 double subtotal,
-                                 double discount,
-                                 double deliveryFee,
-                                 double total,
-                                 @NonNull String tableNumber,
-                                 @NonNull String deliveryAddress,
+                                 @NonNull JSONObject receiptPayload,
                                  @NonNull String invoiceNumber,
-                                 @NonNull String customerName,
-                                 double cashReceived,
-                                 double changeAmount,
                                  @NonNull String receiptStatus,
-                                 @NonNull String deviceTime,
                                  @Nullable ReceiptPrintCallback callback,
                                  boolean showPreconditionToast) {
         boolean auto = com.valdker.pos.print.PrinterPrefs.isAutoPrintEnabled(appCtx);
@@ -1312,26 +1233,8 @@ public class CartFragment extends Fragment
             return;
         }
 
-        String fallbackReceipt = buildReceiptFull(
-                appCtx,
-                "VALDKER POS",
-                "",
-                "",
-                items,
-                paymentMethod,
-                subtotal,
-                discount,
-                deliveryFee,
-                total,
-                tableNumber,
-                deliveryAddress,
-                invoiceNumber,
-                customerName,
-                cashReceived,
-                changeAmount,
-                receiptStatus,
-                deviceTime
-        );
+        String fallbackReceipt = buildReceiptText(
+                appCtx, receiptPayload, invoiceNumber, receiptStatus, "VALDKER POS", "", "");
 
         AtomicBoolean receiptPrinted = new AtomicBoolean(false);
         com.valdker.pos.repositories.ShopRepository.getBestShopProfileForReceipt(
@@ -1343,30 +1246,14 @@ public class CartFragment extends Fragment
                         String shopName = (shop.name != null && !shop.name.trim().isEmpty())
                                 ? shop.name.trim()
                                 : "VALDKER POS";
-                        String shopAddress = (shop.address != null) ? shop.address.trim() : "";
-                        String shopPhone = (shop.phone != null) ? shop.phone.trim() : "";
-
-                        String receipt = buildReceiptFull(
+                        String receipt = buildReceiptText(
                                 appCtx,
-                                shopName,
-                                shopAddress,
-                                shopPhone,
-                                items,
-                                paymentMethod,
-                                subtotal,
-                                discount,
-                                deliveryFee,
-                                total,
-                                tableNumber,
-                                deliveryAddress,
+                                receiptPayload,
                                 invoiceNumber,
-                                customerName,
-                                cashReceived,
-                                changeAmount,
                                 receiptStatus,
-                                deviceTime
-                        );
-
+                                shopName,
+                                shop.address != null ? shop.address.trim() : "",
+                                shop.phone != null ? shop.phone.trim() : "");
                         printReceiptOnce(appCtx, receipt, receiptPrinted, callback);
                     }
 
@@ -1470,115 +1357,90 @@ public class CartFragment extends Fragment
         });
     }
 
-    private String buildReceiptFull(@NonNull Context appCtx,
+    /**
+     * Menyusun teks struk dari payload order.
+     *
+     * <p>Isinya - item, nominal, meja, pelayan, metode bayar - seluruhnya
+     * dibaca dari payload; yang ditambahkan di sini hanya identitas toko,
+     * nama kasir, dan spanduk status, yaitu hal-hal yang memang tidak ada di
+     * payload. Jalur cetak ulang di PendingOrderReceiptPrinter melakukan hal
+     * yang sama persis, sehingga kedua kertas tidak bisa lagi berbeda isinya.
+     */
+    @NonNull
+    private String buildReceiptText(@NonNull Context appCtx,
+                                    @NonNull JSONObject receiptPayload,
+                                    @NonNull String invoiceNumber,
+                                    @NonNull String receiptStatus,
                                     @NonNull String shopName,
                                     @NonNull String shopAddress,
-                                    @NonNull String shopPhone,
-                                    @NonNull List<CartItem> items,
-                                    @NonNull String paymentMethod,
-                                    double subtotal,
-                                    double discount,
-                                    double deliveryFee,
-                                    double total,
-                                    @NonNull String tableNumber,
-                                    @NonNull String deliveryAddress,
-                                    @NonNull String invoiceNumber,
-                                    @NonNull String customerName,
-                                    double cashReceived,
-                                    double changeAmount,
-                                    @NonNull String receiptStatus,
-                                    @NonNull String deviceTime) {
+                                    @NonNull String shopPhone) {
+        ReceiptContent content = ReceiptPayloadReader.read(receiptPayload);
 
-        String cashier = "";
-        try {
-            SessionManager sm = new SessionManager(appCtx);
-            String u = sm.getUsername();
-            cashier = (u != null) ? u.trim() : "";
-        } catch (Exception ignored) {
+        content.shopName = shopName;
+        content.shopAddress = shopAddress;
+        content.shopPhone = shopPhone;
+        content.statusBanner = receiptStatus;
+        if (!invoiceNumber.trim().isEmpty()) {
+            content.orderNumber = invoiceNumber.trim();
         }
+        content.cashier = cashierNameForReceipt(appCtx);
+        content.footerNote = getString(R.string.receipt_thank_you);
 
-        java.text.SimpleDateFormat dfDate = new java.text.SimpleDateFormat("dd/MM/yy", Locale.US);
-        java.text.SimpleDateFormat dfTime = new java.text.SimpleDateFormat("HH:mm", Locale.US);
-        String date = dfDate.format(new java.util.Date());
-        String time = dfTime.format(new java.util.Date());
-
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("[C]<b>").append(shopName).append("</b>\n");
-        if (!shopAddress.trim().isEmpty()) sb.append("[C]").append(shopAddress.trim()).append("\n");
-        if (!shopPhone.trim().isEmpty()) sb.append("[C]").append(shopPhone.trim()).append("\n");
-        sb.append("[C]--------------------------------\n");
-        if (!receiptStatus.trim().isEmpty()) {
-            sb.append("[C]<b>").append(receiptStatus.trim()).append("</b>\n");
-            sb.append("[C]--------------------------------\n");
-        }
-
-        sb.append("[L]Order:[R]").append(invoiceNumber).append("\n");
-        if (!cashier.isEmpty()) sb.append("[L]Cashier:[R]").append(cashier).append("\n");
-        if (!customerName.trim().isEmpty() && !"Walk-in Customer".equalsIgnoreCase(customerName.trim())) {
-            sb.append("[L]Customer:[R]").append(customerName.trim()).append("\n");
-        }
-        sb.append("[L]Date:[R]").append(date).append("\n");
-        sb.append("[L]Time:[R]").append(time).append("\n");
-        if (!deviceTime.trim().isEmpty()) {
-            sb.append("[L]Device Time:[R]").append(deviceTime.trim()).append("\n");
-        }
-
-        boolean showTable = (tableNumber != null && !tableNumber.trim().isEmpty());
-        boolean showDelivery = (deliveryAddress != null && !deliveryAddress.trim().isEmpty());
-
-        if (showTable) sb.append("[L]Table:[R]").append(tableNumber.trim()).append("\n");
-        if (showDelivery) sb.append("[L]Delivery:[R]").append(deliveryAddress.trim()).append("\n");
-
-        sb.append("[C]--------------------------------\n");
-
-        for (CartItem it : items) {
-            String name = (it.name != null && !it.name.trim().isEmpty()) ? it.name.trim() : "Item";
-            int qty = Math.max(0, it.qty);
-            double price = Math.max(0, it.price);
-            double line = qty * price;
-
-            String type = normalizeType(it.orderType);
-            String typeLabel = "";
-            if (CartManager.TYPE_DINE_IN.equals(type)) typeLabel = "(* DINE IN)";
-            else if (CartManager.TYPE_TAKE_OUT.equals(type)) typeLabel = "(* TAKE OUT)";
-            else if (CartManager.TYPE_DELIVERY.equals(type)) typeLabel = "(^ DELIVERY)";
-
-            sb.append("[L]<b>").append(name).append("</b>[R]<b>")
-                    .append("$").append(Money.ofDouble(line).toPlainString())
-                    .append("</b>\n");
-
-            if (!typeLabel.isEmpty()) sb.append("[L]").append(typeLabel).append("\n");
-
-            sb.append("[L]").append(qty)
-                    .append(" x ")
-                    .append("$").append(Money.ofDouble(price).toPlainString())
-                    .append("\n\n");
-        }
-
-        sb.append("[C]--------------------------------\n");
-
-        sb.append("[L]Subtotal[R]").append(("$" + Money.ofDouble(subtotal).toPlainString())).append("\n");
-        sb.append("[L]Discount[R]").append(("$" + Money.ofDouble(0.00).toPlainString())).append("\n");
-        sb.append("[L]VAT / Tax[R]").append(("$" + Money.ofDouble(0.00).toPlainString())).append("\n");
-        if (deliveryFee > 0) sb.append("[L]Delivery Fee[R]").append(("$" + Money.ofDouble(deliveryFee).toPlainString())).append("\n");
-
-        sb.append("[C]--------------------------------\n");
-        sb.append("[L]<b>Total</b>[R]<b>").append(("$" + Money.ofDouble(total).toPlainString())).append("</b>\n");
-        sb.append("[L]Payment[R]").append(paymentMethod).append("\n");
-        if (cashReceived > 0) {
-            sb.append("[L]Paid[R]").append(("$" + Money.ofDouble(cashReceived).toPlainString())).append("\n");
-            sb.append("[L]Change[R]").append(("$" + Money.ofDouble(changeAmount).toPlainString())).append("\n");
-        }
-        sb.append("[C]--------------------------------\n");
-
-        sb.append("[C]Obrigado ba order ona iha!\n");
-        sb.append("[C]").append(shopName).append("\n\n\n");
-
-        return sb.toString();
+        return ReceiptBuilder.build(content);
     }
 
     @NonNull
+    private String cashierNameForReceipt(@NonNull Context appCtx) {
+        try {
+            String username = new SessionManager(appCtx).getUsername();
+            return username != null ? username.trim() : "";
+        } catch (Exception ignored) {
+            return "";
+        }
+    }
+
+    /**
+     * Nama pelayan untuk struk, hanya untuk bill yang benar-benar dine-in.
+     *
+     * <p>Syaratnya sama dengan yang dipakai saat mengirim waiter_id ke server
+     * - kalau tidak, bill yang tadinya dine-in lalu diubah jadi bungkus akan
+     * tetap mencetak nama pelayan yang sudah tidak berlaku.
+     */
+    @NonNull
+    private String dineInWaiterNameForReceipt() {
+        if (!isRestaurantBusiness()) return "";
+        if (!canUseModule(RestaurantRepository.MODULE_WAITERS)) return "";
+
+        DraftLifecycleHost host = resolveDraftLifecycleHost();
+        String name = host != null ? host.dineInWaiterNameForActiveDraft() : null;
+        return name != null ? name.trim() : "";
+    }
+
+    /** "Walk-in Customer" tidak dicetak; itu bukan nama pelanggan. */
+    @NonNull
+    private String receiptCustomerName(@Nullable String customerName) {
+        String clean = customerName == null ? "" : customerName.trim();
+        return "Walk-in Customer".equalsIgnoreCase(clean) ? "" : clean;
+    }
+
+    /**
+     * Nama metode bayar untuk tiap baris pembayaran, urut sama dengan array
+     * "payments" di payload: metode utama lebih dulu, lalu tiap pembayaran
+     * terbagi. Server hanya menerima payment_method_id, jadi tanpa daftar ini
+     * struk cetak ulang hanya bisa menulis "Method #3".
+     */
+    @NonNull
+    private org.json.JSONArray paymentLabelsForReceipt(
+            @NonNull NativeCheckoutDialogFragment.BankCheckoutResult result,
+            @NonNull String primaryCode) {
+        org.json.JSONArray labels = new org.json.JSONArray();
+        labels.put(primaryCode);
+        for (NativeCheckoutDialogFragment.SplitPayment sp : result.splitPayments) {
+            labels.put(sp.methodCode != null ? sp.methodCode : "-");
+        }
+        return labels;
+    }
+
     private Money calcSubtotal(@NonNull List<CartItem> items) {
         Money total = Money.zero();
         for (CartItem it : items) {

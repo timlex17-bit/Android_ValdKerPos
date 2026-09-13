@@ -64,6 +64,9 @@ import com.valdker.pos.network.WorkshopModuleApi;
 import com.valdker.pos.repositories.CheckoutConfigRepository;
 import com.valdker.pos.repositories.MasterDataRepository;
 import com.valdker.pos.money.Money;
+import com.valdker.pos.print.ReceiptPayloadReader;
+import com.valdker.pos.print.ReceiptContent;
+import com.valdker.pos.print.ReceiptBuilder;
 import com.valdker.pos.money.OrderTotals;
 import com.valdker.pos.repositories.OfflineOrderRepository;
 import com.valdker.pos.repositories.OrderRepository;
@@ -3885,6 +3888,16 @@ public class WorkshopPOSFragment extends Fragment
         });
     }
 
+    /**
+     * Struk kasir bengkel.
+     *
+     * <p>Disusun lewat ReceiptBuilder, sama seperti struk retail, restoran,
+     * dan cetak ulang. Versi lama menyusun barisnya sendiri dengan
+     * String.format("$%.2f", double) - satu-satunya jalur struk yang belum
+     * ikut migrasi ke Money - dan menghitung totalnya sendiri sebagai
+     * subtotal + ongkir, sehingga diskon dan pajak yang sudah ditagihkan
+     * tidak pernah muncul di kertas maupun ikut dihitung.
+     */
     @NonNull
     private String buildWorkshopReceipt(@NonNull String shopName,
                                         @NonNull String shopAddress,
@@ -3897,88 +3910,69 @@ public class WorkshopPOSFragment extends Fragment
                                         @NonNull String customerName,
                                         @NonNull String vehicleName,
                                         @NonNull String plateNumber) {
-        java.text.SimpleDateFormat dfDate = new java.text.SimpleDateFormat("dd/MM/yy", Locale.US);
-        java.text.SimpleDateFormat dfTime = new java.text.SimpleDateFormat("HH:mm", Locale.US);
-        String date = dfDate.format(new java.util.Date());
-        String time = dfTime.format(new java.util.Date());
-        String cashier = sessionManager != null ? safeText(sessionManager.getUsername(), "") : "";
+        ReceiptContent content = new ReceiptContent();
 
-        double subtotal = 0.0;
-        for (WorkshopCartItem item : items) {
-            if (item != null) {
-                subtotal += Math.max(0, item.getLineTotal());
-            }
-        }
-        double deliveryFee = Math.max(0, result.deliveryFee);
-        double total = subtotal + deliveryFee;
+        content.shopName = shopName;
+        content.shopAddress = shopAddress;
+        content.shopPhone = shopPhone;
+        content.statusBanner = receiptStatus;
+        content.orderNumber = invoiceNumber;
+        content.cashier = sessionManager != null ? safeText(sessionManager.getUsername(), "") : "";
+        content.deviceTime = deviceTime.trim();
 
-        StringBuilder sb = new StringBuilder();
+        String stamp = content.deviceTime.isEmpty() ? currentDeviceTimeIso() : content.deviceTime;
+        content.date = ReceiptPayloadReader.isoDate(stamp);
+        content.time = ReceiptPayloadReader.isoTime(stamp);
 
-        sb.append("[C]<b>").append(shopName).append("</b>\n");
-        if (!shopAddress.trim().isEmpty()) sb.append("[C]").append(shopAddress.trim()).append("\n");
-        if (!shopPhone.trim().isEmpty()) sb.append("[C]").append(shopPhone.trim()).append("\n");
-        sb.append("[C]--------------------------------\n");
-        if (!receiptStatus.trim().isEmpty()) {
-            sb.append("[C]<b>").append(receiptStatus.trim()).append("</b>\n");
-            sb.append("[C]--------------------------------\n");
+        String customer = safeText(customerName, "");
+        if (!"Walk-in Customer".equalsIgnoreCase(customer)) {
+            content.customer = customer;
         }
+        String vehicle = safeText(vehicleName, "");
+        if (!"-".equals(vehicle)) content.vehicleName = vehicle;
+        String plate = safeText(plateNumber, "");
+        if (!"-".equals(plate)) content.plateNumber = plate;
 
-        sb.append("[L]Order:[R]").append(invoiceNumber).append("\n");
-        if (!cashier.isEmpty()) sb.append("[L]Cashier:[R]").append(cashier).append("\n");
-        if (!safeText(customerName, "").isEmpty()
-                && !"Walk-in Customer".equalsIgnoreCase(safeText(customerName, ""))) {
-            sb.append("[L]Customer:[R]").append(customerName.trim()).append("\n");
-        }
-        if (!safeText(vehicleName, "").isEmpty() && !"-".equals(vehicleName.trim())) {
-            sb.append("[L]Vehicle:[R]").append(vehicleName.trim()).append("\n");
-        }
-        if (!safeText(plateNumber, "").isEmpty() && !"-".equals(plateNumber.trim())) {
-            sb.append("[L]Plate:[R]").append(plateNumber.trim()).append("\n");
-        }
-        sb.append("[L]Date:[R]").append(date).append("\n");
-        sb.append("[L]Time:[R]").append(time).append("\n");
-        if (!deviceTime.trim().isEmpty()) {
-            sb.append("[L]Device Time:[R]").append(deviceTime.trim()).append("\n");
-        }
-        sb.append("[C]--------------------------------\n");
-
+        Money subtotal = Money.zero();
         for (WorkshopCartItem item : items) {
             if (item == null) continue;
-
-            String name = safeText(item.getName(), "Item");
-            int qty = Math.max(0, item.getQuantity());
-            double price = Math.max(0, item.getPrice());
-            double line = Math.max(0, item.getLineTotal());
-
-            sb.append("[L]<b>").append(name).append("</b>[R]<b>")
-                    .append(String.format(Locale.US, "$%.2f", line))
-                    .append("</b>\n");
-            sb.append("[L]").append(workshopItemTypeLabel(item)).append("\n");
-            sb.append("[L]").append(qty)
-                    .append(" x ")
-                    .append(String.format(Locale.US, "$%.2f", price))
-                    .append("\n\n");
+            ReceiptContent.Item line = new ReceiptContent.Item();
+            line.name = safeText(item.getName(), "Item");
+            line.qty = Math.max(0, item.getQuantity());
+            line.unitPrice = Money.ofDouble(item.getPrice()).orZeroIfNegative();
+            line.lineTotal = Money.ofDouble(item.getLineTotal()).orZeroIfNegative();
+            line.typeLabel = workshopItemTypeLabel(item);
+            content.items.add(line);
+            subtotal = subtotal.plus(line.lineTotal);
         }
 
-        sb.append("[C]--------------------------------\n");
-        sb.append("[L]Subtotal[R]").append(String.format(Locale.US, "$%.2f", subtotal)).append("\n");
-        sb.append("[L]Discount[R]").append(String.format(Locale.US, "$%.2f", 0.00)).append("\n");
-        sb.append("[L]VAT / Tax[R]").append(String.format(Locale.US, "$%.2f", 0.00)).append("\n");
-        if (deliveryFee > 0) {
-            sb.append("[L]Delivery Fee[R]").append(String.format(Locale.US, "$%.2f", deliveryFee)).append("\n");
-        }
-        sb.append("[C]--------------------------------\n");
-        sb.append("[L]<b>Total</b>[R]<b>").append(String.format(Locale.US, "$%.2f", total)).append("</b>\n");
-        sb.append("[L]Payment[R]").append(safeText(result.paymentMethodCode, "-")).append("\n");
-        if (result.cashReceived > 0) {
-            sb.append("[L]Paid[R]").append(String.format(Locale.US, "$%.2f", result.cashReceived)).append("\n");
-            sb.append("[L]Change[R]").append(String.format(Locale.US, "$%.2f", result.changeAmount)).append("\n");
-        }
-        sb.append("[C]--------------------------------\n");
-        sb.append("[C]Obrigado ba order ona iha!\n");
-        sb.append("[C]").append(shopName).append("\n\n\n");
+        // Nominal resmi datang dari hasil checkout, bukan dihitung ulang di
+        // sini: itulah angka yang ditagihkan ke pelanggan dan dikirim ke
+        // server. Subtotal hasil penjumlahan baris hanya dipakai kalau dialog
+        // tidak mengirimkannya.
+        content.subtotal = result.subtotalMoney.isPositive() ? result.subtotalMoney : subtotal;
+        content.discount = result.discountMoney;
+        content.tax = result.taxMoney;
+        content.deliveryFee = result.deliveryFeeMoney;
+        content.total = result.totalAmountMoney.isPositive()
+                ? result.totalAmountMoney
+                : content.subtotal.plus(result.deliveryFeeMoney);
+        content.paid = result.cashReceivedMoney;
+        content.change = result.changeAmountMoney;
 
-        return sb.toString();
+        Money splitTotal = Money.zero();
+        for (NativeCheckoutDialogFragment.SplitPayment sp : result.splitPayments) {
+            splitTotal = splitTotal.plus(sp.amount);
+        }
+        content.addPayment(safeText(result.paymentMethodCode, "-"),
+                content.total.minus(splitTotal));
+        for (NativeCheckoutDialogFragment.SplitPayment sp : result.splitPayments) {
+            content.addPayment(sp.methodCode, sp.amount);
+        }
+
+        content.footerNote = getString(R.string.receipt_thank_you);
+
+        return ReceiptBuilder.build(content);
     }
 
     @NonNull

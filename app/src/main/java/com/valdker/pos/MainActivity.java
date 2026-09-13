@@ -80,6 +80,9 @@ import com.valdker.pos.ui.CartFragment;
 import com.valdker.pos.ui.ProductsFragment;
 import com.valdker.pos.ui.checkout.BankAccountItem;
 import com.valdker.pos.ui.checkout.NativeCheckoutDialogFragment;
+import com.valdker.pos.print.ReceiptBuilder;
+import com.valdker.pos.print.ReceiptContent;
+import com.valdker.pos.print.ReceiptPayloadReader;
 import com.valdker.pos.ui.checkout.PaymentMethodItem;
 import com.valdker.pos.ui.offlineorders.PendingOrdersActivity;
 import com.valdker.pos.ui.retail.RetailCartItem;
@@ -1805,6 +1808,18 @@ public class MainActivity extends AppCompatActivity
         final String clientOrderId = heldClientOrderId;
         OfflineOrderRepository.ensureClientOrderId(payload, clientOrderId);
         final String localOrderId = clientOrderId;
+
+        // Yang disimpan ke Room adalah salinan berisi nama pelanggan dan nama
+        // tiap metode bayar. Kontrak API hanya mengenal id, jadi tanpa ini
+        // struk cetak ulang order terbagi hanya bisa menulis "Method #3".
+        // Kunci-kunci ini dibuang lagi sebelum payload dikirim ke server.
+        final JSONObject receiptPayload = ReceiptPayloadReader.withLocalExtras(
+                payload,
+                null,
+                safeTrim(result.customerName),
+                retailPaymentLabels(result),
+                result.cashReceivedMoney,
+                result.changeAmountMoney);
         Log.i(TAG, "Retail order submit client_order_id=" + clientOrderId);
 
         // WRITE-AHEAD: order ditulis ke Room SEBELUM request dikirim. Kalau
@@ -1813,7 +1828,7 @@ public class MainActivity extends AppCompatActivity
         // terjadi setelah request gagal, sehingga order bisa lenyap sama sekali.
         new OfflineOrderRepository(getApplicationContext()).savePendingOrder(
                 localOrderId,
-                payload,
+                receiptPayload,
                 "retail",
                 new OfflineOrderRepository.SaveCallback() {
                     @Override
@@ -2207,6 +2222,16 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    /**
+     * Struk kasir retail.
+     *
+     * <p>Disusun lewat ReceiptBuilder, sama seperti struk restoran dan struk
+     * cetak ulang. Versi lama menyusun barisnya sendiri di sini dan mencetak
+     * "Discount $0.00" serta "VAT / Tax $0.00" mati - padahal Total sudah
+     * dipotong diskon dan ditambah pajak, jadi kertasnya tidak menjumlahkan
+     * dirinya sendiri - dan dari beberapa pembayaran hanya metode utama yang
+     * muncul.
+     */
     @NonNull
     private String buildRetailReceipt(@NonNull String shopName,
                                       @NonNull String shopAddress,
@@ -2215,63 +2240,68 @@ public class MainActivity extends AppCompatActivity
                                       @NonNull String invoiceNumber,
                                       @NonNull String receiptStatus,
                                       @NonNull String deviceTime) {
-        java.text.SimpleDateFormat dfDate = new java.text.SimpleDateFormat("dd/MM/yy", Locale.US);
-        java.text.SimpleDateFormat dfTime = new java.text.SimpleDateFormat("HH:mm", Locale.US);
+        ReceiptContent content = new ReceiptContent();
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("[C]<b>").append(shopName).append("</b>\n");
-        if (!shopAddress.trim().isEmpty()) sb.append("[C]").append(shopAddress.trim()).append("\n");
-        if (!shopPhone.trim().isEmpty()) sb.append("[C]").append(shopPhone.trim()).append("\n");
-        sb.append("[C]--------------------------------\n");
-        if (!receiptStatus.trim().isEmpty()) {
-            sb.append("[C]<b>").append(receiptStatus.trim()).append("</b>\n");
-            sb.append("[C]--------------------------------\n");
-        }
-        sb.append("[L]Order:[R]").append(invoiceNumber).append("\n");
-        if (!safeTrim(cachedUsername).isEmpty()) {
-            sb.append("[L]Cashier:[R]").append(safeTrim(cachedUsername)).append("\n");
-        }
-        if (!safeTrim(result.customerName).isEmpty()
-                && !"Walk-in Customer".equalsIgnoreCase(safeTrim(result.customerName))) {
-            sb.append("[L]Customer:[R]").append(safeTrim(result.customerName)).append("\n");
-        }
-        sb.append("[L]Date:[R]").append(dfDate.format(new java.util.Date())).append("\n");
-        sb.append("[L]Time:[R]").append(dfTime.format(new java.util.Date())).append("\n");
-        if (!deviceTime.trim().isEmpty()) {
-            sb.append("[L]Device Time:[R]").append(deviceTime.trim()).append("\n");
-        }
-        sb.append("[C]--------------------------------\n");
+        content.shopName = shopName;
+        content.shopAddress = shopAddress;
+        content.shopPhone = shopPhone;
+        content.statusBanner = receiptStatus;
+        content.orderNumber = invoiceNumber;
+        content.cashier = safeTrim(cachedUsername);
+        content.customer = safeTrim(result.customerName);
+        content.deviceTime = safeTrim(deviceTime);
+
+        String stamp = content.deviceTime.isEmpty() ? currentDeviceTimeIso() : content.deviceTime;
+        content.date = ReceiptPayloadReader.isoDate(stamp);
+        content.time = ReceiptPayloadReader.isoTime(stamp);
+
+        content.deliveryAddress = safeTrim(result.deliveryAddress);
 
         for (NativeCheckoutDialogFragment.CheckoutItem item : result.items) {
             if (item == null) continue;
-            sb.append("[L]<b>").append(safeTrim(item.productName)).append("</b>[R]<b>")
-                    .append("$").append(item.lineTotalMoney.toPlainString())
-                    .append("</b>\n");
-            sb.append("[L]").append(Math.max(0, item.quantity))
-                    .append(" x ")
-                    .append("$").append(item.unitPriceMoney.toPlainString())
-                    .append("\n\n");
+            ReceiptContent.Item line = new ReceiptContent.Item();
+            line.name = safeTrim(item.productName);
+            line.qty = Math.max(0, item.quantity);
+            line.unitPrice = item.unitPriceMoney;
+            line.lineTotal = item.lineTotalMoney;
+            content.items.add(line);
         }
 
-        sb.append("[C]--------------------------------\n");
-        sb.append("[L]Subtotal[R]").append("$").append(result.subtotalMoney.toPlainString()).append("\n");
-        sb.append("[L]Discount[R]$0.00\n");
-        sb.append("[L]VAT / Tax[R]$0.00\n");
-        if (result.deliveryFee > 0) {
-            sb.append("[L]Delivery Fee[R]").append("$").append(result.deliveryFeeMoney.toPlainString()).append("\n");
-        }
-        sb.append("[C]--------------------------------\n");
-        sb.append("[L]<b>Total</b>[R]<b>").append("$").append(result.totalAmountMoney.toPlainString()).append("</b>\n");
-        sb.append("[L]Payment[R]").append(safeTrim(result.paymentMethodCode)).append("\n");
-        if (result.cashReceived > 0) {
-            sb.append("[L]Paid[R]").append("$").append(result.cashReceivedMoney.toPlainString()).append("\n");
-            sb.append("[L]Change[R]").append("$").append(result.changeAmountMoney.toPlainString()).append("\n");
-        }
-        sb.append("[C]--------------------------------\n");
-        sb.append("[C]Thank you for your purchase\n");
-        sb.append("[C]").append(shopName).append("\n\n\n");
+        content.subtotal = result.subtotalMoney;
+        content.discount = result.discountMoney;
+        content.tax = result.taxMoney;
+        content.deliveryFee = result.deliveryFeeMoney;
+        content.total = result.totalAmountMoney;
+        content.paid = result.cashReceivedMoney;
+        content.change = result.changeAmountMoney;
 
-        return sb.toString();
+        // Metode utama menanggung sisa setelah pembayaran terbagi; seluruh
+        // metode dicetak, bukan hanya yang pertama.
+        Money splitTotal = Money.zero();
+        for (NativeCheckoutDialogFragment.SplitPayment sp : result.splitPayments) {
+            splitTotal = splitTotal.plus(sp.amount);
+        }
+        content.addPayment(safeTrim(result.paymentMethodCode),
+                result.totalAmountMoney.minus(splitTotal));
+        for (NativeCheckoutDialogFragment.SplitPayment sp : result.splitPayments) {
+            content.addPayment(sp.methodCode, sp.amount);
+        }
+
+        content.footerNote = getString(R.string.receipt_thank_you);
+
+        return ReceiptBuilder.build(content);
+    }
+
+    /** Nama metode bayar urut sama dengan array "payments" pada payload. */
+    @NonNull
+    private JSONArray retailPaymentLabels(
+            @NonNull NativeCheckoutDialogFragment.BankCheckoutResult result) {
+        JSONArray labels = new JSONArray();
+        labels.put(safeTrim(result.paymentMethodCode));
+        for (NativeCheckoutDialogFragment.SplitPayment sp : result.splitPayments) {
+            labels.put(sp.methodCode != null ? sp.methodCode : "-");
+        }
+        return labels;
     }
 
     @NonNull

@@ -1376,4 +1376,5 @@
     <string name="checkout_section_payment">Pembayaran</string>
     <string name="checkout_section_discount">Diskon dan pelanggan</string>
     <string name="checkout_total_due">Total bayar</string>
+    <string name="receipt_thank_you">Terima kasih!</string>
 </resources>

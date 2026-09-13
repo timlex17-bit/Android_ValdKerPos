@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import com.android.volley.VolleyError;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.local.PendingOrderEntity;
+import com.valdker.pos.print.ReceiptPayloadReader;
 import com.valdker.pos.local.PendingOrderItemEntity;
 import com.valdker.pos.local.ValoraLocalDatabase;
 import com.valdker.pos.money.Money;
@@ -688,6 +689,12 @@ public class OfflineOrderRepository {
     @NonNull
     private JSONObject payloadForOfflineSync(@NonNull PendingOrderEntity order) throws Exception {
         JSONObject payload = new JSONObject(order.rawPayloadJson);
+
+        // Payload tersimpan membawa beberapa kunci yang hanya dipakai struk -
+        // nama pelayan, nama pelanggan, nama metode bayar, uang diserahkan,
+        // kembalian - karena kontrak API tidak mengenal satu pun dari itu.
+        // Dibuang di sini, satu-satunya tempat payload tersimpan dikirim.
+        ReceiptPayloadReader.stripLocalKeys(payload);
 
         String clientOrderId = firstNonEmpty(
                 payload.optString("client_order_id", ""),

@@ -13,7 +13,11 @@ import com.valdker.pos.SessionManager;
 import com.valdker.pos.local.PendingOrderEntity;
 import com.valdker.pos.local.PendingOrderItemEntity;
 import com.valdker.pos.models.Shop;
+import com.valdker.pos.R;
 import com.valdker.pos.print.BluetoothPrinterManager;
+import com.valdker.pos.print.ReceiptBuilder;
+import com.valdker.pos.print.ReceiptContent;
+import com.valdker.pos.print.ReceiptPayloadReader;
 import com.valdker.pos.print.PrinterPrefs;
 import com.valdker.pos.print.PrinterService;
 import com.valdker.pos.repositories.OfflineOrderRepository;
@@ -135,6 +139,19 @@ final class PendingOrderReceiptPrinter {
         });
     }
 
+    /**
+     * Menyusun teks struk cetak ulang.
+     *
+     * <p>Dibaca dari payload yang sama dengan yang dipakai struk aslinya,
+     * lewat ReceiptPayloadReader, lalu disusun ReceiptBuilder. Versi lama
+     * menyusun barisnya sendiri di sini, dan hasilnya berbeda dari struk asli:
+     * Discount dan VAT/Tax tercetak dengan angka sebenarnya di sini sementara
+     * struk asli mencetak nol mati, dan dari beberapa pembayaran hanya yang
+     * pertama yang muncul.
+     *
+     * <p>Nominal dari kolom Room dipakai kalau ada - itu angka yang benar-benar
+     * tersimpan - dan payload jadi cadangannya.
+     */
     @NonNull
     private static String buildReceipt(@NonNull Context appCtx,
                                        @NonNull String shopName,
@@ -143,122 +160,110 @@ final class PendingOrderReceiptPrinter {
                                        @NonNull PendingOrderEntity order,
                                        @NonNull List<PendingOrderItemEntity> itemEntities) {
         JSONObject payload = parsePayload(order.rawPayloadJson);
-        List<ReceiptItem> items = buildItems(payload, itemEntities);
-        String businessType = safe(order.businessType, "").toLowerCase(Locale.US);
-        String receiptNumber = firstNonEmpty(
-                payload.optString("client_order_id", ""),
-                order.clientOrderId,
-                order.localOrderId
-        );
-        String transactionTime = firstNonEmpty(
-                payload.optString("offline_created_at", ""),
-                payload.optString("device_time", ""),
-                order.createdAt > 0L ? currentDeviceTimeIso(order.createdAt) : ""
-        );
-        String label = labelForStatus(order.syncStatus);
-        String customer = customerLabel(payload);
-        String payment = paymentLabel(payload, order);
-        // Kolom uang di Room kini teks desimal; dibaca lewat Money lalu baru
-        // dikonversi untuk DTO struk yang masih memakai double (lapis 5).
-        double subtotal = positiveOr(order.subtotalMoney().toDouble(), optDouble(payload, "subtotal"));
-        double discount = positiveOr(order.discountMoney().toDouble(), optDouble(payload, "discount"));
-        double tax = positiveOr(order.taxMoney().toDouble(), optDouble(payload, "tax"));
-        double total = positiveOr(order.totalMoney().toDouble(), optDouble(payload, "total"));
-        double paid = positiveOr(order.paidAmountMoney().toDouble(), paymentAmount(payload));
-        double change = positiveOr(order.changeAmountMoney().toDouble(), optDouble(payload, "change_amount"));
-        String tableNumber = payload.optString("table_number", "");
-        String deliveryAddress = payload.optString("delivery_address", "");
+        ReceiptContent content = ReceiptPayloadReader.read(payload);
 
-        String cashier = "";
+        content.shopName = shopName;
+        content.shopAddress = shopAddress;
+        content.shopPhone = shopPhone;
+        content.statusBanner = labelForStatus(order.syncStatus);
+        content.footerNote = appCtx.getString(R.string.receipt_thank_you);
+
+        content.orderNumber = firstNonEmpty(
+                content.orderNumber,
+                order.clientOrderId,
+                order.localOrderId);
+        if (content.deviceTime.isEmpty() && order.createdAt > 0L) {
+            content.deviceTime = currentDeviceTimeIso(order.createdAt);
+            content.date = ReceiptPayloadReader.isoDate(content.deviceTime);
+            content.time = ReceiptPayloadReader.isoTime(content.deviceTime);
+        }
+        if (content.customer.isEmpty()) {
+            content.customer = customerLabel(payload);
+        }
+
         try {
-            String username = new SessionManager(appCtx).getUsername();
-            cashier = safe(username, "");
+            content.cashier = safe(new SessionManager(appCtx).getUsername(), "");
         } catch (Exception ignored) {
         }
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("[C]<b>").append(shopName).append("</b>\n");
-        if (!shopAddress.trim().isEmpty()) sb.append("[C]").append(shopAddress.trim()).append("\n");
-        if (!shopPhone.trim().isEmpty()) sb.append("[C]").append(shopPhone.trim()).append("\n");
-        sb.append("[C]--------------------------------\n");
-        sb.append("[C]<b>").append(label).append("</b>\n");
-        sb.append("[C]--------------------------------\n");
-        sb.append("[L]Order:[R]").append(receiptNumber).append("\n");
-        if (!cashier.isEmpty()) sb.append("[L]Cashier:[R]").append(cashier).append("\n");
-        if (!customer.isEmpty()) sb.append("[L]Customer:[R]").append(customer).append("\n");
-        if (!transactionTime.isEmpty()) sb.append("[L]Device Time:[R]").append(transactionTime).append("\n");
-        if (!tableNumber.trim().isEmpty()) sb.append("[L]Table:[R]").append(tableNumber.trim()).append("\n");
-        if (!deliveryAddress.trim().isEmpty()) sb.append("[L]Delivery:[R]").append(deliveryAddress.trim()).append("\n");
-        sb.append("[C]--------------------------------\n");
+        overrideMoneyFromRoom(content, order);
+        overrideItemsFromRoom(content, order, itemEntities);
 
-        for (ReceiptItem item : items) {
-            sb.append("[L]<b>").append(item.name).append("</b>[R]<b>")
-                    .append(formatMoney(item.total))
-                    .append("</b>\n");
-            String typeLabel = itemTypeLabel(businessType, item);
-            if (!typeLabel.isEmpty()) sb.append("[L]").append(typeLabel).append("\n");
-            sb.append("[L]").append(Math.max(0, item.quantity))
-                    .append(" x ")
-                    .append(formatMoney(item.price))
-                    .append("\n\n");
-        }
+        return ReceiptBuilder.build(content);
+    }
 
-        sb.append("[C]--------------------------------\n");
-        sb.append("[L]Subtotal[R]").append(formatMoney(subtotal)).append("\n");
-        sb.append("[L]Discount[R]").append(formatMoney(discount)).append("\n");
-        sb.append("[L]VAT / Tax[R]").append(formatMoney(tax)).append("\n");
-        double deliveryFee = optDouble(payload, "delivery_fee");
-        if (deliveryFee > 0d) sb.append("[L]Delivery Fee[R]").append(formatMoney(deliveryFee)).append("\n");
-        sb.append("[C]--------------------------------\n");
-        sb.append("[L]<b>Total</b>[R]<b>").append(formatMoney(total)).append("</b>\n");
-        sb.append("[L]Payment[R]").append(payment).append("\n");
-        if (paid > 0d) {
-            sb.append("[L]Paid[R]").append(formatMoney(paid)).append("\n");
-            sb.append("[L]Change[R]").append(formatMoney(change)).append("\n");
-        }
-        sb.append("[C]--------------------------------\n");
-        sb.append("[C]Receipt reprint\n");
-        sb.append("[C]").append(shopName).append("\n\n\n");
-        return sb.toString();
+    /**
+     * Kolom uang di Room adalah teks desimal yang ditulis saat order disimpan.
+     * Dibaca lewat Money, bukan double: struk harus menunjukkan angka yang
+     * sama persis dengan yang dikirim ke server.
+     */
+    private static void overrideMoneyFromRoom(@NonNull ReceiptContent content,
+                                              @NonNull PendingOrderEntity order) {
+        content.subtotal = preferStored(order.subtotalMoney(), content.subtotal);
+        content.discount = preferStored(order.discountMoney(), content.discount);
+        content.tax = preferStored(order.taxMoney(), content.tax);
+        content.total = preferStored(order.totalMoney(), content.total);
+        content.paid = preferStored(order.paidAmountMoney(), content.paid);
+        content.change = preferStored(order.changeAmountMoney(), content.change);
     }
 
     @NonNull
-    private static List<ReceiptItem> buildItems(@NonNull JSONObject payload,
-                                                @NonNull List<PendingOrderItemEntity> itemEntities) {
-        List<ReceiptItem> items = new ArrayList<>();
-        JSONArray rawItems = payload.optJSONArray("items");
-        int rawCount = rawItems != null ? rawItems.length() : 0;
-        int count = Math.max(rawCount, itemEntities.size());
-
-        for (int i = 0; i < count; i++) {
-            JSONObject raw = rawItems != null ? rawItems.optJSONObject(i) : null;
-            PendingOrderItemEntity entity = i < itemEntities.size() ? itemEntities.get(i) : null;
-            ReceiptItem item = new ReceiptItem();
-            int productId = entity != null ? entity.productId : firstInt(raw, "product", "product_id", "item_id");
-            item.name = firstNonEmpty(
-                    entity != null ? entity.name : "",
-                    raw != null ? raw.optString("name", "") : "",
-                    raw != null ? raw.optString("product_name", "") : "",
-                    productId > 0 ? "Product #" + productId : "Item"
-            );
-            item.itemType = normalizeItemType(firstNonEmpty(
-                    raw != null ? raw.optString("item_type", "") : "",
-                    entity != null ? entity.itemType : ""
-            ));
-            item.orderType = raw != null ? raw.optString("order_type", "") : "";
-            item.quantity = entity != null && entity.quantity > 0
-                    ? entity.quantity
-                    : Math.max(0, firstInt(raw, "quantity", "qty"));
-            item.price = entity != null && entity.priceMoney().isPositive()
-                    ? entity.priceMoney().toDouble()
-                    : optDouble(raw, "price");
-            item.total = entity != null && entity.totalMoney().isPositive()
-                    ? entity.totalMoney().toDouble()
-                    : firstPositive(optDouble(raw, "total"), optDouble(raw, "subtotal"), item.price * item.quantity);
-            items.add(item);
-        }
-        return items;
+    private static Money preferStored(@NonNull Money stored, @NonNull Money fallback) {
+        return stored.isPositive() ? stored : fallback;
     }
+
+    /**
+     * Nama dan jumlah item dari Room kalau payload tidak memuatnya - order
+     * lama tersimpan sebelum payload memuat nama produk.
+     */
+    private static void overrideItemsFromRoom(@NonNull ReceiptContent content,
+                                              @NonNull PendingOrderEntity order,
+                                              @NonNull List<PendingOrderItemEntity> itemEntities) {
+        if (itemEntities.isEmpty()) return;
+
+        boolean businessIsWorkshop = safe(order.businessType, "")
+                .toLowerCase(Locale.US).equals("workshop");
+
+        if (content.items.isEmpty()) {
+            for (PendingOrderItemEntity entity : itemEntities) {
+                if (entity == null) continue;
+                ReceiptContent.Item item = new ReceiptContent.Item();
+                item.name = safe(entity.name, "Item");
+                item.qty = Math.max(0, entity.quantity);
+                item.unitPrice = entity.priceMoney();
+                item.lineTotal = entity.totalMoney().isPositive()
+                        ? entity.totalMoney()
+                        : entity.priceMoney().times(Math.max(0, entity.quantity));
+                if (businessIsWorkshop) {
+                    item.typeLabel = workshopItemLabel(entity.itemType);
+                }
+                content.items.add(item);
+            }
+            return;
+        }
+
+        for (int i = 0; i < content.items.size() && i < itemEntities.size(); i++) {
+            PendingOrderItemEntity entity = itemEntities.get(i);
+            if (entity == null) continue;
+            ReceiptContent.Item item = content.items.get(i);
+            if ("Item".equals(item.name) && !safe(entity.name, "").isEmpty()) {
+                item.name = entity.name.trim();
+            }
+            if (businessIsWorkshop) {
+                item.typeLabel = workshopItemLabel(entity.itemType);
+            }
+        }
+    }
+
+    @NonNull
+    private static String workshopItemLabel(@Nullable String itemType) {
+        String value = safe(itemType, "").toUpperCase(Locale.US);
+        if ("SERVICE".equals(value)) return "Service";
+        if ("SPAREPART".equals(value) || "PART".equals(value)) return "Sparepart";
+        if ("MENU".equals(value)) return "Menu";
+        return "Product";
+    }
+
 
     @NonNull
     private static String labelForStatus(@NonNull String status) {
