@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Tablet (lebar terkecil >= 600dp): layar kasir dibagi dua. Daftar menu di
+  kiri, keranjang menempel permanen di kanan - kasir tidak perlu membuka dan
+  menutup laci untuk melihat isi bon, dan total selalu terlihat.
+
+  Dipakai MainActivity untuk memutuskan apakah CartFragment dipasang di
+  cartPaneContainer (tablet) atau di overlayContainer sebagai laci (ponsel).
+-->
+<resources>
+    <bool name="pos_two_pane">true</bool>
+</resources>

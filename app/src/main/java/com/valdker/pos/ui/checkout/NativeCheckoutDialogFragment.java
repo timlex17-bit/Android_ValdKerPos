@@ -21,6 +21,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.TextInputLayout;
 import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.money.OrderTotals;
@@ -41,6 +42,15 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
     private TextView tvBreakdown;
     @Nullable
     private EditText etDiscountValue;
+    /**
+     * Wadah kolom diskon. Pesan kesalahan dipasang di sini, bukan di
+     * EditText-nya: pada TextInputLayout, setError() milik EditText
+     * memunculkan gelembung merah lama yang menutupi kolom, sedangkan
+     * setError() milik wadahnya menulis pesan di bawah kolom seperti dialog
+     * formulir lain di aplikasi ini.
+     */
+    @Nullable
+    private TextInputLayout tilDiscountValue;
     @Nullable
     private Spinner spDiscountMode;
     @Nullable
@@ -254,6 +264,17 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
     private static final String ARG_NEED_TABLE = "arg_need_table";
     private static final String ARG_NEED_DELIVERY = "arg_need_delivery";
 
+    /**
+     * @param needTable tampilkan kolom "Nomor meja" dan wajibkan isinya.
+     *
+     *                  <p>Pemanggil yang memutuskan, bukan dialog ini. Untuk
+     *                  keranjang restoran, kolom ini hanya diminta ketika meja
+     *                  BELUM dipilih dari grid: kalau sudah dipilih, server
+     *                  mengisi ulang {@code table_number} dari {@code Table.name}
+     *                  begitu {@code table_id} terkirim, sehingga apa pun yang
+     *                  diketik di sini dijamin dibuang. Menanyakannya dua kali
+     *                  hanya membuat kasir mengisi kolom yang hasilnya hilang.
+     */
     public static NativeCheckoutDialogFragment newInstance(double total,
                                                            boolean needTable,
                                                            boolean needDelivery) {
@@ -384,6 +405,28 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         return -1;
     }
 
+    /**
+     * Menampilkan pesan kesalahan di bawah kolom dan memindahkan fokus ke
+     * sana. Kalau wadahnya tidak ada, pesan tetap dipasang pada EditText
+     * supaya tidak pernah ada penolakan yang diam-diam.
+     */
+    private void showFieldError(@Nullable TextInputLayout container,
+                                @Nullable EditText field,
+                                @NonNull String message) {
+        if (container != null) {
+            container.setError(message);
+        } else if (field != null) {
+            field.setError(message);
+        }
+        if (field != null) field.requestFocus();
+    }
+
+    private void clearFieldError(@Nullable TextInputLayout container) {
+        if (container == null) return;
+        container.setError(null);
+        container.setErrorEnabled(false);
+    }
+
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
@@ -406,6 +449,7 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         TextView tvTotal = view.findViewById(R.id.tvTotalAmount);
         tvBreakdown = view.findViewById(R.id.tvTotalBreakdown);
         etDiscountValue = view.findViewById(R.id.etDiscountValue);
+        tilDiscountValue = view.findViewById(R.id.tilDiscountValue);
         spDiscountMode = view.findViewById(R.id.spDiscountMode);
         containerSplit = view.findViewById(R.id.containerSplitPayments);
         tvSplitRemaining = view.findViewById(R.id.tvSplitRemaining);
@@ -415,7 +459,6 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         TextView tvCustomerPointsInfo = view.findViewById(R.id.tvCustomerPointsInfo);
 
         Spinner spPaymentMethod = view.findViewById(R.id.spPaymentMethod);
-        TextView tvBankLabel = view.findViewById(R.id.tvBankLabel);
         Spinner spBankAccount = view.findViewById(R.id.spBankAccount);
 
         EditText etCash = view.findViewById(R.id.etCashReceived);
@@ -428,9 +471,28 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         EditText etAddr = view.findViewById(R.id.etDeliveryAddress);
         EditText etFee = view.findViewById(R.id.etDeliveryFee);
 
-        if (etTable != null) etTable.setVisibility(needTable ? View.VISIBLE : View.GONE);
-        if (etAddr != null) etAddr.setVisibility(needDelivery ? View.VISIBLE : View.GONE);
-        if (etFee != null) etFee.setVisibility(needDelivery ? View.VISIBLE : View.GONE);
+        // Yang disembunyikan adalah wadah TextInputLayout, bukan EditText di
+        // dalamnya: menyembunyikan EditText saja menyisakan kotak bergaris
+        // kosong yang tetap memakan satu baris penuh.
+        TextInputLayout tilCash = view.findViewById(R.id.tilCashReceived);
+        TextInputLayout tilTable = view.findViewById(R.id.tilTable);
+        TextInputLayout tilAddr = view.findViewById(R.id.tilDeliveryAddress);
+        TextInputLayout tilFee = view.findViewById(R.id.tilDeliveryFee);
+        TextInputLayout tilReference = view.findViewById(R.id.tilReferenceNumber);
+
+        View groupCash = view.findViewById(R.id.groupCash);
+        View groupBank = view.findViewById(R.id.groupBank);
+        View cardOrderDetails = view.findViewById(R.id.cardOrderDetails);
+
+        if (tilTable != null) tilTable.setVisibility(needTable ? View.VISIBLE : View.GONE);
+        if (tilAddr != null) tilAddr.setVisibility(needDelivery ? View.VISIBLE : View.GONE);
+        if (tilFee != null) tilFee.setVisibility(needDelivery ? View.VISIBLE : View.GONE);
+
+        // Kartu "Detail pesanan" hanya berisi meja dan pengantaran; tanpa
+        // keduanya ia menyusut jadi kartu berisi judul saja.
+        if (cardOrderDetails != null) {
+            cardOrderDetails.setVisibility(needTable || needDelivery ? View.VISIBLE : View.GONE);
+        }
 
         customerAdapter = new ArrayAdapter<>(
                 requireContext(),
@@ -532,13 +594,11 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
             boolean isCash = selectedMethod != null && "CASH".equalsIgnoreCase(selectedMethod.code);
             boolean requiresBank = selectedMethod != null && selectedMethod.requiresBankAccount;
 
-            if (etCash != null) etCash.setVisibility(isCash ? View.VISIBLE : View.GONE);
-            if (tvChange != null) tvChange.setVisibility(isCash ? View.VISIBLE : View.GONE);
-
-            if (tvBankLabel != null) tvBankLabel.setVisibility(requiresBank ? View.VISIBLE : View.GONE);
-            if (spBankAccount != null) spBankAccount.setVisibility(requiresBank ? View.VISIBLE : View.GONE);
-            if (etReferenceNumber != null) etReferenceNumber.setVisibility(requiresBank ? View.VISIBLE : View.GONE);
-            if (etPaymentNote != null) etPaymentNote.setVisibility(requiresBank ? View.VISIBLE : View.GONE);
+            // Satu wadah per kondisi, bukan empat view yang disembunyikan
+            // sendiri-sendiri: label rekening, pemilih rekening, nomor
+            // referensi, dan catatan selalu muncul dan hilang bersamaan.
+            if (groupCash != null) groupCash.setVisibility(isCash ? View.VISIBLE : View.GONE);
+            if (groupBank != null) groupBank.setVisibility(requiresBank ? View.VISIBLE : View.GONE);
 
             updateTotals.run();
         };
@@ -652,6 +712,15 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
         dialog.setOnShowListener(dlg -> {
             dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
 
+                // Pesan kesalahan bertahan sampai dihapus. Tanpa baris ini,
+                // peringatan dari percobaan sebelumnya masih tertulis di bawah
+                // kolom yang sudah dibetulkan kasir.
+                clearFieldError(tilDiscountValue);
+                clearFieldError(tilCash);
+                clearFieldError(tilTable);
+                clearFieldError(tilAddr);
+                clearFieldError(tilReference);
+
                 CustomerOption selectedCustomer = getSelectedCustomer(spCustomer);
                 PaymentMethodOption selectedMethod = getSelectedPaymentMethod(spPaymentMethod);
                 BankAccountOption selectedBank = getSelectedBankAccount(spBankAccount);
@@ -671,10 +740,8 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                 Money typedDiscount = currentDiscount(baseSubtotalMoney);
                 if (typedDiscount.isGreaterThanOrEqual(baseSubtotalMoney)
                         && !typedDiscount.equals(baseSubtotalMoney)) {
-                    if (etDiscountValue != null) {
-                        etDiscountValue.setError(getString(R.string.msg_discount_exceeds_subtotal));
-                        etDiscountValue.requestFocus();
-                    }
+                    showFieldError(tilDiscountValue, etDiscountValue,
+                            getString(R.string.msg_discount_exceeds_subtotal));
                     return;
                 }
 
@@ -703,18 +770,14 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                 String paymentNote = etPaymentNote != null ? safe(etPaymentNote.getText()) : "";
 
                 if (needTable && table.isEmpty()) {
-                    if (etTable != null) {
-                        etTable.setError(getString(R.string.msg_table_number_required));
-                        etTable.requestFocus();
-                    }
+                    showFieldError(tilTable, etTable,
+                            getString(R.string.msg_table_number_required));
                     return;
                 }
 
                 if (needDelivery && addr.isEmpty()) {
-                    if (etAddr != null) {
-                        etAddr.setError(getString(R.string.msg_delivery_address_required));
-                        etAddr.requestFocus();
-                    }
+                    showFieldError(tilAddr, etAddr,
+                            getString(R.string.msg_delivery_address_required));
                     return;
                 }
 
@@ -749,19 +812,17 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
 
                 if ("CASH".equalsIgnoreCase(selectedMethod.code)) {
                     if (!cashReceivedMoney.isPositive()) {
-                        if (etCash != null) {
-                            etCash.setError(getString(R.string.msg_cash_received_required));
-                            etCash.requestFocus();
-                        }
+                        showFieldError(tilCash, etCash,
+                                getString(R.string.msg_cash_received_required));
                         return;
                     }
 
                     // Perbandingan eksak: dengan double, uang pas untuk total
                     // hasil 0.1+0.2 tampak kurang dan pembayaran ditolak.
                     if (cashReceivedMoney.isLessThan(primaryShare)) {
-                        if (etCash != null) {
-                            etCash.setError(getString(R.string.msg_cash_received_less_total));
-                            etCash.requestFocus();
+                        showFieldError(tilCash, etCash,
+                                getString(R.string.msg_cash_received_less_total));
+                        if (etCash != null && etCash.getText() != null) {
                             etCash.setSelection(etCash.getText().length());
                         }
                         return;
@@ -775,10 +836,8 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                         return;
                     }
                     if (referenceNumber.isEmpty()) {
-                        if (etReferenceNumber != null) {
-                            etReferenceNumber.setError(getString(R.string.msg_reference_number_required));
-                            etReferenceNumber.requestFocus();
-                        }
+                        showFieldError(tilReference, etReferenceNumber,
+                                getString(R.string.msg_reference_number_required));
                         return;
                     }
                 }

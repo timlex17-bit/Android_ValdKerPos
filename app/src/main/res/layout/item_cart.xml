@@ -1,203 +1,238 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+  Satu baris item di keranjang kasir.
+
+  Baris lama memakai RelativeLayout dengan tombol silang, tombol kurang, dan
+  tombol tambah berjejer dalam satu baris di pojok kanan atas - pada kolom
+  keranjang selebar 300dp ketiganya saling menabrak nama produk. Sekarang:
+  gambar + nama + total baris di atas, kendali jumlah dan tombol hapus di
+  bawahnya, sehingga lebar sesempit apa pun tetap terbaca.
+
+  Total baris (harga x jumlah) ditampilkan tersendiri; sebelumnya kasir hanya
+  melihat harga satuan dan harus mengalikan sendiri.
+-->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="12dp"
     android:descendantFocusability="afterDescendants"
-    android:clickable="false"
-    android:focusable="false">
+    android:paddingStart="6dp"
+    android:paddingTop="10dp"
+    android:paddingEnd="6dp"
+    android:paddingBottom="4dp">
 
-    <!-- Product thumbnail -->
-    <ImageView
-        android:id="@+id/imgCartThumb"
-        android:layout_width="52dp"
-        android:layout_height="52dp"
-        android:layout_alignParentStart="true"
-        android:scaleType="centerCrop"
-        android:src="@android:color/darker_gray"
-        android:contentDescription="Product image" />
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardCartThumb"
+        android:layout_width="@dimen/cart_thumb_size"
+        android:layout_height="@dimen/cart_thumb_size"
+        app:cardBackgroundColor="@color/surface_subtle"
+        app:cardCornerRadius="@dimen/radius_surface_sm"
+        app:cardElevation="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:strokeColor="@color/stroke_soft"
+        app:strokeWidth="1dp">
 
-    <!-- Right action column (make it WRAP, not fixed 160dp) -->
-    <LinearLayout
-        android:id="@+id/rightActions"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:orientation="vertical"
-        android:gravity="end">
+        <ImageView
+            android:id="@+id/imgCartThumb"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/cd_product_image"
+            android:scaleType="centerCrop"
+            android:src="@drawable/bg_image_placeholder" />
+    </com.google.android.material.card.MaterialCardView>
 
-        <!-- Quantity row -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="8dp"
-            android:gravity="center_vertical">
-
-            <ImageButton
-                android:id="@+id/btnCartRemove"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentEnd="true"
-                android:src="@android:drawable/ic_menu_close_clear_cancel"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Remove" />
-
-            <!-- Minus -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnCartMinus"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:drawableBottom="@drawable/ic_remove"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="#6204BF"
-                android:backgroundTint="@android:color/white"
-                app:cornerRadius="21dp"
-                app:strokeWidth="2dp"
-                app:strokeColor="#6204BF" />
-
-            <!-- Quantity -->
-            <TextView
-                android:id="@+id/tvCartQty"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:gravity="center"
-                android:text="1"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="#111827" />
-
-            <!-- Plus -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnCartPlus"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:drawableBottom="@drawable/ic_add"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/white"
-                android:backgroundTint="#6204BF"
-                app:cornerRadius="21dp" />
-
-        </LinearLayout>
-
-    </LinearLayout>
-
-    <!-- Product name -->
     <TextView
         android:id="@+id/tvCartName"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/imgCartThumb"
-        android:layout_toStartOf="@id/rightActions"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
-        android:text="Product name"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:textColor="#111827"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="8dp"
+        android:ellipsize="end"
         android:maxLines="2"
-        android:ellipsize="end" />
-
-    <!-- Product price -->
-    <TextView
-        android:id="@+id/tvCartPrice"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/tvCartName"
-        android:layout_toEndOf="@id/imgCartThumb"
-        android:layout_toStartOf="@id/rightActions"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginTop="6dp"
-        android:text="$0.00"
+        android:textColor="@color/text_primary"
         android:textSize="15sp"
         android:textStyle="bold"
-        android:textColor="#6204BF" />
+        app:layout_constraintEnd_toStartOf="@id/tvCartLineTotal"
+        app:layout_constraintStart_toEndOf="@id/cardCartThumb"
+        app:layout_constraintTop_toTopOf="@id/cardCartThumb"
+        tools:text="Pizza margherita ukuran besar" />
 
-    <!-- ✅ Order type chips (NOW uses FULL width to the right edge) -->
+    <TextView
+        android:id="@+id/tvCartPrice"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="8dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toStartOf="@id/tvCartLineTotal"
+        app:layout_constraintStart_toEndOf="@id/cardCartThumb"
+        app:layout_constraintTop_toBottomOf="@id/tvCartName"
+        tools:text="$1.50 x 2" />
+
+    <TextView
+        android:id="@+id/tvCartLineTotal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:textColor="@color/brand_primary"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tvCartName"
+        tools:text="$3.00" />
+
+    <!--
+      Kendali jumlah. Satu kapsul untuk (-, angka, +) supaya terbaca sebagai
+      satu kendali; sebelumnya tiga lingkaran terpisah dengan tombol hapus
+      menempel di sebelahnya, sehingga "hapus" mudah tertekan saat kasir
+      hendak mengurangi jumlah.
+    -->
+    <LinearLayout
+        android:id="@+id/cartStepper"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_cart_stepper"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="2dp"
+        app:layout_constraintStart_toEndOf="@id/cardCartThumb"
+        app:layout_constraintTop_toBottomOf="@id/tvCartPrice">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCartMinus"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="@dimen/cart_stepper_button"
+            android:layout_height="@dimen/cart_stepper_button"
+            android:contentDescription="@string/cd_cart_decrease"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
+            app:backgroundTint="@color/surface"
+            app:cornerRadius="@dimen/radius_pill"
+            app:icon="@drawable/ic_remove"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="18dp"
+            app:iconTint="@color/brand_primary"
+            app:strokeColor="@color/stroke"
+            app:strokeWidth="1dp"
+            tools:ignore="TouchTargetSizeCheck" />
+
+        <TextView
+            android:id="@+id/tvCartQty"
+            android:layout_width="36dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:maxLines="1"
+            android:text="@string/pos_zero_count"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            tools:text="2" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCartPlus"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="@dimen/cart_stepper_button"
+            android:layout_height="@dimen/cart_stepper_button"
+            android:contentDescription="@string/cd_cart_increase"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
+            app:backgroundTint="@color/brand_primary"
+            app:cornerRadius="@dimen/radius_pill"
+            app:elevation="0dp"
+            app:icon="@drawable/ic_add"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="18dp"
+            app:iconTint="@color/text_on_brand"
+            tools:ignore="TouchTargetSizeCheck" />
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/btnCartRemove"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/action_remove"
+        android:padding="9dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_close"
+        app:layout_constraintBottom_toBottomOf="@id/cartStepper"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/cartStepper"
+        app:tint="@color/text_tertiary"
+        tools:ignore="TouchTargetSizeCheck" />
+
+    <!-- Tipe pesanan per baris. Hanya toko restoran yang memakainya. -->
     <HorizontalScrollView
         android:id="@+id/scrollItemType"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/tvCartPrice"
-        android:layout_toEndOf="@id/imgCartThumb"
-        android:layout_alignParentEnd="true"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="8dp"
+        android:fillViewport="true"
         android:scrollbars="none"
-        android:fillViewport="true">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cartStepper">
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chipGroupItemType"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:singleLine="true"
-            app:singleSelection="true"
+            app:chipSpacingHorizontal="6dp"
+            app:chipSpacingVertical="0dp"
             app:selectionRequired="false"
-            app:chipSpacingHorizontal="8dp"
-            app:chipSpacingVertical="0dp">
+            app:singleLine="true"
+            app:singleSelection="true">
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipItemDineIn"
-                android:layout_width="wrap_content"
-                android:layout_height="34dp"
-                android:text="Dine-In"
+                style="@style/Widget.Valora.FilterChip"
                 android:checkable="true"
-                android:textStyle="bold"
-                android:textSize="12sp"
-                android:textColor="#111827"
-                app:chipBackgroundColor="@android:color/white"
-                app:chipStrokeColor="#E5E7EB"
-                app:chipStrokeWidth="1dp"
-                app:chipCornerRadius="18dp"
-                app:checkedIconVisible="false"
-                app:ensureMinTouchTargetSize="false" />
+                android:text="@string/pos_dine_in" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipItemTakeOut"
-                android:layout_width="wrap_content"
-                android:layout_height="34dp"
-                android:text="Take-Out"
+                style="@style/Widget.Valora.FilterChip"
                 android:checkable="true"
-                android:textStyle="bold"
-                android:textSize="12sp"
-                android:textColor="#111827"
-                app:chipBackgroundColor="@android:color/white"
-                app:chipStrokeColor="#E5E7EB"
-                app:chipStrokeWidth="1dp"
-                app:chipCornerRadius="18dp"
-                app:checkedIconVisible="false"
-                app:ensureMinTouchTargetSize="false" />
+                android:text="@string/pos_take_away" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipItemDelivery"
-                android:layout_width="wrap_content"
-                android:layout_height="34dp"
-                android:text="Delivery"
+                style="@style/Widget.Valora.FilterChip"
                 android:checkable="true"
-                android:textStyle="bold"
-                android:textSize="12sp"
-                android:textColor="#111827"
-                app:chipBackgroundColor="@android:color/white"
-                app:chipStrokeColor="#E5E7EB"
-                app:chipStrokeWidth="1dp"
-                app:chipCornerRadius="18dp"
-                app:checkedIconVisible="false"
-                app:ensureMinTouchTargetSize="false" />
-
+                android:text="@string/pos_delivery" />
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
 
-    <!-- Divider -->
     <View
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="1dp"
-        android:layout_below="@id/scrollItemType"
-        android:layout_marginTop="12dp"
-        android:background="#11000000" />
+        android:layout_marginTop="10dp"
+        android:background="@color/stroke_soft"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scrollItemType" />
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

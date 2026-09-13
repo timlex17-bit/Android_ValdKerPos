@@ -83,6 +83,7 @@ import com.valdker.pos.ui.checkout.NativeCheckoutDialogFragment;
 import com.valdker.pos.ui.checkout.PaymentMethodItem;
 import com.valdker.pos.ui.offlineorders.PendingOrdersActivity;
 import com.valdker.pos.ui.retail.RetailCartItem;
+import com.valdker.pos.ui.common.SystemBars;
 import com.valdker.pos.ui.retail.RetailPOSFragment;
 import com.valdker.pos.ui.retail.RetailProductItem;
 import com.valdker.pos.ui.shift.ShiftOpenDialogFragment;
@@ -629,6 +630,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         ensureDefaultFragment();
+        ensureCartPaneFragment();
         setupBackHandling();
 
         getSupportFragmentManager().addOnBackStackChangedListener(this::hideOverlayIfNoOverlayFragments);
@@ -641,39 +643,14 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void setupPosSystemBars() {
-        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-
-        View decor = getWindow().getDecorView();
-        int flags = decor.getSystemUiVisibility();
-        flags &= ~View.SYSTEM_UI_FLAG_FULLSCREEN;
-        flags &= ~View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-        flags &= ~View.SYSTEM_UI_FLAG_IMMERSIVE;
-        flags &= ~View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-        flags &= ~View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-        flags &= ~View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
-        flags &= ~View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
-        decor.setSystemUiVisibility(flags);
-
-        getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.status_bar_brand));
-        getWindow().setNavigationBarColor(Color.WHITE);
-
-        WindowInsetsControllerCompat controller =
-                WindowCompat.getInsetsController(getWindow(), decor);
-
-        if (controller != null) {
-            controller.show(WindowInsetsCompat.Type.statusBars() | WindowInsetsCompat.Type.navigationBars());
-            // Bilah status ungu gelap: ikonnya harus terang agar terbaca.
-            controller.setAppearanceLightStatusBars(false);
-            controller.setAppearanceLightNavigationBars(true);
-        }
+        // Aturan bilah sistem yang sama dengan seluruh aplikasi: gambar sampai
+        // tepi, bilah status ungu dengan ikon terang, bilah navigasi putih
+        // dengan ikon gelap. Sebelumnya blok ini mengulang delapan baris
+        // setSystemUiVisibility yang sudah usang sejak API 30.
+        SystemBars.apply(this);
 
         if (BuildConfig.DEBUG) {
             Log.d("STATUS_BAR_THEME", "screen=MainActivity color=status_bar_brand icons=light");
-            Log.d(TAG, "STATUS_BAR: visible=true, color=status_bar_brand, lightIcons=true");
         }
     }
 
@@ -684,6 +661,7 @@ public class MainActivity extends AppCompatActivity
         View fragmentContainer = findViewById(R.id.fragmentContainer);
         View bottomCategoryBar = findViewById(R.id.bottomCategoryBar);
         View overlayContainer = findViewById(R.id.overlayContainer);
+        View cartPane = findViewById(R.id.cartPaneContainer);
 
         if (root == null || nativeHeader == null) return;
 
@@ -710,6 +688,11 @@ public class MainActivity extends AppCompatActivity
                 overlayContainer != null ? overlayContainer.getPaddingBottom() : 0;
         final int overlayStartTopPadding =
                 overlayContainer != null ? overlayContainer.getPaddingTop() : 0;
+        // Kolom keranjang tablet membentang sampai dasar layar, jadi tombol
+        // "Lanjut Pembayaran" di kakinya duduk tepat di belakang bilah
+        // navigasi kalau padding ini tidak ditambahkan.
+        final int cartPaneStartBottomPadding =
+                cartPane != null ? cartPane.getPaddingBottom() : 0;
 
         ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
             Insets statusBars = insets.getInsets(WindowInsetsCompat.Type.statusBars());
@@ -759,6 +742,15 @@ public class MainActivity extends AppCompatActivity
                 );
             }
 
+            if (cartPane != null) {
+                cartPane.setPadding(
+                        cartPane.getPaddingLeft(),
+                        cartPane.getPaddingTop(),
+                        cartPane.getPaddingRight(),
+                        cartPaneStartBottomPadding + navigationBars.bottom
+                );
+            }
+
             if (BuildConfig.DEBUG) {
                 Log.d(TAG, "POS_INSETS: statusTop=" + statusBars.top
                         + " navBottom=" + navigationBars.bottom
@@ -802,6 +794,16 @@ public class MainActivity extends AppCompatActivity
         resources.updateConfiguration(config, resources.getDisplayMetrics());
     }
 
+    /**
+     * Menyesuaikan layar kasir dengan jenis usaha toko.
+     *
+     * <p>Sejak tablet memakai tata letak dua kolom, fungsi ini juga yang
+     * memutuskan nasib kolom keranjang: retail dan bengkel punya layar kasir
+     * sendiri (RetailPOSFragment / WorkshopPOSFragment) yang sudah memuat
+     * keranjangnya, jadi kolom keranjang disembunyikan dan daftar melebar
+     * sampai tepi kanan. Pada tata letak ponsel cartPaneContainer tidak ada
+     * sama sekali dan seluruh blok ini dilewati lewat pemeriksaan null.
+     */
     private void applyBusinessTypeUi() {
         View nativeHeader = findViewById(R.id.nativeHeader);
         View bottomCategoryBar = findViewById(R.id.bottomCategoryBar);
@@ -810,6 +812,7 @@ public class MainActivity extends AppCompatActivity
         View rvCategories = findViewById(R.id.rvCategories);
         View searchView = findViewById(R.id.tvSearchHint);
         View fragmentContainer = findViewById(R.id.fragmentContainer);
+        View cartPane = findViewById(R.id.cartPaneContainer);
 
         if (fragmentContainer == null) return;
 
@@ -831,6 +834,12 @@ public class MainActivity extends AppCompatActivity
             lp.bottomToBottom = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID;
             lp.bottomToTop = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET;
 
+            if (cartPane != null) {
+                cartPane.setVisibility(View.GONE);
+                lp.endToEnd = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID;
+                lp.endToStart = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET;
+            }
+
             fragmentContainer.setLayoutParams(lp);
             return;
         }
@@ -848,7 +857,46 @@ public class MainActivity extends AppCompatActivity
         lp.bottomToBottom = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET;
         lp.bottomToTop = R.id.bottomCategoryBar;
 
+        if (cartPane != null) {
+            cartPane.setVisibility(View.VISIBLE);
+            lp.endToEnd = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET;
+            lp.endToStart = R.id.cartPaneContainer;
+        }
+
         fragmentContainer.setLayoutParams(lp);
+    }
+
+    /**
+     * Memasang keranjang sebagai kolom tetap di sisi kanan layar kasir.
+     *
+     * <p>Hanya berlaku pada tata letak tablet: di ponsel cartPaneContainer
+     * tidak ada dan keranjang tetap dibuka sebagai laci lewat tombol
+     * keranjang. Transaksinya tidak masuk back stack - kolom ini bagian tetap
+     * dari layar, bukan sesuatu yang bisa ditutup dengan tombol kembali.
+     */
+    private void ensureCartPaneFragment() {
+        View cartPane = findViewById(R.id.cartPaneContainer);
+        if (cartPane == null) return;
+
+        if (isWorkshopBusiness() || isRetailBusiness()) {
+            cartPane.setVisibility(View.GONE);
+            return;
+        }
+
+        if (getSupportFragmentManager().findFragmentById(R.id.cartPaneContainer) != null) {
+            return;
+        }
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.cartPaneContainer, new com.valdker.pos.ui.CartFragment(), "cart_pane")
+                .commit();
+    }
+
+    /** Benar bila layar kasir sedang memakai kolom keranjang tetap. */
+    private boolean hasCartPane() {
+        View cartPane = findViewById(R.id.cartPaneContainer);
+        return cartPane != null && cartPane.getVisibility() == View.VISIBLE;
     }
 
     private void setupSearchBox() {
@@ -1242,30 +1290,15 @@ public class MainActivity extends AppCompatActivity
 
     @NonNull
     private Chip createDraftChip() {
-        Chip chip = new Chip(this);
-        chip.setCheckable(true);
-        chip.setClickable(true);
-        chip.setSingleLine(true);
-        chip.setEllipsize(TextUtils.TruncateAt.END);
-        chip.setTextSize(12f);
-        chip.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        chip.setChipMinHeight(dp(32));
-        chip.setMinHeight(dp(32));
-        chip.setHeight(dp(32));
-        chip.setChipCornerRadius(dp(16));
-        chip.setChipStrokeWidth(dp(1));
-        chip.setCheckedIconVisible(false);
-        chip.setEnsureMinTouchTargetSize(false);
-        return chip;
+        // Sama seperti POS retail dan bengkel: gaya chip datang dari
+        // view_draft_chip.xml, bukan dari selusin setter warna per layar.
+        return (Chip) LayoutInflater.from(this)
+                .inflate(R.layout.view_draft_chip, chipGroupDrafts, false);
     }
 
     private void applyDraftChipStyle(@NonNull Chip chip, boolean active, @NonNull String name, int count) {
         chip.setChecked(active);
         chip.setText((active ? "\u25CF " : "") + safe(name, "A") + " \u2022 " + Math.max(0, count));
-        chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor(active ? "#EBD9FD" : "#FFFFFF")));
-        chip.setChipStrokeColor(ColorStateList.valueOf(Color.parseColor(active ? "#BB80F4" : "#E2E8F0")));
-        chip.setTextColor(Color.parseColor(active ? "#3C0375" : "#334155"));
-        chip.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
     }
 
     private void styleAddDraftChip(@NonNull Chip chip) {
@@ -2430,6 +2463,10 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void openCartOverlay() {
+        // Pada tablet keranjang sudah jadi kolom tetap di sisi kanan; membuka
+        // laci di atasnya hanya akan menampilkan isi yang sama dua kali.
+        if (hasCartPane()) return;
+
         if (isWorkshopBusiness()) {
             Toast.makeText(this, getString(R.string.msg_workshop_main_screen), Toast.LENGTH_SHORT).show();
             return;
@@ -2471,7 +2508,9 @@ public class MainActivity extends AppCompatActivity
         if (rv == null) return;
 
         rv.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
-        rv.setHasFixedSize(true);
+        // Tanpa setHasFixedSize: tinggi bilah kategori sekarang wrap_content
+        // supaya ikut tumbuh saat ukuran huruf sistem dinaikkan, dan janji
+        // "ukuran tidak berubah" tidak lagi benar.
 
         categoryAdapter = new CategoryAdapter();
         rv.setAdapter(categoryAdapter);

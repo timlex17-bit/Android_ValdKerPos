@@ -1,7 +1,7 @@
 package com.valdker.pos.adapters;
 
+import android.content.Context;
 import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -92,33 +93,44 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.VH> {
         applySelectedStyle(h, isSelected, hasRemoteIcon);
     }
 
+    /**
+     * Mewarnai chip kategori sesuai terpilih atau tidak.
+     *
+     * <p>Warnanya diambil dari palet aplikasi, bukan hex yang ditulis di sini.
+     * Sebelumnya chip terpilih memakai "#6204BF" dan "#9D48F1" yang ditulis
+     * ulang di berkas ini dan sekali lagi di item_category_chip.xml, sehingga
+     * mengganti warna merek berarti mencarinya di dua tempat yang berbeda.
+     */
     private void applySelectedStyle(@NonNull VH h, boolean isSelected, boolean hasRemoteIcon) {
+        Context ctx = h.cardCategory.getContext();
+
+        int brand = ContextCompat.getColor(ctx, R.color.brand_primary);
+        int surface = ContextCompat.getColor(ctx, R.color.surface);
+        int stroke = ContextCompat.getColor(ctx, R.color.stroke);
+
+        h.cardCategory.setCardBackgroundColor(isSelected ? brand : surface);
+        h.cardCategory.setStrokeColor(isSelected ? brand : stroke);
+        h.tvName.setTextColor(ContextCompat.getColor(
+                ctx, isSelected ? R.color.text_on_brand : R.color.text_primary));
+
+        if (h.iconWrapper.getVisibility() != View.VISIBLE) return;
+
         if (isSelected) {
-            h.cardCategory.setCardBackgroundColor(Color.parseColor("#6204BF"));
-            h.tvName.setTextColor(Color.WHITE);
+            h.iconWrapper.setBackgroundTintList(ColorStateList.valueOf(
+                    ContextCompat.getColor(ctx, R.color.brand_tint)));
 
-            if (h.iconWrapper.getVisibility() == View.VISIBLE) {
-                h.iconWrapper.setBackgroundTintList(
-                        ColorStateList.valueOf(Color.parseColor("#9D48F1"))
-                );
-
-                if (!hasRemoteIcon) {
-                    h.imgIcon.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
-                } else {
-                    h.imgIcon.clearColorFilter();
-                }
-            }
-
-        } else {
-            h.cardCategory.setCardBackgroundColor(Color.WHITE);
-            h.tvName.setTextColor(Color.parseColor("#111827"));
-
-            if (h.iconWrapper.getVisibility() == View.VISIBLE) {
-                h.iconWrapper.setBackgroundTintList(null);
-                h.iconWrapper.setBackgroundResource(R.drawable.bg_category_icon);
+            if (!hasRemoteIcon) {
+                h.imgIcon.setColorFilter(
+                        ContextCompat.getColor(ctx, R.color.brand_on_tint), PorterDuff.Mode.SRC_IN);
+            } else {
                 h.imgIcon.clearColorFilter();
             }
+            return;
         }
+
+        h.iconWrapper.setBackgroundTintList(null);
+        h.iconWrapper.setBackgroundResource(R.drawable.bg_category_icon);
+        h.imgIcon.clearColorFilter();
     }
 
     @NonNull

@@ -174,13 +174,49 @@ public class ProductsFragment extends Fragment {
         if ("restaurant".equals(businessType) && useGridPosLayout) {
             int span = getResponsiveProductSpan();
             android.util.Log.i("PRODUCT_UI", "Using GRID layout, span=" + span + ", businessType=" + businessType);
-            rv.setLayoutManager(new GridLayoutManager(requireContext(), span));
+
+            final GridLayoutManager grid = new GridLayoutManager(requireContext(), span);
+            rv.setLayoutManager(grid);
+
+            // Jumlah kolom mengikuti lebar daftar, bukan lebar layar. Sejak
+            // tablet membagi layar kasir jadi dua (menu di kiri, keranjang di
+            // kanan), keduanya berbeda jauh: layar 1280dp yang dulu dihitung
+            // muat empat kolom hanya menyisakan ~900dp untuk menu, dan sisa
+            // 340dp-nya milik keranjang.
+            rv.addOnLayoutChangeListener((v, left, top, right, bottom,
+                                          oldLeft, oldTop, oldRight, oldBottom) -> {
+                int width = right - left;
+                if (width == oldRight - oldLeft) return;
+
+                int fitted = spanForListWidth(width);
+                if (fitted != grid.getSpanCount()) {
+                    grid.setSpanCount(fitted);
+                }
+            });
         } else {
             android.util.Log.i("PRODUCT_UI", "Using LINEAR layout, businessType=" + businessType);
             rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         }
 
         rv.setHasFixedSize(true);
+    }
+
+    /**
+     * Jumlah kolom yang muat pada lebar daftar tertentu (piksel).
+     *
+     * <p>Lebar minimum satu kartu produk dipatok 168dp: di bawah itu nama
+     * produk dua baris mulai terpotong dan tombol "ADD" kehilangan labelnya.
+     * Selalu minimal dua kolom, supaya kolom menu yang sempit pada tablet
+     * portrait tidak berubah jadi daftar satu kartu per baris yang boros.
+     */
+    private int spanForListWidth(int widthPx) {
+        if (widthPx <= 0) return getResponsiveProductSpan();
+
+        float density = getResources().getDisplayMetrics().density;
+        if (density <= 0f) return getResponsiveProductSpan();
+
+        int widthDp = Math.round(widthPx / density);
+        return Math.max(2, widthDp / 168);
     }
 
     private int getResponsiveProductSpan() {

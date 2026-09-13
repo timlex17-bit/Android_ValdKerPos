@@ -1,29 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Satu baris pembayaran tambahan pada popup pembayaran terbagi.
+
+  Bentuknya mengikuti kartu bagian di dialog_native_checkout.xml: Spinner
+  dalam kotak bergaris dan nominal dalam TextInputLayout, bukan Spinner dan
+  EditText bawaan yang dulu berdiri telanjang di tengah dialog dan terlihat
+  seperti sisa formulir lain. Tombol hapus jadi ikon, jadi barisnya tetap
+  muat pada lebar dialog ponsel.
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:baselineAligned="false"
+    android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingBottom="4dp">
+    android:paddingTop="8dp">
 
-    <Spinner
-        android:id="@+id/spSplitMethod"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1" />
-
-    <EditText
-        android:id="@+id/etSplitAmount"
+    <FrameLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:hint="@string/checkout_discount_hint"
-        android:importantForAutofill="no"
-        android:inputType="numberDecimal" />
+        android:background="@drawable/bg_dialog_input"
+        android:minHeight="52dp">
 
-    <Button
-        android:id="@+id/btnRemoveSplit"
-        style="?attr/borderlessButtonStyle"
-        android:layout_width="wrap_content"
+        <Spinner
+            android:id="@+id/spSplitMethod"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@null"
+            android:paddingStart="10dp"
+            android:paddingEnd="28dp" />
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_gravity="center_vertical|end"
+            android:layout_marginEnd="8dp"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_arrow_down"
+            app:tint="@color/text_tertiary" />
+    </FrameLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/checkout_split_remove" />
+        android:layout_marginStart="8dp"
+        android:layout_weight="1"
+        android:hint="@string/checkout_discount_hint">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etSplitAmount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:importantForAutofill="no"
+            android:inputType="numberDecimal"
+            android:maxLines="1" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <ImageButton
+        android:id="@+id/btnRemoveSplit"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="4dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/checkout_split_remove"
+        android:padding="10dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_close"
+        app:tint="@color/state_danger"
+        tools:ignore="TouchTargetSizeCheck" />
+
 </LinearLayout>

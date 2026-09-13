@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Tablet besar. Hanya kolom keranjang yang dilebarkan; sisa token ukuran
+  diwarisi dari values-sw600dp supaya tidak ada dua sumber yang harus
+  disamakan setiap kali ukuran huruf diubah.
+-->
+<resources>
+    <dimen name="cart_pane_width">380dp</dimen>
+</resources>

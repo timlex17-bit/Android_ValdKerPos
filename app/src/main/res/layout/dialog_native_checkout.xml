@@ -1,5 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Popup pembayaran kasir.
+
+  Versi lama adalah satu kolom berisi 18 kolom isian polos dan lima Spinner
+  bawaan yang berdiri langsung di atas latar dialog, tanpa pengelompokan:
+  diskon, pelanggan, metode bayar, rekening bank, pembayaran terbagi, dan
+  detail pesanan semuanya terlihat sama penting, dan angka total tenggelam
+  sebagai teks 22sp di paling atas. Sekarang isinya dipecah jadi kartu per
+  bagian dengan satu kartu total yang menonjol di kepala.
+
+  Dua hal yang perlu dijaga saat menyunting berkas ini:
+
+  1. Radius setiap kartu dan kolom isian memakai @dimen/radius_dialog - satu
+     nilai untuk seluruh popup aplikasi, sama seperti dialog formulir lain.
+  2. Kolom yang hanya muncul untuk kondisi tertentu (tunai, rekening bank,
+     nomor meja, pengantaran) dibungkus wadah ber-id. Yang disembunyikan
+     NativeCheckoutDialogFragment adalah wadahnya, bukan EditText di
+     dalamnya: menyembunyikan EditText saja akan meninggalkan kotak
+     TextInputLayout kosong yang tetap memakan ruang.
+-->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -11,206 +32,510 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:paddingStart="18dp"
+        android:paddingTop="4dp"
+        android:paddingEnd="18dp"
+        android:paddingBottom="8dp">
 
-        <TextView
-            android:id="@+id/tvTotalAmount"
+        <!-- ===== Total ===== -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="@string/amount_zero_usd"
-            android:textSize="22sp"
-            android:textStyle="bold" />
+            app:cardBackgroundColor="@color/brand_tint"
+            app:cardCornerRadius="@dimen/radius_dialog"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp">
 
-        <TextView
-            android:id="@+id/tvTotalBreakdown"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.08"
+                    android:text="@string/checkout_total_due"
+                    android:textAllCaps="true"
+                    android:textColor="@color/brand_on_tint"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvTotalAmount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:autoSizeMaxTextSize="30sp"
+                    android:autoSizeMinTextSize="18sp"
+                    android:autoSizeTextType="uniform"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:text="@string/amount_zero_usd"
+                    android:textColor="@color/brand_on_tint"
+                    android:textSize="30sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvTotalBreakdown"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center"
+                    android:textColor="@color/brand_on_tint"
+                    android:textSize="12sp"
+                    android:visibility="gone"
+                    tools:text="Subtotal $10.00  -  Tax 11% $1.10"
+                    tools:visibility="visible" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ===== Diskon dan pelanggan ===== -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:paddingTop="4dp"
-            android:paddingBottom="16dp"
-            android:textSize="13sp"
+            android:layout_marginTop="10dp"
+            app:cardBackgroundColor="@color/surface"
+            app:cardCornerRadius="@dimen/radius_dialog"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/stroke"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:id="@+id/tvDiscountLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/checkout_discount_label"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilDiscountValue"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="@string/checkout_discount_hint">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etDiscountValue"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:importantForAutofill="no"
+                            android:inputType="numberDecimal"
+                            android:maxLines="1" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <FrameLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="top"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_dialog_input"
+                        android:minHeight="56dp">
+
+                        <Spinner
+                            android:id="@+id/spDiscountMode"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:background="@null"
+                            android:minWidth="72dp"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="30dp" />
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center_vertical|end"
+                            android:layout_marginEnd="8dp"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_arrow_down"
+                            app:tint="@color/text_tertiary" />
+                    </FrameLayout>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvCustomerLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/label_customer"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/bg_dialog_input"
+                    android:minHeight="52dp">
+
+                    <Spinner
+                        android:id="@+id/spCustomer"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@null"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="34dp" />
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_gravity="center_vertical|end"
+                        android:layout_marginEnd="10dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_arrow_down"
+                        app:tint="@color/text_tertiary" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tvCustomerPointsInfo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_pill"
+                    android:backgroundTint="@color/brand_tint"
+                    android:paddingStart="10dp"
+                    android:paddingTop="4dp"
+                    android:paddingEnd="10dp"
+                    android:paddingBottom="4dp"
+                    android:text="@string/checkout_points_zero"
+                    android:textColor="@color/brand_on_tint"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ===== Pembayaran ===== -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            app:cardBackgroundColor="@color/surface"
+            app:cardCornerRadius="@dimen/radius_dialog"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/stroke"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:id="@+id/tvPaymentMethodLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_payment_method"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/bg_dialog_input"
+                    android:minHeight="52dp">
+
+                    <Spinner
+                        android:id="@+id/spPaymentMethod"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@null"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="34dp" />
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_gravity="center_vertical|end"
+                        android:layout_marginEnd="10dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_arrow_down"
+                        app:tint="@color/text_tertiary" />
+                </FrameLayout>
+
+                <!-- Tunai: nominal diterima + kembalian. -->
+                <LinearLayout
+                    android:id="@+id/groupCash"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilCashReceived"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:hint="@string/hint_cash_received">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etCashReceived"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:importantForAutofill="no"
+                            android:inputType="numberDecimal"
+                            android:maxLines="1" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        android:id="@+id/tvChange"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/bg_dialog_input"
+                        android:backgroundTint="@color/surface_subtle"
+                        android:padding="10dp"
+                        android:text="@string/checkout_change_zero"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        tools:text="Change: $4.50" />
+                </LinearLayout>
+
+                <!-- Metode non-tunai yang butuh rekening bank. -->
+                <LinearLayout
+                    android:id="@+id/groupBank"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/tvBankLabel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="@string/label_bank_account"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/bg_dialog_input"
+                        android:minHeight="52dp">
+
+                        <Spinner
+                            android:id="@+id/spBankAccount"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@null"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="34dp" />
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_gravity="center_vertical|end"
+                            android:layout_marginEnd="10dp"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_arrow_down"
+                            app:tint="@color/text_tertiary" />
+                    </FrameLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilReferenceNumber"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:hint="@string/hint_reference_number">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etReferenceNumber"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:importantForAutofill="no"
+                            android:inputType="text"
+                            android:maxLines="1" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilPaymentNote"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:hint="@string/hint_payment_note">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etPaymentNote"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="top|start"
+                            android:importantForAutofill="no"
+                            android:inputType="textMultiLine"
+                            android:minLines="2" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ===== Pembayaran terbagi ===== -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            app:cardBackgroundColor="@color/surface"
+            app:cardCornerRadius="@dimen/radius_dialog"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/stroke"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:id="@+id/tvSplitLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/checkout_split_label"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:id="@+id/containerSplitPayments"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <TextView
+                    android:id="@+id/tvSplitRemaining"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    tools:text="Remaining for Cash: $33.34" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAddSplitPayment"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minHeight="40dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:text="@string/checkout_split_add"
+                    android:textAllCaps="false"
+                    android:textColor="@color/brand_primary"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="@dimen/radius_dialog" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ===== Detail pesanan (meja / pengantaran) ===== -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardOrderDetails"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             android:visibility="gone"
-            tools:text="Subtotal $10.00  ·  Tax 11% $1.10"
-            tools:visibility="visible" />
+            app:cardBackgroundColor="@color/surface"
+            app:cardCornerRadius="@dimen/radius_dialog"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/stroke"
+            app:strokeWidth="1dp"
+            tools:visibility="visible">
 
-        <TextView
-            android:id="@+id/tvDiscountLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="4dp"
-            android:text="@string/checkout_discount_label"
-            android:textStyle="bold" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingBottom="12dp">
-
-            <EditText
-                android:id="@+id/etDiscountValue"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="@string/checkout_discount_hint"
-                android:importantForAutofill="no"
-                android:inputType="numberDecimal" />
+                android:orientation="vertical"
+                android:padding="14dp">
 
-            <Spinner
-                android:id="@+id/spDiscountMode"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:minWidth="88dp" />
-        </LinearLayout>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/checkout_section_order_details"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/tvCustomerLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-                android:text="@string/label_customer"
-            android:textStyle="bold" />
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilTable"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:hint="@string/hint_table_number"
+                    android:visibility="gone"
+                    tools:visibility="visible">
 
-        <Spinner
-            android:id="@+id/spCustomer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" />
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etTable"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:importantForAutofill="no"
+                        android:inputType="number"
+                        android:maxLines="1" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-        <TextView
-            android:id="@+id/tvCustomerPointsInfo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-                android:text="@string/checkout_points_zero"
-            android:textColor="#3C0375"
-            android:textStyle="bold" />
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilDeliveryAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:hint="@string/hint_delivery_address"
+                    android:visibility="gone"
+                    tools:visibility="visible">
 
-        <TextView
-            android:id="@+id/tvPaymentMethodLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-                android:text="@string/label_payment_method"
-            android:textStyle="bold" />
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etDeliveryAddress"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:importantForAutofill="no"
+                        android:inputType="textPostalAddress" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-        <Spinner
-            android:id="@+id/spPaymentMethod"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" />
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilDeliveryFee"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:hint="@string/hint_delivery_fee"
+                    android:visibility="gone"
+                    tools:visibility="visible">
 
-        <EditText
-            android:id="@+id/etCashReceived"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-                android:hint="@string/hint_cash_received"
-            android:inputType="numberDecimal"
-            android:visibility="gone" />
-
-        <TextView
-            android:id="@+id/tvChange"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:paddingTop="4dp"
-                android:text="@string/checkout_change_zero"
-            android:visibility="gone" />
-
-        <TextView
-            android:id="@+id/tvBankLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-                android:text="@string/label_bank_account"
-            android:textStyle="bold"
-            android:visibility="gone" />
-
-        <Spinner
-            android:id="@+id/spBankAccount"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:visibility="gone" />
-
-        <EditText
-            android:id="@+id/etReferenceNumber"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-                android:hint="@string/hint_reference_number"
-            android:inputType="text"
-            android:visibility="gone" />
-
-        <EditText
-            android:id="@+id/etPaymentNote"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:gravity="top|start"
-                android:hint="@string/hint_payment_note"
-            android:inputType="textMultiLine"
-            android:minLines="2"
-            android:visibility="gone" />
-
-        <TextView
-            android:id="@+id/tvSplitLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="8dp"
-            android:paddingBottom="4dp"
-            android:text="@string/checkout_split_label"
-            android:textStyle="bold" />
-
-        <LinearLayout
-            android:id="@+id/containerSplitPayments"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" />
-
-        <TextView
-            android:id="@+id/tvSplitRemaining"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="2dp"
-            android:textSize="13sp"
-            tools:text="Remaining for Cash: $33.34" />
-
-        <Button
-            android:id="@+id/btnAddSplitPayment"
-            style="?attr/borderlessButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingBottom="8dp"
-            android:text="@string/checkout_split_add" />
-
-        <EditText
-            android:id="@+id/etTable"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-                android:hint="@string/hint_table_number"
-            android:inputType="number"
-            android:visibility="gone" />
-
-        <EditText
-            android:id="@+id/etDeliveryAddress"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-                android:hint="@string/hint_delivery_address"
-            android:inputType="textPostalAddress"
-            android:visibility="gone" />
-
-        <EditText
-            android:id="@+id/etDeliveryFee"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-                android:hint="@string/hint_delivery_fee"
-            android:inputType="numberDecimal"
-            android:visibility="gone" />
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etDeliveryFee"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:importantForAutofill="no"
+                        android:inputType="numberDecimal"
+                        android:maxLines="1" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 </ScrollView>

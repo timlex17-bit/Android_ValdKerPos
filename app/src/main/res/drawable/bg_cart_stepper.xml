@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Wadah tombol kurang/tambah di baris keranjang. Satu kapsul abu-abu muda
+  untuk ketiga bagiannya (-, angka, +) supaya terbaca sebagai satu kendali,
+  bukan tiga tombol yang kebetulan bersebelahan.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="@color/surface_subtle" />
+    <corners android:radius="@dimen/radius_pill" />
+    <stroke
+        android:width="1dp"
+        android:color="@color/stroke" />
+</shape>

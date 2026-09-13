@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Ponsel: kasir tetap satu kolom. Keranjang muncul sebagai laci dari kanan
+  ketika tombol keranjang ditekan, jadi daftar menu memakai seluruh lebar
+  layar yang memang sempit.
+-->
+<resources>
+    <bool name="pos_two_pane">false</bool>
+</resources>

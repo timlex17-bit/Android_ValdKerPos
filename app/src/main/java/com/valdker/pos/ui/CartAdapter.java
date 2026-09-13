@@ -1,8 +1,5 @@
 package com.valdker.pos.ui;
 
-import android.content.res.ColorStateList;
-import android.graphics.Color;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,7 +20,6 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -39,7 +35,6 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.VH> {
 
     private final List<CartItem> items = new ArrayList<>();
     private final Listener listener;
-    private final NumberFormat usd = NumberFormat.getCurrencyInstance(Locale.US);
 
     private final String businessType;
     private final boolean enableDineIn;
@@ -89,20 +84,31 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.VH> {
         CartItem it = items.get(position);
         if (it == null) return;
 
+        int qty = Math.max(0, it.qty);
+
         h.tvName.setText(safe(it.name, "-"));
-        h.tvPrice.setText(usd.format(Math.max(0.0, it.price)));
-        h.tvQty.setText(String.valueOf(Math.max(0, it.qty)));
+        h.tvQty.setText(String.valueOf(qty));
+
+        // Harga satuan x jumlah, lalu total baris tersendiri. Baris lama hanya
+        // menampilkan harga satuan, jadi kasir harus mengalikan sendiri untuk
+        // tahu berapa yang ditanggung satu baris.
+        h.tvPrice.setText(h.itemView.getContext().getString(
+                R.string.cart_line_qty_format, it.price().format(), qty));
+
+        if (h.tvLineTotal != null) {
+            h.tvLineTotal.setText(it.lineTotal().format());
+        }
 
         String url = safe(it.imageUrl, "");
         if (!url.isEmpty()) url = forceHttpsIfCloudinary(url);
 
         if (url.isEmpty()) {
-            h.imgThumb.setImageResource(android.R.color.darker_gray);
+            h.imgThumb.setImageResource(R.drawable.bg_image_placeholder);
         } else {
             Glide.with(h.itemView.getContext())
                     .load(url)
-                    .placeholder(android.R.color.darker_gray)
-                    .error(android.R.color.darker_gray)
+                    .placeholder(R.drawable.bg_image_placeholder)
+                    .error(R.drawable.bg_image_placeholder)
                     .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
                     .into(h.imgThumb);
         }
@@ -174,10 +180,6 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.VH> {
             h.chipItemDelivery.setChecked(true);
         }
 
-        if (h.chipItemDineIn != null) applyChipStyle(h.chipItemDineIn, h.chipItemDineIn.isChecked());
-        if (h.chipItemTakeOut != null) applyChipStyle(h.chipItemTakeOut, h.chipItemTakeOut.isChecked());
-        if (h.chipItemDelivery != null) applyChipStyle(h.chipItemDelivery, h.chipItemDelivery.isChecked());
-
         h.chipGroupItemType.setOnCheckedChangeListener((group, checkedId) -> {
             String newType = getDefaultType();
 
@@ -190,10 +192,6 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.VH> {
             }
 
             it.orderType = newType;
-
-            if (h.chipItemDineIn != null) applyChipStyle(h.chipItemDineIn, checkedId == R.id.chipItemDineIn);
-            if (h.chipItemTakeOut != null) applyChipStyle(h.chipItemTakeOut, checkedId == R.id.chipItemTakeOut);
-            if (h.chipItemDelivery != null) applyChipStyle(h.chipItemDelivery, checkedId == R.id.chipItemDelivery);
 
             if (listener != null) listener.onTypeChanged(it, newType);
         });
@@ -227,23 +225,14 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.VH> {
         return "restaurant".equalsIgnoreCase(businessType);
     }
 
-    private static void applyChipStyle(@NonNull Chip chip, boolean checked) {
-        int bgChecked = Color.parseColor("#EBD9FD");
-        int strokeChecked = Color.parseColor("#9D48F1");
-        int bgNormal = Color.WHITE;
-        int strokeNormal = Color.parseColor("#E5E7EB");
-
-        chip.setChipBackgroundColor(ColorStateList.valueOf(checked ? bgChecked : bgNormal));
-        chip.setChipStrokeColor(ColorStateList.valueOf(checked ? strokeChecked : strokeNormal));
-        chip.setChipStrokeWidth(dpToPx(chip, checked ? 2f : 1f));
-        chip.setTextColor(Color.parseColor("#111827"));
-    }
-
-    private static float dpToPx(@NonNull View v, float dp) {
-        return TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, dp, v.getResources().getDisplayMetrics()
-        );
-    }
+    /*
+      Warna chip tipe pesanan tidak lagi disetel di sini. Gaya bersama
+      Widget.Valora.FilterChip sudah membawa selector untuk keadaan checked
+      (chip_filter_bg / chip_filter_stroke / chip_filter_text), sehingga chip
+      di keranjang otomatis sama dengan chip filter di layar lain. Versi lama
+      menimpanya dengan empat hex dan stroke 2dp, jadi chip yang sama terlihat
+      berbeda tergantung layout mana yang memuatnya.
+    */
 
     private static String normalizeTypeOrEmpty(String t) {
         if (t == null) return "";
@@ -275,7 +264,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.VH> {
 
     static class VH extends RecyclerView.ViewHolder {
         ImageView imgThumb;
-        TextView tvName, tvPrice, tvQty;
+        TextView tvName, tvPrice, tvQty, tvLineTotal;
         MaterialButton btnMinus, btnPlus;
         ImageButton btnRemove;
 
@@ -289,6 +278,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.VH> {
             tvName = itemView.findViewById(R.id.tvCartName);
             tvPrice = itemView.findViewById(R.id.tvCartPrice);
             tvQty = itemView.findViewById(R.id.tvCartQty);
+            tvLineTotal = itemView.findViewById(R.id.tvCartLineTotal);
             btnMinus = itemView.findViewById(R.id.btnCartMinus);
             btnPlus = itemView.findViewById(R.id.btnCartPlus);
 
