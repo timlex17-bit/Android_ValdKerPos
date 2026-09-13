@@ -30,6 +30,7 @@ import com.valdker.pos.repositories.MasterDataRepository;
 import com.valdker.pos.repositories.OfflineOrderRepository;
 import com.valdker.pos.restaurant.RestaurantOrderSync;
 import com.valdker.pos.restaurant.RestaurantRepository;
+import com.valdker.pos.restaurant.DineInTableRule;
 import com.valdker.pos.restaurant.TablePickerDialogFragment;
 import com.valdker.pos.restaurant.WaiterPickerDialogFragment;
 import com.valdker.pos.repositories.OrderRepository;
@@ -114,11 +115,29 @@ public class CartFragment extends Fragment
     private static final String ARG_ENABLE_SPLIT_PAYMENT = "enable_split_payment";
 
     private RecyclerView rv;
-    private TextView tvEmpty;
+    /**
+     * Keadaan kosong. Bertipe {@link View}, bukan {@code TextView}: sejak
+     * tampilannya dirapikan, id tvCartEmpty menempel pada wadah berisi ikon,
+     * judul, dan keterangan - bukan lagi satu baris teks abu-abu.
+     */
+    private View tvEmpty;
     private TextView tvSubtotal;
+    private TextView tvCartCount;
+    @Nullable
     private ImageButton btnClose;
     private Button btnContinuePayment;
     private Button btnCancelOrder;
+
+    /**
+     * Benar bila keranjang sedang jadi kolom tetap pada layar kasir tablet,
+     * bukan laci yang menutupi menu.
+     *
+     * <p>Bedanya bukan kosmetik: dalam mode kolom tidak ada yang boleh
+     * di-pop dari back stack setelah checkout selesai. Memanggil
+     * popBackStack() di sana akan membuang entri milik layar lain, karena
+     * keranjang memang tidak pernah didorong ke back stack.
+     */
+    private boolean embeddedInPane = false;
 
     private CartAdapter adapter;
     private final NumberFormat usd = NumberFormat.getCurrencyInstance(Locale.US);
@@ -135,6 +154,19 @@ public class CartFragment extends Fragment
     private boolean enableTakeaway = false;
     private boolean enableDelivery = false;
     private boolean enableTableNumber = false;
+
+    /**
+     * Berapa meja aktif yang dimiliki toko ini. {@code -1} berarti belum
+     * diketahui (permintaan belum selesai atau gagal).
+     *
+     * <p>Angkanya menentukan mekanisme meja mana yang dipakai: grid meja hanya
+     * benar-benar bisa dipakai kalau ada minimal satu meja aktif. Modul
+     * "tables" yang menyala di toko yang belum membuat satu meja pun tidak
+     * memberi apa-apa - dan kalau kolom nomor meja di dialog ikut
+     * disembunyikan karena modulnya menyala, order dine-in jadi tidak punya
+     * tempat mencatat meja sama sekali.
+     */
+    private int activeTableCount = -1;
     private boolean enableSplitPayment = false;
 
     private final CartManager.Listener cartListener = this::render;
@@ -186,9 +218,12 @@ public class CartFragment extends Fragment
         fallbackConfigFromSession();
         syncPendingOrdersIfOnline();
 
+        embeddedInPane = getId() == R.id.cartPaneContainer;
+
         rv = view.findViewById(R.id.rvCart);
         tvEmpty = view.findViewById(R.id.tvCartEmpty);
         tvSubtotal = view.findViewById(R.id.tvSubtotal);
+        tvCartCount = view.findViewById(R.id.tvCartCount);
         btnClose = view.findViewById(R.id.btnCloseCart);
         btnContinuePayment = view.findViewById(R.id.btnContinuePayment);
         btnCancelOrder = view.findViewById(R.id.btnCancelOrder);
@@ -233,6 +268,8 @@ public class CartFragment extends Fragment
 
         if (rv != null) rv.setAdapter(adapter);
 
+        loadActiveTableCountOnce();
+
         rowDineIn = view.findViewById(R.id.rowDineInAssignment);
         btnPickTable = view.findViewById(R.id.btnPickTable);
         btnPickWaiter = view.findViewById(R.id.btnPickWaiter);
@@ -256,6 +293,12 @@ public class CartFragment extends Fragment
         }
 
         if (btnClose != null) btnClose.setOnClickListener(v -> closeOverlaySafely());
+
+        // Menyentuh latar redup menutup laci - perilaku yang diharapkan dari
+        // setiap laci, dan sebelumnya tidak disambungkan sama sekali: satu-
+        // satunya jalan keluar adalah tombol silang kecil di pojok.
+        View dim = view.findViewById(R.id.viewDim);
+        if (dim != null) dim.setOnClickListener(v -> closeOverlaySafely());
 
         if (btnContinuePayment != null) {
             btnContinuePayment.setOnClickListener(v -> {
@@ -452,13 +495,57 @@ public class CartFragment extends Fragment
             return;
         }
 
-        boolean needTable = false;
+        boolean hasDineInItem = false;
+        boolean hasOtherTypeItem = false;
         boolean needDelivery = false;
 
         for (CartItem it : cartItems) {
             String t = normalizeType(it.orderType);
-            if (CartManager.TYPE_DINE_IN.equals(t) && enableTableNumber) needTable = true;
+            if (CartManager.TYPE_DINE_IN.equals(t)) hasDineInItem = true;
+            else hasOtherTypeItem = true;
             if (CartManager.TYPE_DELIVERY.equals(t) && enableDelivery) needDelivery = true;
+        }
+
+        // Satu aturan untuk dua mekanisme meja; lihat DineInTableRule untuk
+        // matriks lengkapnya beserta tesnya.
+        DineInTableRule.Decision tableDecision = DineInTableRule.decide(
+                hasDineInItem,
+                hasOtherTypeItem,
+                canUseModule(RestaurantRepository.MODULE_TABLES),
+                activeTableCount,
+                pickedTableId(),
+                enableTableNumber);
+
+        // Kewajiban memilih meja hidup di keranjang, bukan di dialog
+        // pembayaran. Dialog dulu yang menjaganya lewat kolom teks wajib,
+        // tapi kolom itu ditimpa server dan kini disembunyikan - kalau
+        // penjaganya tidak ikut pindah ke sini, jaminannya hilang bersama
+        // kolomnya.
+        if (tableDecision == DineInTableRule.Decision.MIXED_WITH_TABLE) {
+            // Tidak membuka picker: yang perlu diubah adalah tipe itemnya,
+            // atau mejanya dilepas - dua-duanya ada di layar ini.
+            Toast.makeText(requireContext(),
+                    getString(R.string.dinein_mixed_with_table), Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        if (DineInTableRule.blocksCheckout(tableDecision)) {
+            Toast.makeText(requireContext(),
+                    getString(R.string.dinein_table_required), Toast.LENGTH_LONG).show();
+            if (btnPickTable != null) btnPickTable.performClick();
+            return;
+        }
+
+        boolean needTable = DineInTableRule.needsFreeTextField(tableDecision);
+
+        if (tableDecision == DineInTableRule.Decision.NO_TABLE_RECORDED) {
+            // Modul meja mati DAN kolom nomor meja dimatikan: toko ini memang
+            // tidak mencatat meja. Itu setelan mereka, bukan lubang yang harus
+            // ditambal dengan memaksa kolom muncul - tapi dicatat supaya bisa
+            // ditelusuri kalau nanti papan dapur menampilkan "Tanpa meja".
+            Log.i(TAG, "Order dine-in tanpa meja: grid meja tidak tersedia"
+                    + " (aktif=" + activeTableCount + ") dan enable_table_number="
+                    + enableTableNumber + ". Sesuai setelan toko.");
         }
 
         final double subtotal = cart.getTotalAmount();
@@ -534,7 +621,8 @@ public class CartFragment extends Fragment
                                             @NonNull List<BankAccountItem> bankItems) {
         NativeCheckoutDialogFragment dialog = dialogRef[0];
         if (dialog == null) {
-            dialog = NativeCheckoutDialogFragment.newInstance(subtotal, needTable, needDelivery);
+            dialog = NativeCheckoutDialogFragment.newInstance(
+                    subtotal, needTable, needDelivery);
             dialog.setBankListener(result -> CartFragment.this.submitCheckout(result));
             dialogRef[0] = dialog;
         }
@@ -636,7 +724,19 @@ public class CartFragment extends Fragment
         final String tableFinal = result.tableNumber != null ? result.tableNumber.trim() : "";
         final String addrFinal = result.deliveryAddress != null ? result.deliveryAddress.trim() : "";
 
-        if (hasDineIn && enableTableNumber && tableFinal.isEmpty()) {
+        // Hanya berlaku pada jalur nomor meja teks bebas. Kalau meja sudah
+        // dipilih dari grid, tableFinal memang kosong - kolomnya tidak pernah
+        // ditampilkan - dan itu benar, bukan alasan menolak checkout.
+        boolean freeTextTableRequired = DineInTableRule.needsFreeTextField(
+                DineInTableRule.decide(
+                        hasDineIn,
+                        hasNonDineIn(snapshot),
+                        canUseModule(RestaurantRepository.MODULE_TABLES),
+                        activeTableCount,
+                        pickedTableId(),
+                        enableTableNumber));
+
+        if (freeTextTableRequired && tableFinal.isEmpty()) {
             Toast.makeText(requireContext(), "Table number is required for dine-in.", Toast.LENGTH_LONG).show();
             if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
             return;
@@ -694,6 +794,17 @@ public class CartFragment extends Fragment
             payload.put("notes", "Checkout from Android");
             payload.put("is_paid", true);
 
+            // PERHATIAN: untuk shop restoran, nilai ini DIABAIKAN server.
+            // OrderSerializer.create() menghitung ulang default_order_type dari
+            // himpunan order_type item: satu tipe seragam dipakai apa adanya,
+            // lebih dari satu tipe selalu menjadi GENERAL. Jadi keranjang
+            // campur (satu dine-in + satu bungkus) tidak pernah tersimpan
+            // sebagai DINE_IN, betapa pun yang dikirim di sini - dan karena
+            // status "meja terisi" mensyaratkan default_order_type=DINE_IN,
+            // meja pada order campur tidak akan pernah tampil terisi.
+            //
+            // Yang dikirim di sini tetap perlu benar untuk shop NON-restoran:
+            // serializer menolak nilai selain GENERAL untuk mereka dengan 400.
             String overallType;
             if (isRestaurantBusiness()) {
                 overallType = getDefaultOrderType();
@@ -711,7 +822,13 @@ public class CartFragment extends Fragment
 
             // Meja/pelayan diambil dari DRAFT, bukan dari state layar, supaya
             // bill yang dibuka bergantian tidak saling menukar mejanya.
-            if (isRestaurantBusiness()) {
+            // Meja dan pelayan hanya ikut kalau order ini benar-benar punya
+            // item dine-in. Barisnya di keranjang juga hanya muncul untuk
+            // keranjang dine-in, jadi tanpa syarat yang sama di sini sebuah
+            // bill yang tadinya dine-in lalu diubah jadi bungkus akan tetap
+            // membawa mejanya - tersembunyi, dan tidak bisa dibersihkan kasir
+            // karena tombolnya sudah tidak tampil.
+            if (isRestaurantBusiness() && hasDineIn) {
                 DraftLifecycleHost dineInHost = resolveDraftLifecycleHost();
                 RestaurantOrderSync.attachDineInFields(
                         payload,
@@ -1484,12 +1601,103 @@ public class CartFragment extends Fragment
 
         if (tvSubtotal != null) tvSubtotal.setText(cart.getTotal().format());
 
+        if (tvCartCount != null) {
+            int qty = cart.getTotalQty();
+            tvCartCount.setText(qty == 1
+                    ? getString(R.string.cart_item_count_one)
+                    : getString(R.string.cart_item_count_format, qty));
+        }
+
         if (btnContinuePayment != null) btnContinuePayment.setEnabled(!empty && !cancelInProgress);
         if (btnCancelOrder != null) btnCancelOrder.setEnabled(!empty && !cancelInProgress);
 
         if (empty) cancelInProgress = false;
 
         renderDineInRow();
+    }
+
+    /**
+     * Menanyakan sekali berapa meja aktif yang dimiliki toko.
+     *
+     * <p>Kegagalan sengaja dibiarkan jadi "tidak diketahui" ({@code -1}),
+     * bukan nol. Keduanya sama-sama berakhir di jalur nomor meja teks bebas
+     * yang tidak pernah memblokir penjualan, tapi {@code -1} jujur mengatakan
+     * bahwa jumlahnya belum diketahui alih-alih mengklaim toko tidak punya
+     * meja. Lihat {@link DineInTableRule} untuk keputusan lengkapnya.
+     */
+    private void loadActiveTableCountOnce() {
+        if (activeTableCount >= 0) return;
+        if (!isRestaurantBusiness() || !canUseModule(RestaurantRepository.MODULE_TABLES)) {
+            activeTableCount = 0;
+            return;
+        }
+
+        String token = new com.valdker.pos.SessionManager(requireContext()).getToken();
+        new RestaurantRepository(requireContext()).fetchTables(token,
+                new RestaurantRepository.TablesCallback() {
+                    @Override
+                    public void onSuccess(@NonNull java.util.List<com.valdker.pos.restaurant.RestaurantTable> tables) {
+                        if (!isAdded()) return;
+                        // fetchTables() sudah menyaring is_active=false.
+                        activeTableCount = tables.size();
+                        Log.i(TAG, "Meja aktif=" + activeTableCount
+                                + " -> mekanisme meja: "
+                                + (activeTableCount > 0 ? "grid (table_id)" : "nomor meja teks bebas"));
+                        renderDineInRow();
+                    }
+
+                    @Override
+                    public void onError(int statusCode, @NonNull String message) {
+                        Log.w(TAG, "Jumlah meja aktif tidak bisa dimuat (status=" + statusCode
+                                + "): jatuh ke kolom nomor meja teks bebas. " + message);
+                    }
+                });
+    }
+
+    /**
+     * Apakah tombol Meja ditampilkan.
+     *
+     * <p>Lebih longgar dari syarat pemblokiran di {@link DineInTableRule}
+     * dengan sengaja: selama jumlah meja belum diketahui, tombolnya tetap muncul supaya tidak berkedip
+     * masuk beberapa ratus milidetik setelah keranjang dibuka. Yang tidak boleh
+     * optimistis adalah penjaganya - memblokir "Lanjut bayar" berdasarkan
+     * tebakan bisa mengunci kasir pada toko yang memang belum punya meja.
+     */
+    private boolean tableButtonVisible() {
+        return isRestaurantBusiness()
+                && canUseModule(RestaurantRepository.MODULE_TABLES)
+                && activeTableCount != 0;
+    }
+
+    /** Meja yang sudah dipilih untuk bill yang sedang aktif, kalau ada. */
+    @Nullable
+    private Long pickedTableId() {
+        if (!isRestaurantBusiness()) return null;
+        if (!canUseModule(RestaurantRepository.MODULE_TABLES)) return null;
+        DraftLifecycleHost host = resolveDraftLifecycleHost();
+        return host != null ? host.dineInTableIdForActiveDraft() : null;
+    }
+
+    /** Apakah daftar ini memuat item yang BUKAN dine-in. */
+    private boolean hasNonDineIn(@NonNull List<CartItem> items) {
+        for (CartItem it : items) {
+            if (it != null && !CartManager.TYPE_DINE_IN.equals(normalizeType(it.orderType))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Apakah ada item dine-in di keranjang saat ini. */
+    private boolean cartHasDineIn() {
+        List<CartItem> items = cart != null ? cart.getItems() : null;
+        if (items == null) return false;
+        for (CartItem it : items) {
+            if (it != null && CartManager.TYPE_DINE_IN.equals(normalizeType(it.orderType))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -1501,10 +1709,14 @@ public class CartFragment extends Fragment
     private void renderDineInRow() {
         if (rowDineIn == null) return;
 
-        boolean tablesOn = canUseModule(RestaurantRepository.MODULE_TABLES);
+        boolean tablesOn = tableButtonVisible();
         boolean waitersOn = canUseModule(RestaurantRepository.MODULE_WAITERS);
 
-        if (!isRestaurantBusiness() || (!tablesOn && !waitersOn)) {
+        // Meja dan pelayan hanya berlaku untuk makan di tempat. Sebelumnya
+        // baris ini tampil di setiap keranjang restoran, termasuk yang isinya
+        // take-out semua - menawarkan "Meja: belum dipilih" pada pesanan
+        // bungkus hanya membuat kasir menebak apakah itu wajib.
+        if (!isRestaurantBusiness() || !cartHasDineIn() || (!tablesOn && !waitersOn)) {
             rowDineIn.setVisibility(View.GONE);
             return;
         }
@@ -1572,6 +1784,10 @@ public class CartFragment extends Fragment
 
     private void closeOverlaySafely() {
         if (!isAdded()) return;
+
+        // Kolom keranjang tablet tidak pernah ditutup: ia bagian tetap dari
+        // layar kasir, dan tidak ada entri back stack miliknya untuk di-pop.
+        if (embeddedInPane) return;
 
         try {
             requireActivity().getSupportFragmentManager().popBackStack();
