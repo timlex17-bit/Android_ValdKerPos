@@ -72,12 +72,6 @@
             android:name=".MainActivity"
             android:exported="false" />
 
-        <!-- ✅ CHECKOUT WEBVIEW (HYBRID) -->
-        <activity
-            android:name=".ui.checkout.CheckoutActivity"
-            android:exported="false"
-            android:screenOrientation="landscape" />
-
         <!-- ✅ PRINTER SETTINGS -->
         <activity
             android:name=".print.PrinterSettingsActivity"
