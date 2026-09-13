@@ -31,7 +31,7 @@ import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.base.BaseFragment;
 import com.valdker.pos.models.Shop;
-import com.valdker.pos.network.ApiClient;
+import com.valdker.pos.network.BaseUrlStore;
 import com.valdker.pos.repositories.ShopRepository;
 import com.valdker.pos.shop.ShopEvents;
 import com.google.android.material.button.MaterialButton;
@@ -58,6 +58,7 @@ public class SettingsFragment extends BaseFragment {
     private EditText etName, etAddress, etPhone, etEmail;
     private EditText etBaseUrl;
     private MaterialButton btnSaveBaseUrl;
+    private MaterialButton btnResetBaseUrl;
 
     private ImageView imgLogoPreview;
     private MaterialButton btnPickLogo, btnSave;
@@ -146,6 +147,7 @@ public class SettingsFragment extends BaseFragment {
 
         etBaseUrl = view.findViewById(R.id.etBaseUrl);
         btnSaveBaseUrl = view.findViewById(R.id.btnSaveBaseUrl);
+        btnResetBaseUrl = view.findViewById(R.id.btnResetBaseUrl);
 
         SessionManager smBase = new SessionManager(requireContext());
         if (etBaseUrl != null) {
@@ -172,6 +174,7 @@ public class SettingsFragment extends BaseFragment {
         if (btnPickLogo != null) btnPickLogo.setOnClickListener(v -> pickLogo.launch("image/*"));
         if (btnSave != null) btnSave.setOnClickListener(v -> save());
         if (btnSaveBaseUrl != null) btnSaveBaseUrl.setOnClickListener(v -> saveBaseUrl());
+        if (btnResetBaseUrl != null) btnResetBaseUrl.setOnClickListener(v -> resetBaseUrl());
 
         setupPrinterUi();
         loadShop();
@@ -395,33 +398,46 @@ public class SettingsFragment extends BaseFragment {
                 ? etBaseUrl.getText().toString().trim()
                 : "";
 
-        if (newUrl.isEmpty()) {
-            Toast.makeText(requireContext(), getString(R.string.msg_base_url_empty), Toast.LENGTH_SHORT).show();
+        // Validasi dan efek sampingnya sama persis dengan kolom server di
+        // layar Login - keduanya lewat BaseUrlStore, jadi tidak ada dua aturan
+        // yang bisa menyimpang.
+        BaseUrlStore.Result result = BaseUrlStore.save(requireContext(), newUrl);
+        if (!result.ok) {
+            Toast.makeText(requireContext(), getString(result.messageRes), Toast.LENGTH_LONG).show();
             return;
-        }
-
-        if (!newUrl.startsWith("http://") && !newUrl.startsWith("https://")) {
-            Toast.makeText(requireContext(), getString(R.string.msg_base_url_invalid_scheme), Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (!newUrl.endsWith("/")) {
-            newUrl = newUrl + "/";
         }
 
         SessionManager sm = new SessionManager(requireContext());
-        sm.setBaseUrl(newUrl);
-        sm.clearAuth();
-        sm.clearShift();
+        Log.w("BASE_URL", "Settings saved, readback=" + sm.getBaseUrl());
+        returnToLogin();
+    }
 
-        ApiClient.getInstance(requireContext()).cancelAll("DASHBOARD");
-        ApiClient.getInstance(requireContext()).cancelAll("ShopRepository");
-        ApiClient.getInstance(requireContext()).cancelAll("ApiClient");
-        ApiClient.getInstance(requireContext()).clearCache();
+    /**
+     * Mengembalikan alamat server ke bawaan build.
+     *
+     * <p>Ini satu-satunya pemanggil {@code SessionManager.clearBaseUrl()};
+     * sebelum ini metode tersebut menganggur tanpa pemanggil.
+     */
+    private void resetBaseUrl() {
+        if (!isAdded()) return;
 
-        Log.w("BASE_URL", "Settings saved=" + newUrl);
-        Log.w("BASE_URL", "Settings readback=" + sm.getBaseUrl());
+        if (!BaseUrlStore.resetToBuildDefault(requireContext())) {
+            Toast.makeText(requireContext(),
+                    getString(R.string.settings_reset_server_none), Toast.LENGTH_SHORT).show();
+            return;
+        }
 
+        Toast.makeText(requireContext(),
+                getString(R.string.settings_reset_server_done), Toast.LENGTH_LONG).show();
+        returnToLogin();
+    }
+
+    /**
+     * Mengubah alamat server membuat token lama tidak berlaku, jadi layar
+     * berikutnya selalu Login - dengan seluruh back stack dibuang supaya
+     * tombol kembali tidak mengantar ke layar milik server lama.
+     */
+    private void returnToLogin() {
         Intent i = new Intent(requireContext(), LoginActivity.class);
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(i);
@@ -738,6 +754,7 @@ public class SettingsFragment extends BaseFragment {
         if (btnSave != null) btnSave.setEnabled(!loading);
         if (btnPickLogo != null) btnPickLogo.setEnabled(!loading);
         if (btnSaveBaseUrl != null) btnSaveBaseUrl.setEnabled(!loading);
+        if (btnResetBaseUrl != null) btnResetBaseUrl.setEnabled(!loading);
         if (btnOpenPrinterSettings != null) btnOpenPrinterSettings.setEnabled(!loading);
         if (btnTestPrint != null) btnTestPrint.setEnabled(!loading);
         if (ivHeaderAction != null) {
@@ -759,6 +776,7 @@ public class SettingsFragment extends BaseFragment {
         etName = etAddress = etPhone = etEmail = null;
         etBaseUrl = null;
         btnSaveBaseUrl = null;
+        btnResetBaseUrl = null;
         imgLogoPreview = null;
         btnPickLogo = btnSave = null;
 

@@ -1146,4 +1146,219 @@
     <string name="settings_backend_label">SERVER</string>
     <string name="settings_backend_origin">Source: %1$s</string>
 
+
+    <!-- Tombol di dalam dialog formulir -->
+    <string name="action_select_product_image">Select Product Image</string>
+    <string name="action_add_invoice_item">Add Invoice Item</string>
+    <string name="action_add_manual_item">Add Manual Item</string>
+
+
+    <!-- Modul Pesanan Offline -->
+    <string name="action_more">More</string>
+    <string name="offline_orders_title">Offline Orders</string>
+    <string name="offline_orders_subtitle">Saved on this device, waiting to sync</string>
+    <string name="offline_orders_subtitle_error">Sync counts unavailable</string>
+    <string name="offline_orders_filter_all">All</string>
+    <string name="offline_orders_filter_pending">Pending</string>
+    <string name="offline_orders_filter_failed">Failed</string>
+    <string name="offline_orders_filter_review">Needs Review</string>
+    <string name="offline_orders_filter_synced">Synced</string>
+    <string name="offline_orders_filter_count">%1$s (%2$d)</string>
+    <string name="offline_orders_stat_pending">Pending</string>
+    <string name="offline_orders_stat_failed">Failed</string>
+    <string name="offline_orders_stat_review">Review</string>
+    <string name="offline_orders_stat_synced">Synced</string>
+    <string name="offline_orders_retry_all">Retry all</string>
+    <string name="offline_orders_retry_all_running">Syncing...</string>
+    <string name="offline_orders_empty_title">No offline orders</string>
+    <string name="offline_orders_empty_message">Orders saved while offline appear here and sync automatically once the connection is back.</string>
+    <string name="offline_orders_empty_filtered_title">Nothing in this filter</string>
+    <string name="offline_orders_empty_filtered_message">No order matches the filter you picked. Try another one.</string>
+    <string name="offline_orders_action_retry">Retry</string>
+    <string name="offline_orders_action_reprint">Reprint receipt</string>
+    <string name="offline_orders_attempts">%1$d attempts</string>
+    <string name="offline_orders_status_pending">Pending sync</string>
+    <string name="offline_orders_status_failed">Failed</string>
+    <string name="offline_orders_status_review">Needs review</string>
+    <string name="offline_orders_status_synced">Synced</string>
+    <string name="offline_orders_status_syncing">Syncing</string>
+    <string name="offline_orders_items_loading">Loading items...</string>
+    <string name="offline_orders_items_empty">No item rows recorded for this order.</string>
+    <string name="offline_orders_items_title">Items</string>
+    <string name="offline_orders_items_count">%1$d items</string>
+    <string name="offline_orders_detail_client_id">Client order ID</string>
+    <string name="offline_orders_detail_created">Created</string>
+    <string name="offline_orders_expand">Show detail</string>
+    <string name="offline_orders_collapse">Hide detail</string>
+    <string name="offline_orders_sync_started">Sync started</string>
+    <string name="offline_orders_sync_finished">Sync finished</string>
+    <string name="offline_orders_sync_ok">Order synced successfully</string>
+    <string name="offline_orders_sync_failed">Sync failed. Check the error detail.</string>
+    <string name="offline_orders_items_failed">Could not load order items: %1$s</string>
+    <string name="offline_orders_load_failed">Could not load offline orders: %1$s</string>
+    <string name="offline_orders_reprint_started">Reprint started</string>
+    <string name="offline_orders_reprint_running">A receipt is already printing.</string>
+    <string name="offline_orders_reprint_ok">Receipt reprinted.</string>
+    <string name="offline_orders_reprint_failed">Reprint failed. Check the printer connection.</string>
+    <string name="offline_orders_reprint_skipped">Reprint skipped.</string>
+    <string name="offline_orders_reprint_timeout">Printer timed out. Check the printer and try again.</string>
+    <string name="offline_orders_shop_mismatch">This offline order belongs to another shop. Sign in to the original shop to sync it.</string>
+    <string name="offline_orders_shop_unknown">Unknown shop for this order. It needs manual review.</string>
+
+
+    <!-- Owner Chat -->
+    <string name="owner_chat_status_ready">Ready to answer</string>
+    <string name="owner_chat_status_thinking">Typing...</string>
+    <string name="owner_chat_clear">Clear conversation</string>
+    <string name="owner_chat_cleared">Conversation cleared.</string>
+    <string name="owner_chat_suggestions_title">Try asking</string>
+    <string name="owner_chat_suggestion_sales">How were sales today?</string>
+    <string name="owner_chat_suggestion_stock">Which products are low on stock?</string>
+    <string name="owner_chat_suggestion_expense">Show this month expenses</string>
+    <string name="cd_owner_chat_avatar">Assistant avatar</string>
+
+
+    <!-- POS kasir -->
+    <string name="pos_review_before_checkout">Review the items before checkout</string>
+    <string name="pos_clear_draft">Clear items</string>
+    <string name="pos_empty_title">Cart is still empty</string>
+    <string name="pos_empty_message">Scan a barcode or search a product to start this bill.</string>
+    <string name="cd_pos_open_drafts">Open bill list</string>
+
+
+    <!-- Pengaturan printer -->
+    <string name="printer_title">Printer</string>
+    <string name="printer_subtitle">Bluetooth receipt printer</string>
+    <string name="printer_selected_label">Active printer</string>
+    <string name="printer_selected_none">Not selected yet</string>
+    <string name="printer_selected_value">%1$s (%2$s)</string>
+    <string name="printer_clear">Clear printer</string>
+    <string name="printer_cleared">Printer cleared</string>
+    <string name="printer_paired_title">Paired devices</string>
+    <string name="printer_paired_hint">Pick the receipt printer you already paired in Bluetooth settings.</string>
+    <string name="printer_selected_toast">Selected: %1$s</string>
+    <string name="printer_permission_required">Bluetooth permission is required</string>
+    <string name="printer_permission_denied">Bluetooth permission denied</string>
+    <string name="printer_unsupported">This device does not support Bluetooth</string>
+    <string name="printer_enable_bluetooth">Turn Bluetooth on first</string>
+    <string name="printer_no_paired">No paired device found</string>
+    <string name="printer_unknown_device">Unknown device</string>
+
+
+    <!-- Layar detail -->
+    <string name="detail_product_return_title">Return Detail</string>
+    <string name="detail_stock_movement_title">Stock Movement</string>
+    <string name="detail_stock_adjustment_title">Stock Adjustment</string>
+    <string name="detail_inventory_count_title">Stock Count</string>
+    <string name="detail_col_product">Product</string>
+    <string name="detail_col_qty">Qty</string>
+    <string name="detail_col_price">Price</string>
+    <string name="detail_col_total">Total</string>
+    <string name="detail_section_summary">Summary</string>
+    <string name="detail_section_items">Items</string>
+    <string name="detail_print_return">Print return</string>
+    <string name="detail_finalize">Finalize</string>
+
+
+    <!-- Layar detail - teks -->
+    <string name="detail_no_data">No detail data</string>
+    <string name="detail_parse_error">Could not read the detail data: %1$s</string>
+    <string name="detail_total_items_value">Total items: %1$d</string>
+    <string name="detail_total_diff_value">Total difference: %1$d</string>
+    <string name="detail_value_impact_value">Value impact: %1$s</string>
+    <string name="detail_finalizing">Finalizing...</string>
+    <string name="detail_invalid_count_id">Invalid stock count id</string>
+    <string name="detail_finalize_ok">Finalized successfully</string>
+    <string name="detail_finalize_failed">Could not finalize</string>
+    <string name="detail_finalize_failed_code">Could not finalize (%1$d)</string>
+    <string name="detail_return_no_data">No return data.</string>
+    <string name="detail_return_order_title">Order #%1$s</string>
+    <string name="detail_return_title_id">Return #%1$d</string>
+    <string name="detail_field_order">Order: %1$s</string>
+    <string name="detail_field_invoice">Invoice: %1$s</string>
+    <string name="detail_field_customer">Customer: %1$s</string>
+    <string name="detail_field_returned_by">Returned by: %1$s</string>
+    <string name="detail_field_returned_at">Returned: %1$s</string>
+    <string name="detail_field_note">Note: %1$s</string>
+    <string name="detail_return_summary">Qty: %1$s  •  Total: %2$s</string>
+    <string name="detail_print_permission">Grant Bluetooth permission then try again.</string>
+    <string name="detail_print_no_printer">Printer not connected. Pick a printer first.</string>
+    <string name="detail_print_ok">Printed.</string>
+    <string name="detail_print_failed">Print failed: %1$s</string>
+
+
+    <!-- Alamat server: kolom di Login (bagian Lanjutan) dan Settings -->
+    <string name="login_advanced">Advanced</string>
+    <string name="login_advanced_hint">Only change this if you were told to. A wrong address blocks sign-in.</string>
+    <string name="login_server_label">Server address</string>
+    <string name="login_server_hint">http://192.168.1.10:8000/api/</string>
+    <string name="login_server_origin">Active now: %1$s (%2$s)</string>
+    <string name="login_server_saved">Server address saved.</string>
+    <string name="settings_reset_server">Reset to build default</string>
+    <string name="settings_reset_server_done">Server address reset to the build default.</string>
+    <string name="settings_reset_server_none">Already using the build default.</string>
+    <string name="msg_base_url_bad_host">That address has no host name.</string>
+    <string name="msg_base_url_cleartext_public">Plain http:// is only allowed to a local network address (10.x, 172.16-31.x, 192.168.x, localhost). Use https:// for a public server.</string>
+    <string name="msg_base_url_cleartext_release">This build refuses plain http://. Use an https:// address.</string>
+
+
+    <!-- Kolom meja di dialog checkout -->
+
+
+    <!-- Papan Dapur (Kitchen Display, Modul 3) -->
+    <string name="menu_kitchen_display">Kitchen Display</string>
+    <string name="menu_kitchen_display_desc">Live board of items being cooked</string>
+    <string name="kitchen_title">Kitchen Display</string>
+    <string name="kitchen_subtitle">%1$d items in %2$d orders</string>
+    <string name="kitchen_subtitle_idle">Nothing to cook</string>
+    <string name="kitchen_status_pending">WAITING</string>
+    <string name="kitchen_status_preparing">COOKING</string>
+    <string name="kitchen_status_ready">READY</string>
+    <string name="kitchen_status_served">SERVED</string>
+    <string name="kitchen_status_cancelled">CANCELLED</string>
+    <string name="kitchen_action_preparing">Start cooking</string>
+    <string name="kitchen_action_ready">Ready</string>
+    <string name="kitchen_action_served">Served</string>
+    <string name="kitchen_action_cancelled">Cancel</string>
+    <string name="kitchen_qty">%1$d x</string>
+    <string name="kitchen_table_unset">No table</string>
+    <string name="kitchen_waiter_prefix">Waiter: %1$s</string>
+    <string name="kitchen_empty_title">Kitchen is clear</string>
+    <string name="kitchen_empty_message">New dine-in items appear here as soon as the cashier sends the order.</string>
+    <string name="kitchen_stat_pending">Waiting</string>
+    <string name="kitchen_stat_preparing">Cooking</string>
+    <string name="kitchen_stat_ready">Ready</string>
+    <string name="kitchen_no_permission">Kitchen Display is not enabled for this account.</string>
+    <string name="kitchen_load_failed">Could not load the board: %1$s</string>
+    <string name="kitchen_change_failed">Could not change status: %1$s</string>
+    <string name="kitchen_conflict">Another device changed this item first. Board refreshed.</string>
+    <string name="kitchen_cancel_confirm_title">Cancel this item?</string>
+    <string name="kitchen_cancel_confirm_message">%1$s will be removed from the kitchen board. This cannot be undone.</string>
+    <string name="kitchen_refresh">Refresh now</string>
+    <string name="cd_kitchen_status">Kitchen status</string>
+
+
+    <!-- Meja dine-in: syarat sebelum lanjut bayar -->
+    <string name="dinein_mixed_with_table">A bill with a table must be dine-in only. Change the non dine-in items, or clear the table.</string>
+    <string name="dinein_table_required">Pick a table first for the dine-in items.</string>
+    <string name="dinein_table_required_empty">No active table yet. Create one in Tables, or turn on the table number field in Settings.</string>
+
+
+    <!-- ================================================== -->
+    <!-- Keranjang kasir (panel/laci) dan popup pembayaran   -->
+    <!-- ================================================== -->
+    <string name="cart_item_count_format">%1$d items</string>
+    <string name="cart_item_count_one">1 item</string>
+    <string name="cart_empty_message">Pick items from the menu to start an order.</string>
+    <string name="cart_continue_payment">Continue Payment</string>
+    <string name="cart_cancel_order">Cancel Order</string>
+    <string name="cart_line_qty_format">%1$s x %2$d</string>
+    <string name="cd_close_cart">Close cart</string>
+    <string name="cd_product_image">Product image</string>
+    <string name="cd_cart_increase">Increase quantity</string>
+    <string name="cd_cart_decrease">Decrease quantity</string>
+    <string name="checkout_section_order_details">Order details</string>
+    <string name="checkout_section_payment">Payment</string>
+    <string name="checkout_section_discount">Discount and customer</string>
+    <string name="checkout_total_due">Total due</string>
 </resources>

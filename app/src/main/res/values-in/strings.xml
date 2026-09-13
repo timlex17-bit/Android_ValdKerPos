@@ -1163,4 +1163,217 @@
     <string name="settings_backend_label">SERVER</string>
     <string name="settings_backend_origin">Sumber: %1$s</string>
 
+
+    <!-- Tombol di dalam dialog formulir -->
+    <string name="action_select_product_image">Pilih Gambar Produk</string>
+    <string name="action_add_invoice_item">Tambah Item Invoice</string>
+    <string name="action_add_manual_item">Tambah Item Manual</string>
+
+
+    <!-- Modul Pesanan Offline -->
+    <string name="action_more">Lainnya</string>
+    <string name="offline_orders_title">Pesanan Offline</string>
+    <string name="offline_orders_subtitle">Tersimpan di perangkat ini, menunggu sinkron</string>
+    <string name="offline_orders_subtitle_error">Jumlah sinkron tidak dapat dimuat</string>
+    <string name="offline_orders_filter_all">Semua</string>
+    <string name="offline_orders_filter_pending">Menunggu</string>
+    <string name="offline_orders_filter_failed">Gagal</string>
+    <string name="offline_orders_filter_review">Perlu Ditinjau</string>
+    <string name="offline_orders_filter_synced">Tersinkron</string>
+    <string name="offline_orders_filter_count">%1$s (%2$d)</string>
+    <string name="offline_orders_stat_pending">Menunggu</string>
+    <string name="offline_orders_stat_failed">Gagal</string>
+    <string name="offline_orders_stat_review">Tinjau</string>
+    <string name="offline_orders_stat_synced">Sinkron</string>
+    <string name="offline_orders_retry_all">Coba semua</string>
+    <string name="offline_orders_retry_all_running">Menyinkron...</string>
+    <string name="offline_orders_empty_title">Belum ada pesanan offline</string>
+    <string name="offline_orders_empty_message">Pesanan yang disimpan saat offline muncul di sini dan tersinkron otomatis begitu koneksi kembali.</string>
+    <string name="offline_orders_empty_filtered_title">Tidak ada di filter ini</string>
+    <string name="offline_orders_empty_filtered_message">Tidak ada pesanan yang cocok dengan filter yang dipilih. Coba filter lain.</string>
+    <string name="offline_orders_action_retry">Coba lagi</string>
+    <string name="offline_orders_action_reprint">Cetak ulang struk</string>
+    <string name="offline_orders_attempts">%1$d percobaan</string>
+    <string name="offline_orders_status_pending">Menunggu sinkron</string>
+    <string name="offline_orders_status_failed">Gagal</string>
+    <string name="offline_orders_status_review">Perlu ditinjau</string>
+    <string name="offline_orders_status_synced">Tersinkron</string>
+    <string name="offline_orders_status_syncing">Menyinkron</string>
+    <string name="offline_orders_items_loading">Memuat item...</string>
+    <string name="offline_orders_items_empty">Tidak ada baris item untuk pesanan ini.</string>
+    <string name="offline_orders_items_title">Item</string>
+    <string name="offline_orders_items_count">%1$d item</string>
+    <string name="offline_orders_detail_client_id">ID pesanan klien</string>
+    <string name="offline_orders_detail_created">Dibuat</string>
+    <string name="offline_orders_expand">Lihat detail</string>
+    <string name="offline_orders_collapse">Sembunyikan detail</string>
+    <string name="offline_orders_sync_started">Sinkron dimulai</string>
+    <string name="offline_orders_sync_finished">Sinkron selesai</string>
+    <string name="offline_orders_sync_ok">Pesanan berhasil disinkron</string>
+    <string name="offline_orders_sync_failed">Sinkron gagal. Periksa detail galatnya.</string>
+    <string name="offline_orders_items_failed">Gagal memuat item pesanan: %1$s</string>
+    <string name="offline_orders_load_failed">Gagal memuat pesanan offline: %1$s</string>
+    <string name="offline_orders_reprint_started">Cetak ulang dimulai</string>
+    <string name="offline_orders_reprint_running">Struk lain sedang dicetak.</string>
+    <string name="offline_orders_reprint_ok">Struk berhasil dicetak ulang.</string>
+    <string name="offline_orders_reprint_failed">Cetak ulang gagal. Periksa koneksi printer.</string>
+    <string name="offline_orders_reprint_skipped">Cetak ulang dilewati.</string>
+    <string name="offline_orders_reprint_timeout">Printer tidak merespons. Periksa printer lalu coba lagi.</string>
+    <string name="offline_orders_shop_mismatch">Pesanan offline ini milik toko lain. Masuk ke toko asalnya untuk menyinkronkan.</string>
+    <string name="offline_orders_shop_unknown">Toko pesanan ini tidak dikenali. Perlu ditinjau manual.</string>
+
+
+    <!-- Owner Chat -->
+    <string name="owner_chat_status_ready">Siap menjawab</string>
+    <string name="owner_chat_status_thinking">Sedang mengetik...</string>
+    <string name="owner_chat_clear">Bersihkan percakapan</string>
+    <string name="owner_chat_cleared">Percakapan dibersihkan.</string>
+    <string name="owner_chat_suggestions_title">Coba tanyakan</string>
+    <string name="owner_chat_suggestion_sales">Bagaimana penjualan hari ini?</string>
+    <string name="owner_chat_suggestion_stock">Produk apa yang stoknya menipis?</string>
+    <string name="owner_chat_suggestion_expense">Tampilkan pengeluaran bulan ini</string>
+    <string name="cd_owner_chat_avatar">Avatar asisten</string>
+
+
+    <!-- POS kasir -->
+    <string name="pos_review_before_checkout">Periksa item sebelum checkout</string>
+    <string name="pos_clear_draft">Kosongkan item</string>
+    <string name="pos_empty_title">Keranjang masih kosong</string>
+    <string name="pos_empty_message">Pindai barcode atau cari produk untuk memulai bon ini.</string>
+    <string name="cd_pos_open_drafts">Daftar bon terbuka</string>
+
+
+    <!-- Pengaturan printer -->
+    <string name="printer_title">Printer</string>
+    <string name="printer_subtitle">Printer struk Bluetooth</string>
+    <string name="printer_selected_label">Printer aktif</string>
+    <string name="printer_selected_none">Belum dipilih</string>
+    <string name="printer_selected_value">%1$s (%2$s)</string>
+    <string name="printer_clear">Lepas printer</string>
+    <string name="printer_cleared">Printer dilepas</string>
+    <string name="printer_paired_title">Perangkat terpasang</string>
+    <string name="printer_paired_hint">Pilih printer struk yang sudah dipasangkan di pengaturan Bluetooth.</string>
+    <string name="printer_selected_toast">Dipilih: %1$s</string>
+    <string name="printer_permission_required">Izin Bluetooth diperlukan</string>
+    <string name="printer_permission_denied">Izin Bluetooth ditolak</string>
+    <string name="printer_unsupported">Perangkat ini tidak mendukung Bluetooth</string>
+    <string name="printer_enable_bluetooth">Nyalakan Bluetooth terlebih dahulu</string>
+    <string name="printer_no_paired">Tidak ada perangkat terpasang</string>
+    <string name="printer_unknown_device">Perangkat tidak dikenal</string>
+
+
+    <!-- Layar detail -->
+    <string name="detail_product_return_title">Detail Retur</string>
+    <string name="detail_stock_movement_title">Mutasi Stok</string>
+    <string name="detail_stock_adjustment_title">Penyesuaian Stok</string>
+    <string name="detail_inventory_count_title">Stok Opname</string>
+    <string name="detail_col_product">Produk</string>
+    <string name="detail_col_qty">Qty</string>
+    <string name="detail_col_price">Harga</string>
+    <string name="detail_col_total">Total</string>
+    <string name="detail_section_summary">Ringkasan</string>
+    <string name="detail_section_items">Item</string>
+    <string name="detail_print_return">Cetak retur</string>
+    <string name="detail_finalize">Finalisasi</string>
+
+
+    <!-- Layar detail - teks -->
+    <string name="detail_no_data">Tidak ada data detail</string>
+    <string name="detail_parse_error">Data detail tidak terbaca: %1$s</string>
+    <string name="detail_total_items_value">Total item: %1$d</string>
+    <string name="detail_total_diff_value">Total selisih: %1$d</string>
+    <string name="detail_value_impact_value">Dampak nilai: %1$s</string>
+    <string name="detail_finalizing">Memfinalisasi...</string>
+    <string name="detail_invalid_count_id">ID stok opname tidak valid</string>
+    <string name="detail_finalize_ok">Berhasil difinalisasi</string>
+    <string name="detail_finalize_failed">Gagal memfinalisasi</string>
+    <string name="detail_finalize_failed_code">Gagal memfinalisasi (%1$d)</string>
+    <string name="detail_return_no_data">Tidak ada data retur.</string>
+    <string name="detail_return_order_title">Order #%1$s</string>
+    <string name="detail_return_title_id">Retur #%1$d</string>
+    <string name="detail_field_order">Order: %1$s</string>
+    <string name="detail_field_invoice">Invoice: %1$s</string>
+    <string name="detail_field_customer">Pelanggan: %1$s</string>
+    <string name="detail_field_returned_by">Diretur oleh: %1$s</string>
+    <string name="detail_field_returned_at">Waktu retur: %1$s</string>
+    <string name="detail_field_note">Catatan: %1$s</string>
+    <string name="detail_return_summary">Qty: %1$s  •  Total: %2$s</string>
+    <string name="detail_print_permission">Berikan izin Bluetooth lalu coba lagi.</string>
+    <string name="detail_print_no_printer">Printer belum tersambung. Pilih printer dulu.</string>
+    <string name="detail_print_ok">Tercetak.</string>
+    <string name="detail_print_failed">Gagal mencetak: %1$s</string>
+
+
+    <!-- Alamat server: kolom di Login (bagian Lanjutan) dan Settings -->
+    <string name="login_advanced">Lanjutan</string>
+    <string name="login_advanced_hint">Ubah hanya bila diminta. Alamat yang salah membuat login gagal.</string>
+    <string name="login_server_label">Alamat server</string>
+    <string name="login_server_hint">http://192.168.1.10:8000/api/</string>
+    <string name="login_server_origin">Aktif sekarang: %1$s (%2$s)</string>
+    <string name="login_server_saved">Alamat server disimpan.</string>
+    <string name="settings_reset_server">Reset ke bawaan build</string>
+    <string name="settings_reset_server_done">Alamat server dikembalikan ke bawaan build.</string>
+    <string name="settings_reset_server_none">Sudah memakai bawaan build.</string>
+    <string name="msg_base_url_bad_host">Alamat itu tidak memuat nama host.</string>
+    <string name="msg_base_url_cleartext_public">http:// polos hanya diizinkan ke alamat jaringan lokal (10.x, 172.16-31.x, 192.168.x, localhost). Pakai https:// untuk server publik.</string>
+    <string name="msg_base_url_cleartext_release">Build ini menolak http:// polos. Pakai alamat https://.</string>
+
+
+    <!-- Kolom meja di dialog checkout -->
+
+
+    <!-- Papan Dapur (Kitchen Display, Modul 3) -->
+    <string name="menu_kitchen_display">Papan Dapur</string>
+    <string name="menu_kitchen_display_desc">Papan langsung item yang sedang dimasak</string>
+    <string name="kitchen_title">Papan Dapur</string>
+    <string name="kitchen_subtitle">%1$d item di %2$d order</string>
+    <string name="kitchen_subtitle_idle">Tidak ada yang dimasak</string>
+    <string name="kitchen_status_pending">MENUNGGU</string>
+    <string name="kitchen_status_preparing">DIMASAK</string>
+    <string name="kitchen_status_ready">SIAP</string>
+    <string name="kitchen_status_served">DIANTAR</string>
+    <string name="kitchen_status_cancelled">DIBATALKAN</string>
+    <string name="kitchen_action_preparing">Mulai masak</string>
+    <string name="kitchen_action_ready">Siap</string>
+    <string name="kitchen_action_served">Diantar</string>
+    <string name="kitchen_action_cancelled">Batalkan</string>
+    <string name="kitchen_qty">%1$d x</string>
+    <string name="kitchen_table_unset">Tanpa meja</string>
+    <string name="kitchen_waiter_prefix">Pelayan: %1$s</string>
+    <string name="kitchen_empty_title">Dapur kosong</string>
+    <string name="kitchen_empty_message">Item dine-in baru muncul di sini begitu kasir mengirim ordernya.</string>
+    <string name="kitchen_stat_pending">Menunggu</string>
+    <string name="kitchen_stat_preparing">Dimasak</string>
+    <string name="kitchen_stat_ready">Siap</string>
+    <string name="kitchen_no_permission">Papan Dapur tidak aktif untuk akun ini.</string>
+    <string name="kitchen_load_failed">Gagal memuat papan: %1$s</string>
+    <string name="kitchen_change_failed">Gagal mengubah status: %1$s</string>
+    <string name="kitchen_conflict">Perangkat lain sudah mengubah item ini lebih dulu. Papan disegarkan.</string>
+    <string name="kitchen_cancel_confirm_title">Batalkan item ini?</string>
+    <string name="kitchen_cancel_confirm_message">%1$s akan dikeluarkan dari papan dapur. Tindakan ini tidak bisa dibatalkan.</string>
+    <string name="kitchen_refresh">Segarkan sekarang</string>
+    <string name="cd_kitchen_status">Status dapur</string>
+
+
+    <!-- Meja dine-in: syarat sebelum lanjut bayar -->
+    <string name="dinein_mixed_with_table">Bon yang punya meja harus dine-in semua. Ubah item yang bukan dine-in, atau kosongkan mejanya.</string>
+    <string name="dinein_table_required">Pilih meja dulu untuk item dine-in.</string>
+    <string name="dinein_table_required_empty">Belum ada meja aktif. Buat dulu di menu Meja, atau nyalakan kolom nomor meja di Pengaturan.</string>
+
+
+    <!-- Keranjang kasir (panel/laci) dan popup pembayaran -->
+    <string name="cart_item_count_format">%1$d item</string>
+    <string name="cart_item_count_one">1 item</string>
+    <string name="cart_empty_message">Pilih item dari menu untuk mulai pesanan.</string>
+    <string name="cart_continue_payment">Lanjut Pembayaran</string>
+    <string name="cart_cancel_order">Batalkan Pesanan</string>
+    <string name="cart_line_qty_format">%1$s x %2$d</string>
+    <string name="cd_close_cart">Tutup keranjang</string>
+    <string name="cd_product_image">Gambar produk</string>
+    <string name="cd_cart_increase">Tambah jumlah</string>
+    <string name="cd_cart_decrease">Kurangi jumlah</string>
+    <string name="checkout_section_order_details">Detail pesanan</string>
+    <string name="checkout_section_payment">Pembayaran</string>
+    <string name="checkout_section_discount">Diskon dan pelanggan</string>
+    <string name="checkout_total_due">Total bayar</string>
 </resources>

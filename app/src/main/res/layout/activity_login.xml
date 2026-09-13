@@ -2,10 +2,27 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/rootLogin"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F6F8FB">
+
+    <!--
+      Strip ungu setinggi bilah status. Layar ini berlatar terang, sementara
+      seluruh aplikasi memakai bilah status ungu dengan ikon terang; tanpa
+      strip ini, di Android 15+ jam dan ikon baterai putih akan berada di atas
+      latar #F6F8FB dan praktis tidak terlihat. Tingginya diisi runtime oleh
+      SystemBars.fitStatusScrim(), jadi nol di perangkat tanpa bilah status.
+    -->
+    <View
+        android:id="@+id/statusBarScrim"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/status_bar_brand"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <View
         android:id="@+id/topAccent"
@@ -258,12 +275,124 @@
                     <TextView
                         android:id="@+id/btnTogglePwd"
                         android:layout_width="58dp"
-                        android:layout_height="40dp"
+                        android:layout_height="wrap_content"
+                        android:minHeight="40dp"
                         android:gravity="center"
                         android:text="@string/show_password"
                         android:textColor="#50039B"
                         android:textSize="12sp"
                         android:textStyle="bold" />
+                </LinearLayout>
+
+
+                <!--
+                  Bagian "Lanjutan": alamat server.
+
+                  Ada di layar Login, bukan hanya di Settings, karena Settings
+                  berada di balik login. Kalau alamat servernya salah, login
+                  tidak pernah berhasil, Settings tidak pernah terbuka, dan
+                  satu-satunya pemulihan adalah menghapus data aplikasi -
+                  termasuk order offline yang belum tersinkron. Itu benar-benar
+                  terjadi: build debug default menunjuk 10.0.2.2 (alias
+                  emulator) sementara perangkatnya ponsel sungguhan.
+
+                  Dilipat secara bawaan supaya kasir harian tidak pernah
+                  melihatnya, dan dibuka sendiri oleh LoginActivity begitu
+                  sebuah percobaan login gagal karena masalah jaringan.
+                -->
+                <LinearLayout
+                    android:id="@+id/btnToggleAdvanced"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:minHeight="44dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvAdvancedLabel"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/login_advanced"
+                        android:textColor="#3C0375"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <ImageView
+                        android:id="@+id/imgAdvancedChevron"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_arrow_down"
+                        app:tint="#3C0375" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/layoutAdvanced"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/login_advanced_hint"
+                        android:textColor="#64748B"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="@string/login_server_label"
+                        android:textColor="#111827"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/bg_login_input"
+                        android:gravity="center_vertical"
+                        android:minHeight="54dp"
+                        android:orientation="horizontal"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp">
+
+                        <EditText
+                            android:id="@+id/etServerUrl"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="@android:color/transparent"
+                            android:hint="@string/login_server_hint"
+                            android:imeOptions="actionDone"
+                            android:importantForAutofill="no"
+                            android:inputType="textUri|textNoSuggestions"
+                            android:maxLines="1"
+                            android:minHeight="48dp"
+                            android:singleLine="true"
+                            android:textColor="#111827"
+                            android:textColorHint="#94A3B8"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvServerOrigin"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:textColor="#64748B"
+                        android:textSize="11sp"
+                        tools:text="Aktif sekarang: http://10.0.2.2:8000/api/ (bawaan build debug)" />
                 </LinearLayout>
 
                 <Button

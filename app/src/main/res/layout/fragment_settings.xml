@@ -207,7 +207,8 @@
                             android:id="@+id/btnSaveBaseUrl"
                             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                             android:layout_width="match_parent"
-                            android:layout_height="44dp"
+                            android:layout_height="wrap_content"
+                            android:minHeight="44dp"
                             android:layout_marginTop="12dp"
                             android:backgroundTint="#FFFFFF"
                             android:insetTop="0dp"
@@ -218,6 +219,29 @@
                             app:cornerRadius="14dp"
                             app:strokeColor="#E5E7EB"
                             app:strokeWidth="1dp" />
+
+                        <!--
+                          Mengembalikan alamat ke BuildConfig.BASE_URL.
+                          Inilah pemanggil SessionManager.clearBaseUrl(), yang
+                          sebelumnya tidak pernah dipanggil dari mana pun -
+                          jalan keluar dari alamat yang salah ketik tanpa harus
+                          menghapus data aplikasi.
+                        -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnResetBaseUrl"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:minHeight="44dp"
+                            android:text="@string/settings_reset_server"
+                            android:textAllCaps="false"
+                            android:textColor="#DC2626"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="14dp" />
 
                     </LinearLayout>
 
@@ -291,7 +315,8 @@
                                 android:id="@+id/btnOpenPrinterSettings"
                                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                                 android:layout_width="0dp"
-                                android:layout_height="44dp"
+                                android:layout_height="wrap_content"
+                                android:minHeight="44dp"
                                 android:layout_weight="1"
                                 android:backgroundTint="#FFFFFF"
                                 android:insetTop="0dp"
@@ -311,7 +336,8 @@
                                 android:id="@+id/btnTestPrint"
                                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                                 android:layout_width="0dp"
-                                android:layout_height="44dp"
+                                android:layout_height="wrap_content"
+                                android:minHeight="44dp"
                                 android:layout_weight="1"
                                 android:backgroundTint="#FFFFFF"
                                 android:insetTop="0dp"
@@ -357,6 +383,7 @@
                                 android:layout_height="wrap_content"
                                 android:checkable="true"
                                 android:clickable="true"
+                                android:focusable="true"
                                 android:text="@string/paper_width_58mm"
                                 android:textColor="#111827"
                                 app:checkedIconVisible="false"
@@ -371,6 +398,7 @@
                                 android:layout_height="wrap_content"
                                 android:checkable="true"
                                 android:clickable="true"
+                                android:focusable="true"
                                 android:text="@string/paper_width_80mm"
                                 android:textColor="#111827"
                                 app:checkedIconVisible="false"
@@ -442,7 +470,8 @@
                             android:id="@+id/btnPickLogo"
                             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                             android:layout_width="match_parent"
-                            android:layout_height="44dp"
+                            android:layout_height="wrap_content"
+                            android:minHeight="44dp"
                             android:layout_marginTop="12dp"
                             android:backgroundTint="#FFFFFF"
                             android:insetTop="0dp"
@@ -544,7 +573,8 @@
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnSaveShop"
                             android:layout_width="match_parent"
-                            android:layout_height="56dp"
+                            android:layout_height="wrap_content"
+                            android:minHeight="56dp"
                             android:layout_marginTop="18dp"
                             android:backgroundTint="#6204BF"
                             android:insetTop="0dp"

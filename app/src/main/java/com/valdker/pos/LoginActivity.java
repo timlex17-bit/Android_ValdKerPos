@@ -14,7 +14,9 @@ import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
+import com.valdker.pos.ui.common.SystemBars;
 import com.valdker.pos.utils.Toast;
 
 import androidx.annotation.NonNull;
@@ -28,6 +30,8 @@ import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.valdker.pos.network.ApiClient;
 import com.valdker.pos.network.ApiConfig;
+import com.valdker.pos.network.BaseUrlRules;
+import com.valdker.pos.network.BaseUrlStore;
 import com.valdker.pos.cart.CartManager;
 import com.valdker.pos.repositories.AuthCacheRepository;
 import com.valdker.pos.utils.ErrorHandler;
@@ -67,6 +71,12 @@ public class LoginActivity extends AppCompatActivity {
     private Button btnLogin;
     private Button btnDemo;
 
+    private EditText etServerUrl;
+    private View layoutAdvanced;
+    private View btnToggleAdvanced;
+    private ImageView imgAdvancedChevron;
+    private TextView tvServerOrigin;
+
     private boolean pwdVisible = false;
     private boolean isLoginInProgress = false;
     private SessionManager sm;
@@ -77,13 +87,28 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         protectLoginWindow();
         setContentView(R.layout.activity_login);
+        setupSystemBars();
 
         sm = new SessionManager(this);
 
         bindViews();
+        setupAdvanced();
         setupInputs();
         setupExistingSessionRedirect();
         setupActions();
+    }
+
+    /**
+     * Layar masuk memakai bilah status ungu yang sama dengan seluruh aplikasi.
+     * Sebelumnya ia tidak menyiapkan bilah sistem sama sekali, jadi warnanya
+     * bergantung pada tema - yang sejak targetSdk 36 diabaikan Android 15+ -
+     * dan strip di belakang bilah status menampilkan latar terang layar ini
+     * dengan ikon yang warnanya ditentukan layar sebelumnya.
+     */
+    private void setupSystemBars() {
+        SystemBars.apply(this);
+        SystemBars.fitStatusScrim(findViewById(R.id.statusBarScrim));
+        SystemBars.padBottom(findViewById(R.id.scroll));
     }
 
     private void protectLoginWindow() {
@@ -100,6 +125,12 @@ public class LoginActivity extends AppCompatActivity {
         btnTogglePwd = findViewById(R.id.btnTogglePwd);
         btnLogin = findViewById(R.id.btnLogin);
         btnDemo = findViewById(R.id.btnDemo);
+
+        etServerUrl = findViewById(R.id.etServerUrl);
+        layoutAdvanced = findViewById(R.id.layoutAdvanced);
+        btnToggleAdvanced = findViewById(R.id.btnToggleAdvanced);
+        imgAdvancedChevron = findViewById(R.id.imgAdvancedChevron);
+        tvServerOrigin = findViewById(R.id.tvServerOrigin);
     }
 
     private void applySavedLanguageCompat() {
@@ -137,6 +168,84 @@ public class LoginActivity extends AppCompatActivity {
                 return false;
             });
         }
+    }
+
+    /**
+     * Bagian "Lanjutan" di layar Login.
+     *
+     * <p>Terlipat secara bawaan: kasir harian tidak pernah perlu melihat
+     * alamat server, dan kolom yang salah diisi di sini mengunci aplikasi.
+     * Yang membukanya adalah ketukan sengaja - atau kegagalan koneksi, karena
+     * saat itulah alamat server menjadi tersangka utama.
+     */
+    private void setupAdvanced() {
+        if (btnToggleAdvanced != null) {
+            btnToggleAdvanced.setOnClickListener(v -> setAdvancedExpanded(
+                    layoutAdvanced == null || layoutAdvanced.getVisibility() != View.VISIBLE));
+        }
+
+        if (etServerUrl != null) {
+            etServerUrl.setText(ApiConfig.base(sm));
+            etServerUrl.setOnEditorActionListener((v, actionId, event) -> {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    v.clearFocus();
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        refreshServerOrigin();
+        setAdvancedExpanded(false);
+    }
+
+    private void setAdvancedExpanded(boolean expanded) {
+        if (layoutAdvanced != null) {
+            layoutAdvanced.setVisibility(expanded ? View.VISIBLE : View.GONE);
+        }
+        if (imgAdvancedChevron != null) {
+            imgAdvancedChevron.setImageResource(
+                    expanded ? R.drawable.ic_arrow_up : R.drawable.ic_arrow_down);
+        }
+    }
+
+    private void refreshServerOrigin() {
+        if (tvServerOrigin == null) return;
+        tvServerOrigin.setText(getString(
+                R.string.login_server_origin,
+                ApiConfig.base(sm),
+                ApiConfig.originLabel(sm)));
+    }
+
+    /**
+     * Menyimpan alamat server kalau pengguna mengubahnya, tepat sebelum
+     * percobaan login memakainya.
+     *
+     * @return false kalau alamatnya ditolak, sehingga login harus dibatalkan.
+     */
+    private boolean applyServerUrlIfChanged() {
+        if (etServerUrl == null) return true;
+
+        String typed = etServerUrl.getText() != null
+                ? etServerUrl.getText().toString().trim() : "";
+        if (typed.isEmpty()) return true;
+
+        // Tidak ada perubahan berarti tidak perlu membuang cache dan sesi.
+        if (BaseUrlRules.normalize(typed).equals(ApiConfig.base(sm))) return true;
+
+        BaseUrlStore.Result result = BaseUrlStore.save(this, typed);
+        if (!result.ok) {
+            setAdvancedExpanded(true);
+            etServerUrl.setError(getString(result.messageRes));
+            etServerUrl.requestFocus();
+            return false;
+        }
+
+        etServerUrl.setError(null);
+        etServerUrl.setText(ApiConfig.base(sm));
+        refreshServerOrigin();
+        Toast.makeText(this, getString(result.messageRes), Toast.LENGTH_SHORT).show();
+        return true;
     }
 
     private void setupExistingSessionRedirect() {
@@ -200,6 +309,10 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
+        // Alamat server diterapkan sebelum request dibuat, supaya percobaan
+        // login ini memakai alamat yang baru saja diketik - bukan yang lama.
+        if (!applyServerUrlIfChanged()) return;
+
         setLoading(true);
 
         try {
@@ -243,6 +356,11 @@ public class LoginActivity extends AppCompatActivity {
                         }
 
                         if (code == -1) {
+                            // Tidak ada respons sama sekali: alamat server
+                            // adalah tersangka pertama, jadi kolomnya dibuka
+                            // alih-alih dibiarkan tersembunyi.
+                            setAdvancedExpanded(true);
+                            refreshServerOrigin();
                             ErrorHandler.handleApiError(this, error);
                         } else {
                             ErrorHandler.handleApiError(this, msg);

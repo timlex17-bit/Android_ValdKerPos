@@ -1,12 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Overlay khusus debug. tools:replace diperlukan karena src/main menyetel
-  android:usesCleartextTraffic="false"; tanpa ini penggabungan manifest gagal
-  alih-alih menghasilkan build debug yang bisa menjangkau backend lokal.
+  Overlay khusus debug.
+
+  Tidak ada tools:replace di sini. Sebelumnya berkas ini memuat
+  tools:replace="android:networkSecurityConfig" dengan alasan yang keliru -
+  src/main tidak pernah mendeklarasikan networkSecurityConfig, ia menyetel
+  android:usesCleartextTraffic. Dua atribut berbeda, jadi tidak pernah ada
+  konflik untuk diselesaikan dan penggabungan manifest memperingatkannya
+  setiap kali build berjalan.
+
+  Yang sebenarnya terjadi: sejak API 24 (minSdk proyek ini juga 24),
+  android:usesCleartextTraffic diabaikan begitu networkSecurityConfig hadir.
+  Jadi build debug memakai konfigurasi di src/debug/res/xml, dan build rilis -
+  yang tidak punya berkas ini - tetap terikat usesCleartextTraffic="false".
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
-    <application
-        android:networkSecurityConfig="@xml/network_security_config"
-        tools:replace="android:networkSecurityConfig" />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:networkSecurityConfig="@xml/network_security_config">
+
+        <!--
+          Host kosong untuk uji inflate layout; lihat TestHostActivity.
+          Hanya ada di build debug.
+        -->
+        <activity
+            android:name=".ui.TestHostActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ValdKer" />
+    </application>
 </manifest>

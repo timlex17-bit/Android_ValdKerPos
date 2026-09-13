@@ -1155,4 +1155,199 @@
     <string name="settings_backend_label">SERVIDOR</string>
     <string name="settings_backend_origin">Fonte: %1$s</string>
 
+
+    <!-- String foun husi auditoria UI -->
+    <string name="action_select_product_image">Hili Imajen Produtu</string>
+    <string name="action_add_invoice_item">Aumenta Item Fatura</string>
+    <string name="action_add_manual_item">Aumenta Item Manual</string>
+    <string name="action_more">Seluk tan</string>
+    <string name="offline_orders_title">Enkomenda Offline</string>
+    <string name="offline_orders_subtitle">Rai iha aparellu ne’e, hein sinkronizasaun</string>
+    <string name="offline_orders_subtitle_error">La konsege foti kontajen sinkronizasaun</string>
+    <string name="offline_orders_filter_all">Hotu</string>
+    <string name="offline_orders_filter_pending">Hein</string>
+    <string name="offline_orders_filter_failed">La susesu</string>
+    <string name="offline_orders_filter_review">Presiza Revizaun</string>
+    <string name="offline_orders_filter_synced">Sinkroniza ona</string>
+    <string name="offline_orders_filter_count">%1$s (%2$d)</string>
+    <string name="offline_orders_stat_pending">Hein</string>
+    <string name="offline_orders_stat_failed">La susesu</string>
+    <string name="offline_orders_stat_review">Revizaun</string>
+    <string name="offline_orders_stat_synced">Sinkroniza</string>
+    <string name="offline_orders_retry_all">Koko fali hotu</string>
+    <string name="offline_orders_retry_all_running">Sinkroniza hela...</string>
+    <string name="offline_orders_empty_title">Seidauk iha enkomenda offline</string>
+    <string name="offline_orders_empty_message">Enkomenda ne’ebe rai bainhira offline sei mosu iha ne’e no sinkroniza automatikamente bainhira koneksaun fila.</string>
+    <string name="offline_orders_empty_filtered_title">La iha buat ida iha filtru ne’e</string>
+    <string name="offline_orders_empty_filtered_message">La iha enkomenda ne’ebe hanesan ho filtru ne’ebe hili. Koko filtru seluk.</string>
+    <string name="offline_orders_action_retry">Koko fali</string>
+    <string name="offline_orders_action_reprint">Imprime fali resibu</string>
+    <string name="offline_orders_attempts">Koko %1$d dala</string>
+    <string name="offline_orders_status_pending">Hein sinkronizasaun</string>
+    <string name="offline_orders_status_failed">La susesu</string>
+    <string name="offline_orders_status_review">Presiza revizaun</string>
+    <string name="offline_orders_status_synced">Sinkroniza ona</string>
+    <string name="offline_orders_status_syncing">Sinkroniza hela</string>
+    <string name="offline_orders_items_loading">Foti hela item...</string>
+    <string name="offline_orders_items_empty">La iha item ba enkomenda ne’e.</string>
+    <string name="offline_orders_items_title">Item</string>
+    <string name="offline_orders_items_count">Item %1$d</string>
+    <string name="offline_orders_detail_client_id">ID enkomenda kliente</string>
+    <string name="offline_orders_detail_created">Kria iha</string>
+    <string name="offline_orders_expand">Haree detallu</string>
+    <string name="offline_orders_collapse">Subar detallu</string>
+    <string name="offline_orders_sync_started">Sinkronizasaun hahu ona</string>
+    <string name="offline_orders_sync_finished">Sinkronizasaun remata</string>
+    <string name="offline_orders_sync_ok">Enkomenda sinkroniza ho susesu</string>
+    <string name="offline_orders_sync_failed">Sinkronizasaun la susesu. Haree detallu sala.</string>
+    <string name="offline_orders_items_failed">La konsege foti item enkomenda: %1$s</string>
+    <string name="offline_orders_load_failed">La konsege foti enkomenda offline: %1$s</string>
+    <string name="offline_orders_reprint_started">Imprimisaun fali hahu ona</string>
+    <string name="offline_orders_reprint_running">Resibu seluk imprime hela.</string>
+    <string name="offline_orders_reprint_ok">Resibu imprime fali ona.</string>
+    <string name="offline_orders_reprint_failed">Imprimisaun la susesu. Haree koneksaun impresora.</string>
+    <string name="offline_orders_reprint_skipped">Imprimisaun fali la halo.</string>
+    <string name="offline_orders_reprint_timeout">Impresora la responde. Haree impresora depois koko fali.</string>
+    <string name="offline_orders_shop_mismatch">Enkomenda offline ne’e pertense ba loja seluk. Tama iha loja orijinal atu sinkroniza.</string>
+    <string name="offline_orders_shop_unknown">Loja ba enkomenda ne’e la rekoñese. Presiza revizaun manual.</string>
+    <string name="owner_chat_status_ready">Prontu atu responde</string>
+    <string name="owner_chat_status_thinking">Hakerek hela...</string>
+    <string name="owner_chat_clear">Hamoos konversa</string>
+    <string name="owner_chat_cleared">Konversa hamoos ona.</string>
+    <string name="owner_chat_suggestions_title">Koko husu</string>
+    <string name="owner_chat_suggestion_sales">Vendas ohin loron oinsa?</string>
+    <string name="owner_chat_suggestion_stock">Produtu saida mak stok menus ona?</string>
+    <string name="owner_chat_suggestion_expense">Hatudu gastus fulan ne’e</string>
+    <string name="cd_owner_chat_avatar">Avatar asistente</string>
+    <string name="pos_review_before_checkout">Haree item molok pagamentu</string>
+    <string name="pos_clear_draft">Hamoos item</string>
+    <string name="pos_empty_title">Karrinha sei mamuk</string>
+    <string name="pos_empty_message">Skaneia barcode ka buka produtu atu hahu konta ne’e.</string>
+    <string name="cd_pos_open_drafts">Lista konta loke</string>
+    <string name="printer_title">Impresora</string>
+    <string name="printer_subtitle">Impresora resibu Bluetooth</string>
+    <string name="printer_selected_label">Impresora ativu</string>
+    <string name="printer_selected_none">Seidauk hili</string>
+    <string name="printer_selected_value">%1$s (%2$s)</string>
+    <string name="printer_clear">Hasai impresora</string>
+    <string name="printer_cleared">Impresora hasai ona</string>
+    <string name="printer_paired_title">Aparellu ligadu</string>
+    <string name="printer_paired_hint">Hili impresora resibu ne’ebe ligadu ona iha konfigurasaun Bluetooth.</string>
+    <string name="printer_selected_toast">Hili: %1$s</string>
+    <string name="printer_permission_required">Presiza lisensa Bluetooth</string>
+    <string name="printer_permission_denied">Lisensa Bluetooth rejeita</string>
+    <string name="printer_unsupported">Aparellu ne’e la suporta Bluetooth</string>
+    <string name="printer_enable_bluetooth">Hamoris Bluetooth uluk</string>
+    <string name="printer_no_paired">La iha aparellu ligadu</string>
+    <string name="printer_unknown_device">Aparellu la rekoñese</string>
+    <string name="detail_product_return_title">Detallu Devolusaun</string>
+    <string name="detail_stock_movement_title">Movimentu Stok</string>
+    <string name="detail_stock_adjustment_title">Ajustamentu Stok</string>
+    <string name="detail_inventory_count_title">Kontajen Stok</string>
+    <string name="detail_col_product">Produtu</string>
+    <string name="detail_col_qty">Kuant.</string>
+    <string name="detail_col_price">Presu</string>
+    <string name="detail_col_total">Total</string>
+    <string name="detail_section_summary">Rezumu</string>
+    <string name="detail_section_items">Item</string>
+    <string name="detail_print_return">Imprime devolusaun</string>
+    <string name="detail_finalize">Finaliza</string>
+    <string name="detail_no_data">La iha dadus detallu</string>
+    <string name="detail_parse_error">Dadus detallu la bele lee: %1$s</string>
+    <string name="detail_total_items_value">Total item: %1$d</string>
+    <string name="detail_total_diff_value">Total diferensa: %1$d</string>
+    <string name="detail_value_impact_value">Impaktu valor: %1$s</string>
+    <string name="detail_finalizing">Finaliza hela...</string>
+    <string name="detail_invalid_count_id">ID kontajen stok la loos</string>
+    <string name="detail_finalize_ok">Finaliza ho susesu</string>
+    <string name="detail_finalize_failed">La konsege finaliza</string>
+    <string name="detail_finalize_failed_code">La konsege finaliza (%1$d)</string>
+    <string name="detail_return_no_data">La iha dadus devolusaun.</string>
+    <string name="detail_return_order_title">Enkomenda #%1$s</string>
+    <string name="detail_return_title_id">Devolusaun #%1$d</string>
+    <string name="detail_field_order">Enkomenda: %1$s</string>
+    <string name="detail_field_invoice">Fatura: %1$s</string>
+    <string name="detail_field_customer">Kliente: %1$s</string>
+    <string name="detail_field_returned_by">Devolve husi: %1$s</string>
+    <string name="detail_field_returned_at">Devolve iha: %1$s</string>
+    <string name="detail_field_note">Nota: %1$s</string>
+    <string name="detail_return_summary">Kuant.: %1$s  •  Total: %2$s</string>
+    <string name="detail_print_permission">Fo lisensa Bluetooth depois koko fali.</string>
+    <string name="detail_print_no_printer">Impresora la ligadu. Hili impresora uluk.</string>
+    <string name="detail_print_ok">Imprime ona.</string>
+    <string name="detail_print_failed">Imprimisaun la susesu: %1$s</string>
+
+
+    <!-- Alamat server: kolom di Login (bagian Lanjutan) dan Settings -->
+    <string name="login_advanced">Avansadu</string>
+    <string name="login_advanced_hint">Troka deit se ita hetan orden. Enderesu sala halo login la konsege.</string>
+    <string name="login_server_label">Enderesu servidor</string>
+    <string name="login_server_hint">http://192.168.1.10:8000/api/</string>
+    <string name="login_server_origin">Ativu agora: %1$s (%2$s)</string>
+    <string name="login_server_saved">Enderesu servidor rai ona.</string>
+    <string name="settings_reset_server">Fila ba padraun build</string>
+    <string name="settings_reset_server_done">Enderesu servidor fila ba padraun build.</string>
+    <string name="settings_reset_server_none">Uza ona padraun build.</string>
+    <string name="msg_base_url_bad_host">Enderesu ne’e la iha naran host.</string>
+    <string name="msg_base_url_cleartext_public">http:// simples bele deit ba enderesu rede lokal (10.x, 172.16-31.x, 192.168.x, localhost). Uza https:// ba servidor publiku.</string>
+    <string name="msg_base_url_cleartext_release">Build ne’e la simu http:// simples. Uza enderesu https://.</string>
+
+
+    <!-- Kolom meja di dialog checkout -->
+
+
+    <!-- Papan Dapur (Kitchen Display, Modul 3) -->
+    <string name="menu_kitchen_display">Kuadru Kosinya</string>
+    <string name="menu_kitchen_display_desc">Kuadru live ba item ne’ebe te’in hela</string>
+    <string name="kitchen_title">Kuadru Kosinya</string>
+    <string name="kitchen_subtitle">Item %1$d iha order %2$d</string>
+    <string name="kitchen_subtitle_idle">La iha buat atu te’in</string>
+    <string name="kitchen_status_pending">HEIN</string>
+    <string name="kitchen_status_preparing">TE’IN HELA</string>
+    <string name="kitchen_status_ready">PRONTU</string>
+    <string name="kitchen_status_served">FO ONA</string>
+    <string name="kitchen_status_cancelled">KANSELA</string>
+    <string name="kitchen_action_preparing">Hahu te’in</string>
+    <string name="kitchen_action_ready">Prontu</string>
+    <string name="kitchen_action_served">Fo ona</string>
+    <string name="kitchen_action_cancelled">Kansela</string>
+    <string name="kitchen_qty">%1$d x</string>
+    <string name="kitchen_table_unset">La iha meza</string>
+    <string name="kitchen_waiter_prefix">Servidór: %1$s</string>
+    <string name="kitchen_empty_title">Kosinya mamuk</string>
+    <string name="kitchen_empty_message">Item dine-in foun mosu iha ne’e bainhira kaixa haruka order.</string>
+    <string name="kitchen_stat_pending">Hein</string>
+    <string name="kitchen_stat_preparing">Te’in</string>
+    <string name="kitchen_stat_ready">Prontu</string>
+    <string name="kitchen_no_permission">Kuadru Kosinya la ativu ba konta ne’e.</string>
+    <string name="kitchen_load_failed">La konsege foti kuadru: %1$s</string>
+    <string name="kitchen_change_failed">La konsege troka estadu: %1$s</string>
+    <string name="kitchen_conflict">Aparellu seluk troka ona item ne’e uluk. Kuadru atualiza ona.</string>
+    <string name="kitchen_cancel_confirm_title">Kansela item ne’e?</string>
+    <string name="kitchen_cancel_confirm_message">%1$s sei sai husi kuadru kosinya. Ne’e la bele fila fali.</string>
+    <string name="kitchen_refresh">Atualiza agora</string>
+    <string name="cd_kitchen_status">Estadu kosinya</string>
+
+
+    <!-- Meja dine-in: syarat sebelum lanjut bayar -->
+    <string name="dinein_mixed_with_table">Konta ho meza tenke dine-in hotu. Troka item ne’ebe la dine-in, ka hasai meza.</string>
+    <string name="dinein_table_required">Hili meza uluk ba item dine-in.</string>
+    <string name="dinein_table_required_empty">Seidauk iha meza ativu. Kria uluk iha menu Meza, ka hamoris kampu numeru meza iha Konfigurasaun.</string>
+
+
+    <!-- Karrinha kaixa (panel/laci) no popup pagamentu -->
+    <string name="cart_item_count_format">item %1$d</string>
+    <string name="cart_item_count_one">item 1</string>
+    <string name="cart_empty_message">Hili item husi menu atu hahu orden.</string>
+    <string name="cart_continue_payment">Kontinua Pagamentu</string>
+    <string name="cart_cancel_order">Kansela Order</string>
+    <string name="cart_line_qty_format">%1$s x %2$d</string>
+    <string name="cd_close_cart">Taka karrinha</string>
+    <string name="cd_product_image">Imajen produtu</string>
+    <string name="cd_cart_increase">Aumenta kuantidade</string>
+    <string name="cd_cart_decrease">Hamenus kuantidade</string>
+    <string name="checkout_section_order_details">Detallu orden</string>
+    <string name="checkout_section_payment">Pagamentu</string>
+    <string name="checkout_section_discount">Deskontu no kliente</string>
+    <string name="checkout_total_due">Total atu selu</string>
 </resources>

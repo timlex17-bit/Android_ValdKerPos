@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Kosong dengan sengaja. Host untuk uji inflate ada di src/debug karena
+  instrumentasi berjalan di proses aplikasi, bukan proses APK pengujian.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" />
