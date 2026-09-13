@@ -18,7 +18,6 @@ import androidx.core.app.ActivityCompat;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.text.Normalizer;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -409,6 +408,14 @@ public final class BluetoothPrinterManager {
         }
     }
 
+    /**
+     * Mengubah teks bertag menjadi byte ESC/POS.
+     *
+     * <p>Tata letak barisnya - perataan kolom, pemotongan, garis pemisah -
+     * dikerjakan {@link ReceiptLayout}, yang bisa diuji di JVM tanpa printer.
+     * Yang tersisa di sini hanyalah urusan protokol: perintah perataan,
+     * tebal, dan penulisan byte.
+     */
     private static final class EscPosTextEncoder {
         private static final byte ESC = 0x1B;
 
@@ -417,7 +424,6 @@ public final class BluetoothPrinterManager {
 
         @NonNull
         static byte[] encode(@NonNull String formattedText, int charsPerLine) throws IOException {
-            int width = Math.max(24, charsPerLine);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
 
             out.write(new byte[]{ESC, '@'});
@@ -425,10 +431,10 @@ public final class BluetoothPrinterManager {
 
             String[] lines = formattedText.replace("\r\n", "\n").replace('\r', '\n').split("\n", -1);
             for (String raw : lines) {
-                Line line = parseLine(raw);
+                ReceiptLayout.Line line = ReceiptLayout.layout(raw, charsPerLine);
                 out.write(new byte[]{ESC, 'a', line.align});
                 out.write(new byte[]{ESC, 'E', (byte) (line.bold ? 1 : 0)});
-                writeAscii(out, fit(line.text, width));
+                writeAscii(out, line.text);
                 out.write('\n');
                 if (line.bold) {
                     out.write(new byte[]{ESC, 'E', 0});
@@ -440,78 +446,10 @@ public final class BluetoothPrinterManager {
             return out.toByteArray();
         }
 
-        @NonNull
-        private static Line parseLine(@NonNull String raw) {
-            byte align = 0;
-            String text = raw;
-
-            if (text.startsWith("[C]")) {
-                align = 1;
-                text = text.substring(3);
-            } else if (text.startsWith("[R]")) {
-                align = 2;
-                text = text.substring(3);
-            } else if (text.startsWith("[L]")) {
-                align = 0;
-                text = text.substring(3);
-            }
-
-            boolean bold = text.contains("<b>") || text.contains("</b>");
-            text = text.replace("[L]", "")
-                    .replace("[C]", "")
-                    .replace("[R]", " ")
-                    .replace("<b>", "")
-                    .replace("</b>", "");
-
-            return new Line(align, bold, sanitize(text));
-        }
-
-        @NonNull
-        private static String fit(@NonNull String text, int width) {
-            if (text.length() <= width) return text;
-            StringBuilder sb = new StringBuilder();
-            int start = 0;
-            while (start < text.length()) {
-                int end = Math.min(start + width, text.length());
-                sb.append(text, start, end);
-                start = end;
-                if (start < text.length()) sb.append('\n');
-            }
-            return sb.toString();
-        }
-
         private static void writeAscii(@NonNull ByteArrayOutputStream out, @NonNull String text) {
             for (int i = 0; i < text.length(); i++) {
                 char c = text.charAt(i);
                 out.write(c <= 0x7F ? c : '?');
-            }
-        }
-
-        @NonNull
-        private static String sanitize(@Nullable String value) {
-            if (value == null) return "";
-            String clean = Normalizer.normalize(value, Normalizer.Form.NFD)
-                    .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
-            return clean.replace("\u2705", "*")
-                    .replace("\u2014", "-")
-                    .replace("\u2013", "-")
-                    .replace("\u2022", "-")
-                    .replace("\u00e2\u20ac\u201d", "-")
-                    .replace("\u00e2\u20ac\u00a2", "-")
-                    .replace("\u00e2\u2013\u00a0", "*")
-                    .replace("\u00e2\u2013\u00b2", "^")
-                    .trim();
-        }
-
-        private static final class Line {
-            final byte align;
-            final boolean bold;
-            @NonNull final String text;
-
-            Line(byte align, boolean bold, @NonNull String text) {
-                this.align = align;
-                this.bold = bold;
-                this.text = text;
             }
         }
     }
