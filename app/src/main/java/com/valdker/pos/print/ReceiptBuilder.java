@@ -47,7 +47,15 @@ public final class ReceiptBuilder {
         row(sb, "Plate:", c.plateNumber);
         row(sb, "Date:", c.date);
         row(sb, "Time:", c.time);
-        row(sb, "Device Time:", c.deviceTime);
+
+        // Waktu perangkat dalam bentuk ISO hanya dicetak kalau tanggal dan jam
+        // gagal diturunkan darinya - keduanya memang berasal dari stempel yang
+        // sama, jadi mencetak ketiganya hanya mengulang hal yang sama. Pada
+        // kertas 58mm stempel ISO juga tidak muat: 25 karakter angka memakan
+        // seluruh baris dan labelnya sendiri yang terpotong jadi "Device ".
+        if (c.date.isEmpty() && c.time.isEmpty()) {
+            row(sb, "Device Time:", c.deviceTime);
+        }
 
         // Meja dan pelayan hanya untuk order dine-in. Pelayan sebelumnya
         // tidak pernah tercetak sama sekali: pembuat struk tidak punya
