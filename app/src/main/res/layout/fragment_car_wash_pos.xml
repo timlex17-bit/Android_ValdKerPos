@@ -115,7 +115,7 @@
 <!--                        android:layout_height="wrap_content"-->
 <!--                        android:text="CUSTOMER"-->
 <!--                        android:textColor="#B0B7C8"-->
-<!--                        android:textSize="10sp"-->
+<!--                        android:textSize="11sp"-->
 <!--                        android:textStyle="bold" />-->
 
 <!--                    <TextView-->

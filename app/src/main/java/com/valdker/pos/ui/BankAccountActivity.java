@@ -42,6 +42,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.valdker.pos.ModuleRegistry;
 import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
+import com.valdker.pos.ui.common.SystemBars;
 import com.valdker.pos.adapters.BankAccountAdapter;
 import com.valdker.pos.models.BankAccount;
 import com.valdker.pos.network.ApiClient;
@@ -89,17 +90,12 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bank_account);
 
-        WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().setStatusBarColor(Color.parseColor("#6204BF"));
-        }
-
-        WindowInsetsControllerCompat controller =
-                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-        if (controller != null) {
-            controller.setAppearanceLightStatusBars(false);
-        }
+        // setDecorFitsSystemWindows(true) di sini sudah menyisipkan isi layar
+        // di bawah bilah status, lalu applyTopInset() menambahkan tinggi bilah
+        // status sekali lagi sebagai padding - jadi bilah atas ungu punya celah
+        // kosong setinggi dua kali bilah status. Sekarang satu jalur saja:
+        // jendela menggambar sampai tepi dan bilah atas yang tumbuh.
+        SystemBars.apply(this);
 
         sessionManager = new SessionManager(this);
         cacheRepo = new AdminMasterCacheRepository(this);
@@ -111,32 +107,10 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
         }
 
         initViews();
-        applyTopInset(findViewById(R.id.topBar));
+        SystemBars.padTopBar(findViewById(R.id.topBar));
         setupRecycler();
         setupActions();
         loadBankAccounts();
-    }
-
-    private void applyTopInset(View target) {
-        if (target == null) return;
-
-        final int initialLeft = target.getPaddingLeft();
-        final int initialTop = target.getPaddingTop();
-        final int initialRight = target.getPaddingRight();
-        final int initialBottom = target.getPaddingBottom();
-
-        ViewCompat.setOnApplyWindowInsetsListener(target, (v, insets) -> {
-            int topInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
-            v.setPadding(
-                    initialLeft,
-                    initialTop + topInset,
-                    initialRight,
-                    initialBottom
-            );
-            return insets;
-        });
-
-        ViewCompat.requestApplyInsets(target);
     }
 
     private void initViews() {

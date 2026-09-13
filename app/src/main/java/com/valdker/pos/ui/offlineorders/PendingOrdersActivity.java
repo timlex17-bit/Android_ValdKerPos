@@ -1,35 +1,49 @@
 package com.valdker.pos.ui.offlineorders;
 
-import android.graphics.Color;
-import android.graphics.Typeface;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.HorizontalScrollView;
-import android.widget.LinearLayout;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.chip.Chip;
-import com.google.android.material.chip.ChipGroup;
 import com.valdker.pos.ModuleRegistry;
+import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.local.PendingOrderEntity;
 import com.valdker.pos.local.PendingOrderItemEntity;
 import com.valdker.pos.repositories.OfflineOrderRepository;
+import com.valdker.pos.ui.common.SystemBars;
 import com.valdker.pos.utils.Toast;
 
 import java.util.List;
 
+/**
+ * Pesanan Offline.
+ *
+ * <p>Layar ini dulu dibangun sepenuhnya dari kode: sekitar 120 baris
+ * {@code new LinearLayout()} / {@code new TextView()} di {@code buildContent()},
+ * lalu RecyclerView-nya dicari lagi dengan menelusuri seluruh pohon view dan
+ * mencocokkan tag string. Konsekuensinya nyata - tidak ada bilah atas maupun
+ * tombol kembali, judulnya tertindih bilah status di Android 15+, dan seluruh
+ * teksnya terkunci dalam bahasa Inggris.
+ *
+ * <p>Sekarang tata letaknya ada di {@code activity_pending_orders.xml},
+ * bilah atasnya sama dengan layar lain, dan seluruh teks berasal dari
+ * {@code strings.xml}.
+ */
 public class PendingOrdersActivity extends AppCompatActivity {
 
     private static final String FILTER_ALL = "ALL";
@@ -43,18 +57,23 @@ public class PendingOrdersActivity extends AppCompatActivity {
     private SessionManager sessionManager;
     private PendingOrdersAdapter adapter;
 
-    private TextView tvSummary;
-    private TextView tvEmpty;
-    private TextView tvPendingCount;
-    private TextView tvFailedCount;
-    private TextView tvNeedsReviewCount;
-    private TextView tvSyncedCount;
+    private TextView tvSubtitle;
+    private View emptyState;
+    private TextView tvEmptyTitle;
+    private TextView tvEmptyMessage;
+    private SwipeRefreshLayout swipeRefresh;
     private MaterialButton btnRetryAll;
+
     private Chip chipAll;
     private Chip chipPending;
     private Chip chipFailed;
     private Chip chipNeedsReview;
     private Chip chipSynced;
+
+    private StatBox statPending;
+    private StatBox statFailed;
+    private StatBox statReview;
+    private StatBox statSynced;
 
     @NonNull
     private String selectedFilter = FILTER_ALL;
@@ -68,12 +87,15 @@ public class PendingOrdersActivity extends AppCompatActivity {
         repository = new OfflineOrderRepository(this);
         sessionManager = new SessionManager(this);
         if (!sessionManager.canAccessModule(ModuleRegistry.OFFLINE_ORDERS)) {
-            Toast.makeText(this, getString(com.valdker.pos.R.string.msg_permission_denied), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.msg_permission_denied), Toast.LENGTH_LONG).show();
             finish();
             return;
         }
 
-        setContentView(buildContent());
+        setContentView(R.layout.activity_pending_orders);
+
+        bindViews();
+        setupSystemBars();
         setupRecycler();
         setupFilters();
         setupActions();
@@ -85,127 +107,50 @@ public class PendingOrdersActivity extends AppCompatActivity {
         loadData();
     }
 
-    @NonNull
-    private View buildContent() {
-        LinearLayout root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundColor(Color.parseColor("#F4F7FB"));
-        root.setPadding(dp(14), dp(16), dp(14), 0);
+    // ------------------------------------------------------------ penyiapan
 
-        LinearLayout header = new LinearLayout(this);
-        header.setOrientation(LinearLayout.HORIZONTAL);
-        header.setGravity(Gravity.CENTER_VERTICAL);
-        header.setPadding(0, 0, 0, dp(12));
-        root.addView(header, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        ));
+    private void bindViews() {
+        View topBar = findViewById(R.id.topBar);
+        TextView tvTitle = topBar.findViewById(R.id.tvTopBarTitle);
+        tvSubtitle = topBar.findViewById(R.id.tvTopBarSubtitle);
+        ImageButton btnBack = topBar.findViewById(R.id.btnBack);
 
-        MaterialButton btnBack = new MaterialButton(this);
-        btnBack.setText("Back");
-        btnBack.setAllCaps(false);
-        btnBack.setCornerRadius(dp(10));
-        btnBack.setMinHeight(dp(42));
-        btnBack.setMinWidth(dp(72));
+        tvTitle.setText(R.string.offline_orders_title);
+        tvSubtitle.setText(R.string.offline_orders_subtitle);
+        tvSubtitle.setVisibility(View.VISIBLE);
         btnBack.setOnClickListener(v -> finish());
-        header.addView(btnBack, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        ));
 
-        LinearLayout titleBox = new LinearLayout(this);
-        titleBox.setOrientation(LinearLayout.VERTICAL);
-        titleBox.setPadding(dp(12), 0, 0, 0);
-        header.addView(titleBox, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        statPending = new StatBox(findViewById(R.id.statPending),
+                R.string.offline_orders_stat_pending, R.color.state_warning);
+        statFailed = new StatBox(findViewById(R.id.statFailed),
+                R.string.offline_orders_stat_failed, R.color.state_danger_strong);
+        statReview = new StatBox(findViewById(R.id.statReview),
+                R.string.offline_orders_stat_review, R.color.state_review);
+        statSynced = new StatBox(findViewById(R.id.statSynced),
+                R.string.offline_orders_stat_synced, R.color.state_success);
 
-        TextView title = text(24, "#101827", true);
-        title.setText("Offline Orders");
-        titleBox.addView(title);
+        chipAll = findViewById(R.id.chipAll);
+        chipPending = findViewById(R.id.chipPending);
+        chipFailed = findViewById(R.id.chipFailed);
+        chipNeedsReview = findViewById(R.id.chipNeedsReview);
+        chipSynced = findViewById(R.id.chipSynced);
 
-        tvSummary = text(13, "#6B7280", false);
-        tvSummary.setText("Orders saved on this device and waiting for sync.");
-        titleBox.addView(tvSummary);
+        swipeRefresh = findViewById(R.id.swipeOrders);
+        emptyState = findViewById(R.id.emptyState);
+        tvEmptyTitle = findViewById(R.id.tvEmptyTitle);
+        tvEmptyMessage = findViewById(R.id.tvEmptyMessage);
+        btnRetryAll = findViewById(R.id.btnRetryAll);
+    }
 
-        btnRetryAll = new MaterialButton(this);
-        btnRetryAll.setText("Retry All");
-        btnRetryAll.setAllCaps(false);
-        btnRetryAll.setCornerRadius(dp(10));
-        btnRetryAll.setMinHeight(dp(42));
-        header.addView(btnRetryAll, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        ));
-
-        LinearLayout summaryRow = new LinearLayout(this);
-        summaryRow.setOrientation(LinearLayout.HORIZONTAL);
-        summaryRow.setGravity(Gravity.CENTER_VERTICAL);
-        LinearLayout.LayoutParams summaryLp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        summaryLp.bottomMargin = dp(10);
-        root.addView(summaryRow, summaryLp);
-
-        tvPendingCount = addSummaryCard(summaryRow, "Pending", "#92400E", "#FEF3C7");
-        tvFailedCount = addSummaryCard(summaryRow, "Failed", "#B91C1C", "#FEE2E2");
-        tvNeedsReviewCount = addSummaryCard(summaryRow, "Review", "#7C2D12", "#FFEDD5");
-        tvSyncedCount = addSummaryCard(summaryRow, "Synced", "#50039B", "#EBD9FD");
-
-        HorizontalScrollView filterScroll = new HorizontalScrollView(this);
-        filterScroll.setHorizontalScrollBarEnabled(false);
-        filterScroll.setFillViewport(false);
-        root.addView(filterScroll, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        ));
-
-        ChipGroup filters = new ChipGroup(this);
-        filters.setSingleSelection(true);
-        filters.setSingleLine(true);
-        filters.setChipSpacingHorizontal(dp(8));
-        filters.setPadding(0, 0, 0, dp(10));
-        filterScroll.addView(filters, new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        ));
-
-        chipAll = filterChip("All");
-        chipPending = filterChip("Pending");
-        chipFailed = filterChip("Failed");
-        chipNeedsReview = filterChip("Needs Review");
-        chipSynced = filterChip("Synced");
-        filters.addView(chipAll);
-        filters.addView(chipPending);
-        filters.addView(chipFailed);
-        filters.addView(chipNeedsReview);
-        filters.addView(chipSynced);
-        chipAll.setChecked(true);
-
-        tvEmpty = text(15, "#6B7280", false);
-        tvEmpty.setText("No offline orders\nOrders saved while offline will appear here.");
-        tvEmpty.setGravity(Gravity.CENTER);
-        tvEmpty.setPadding(dp(16), dp(42), dp(16), dp(42));
-        tvEmpty.setVisibility(View.GONE);
-        root.addView(tvEmpty, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        ));
-
-        RecyclerView recyclerView = new RecyclerView(this);
-        recyclerView.setId(View.generateViewId());
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        root.addView(recyclerView, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                0,
-                1f
-        ));
-        recyclerView.setTag("pending_orders_recycler");
-
-        return root;
+    private void setupSystemBars() {
+        SystemBars.setup(this, findViewById(R.id.topBar), findViewById(R.id.bottomBar));
     }
 
     private void setupRecycler() {
-        RecyclerView recyclerView = findRecyclerView((ViewGroup) findViewById(android.R.id.content));
+        RecyclerView recyclerView = findViewById(R.id.rvPendingOrders);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setHasFixedSize(false);
+
         adapter = new PendingOrdersAdapter(new PendingOrdersAdapter.Listener() {
             @Override
             public void onRetry(@NonNull PendingOrderEntity order) {
@@ -222,9 +167,7 @@ public class PendingOrdersActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(@NonNull String message) {
-                        Toast.makeText(PendingOrdersActivity.this,
-                                "Failed to load order items: " + message,
-                                Toast.LENGTH_LONG).show();
+                        toast(getString(R.string.offline_orders_items_failed, message));
                     }
                 });
             }
@@ -236,10 +179,13 @@ public class PendingOrdersActivity extends AppCompatActivity {
 
             @Override
             public boolean isShopMismatch(@NonNull PendingOrderEntity order) {
-                return false;
+                return repository.hasShopContextMismatch(order);
             }
         });
         recyclerView.setAdapter(adapter);
+
+        swipeRefresh.setColorSchemeColors(ContextCompat.getColor(this, R.color.brand_primary));
+        swipeRefresh.setOnRefreshListener(this::loadData);
     }
 
     private void setupFilters() {
@@ -259,61 +205,90 @@ public class PendingOrdersActivity extends AppCompatActivity {
         loadData();
     }
 
+    // ---------------------------------------------------------------- data
+
     private void loadData() {
-        setLoading(loading);
         repository.getPendingOrderSummary(new OfflineOrderRepository.SummaryCallback() {
             @Override
             public void onSuccess(@NonNull OfflineOrderRepository.OfflineOrderSummary summary) {
-                tvSummary.setText("Orders saved on this device and waiting for sync.");
-                tvPendingCount.setText(String.valueOf(summary.pendingSyncCount));
-                tvFailedCount.setText(String.valueOf(summary.failedCount));
-                tvNeedsReviewCount.setText(String.valueOf(summary.needsReviewCount));
-                tvSyncedCount.setText(String.valueOf(summary.syncedCount));
-                chipAll.setText("All ("
-                        + (summary.pendingSyncCount
+                tvSubtitle.setText(R.string.offline_orders_subtitle);
+                statPending.setValue(summary.pendingSyncCount);
+                statFailed.setValue(summary.failedCount);
+                statReview.setValue(summary.needsReviewCount);
+                statSynced.setValue(summary.syncedCount);
+
+                int total = summary.pendingSyncCount
                         + summary.failedCount
                         + summary.needsReviewCount
-                        + summary.syncedCount)
-                        + ")");
-                chipPending.setText("Pending (" + summary.pendingSyncCount + ")");
-                chipFailed.setText("Failed (" + summary.failedCount + ")");
-                chipNeedsReview.setText("Needs Review (" + summary.needsReviewCount + ")");
-                chipSynced.setText("Synced (" + summary.syncedCount + ")");
+                        + summary.syncedCount;
+                setChipLabel(chipAll, R.string.offline_orders_filter_all, total);
+                setChipLabel(chipPending, R.string.offline_orders_filter_pending,
+                        summary.pendingSyncCount);
+                setChipLabel(chipFailed, R.string.offline_orders_filter_failed,
+                        summary.failedCount);
+                setChipLabel(chipNeedsReview, R.string.offline_orders_filter_review,
+                        summary.needsReviewCount);
+                setChipLabel(chipSynced, R.string.offline_orders_filter_synced,
+                        summary.syncedCount);
+
+                // Tidak ada apa pun untuk disinkron: aksi utama tidak perlu aktif.
+                btnRetryAll.setEnabled(!loading
+                        && (summary.pendingSyncCount + summary.failedCount) > 0);
             }
 
             @Override
             public void onError(@NonNull String message) {
-                tvSummary.setText("Unable to load sync counts");
+                tvSubtitle.setText(R.string.offline_orders_subtitle_error);
             }
         });
 
-        OfflineOrderRepository.OrderListCallback callback = new OfflineOrderRepository.OrderListCallback() {
-            @Override
-            public void onSuccess(@NonNull List<PendingOrderEntity> orders) {
-                adapter.submitOrders(orders);
-                tvEmpty.setVisibility(orders.isEmpty() ? View.VISIBLE : View.GONE);
-            }
+        OfflineOrderRepository.OrderListCallback callback =
+                new OfflineOrderRepository.OrderListCallback() {
+                    @Override
+                    public void onSuccess(@NonNull List<PendingOrderEntity> orders) {
+                        swipeRefresh.setRefreshing(false);
+                        adapter.submitOrders(orders);
+                        showEmptyState(orders.isEmpty());
+                    }
 
-            @Override
-            public void onError(@NonNull String message) {
-                Toast.makeText(PendingOrdersActivity.this,
-                        "Failed to load offline orders: " + message,
-                        Toast.LENGTH_LONG).show();
-            }
-        };
+                    @Override
+                    public void onError(@NonNull String message) {
+                        swipeRefresh.setRefreshing(false);
+                        toast(getString(R.string.offline_orders_load_failed, message));
+                    }
+                };
 
-        if (FILTER_PENDING.equals(selectedFilter)) {
-            repository.getCurrentShopOfflineOrders(OfflineOrderRepository.STATUS_PENDING_SYNC, callback);
-        } else if (FILTER_FAILED.equals(selectedFilter)) {
-            repository.getCurrentShopOfflineOrders(OfflineOrderRepository.STATUS_FAILED, callback);
-        } else if (FILTER_NEEDS_REVIEW.equals(selectedFilter)) {
-            repository.getCurrentShopOfflineOrders(OfflineOrderRepository.STATUS_NEEDS_REVIEW, callback);
-        } else if (FILTER_SYNCED.equals(selectedFilter)) {
-            repository.getCurrentShopOfflineOrders(OfflineOrderRepository.STATUS_SYNCED, callback);
-        } else {
-            repository.getCurrentShopOfflineOrders(null, callback);
-        }
+        repository.getCurrentShopOfflineOrders(statusForFilter(), callback);
     }
+
+    @Nullable
+    private String statusForFilter() {
+        if (FILTER_PENDING.equals(selectedFilter)) return OfflineOrderRepository.STATUS_PENDING_SYNC;
+        if (FILTER_FAILED.equals(selectedFilter)) return OfflineOrderRepository.STATUS_FAILED;
+        if (FILTER_NEEDS_REVIEW.equals(selectedFilter)) return OfflineOrderRepository.STATUS_NEEDS_REVIEW;
+        if (FILTER_SYNCED.equals(selectedFilter)) return OfflineOrderRepository.STATUS_SYNCED;
+        return null;
+    }
+
+    /**
+     * Daftar kosong karena memang belum ada pesanan offline dan daftar kosong
+     * karena filter yang dipilih tidak cocok adalah dua keadaan berbeda, dan
+     * saran yang tepat untuk keduanya juga berbeda.
+     */
+    private void showEmptyState(boolean empty) {
+        emptyState.setVisibility(empty ? View.VISIBLE : View.GONE);
+        if (!empty) return;
+
+        boolean filtered = !FILTER_ALL.equals(selectedFilter);
+        tvEmptyTitle.setText(filtered
+                ? R.string.offline_orders_empty_filtered_title
+                : R.string.offline_orders_empty_title);
+        tvEmptyMessage.setText(filtered
+                ? R.string.offline_orders_empty_filtered_message
+                : R.string.offline_orders_empty_message);
+    }
+
+    // --------------------------------------------------------------- aksi
 
     private void retryOne(@NonNull PendingOrderEntity order) {
         if (loading) return;
@@ -323,72 +298,72 @@ public class PendingOrdersActivity extends AppCompatActivity {
                     + " pending.shopCode=" + order.shopCode
                     + " current.shopId=" + sessionManager.getShopId()
                     + " current.shopCode=" + sessionManager.getShopCode());
-            String message = order.shopId <= 0 || order.shopCode == null || order.shopCode.trim().isEmpty()
-                    ? "Unknown shop context. This order requires manual review."
-                    : "This offline order belongs to another shop. Login to the original shop to sync.";
-            Toast.makeText(this,
-                    message,
-                    Toast.LENGTH_LONG).show();
+            boolean unknownShop = order.shopId <= 0
+                    || order.shopCode == null
+                    || order.shopCode.trim().isEmpty();
+            toast(getString(unknownShop
+                    ? R.string.offline_orders_shop_unknown
+                    : R.string.offline_orders_shop_mismatch));
             return;
         }
 
         setLoading(true);
-        Toast.makeText(this, "Sync started", Toast.LENGTH_SHORT).show();
-        repository.retryOrder(order.localOrderId, sessionManager.getToken(), new OfflineOrderRepository.SyncCallback() {
-            @Override
-            public void onComplete(@NonNull String message) {
-                setLoading(false);
-                Toast.makeText(PendingOrdersActivity.this,
-                        message.isEmpty() ? "Order synced successfully" : message,
-                        Toast.LENGTH_LONG).show();
-                loadData();
-            }
+        toast(getString(R.string.offline_orders_sync_started));
+        repository.retryOrder(order.localOrderId, sessionManager.getToken(),
+                new OfflineOrderRepository.SyncCallback() {
+                    @Override
+                    public void onComplete(@NonNull String message) {
+                        setLoading(false);
+                        toast(message.isEmpty()
+                                ? getString(R.string.offline_orders_sync_ok)
+                                : message);
+                        loadData();
+                    }
 
-            @Override
-            public void onError(@NonNull String message) {
-                setLoading(false);
-                Toast.makeText(PendingOrdersActivity.this,
-                        message.isEmpty() ? "Sync failed. Please check error details." : message,
-                        Toast.LENGTH_LONG).show();
-                loadData();
-            }
-        });
+                    @Override
+                    public void onError(@NonNull String message) {
+                        setLoading(false);
+                        toast(message.isEmpty()
+                                ? getString(R.string.offline_orders_sync_failed)
+                                : message);
+                        loadData();
+                    }
+                });
     }
 
     private void retryAll() {
         if (loading) return;
 
         setLoading(true);
-        Toast.makeText(this, "Sync started", Toast.LENGTH_SHORT).show();
-        repository.retryAllPendingAndFailed(sessionManager.getToken(), new OfflineOrderRepository.SyncCallback() {
-            @Override
-            public void onComplete(@NonNull String message) {
-                setLoading(false);
-                Toast.makeText(PendingOrdersActivity.this,
-                        message.isEmpty() ? "Sync finished" : message,
-                        Toast.LENGTH_LONG).show();
-                loadData();
-            }
+        toast(getString(R.string.offline_orders_sync_started));
+        repository.retryAllPendingAndFailed(sessionManager.getToken(),
+                new OfflineOrderRepository.SyncCallback() {
+                    @Override
+                    public void onComplete(@NonNull String message) {
+                        setLoading(false);
+                        toast(message.isEmpty()
+                                ? getString(R.string.offline_orders_sync_finished)
+                                : message);
+                        loadData();
+                    }
 
-            @Override
-            public void onError(@NonNull String message) {
-                setLoading(false);
-                Toast.makeText(PendingOrdersActivity.this,
-                        "Sync failed. Please check error details.",
-                        Toast.LENGTH_LONG).show();
-                loadData();
-            }
-        });
+                    @Override
+                    public void onError(@NonNull String message) {
+                        setLoading(false);
+                        toast(getString(R.string.offline_orders_sync_failed));
+                        loadData();
+                    }
+                });
     }
 
     private void reprintReceipt(@NonNull PendingOrderEntity order) {
         if (reprintRunning) {
-            Toast.makeText(this, "Receipt print already running.", Toast.LENGTH_SHORT).show();
+            toast(getString(R.string.offline_orders_reprint_running));
             return;
         }
 
         reprintRunning = true;
-        Toast.makeText(this, "Reprint started", Toast.LENGTH_SHORT).show();
+        toast(getString(R.string.offline_orders_reprint_started));
         repository.getOrderItems(order.localOrderId, new OfflineOrderRepository.OrderItemsCallback() {
             @Override
             public void onSuccess(@NonNull List<PendingOrderItemEntity> items) {
@@ -399,42 +374,22 @@ public class PendingOrdersActivity extends AppCompatActivity {
                         new PendingOrderReceiptPrinter.Callback() {
                             @Override
                             public void onSuccess() {
-                                runOnUiThread(() -> {
-                                    reprintRunning = false;
-                                    Toast.makeText(PendingOrdersActivity.this,
-                                            "Receipt reprinted successfully.",
-                                            Toast.LENGTH_LONG).show();
-                                });
+                                finishReprint(R.string.offline_orders_reprint_ok);
                             }
 
                             @Override
                             public void onError(@NonNull String message) {
-                                runOnUiThread(() -> {
-                                    reprintRunning = false;
-                                    Toast.makeText(PendingOrdersActivity.this,
-                                            "Receipt reprint failed. Check printer connection.",
-                                            Toast.LENGTH_LONG).show();
-                                });
+                                finishReprint(R.string.offline_orders_reprint_failed);
                             }
 
                             @Override
                             public void onSkipped(@NonNull String message) {
-                                runOnUiThread(() -> {
-                                    reprintRunning = false;
-                                    Toast.makeText(PendingOrdersActivity.this,
-                                            message.isEmpty() ? "Receipt reprint skipped." : message,
-                                            Toast.LENGTH_LONG).show();
-                                });
+                                finishReprint(R.string.offline_orders_reprint_skipped);
                             }
 
                             @Override
                             public void onTimeout(@NonNull String message) {
-                                runOnUiThread(() -> {
-                                    reprintRunning = false;
-                                    Toast.makeText(PendingOrdersActivity.this,
-                                            "Printer connection timed out. Please check printer and try reprint.",
-                                            Toast.LENGTH_LONG).show();
-                                });
+                                finishReprint(R.string.offline_orders_reprint_timeout);
                             }
                         }
                 );
@@ -442,98 +397,55 @@ public class PendingOrdersActivity extends AppCompatActivity {
 
             @Override
             public void onError(@NonNull String message) {
-                reprintRunning = false;
-                Toast.makeText(PendingOrdersActivity.this,
-                        "Receipt reprint failed. Check printer connection.",
-                        Toast.LENGTH_LONG).show();
+                finishReprint(R.string.offline_orders_reprint_failed);
             }
+        });
+    }
+
+    private void finishReprint(@StringRes int messageRes) {
+        runOnUiThread(() -> {
+            reprintRunning = false;
+            toast(getString(messageRes));
         });
     }
 
     private void setLoading(boolean loading) {
         this.loading = loading;
         btnRetryAll.setEnabled(!loading);
-        btnRetryAll.setText(loading ? "Syncing..." : "Retry All");
+        btnRetryAll.setText(loading
+                ? R.string.offline_orders_retry_all_running
+                : R.string.offline_orders_retry_all);
     }
 
-    @NonNull
-    private Chip filterChip(@NonNull String label) {
-        Chip chip = new Chip(this);
-        chip.setText(label);
-        chip.setCheckable(true);
-        chip.setTextSize(13);
-        chip.setMinHeight(dp(40));
-        chip.setChipCornerRadius(dp(20));
-        return chip;
+    private void setChipLabel(@NonNull Chip chip, @StringRes int labelRes, int count) {
+        chip.setText(getString(R.string.offline_orders_filter_count, getString(labelRes), count));
     }
 
-    private TextView addSummaryCard(@NonNull LinearLayout parent,
-                                    @NonNull String label,
-                                    @NonNull String textColor,
-                                    @NonNull String bgColor) {
-        MaterialCardView card = new MaterialCardView(this);
-        card.setRadius(dp(8));
-        card.setCardElevation(0);
-        card.setStrokeWidth(1);
-        card.setStrokeColor(Color.parseColor("#E5E7EB"));
-        card.setCardBackgroundColor(Color.parseColor(bgColor));
-
-        LinearLayout box = new LinearLayout(this);
-        box.setOrientation(LinearLayout.VERTICAL);
-        box.setPadding(dp(10), dp(10), dp(10), dp(10));
-        card.addView(box, new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        ));
-
-        TextView count = text(20, textColor, true);
-        count.setText("0");
-        box.addView(count);
-
-        TextView title = text(11, "#64748B", false);
-        title.setText(label);
-        box.addView(title);
-
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        lp.setMargins(dp(3), 0, dp(3), 0);
-        parent.addView(card, lp);
-        return count;
+    private void toast(@NonNull String message) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
-    @NonNull
-    private TextView text(int sp, @NonNull String color, boolean bold) {
-        TextView tv = new TextView(this);
-        tv.setTextSize(sp);
-        tv.setTextColor(Color.parseColor(color));
-        if (bold) tv.setTypeface(Typeface.DEFAULT_BOLD);
-        return tv;
-    }
+    /**
+     * Pembungkus untuk satu kotak angka ringkasan. Keempat kotak memakai
+     * layout yang sama lewat {@code <include>}, jadi pencarian view-nya
+     * dibatasi pada akar tiap include - kalau tidak, findViewById tingkat
+     * Activity akan selalu mengembalikan kotak pertama.
+     */
+    private static final class StatBox {
+        private final TextView value;
 
-    @NonNull
-    private RecyclerView findRecyclerView(@NonNull ViewGroup group) {
-        RecyclerView recyclerView = findRecyclerViewOrNull(group);
-        if (recyclerView == null) {
-            throw new IllegalStateException("Pending orders RecyclerView not found");
+        StatBox(@NonNull View root, @StringRes int labelRes, @ColorRes int accentRes) {
+            this.value = root.findViewById(R.id.tvStatValue);
+            TextView label = root.findViewById(R.id.tvStatLabel);
+            View dot = root.findViewById(R.id.statDot);
+
+            label.setText(labelRes);
+            dot.setBackgroundTintList(ColorStateList.valueOf(
+                    ContextCompat.getColor(root.getContext(), accentRes)));
         }
-        return recyclerView;
-    }
 
-    @Nullable
-    private RecyclerView findRecyclerViewOrNull(@NonNull ViewGroup group) {
-        for (int i = 0; i < group.getChildCount(); i++) {
-            View child = group.getChildAt(i);
-            if (child instanceof RecyclerView && "pending_orders_recycler".equals(child.getTag())) {
-                return (RecyclerView) child;
-            }
-            if (child instanceof ViewGroup) {
-                RecyclerView found = findRecyclerViewOrNull((ViewGroup) child);
-                if (found != null) return found;
-            }
+        void setValue(int count) {
+            value.setText(String.valueOf(count));
         }
-        return null;
-    }
-
-    private int dp(int value) {
-        return Math.round(value * getResources().getDisplayMetrics().density);
     }
 }

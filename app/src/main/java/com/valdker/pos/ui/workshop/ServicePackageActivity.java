@@ -24,6 +24,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.valdker.pos.ModuleRegistry;
 import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
+import com.valdker.pos.ui.common.SystemBars;
 import com.valdker.pos.models.ServicePackageRequest;
 import com.valdker.pos.models.ServicePackageResponse;
 import com.valdker.pos.repositories.ServicePackageRepository;
@@ -63,6 +64,11 @@ public class ServicePackageActivity extends AppCompatActivity implements Service
 
         repository = new ServicePackageRepository(this);
         setContentView(R.layout.activity_workshop_module_list);
+        // Bilah atas ungu yang tumbuh sampai ke belakang bilah status, sama
+        // seperti seluruh layar daftar lainnya.
+        SystemBars.apply(this);
+        SystemBars.padTopBar(findViewById(R.id.topBar));
+        SystemBars.padBottom(findViewById(R.id.moduleListContent));
         bindViews();
         setupViews();
         loadServicePackages();
@@ -78,8 +84,8 @@ public class ServicePackageActivity extends AppCompatActivity implements Service
 
     private void bindViews() {
         ImageButton btnBack = findViewById(R.id.btnBack);
-        TextView tvTitle = findViewById(R.id.tvTitle);
-        TextView tvSubtitle = findViewById(R.id.tvSubtitle);
+        TextView tvTitle = findViewById(R.id.tvTopBarTitle);
+        TextView tvSubtitle = findViewById(R.id.tvTopBarSubtitle);
         recyclerView = findViewById(R.id.rvItems);
         progressBar = findViewById(R.id.progressBar);
         tvEmpty = findViewById(R.id.tvEmpty);
@@ -88,6 +94,7 @@ public class ServicePackageActivity extends AppCompatActivity implements Service
 
         if (btnBack != null) btnBack.setOnClickListener(v -> finish());
         if (tvTitle != null) tvTitle.setText("Service Packages");
+        if (tvSubtitle != null) tvSubtitle.setVisibility(View.VISIBLE);
         if (tvSubtitle != null) tvSubtitle.setText("Workshop service package catalog");
     }
 

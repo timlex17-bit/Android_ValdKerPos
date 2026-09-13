@@ -31,6 +31,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
+import com.valdker.pos.ui.common.SystemBars;
 import com.valdker.pos.models.Customer;
 import com.valdker.pos.network.ApiClient;
 import com.valdker.pos.network.ApiConfig;
@@ -104,6 +105,7 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
             return;
         }
         setContentView(R.layout.activity_workshop_module_list);
+        setupSystemBars();
         bindViews();
         setupViews();
         loadData();
@@ -123,10 +125,25 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
         finish();
     }
 
+    /**
+     * Tujuh layar bengkel memakai kerangka ini, jadi bilah sistemnya disiapkan
+     * di sini sekali - bukan disalin ke tiap turunan. Bilah atas ungu yang
+     * tumbuh sampai ke belakang bilah status, dan daftar dijauhkan dari batang
+     * gestur di dasar layar.
+     */
+    private void setupSystemBars() {
+        SystemBars.apply(this);
+        SystemBars.padTopBar(findViewById(R.id.topBar));
+        SystemBars.padBottom(findViewById(R.id.moduleListContent));
+    }
+
     private void bindViews() {
         ImageButton btnBack = findViewById(R.id.btnBack);
-        tvTitle = findViewById(R.id.tvTitle);
-        tvSubtitle = findViewById(R.id.tvSubtitle);
+        tvTitle = findViewById(R.id.tvTopBarTitle);
+        tvSubtitle = findViewById(R.id.tvTopBarSubtitle);
+        // Subjudul bilah atas bawaannya GONE; layar daftar ini selalu punya
+        // subjudul, jadi ia dinyalakan di sini.
+        if (tvSubtitle != null) tvSubtitle.setVisibility(View.VISIBLE);
         tvEmpty = findViewById(R.id.tvEmpty);
         tvError = findViewById(R.id.tvError);
         progressBar = findViewById(R.id.progressBar);

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Bentuk kapsul polos berwarna putih. Warnanya diberikan pemakai lewat
+  backgroundTint, jadi satu drawable cukup untuk semua lencana status.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="@color/surface" />
+    <corners android:radius="@dimen/radius_pill" />
+</shape>

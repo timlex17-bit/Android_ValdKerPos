@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Bilah atas bersama.
+
+  Dipakai lewat <include layout="@layout/view_topbar" /> supaya setiap layar
+  punya bilah dengan tinggi, warna, ukuran ikon, dan letak judul yang sama.
+  Sebelum ini tiap layar menyalin bilahnya sendiri: ada yang setinggi 72dp
+  putih, ada yang ungu tanpa tinggi minimum, ada yang tidak punya bilah sama
+  sekali, sehingga judul melompat-lompat saat berpindah layar.
+
+  Warnanya ungu merek dan padding atasnya ditumbuhkan oleh
+  SystemBars.padTopBar() sampai ke belakang bilah status, jadi bilah status
+  ikut ungu di Android 15+ tanpa bergantung pada android:statusBarColor.
+
+  Tingginya wrap_content dengan minHeight, bukan tinggi tetap, supaya judul
+  tetap muat saat pengguna memperbesar ukuran huruf sistem.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/topBar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/brand_primary"
+    android:baselineAligned="false"
+    android:elevation="3dp"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/topbar_min_height"
+    android:orientation="horizontal"
+    android:paddingStart="6dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="10dp"
+    android:paddingBottom="8dp">
+
+    <ImageButton
+        android:id="@+id/btnBack"
+        android:layout_width="@dimen/topbar_icon_size"
+        android:layout_height="@dimen/topbar_icon_size"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/action_back"
+        android:padding="8dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_arrow_back"
+        app:tint="@color/text_on_brand" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvTopBarTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/text_on_brand"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            tools:text="Pesanan Offline" />
+
+        <TextView
+            android:id="@+id/tvTopBarSubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:alpha="0.82"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/text_on_brand"
+            android:textSize="12sp"
+            android:visibility="gone"
+            tools:text="12 pesanan menunggu sinkron"
+            tools:visibility="visible" />
+    </LinearLayout>
+
+    <!--
+      Dua slot aksi opsional. Layar yang tidak memakainya membiarkan keduanya
+      GONE; bilah tidak berubah tinggi karena tingginya ditentukan minHeight.
+    -->
+    <ImageButton
+        android:id="@+id/btnTopAction1"
+        android:layout_width="@dimen/topbar_icon_size"
+        android:layout_height="@dimen/topbar_icon_size"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/action_refresh"
+        android:padding="8dp"
+        android:scaleType="fitCenter"
+        android:visibility="gone"
+        app:tint="@color/text_on_brand"
+        tools:src="@drawable/ic_refresh"
+        tools:visibility="visible" />
+
+    <ImageButton
+        android:id="@+id/btnTopAction2"
+        android:layout_width="@dimen/topbar_icon_size"
+        android:layout_height="@dimen/topbar_icon_size"
+        android:layout_marginStart="2dp"
+        android:src="@drawable/ic_more_vert"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/action_more"
+        android:padding="8dp"
+        android:scaleType="fitCenter"
+        android:visibility="gone"
+        app:tint="@color/text_on_brand" />
+
+</LinearLayout>

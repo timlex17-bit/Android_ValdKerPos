@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Daftar item bon yang sedang berjalan.
+
+  Bagian ini yang dulu paling kacau: judul bagian dan tombol "kosongkan" ada
+  di dalam kartu pada potret tapi mengambang di luar kartu pada lanskap,
+  keadaan kosongnya dikomentari sehingga tvEmptyState selalu null dan pesan
+  "belum ada item" tidak pernah muncul, dan tombol kosongkan hanyalah TextView
+  berisi karakter "x" tanpa label - tidak terbaca pembaca layar dan mudah
+  tertekan tanpa sengaja.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/posListSection"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- ===== Kepala bagian ===== -->
+    <LinearLayout
+        android:id="@+id/layoutRetailContentHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="14dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="8dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingEnd="8dp">
+
+            <TextView
+                android:id="@+id/txtSectionTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="@string/pos_scanned_items"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtSectionSubtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="@string/pos_items_after_barcode"
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <!--
+          Tombol kosongkan bon. Kini tombol sungguhan dengan label teks, ikon,
+          dan area sentuh 44dp - bukan lagi karakter "x" berukuran 20sp yang
+          berdiri sendiri.
+        -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/txtItemCount"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/action_clear_draft_items"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minHeight="44dp"
+            android:minWidth="0dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:text="@string/pos_clear_draft"
+            android:textAllCaps="false"
+            android:textColor="@color/state_danger"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:cornerRadius="@dimen/radius_surface_sm"
+            app:icon="@drawable/ic_remove"
+            app:iconPadding="4dp"
+            app:iconSize="16dp"
+            app:iconTint="@color/state_danger" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/stroke_soft" />
+
+    <!-- ===== Isi ===== -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvProducts"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:overScrollMode="ifContentScrolls"
+            android:paddingStart="10dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="14dp"
+            android:scrollbars="vertical"
+            tools:itemCount="4"
+            tools:listitem="@layout/item_product" />
+
+        <!--
+          Keadaan kosong. Di layout lama blok ini dikomentari, jadi
+          findViewById(R.id.tvEmptyState) selalu mengembalikan null dan seluruh
+          jalur showEmptyState()/hideEmptyState() di fragment tidak melakukan
+          apa pun - kasir hanya melihat daerah putih kosong tanpa penjelasan.
+        -->
+        <ScrollView
+            android:id="@+id/emptyStateScroll"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:visibility="gone"
+            tools:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:minHeight="180dp"
+                android:orientation="vertical"
+                android:paddingStart="28dp"
+                android:paddingTop="20dp"
+                android:paddingEnd="28dp"
+                android:paddingBottom="20dp">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:alpha="0.3"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_barcode"
+                    app:tint="@color/text_secondary" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center"
+                    android:text="@string/pos_empty_title"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvEmptyState"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:gravity="center"
+                    android:lineSpacingExtra="2dp"
+                    android:text="@string/pos_empty_message"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp" />
+            </LinearLayout>
+        </ScrollView>
+
+        <ProgressBar
+            android:id="@+id/progressProducts"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminateTint="@color/brand_primary"
+            android:visibility="gone" />
+    </FrameLayout>
+
+</LinearLayout>

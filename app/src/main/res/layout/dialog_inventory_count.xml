@@ -28,6 +28,7 @@
                 android:id="@+id/imgClose"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
+                android:contentDescription="@string/action_close"
                 android:layout_alignParentEnd="true"
                 android:src="@android:drawable/ic_menu_close_clear_cancel" />
         </RelativeLayout>
@@ -61,10 +62,12 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAddRow"
+            style="@style/Widget.Valora.Dialog.Button.Outlined"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Add Item"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginTop="10dp"
+            android:minHeight="@dimen/touch_target_min"
+            android:text="@string/title_add_item" />
 
         <ProgressBar
             android:id="@+id/progress"
@@ -83,16 +86,20 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCancel"
+                style="@style/Widget.Valora.Dialog.Button.Negative"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Cancel" />
+                android:minHeight="@dimen/touch_target_min"
+                android:text="@string/action_cancel" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSave"
+                style="@style/Widget.Valora.Dialog.Button.Positive"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Save"
-                android:layout_marginStart="10dp"/>
+                android:layout_marginStart="10dp"
+                android:minHeight="@dimen/touch_target_min"
+                android:text="@string/action_save" />
         </LinearLayout>
     </LinearLayout>
 

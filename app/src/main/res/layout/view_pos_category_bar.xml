@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Bilah kategori di dasar POS MainActivity.
+
+  Berkas bersama karena varian lanskap tidak memuat bottomCategoryBar sama
+  sekali, sementara MainActivity.applyBusinessTypeUi() menyetel
+  {@code lp.bottomToTop = R.id.bottomCategoryBar} tanpa penjagaan. Di lanskap
+  acuan itu menggantung, fragmentContainer setinggi 0dp kehilangan batas
+  bawahnya, dan area isi POS menyusut jadi nol - layar tampak kosong sampai
+  perangkat diputar kembali ke potret.
+
+  Tingginya wrap_content dengan minHeight supaya ikut tumbuh bersama ukuran
+  huruf sistem, bukan terkunci 72dp seperti sebelumnya.
+-->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/bottomCategoryBar"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="8dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginBottom="14dp"
+    android:minHeight="64dp"
+    app:cardBackgroundColor="@color/surface"
+    app:cardCornerRadius="@dimen/radius_surface"
+    app:cardElevation="4dp"
+    app:cardUseCompatPadding="false">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvCategories"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:clipToPadding="false"
+        android:minHeight="44dp"
+        android:overScrollMode="never"
+        android:paddingStart="8dp"
+        android:paddingTop="6dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="6dp" />
+
+</com.google.android.material.card.MaterialCardView>

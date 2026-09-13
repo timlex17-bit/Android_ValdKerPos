@@ -1,22 +1,13 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
 
-    <style name="Theme.ValdKer" parent="Theme.Material3.Light.NoActionBar">
-        <item name="colorPrimary">#6204BF</item>
-        <item name="colorPrimaryContainer">#6204BF</item>
-        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
-
-        <item name="android:statusBarColor">#6204BF</item>
-        <!--
-          targetSdk 36 membuat android:statusBarColor tidak berlaku di
-          Android 15+, jadi yang terlihat di balik bilah status adalah
-          layout layar itu sendiri. Mayoritas layar berlatar terang,
-          maka bawaannya ikon gelap. Layar yang mengecat strip ungu
-          sendiri memanggil setAppearanceLightStatusBars(false).
-        -->
-        <item name="android:windowLightStatusBar">true</item>
-
-        <item name="android:navigationBarColor">#FFFFFF</item>
-        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
-    </style>
+    <!--
+      Aplikasi ini sengaja tampil terang di mode gelap sekalipun: layar kasir
+      dipakai di bawah lampu toko dan struk/daftar produk dirancang di atas
+      putih. Dulu berkas ini memuat salinan penuh Theme.ValdKer yang perlahan
+      menyimpang dari versi terang - gaya dialog bersama hilang di sana.
+      Sekarang ia hanya mewarisi, jadi tidak bisa lagi menyimpang.
+    -->
+    <style name="Theme.ValdKer" parent="Theme.ValdKer.Base" />
 
 </resources>

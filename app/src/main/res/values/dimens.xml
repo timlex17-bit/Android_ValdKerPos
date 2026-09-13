@@ -42,4 +42,34 @@
     <dimen name="pos_side_panel_max_width">340dp</dimen>
     <dimen name="product_card_image_height">170dp</dimen>
 
+
+    <!--
+      Radius tunggal untuk SEMUA popup: jendela dialog, kartu di dalamnya,
+      kolom isian, tombol, menu popup, dan toast. Satu nilai supaya tidak ada
+      lagi sudut 16/18/20/22/24dp yang berbeda-beda di tiap berkas.
+    -->
+    <dimen name="radius_dialog">3dp</dimen>
+
+    <!--
+      Radius permukaan aplikasi (kartu di layar, bilah, panel). Dipisah dari
+      radius dialog supaya mengubah salah satunya tidak menyeret yang lain.
+    -->
+    <dimen name="radius_surface">14dp</dimen>
+    <dimen name="radius_surface_sm">10dp</dimen>
+    <dimen name="radius_pill">999dp</dimen>
+
+    <!-- Tinggi minimum bilah atas; dipakai semua layar agar seragam. -->
+    <dimen name="topbar_min_height">56dp</dimen>
+    <dimen name="topbar_icon_size">40dp</dimen>
+    <dimen name="touch_target_min">48dp</dimen>
+
+
+    <!--
+      Kasir dua kolom. cart_pane_width hanya terpakai pada tata letak tablet
+      (layout-sw600dp/activity_main.xml); nilainya tetap didefinisikan di sini
+      supaya rujukan dari layout mana pun tidak pernah gagal di-resolve.
+    -->
+    <dimen name="cart_pane_width">320dp</dimen>
+    <dimen name="cart_thumb_size">52dp</dimen>
+    <dimen name="cart_stepper_button">34dp</dimen>
 </resources>

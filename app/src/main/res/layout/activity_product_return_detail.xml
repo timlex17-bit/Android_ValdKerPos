@@ -1,153 +1,197 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Detail retur penjualan.
+
+  Sebelumnya layar ini tidak punya bilah atas sama sekali: judulnya sekadar
+  TextView di baris pertama badan, dan satu-satunya jalan keluar adalah tombol
+  kembali sistem. Semua labelnya ("Invoice: -", "Product", "Print Return")
+  ditulis langsung di layout dalam bahasa Inggris sehingga tidak ikut
+  terjemahan.
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/detailRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#F6F7FB"
-    android:clipToPadding="false"
-    android:padding="16dp">
+    android:background="@color/app_bg"
+    android:orientation="vertical">
 
-    <!-- Header Card -->
+    <include layout="@layout/view_topbar" />
+
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        android:padding="14dp"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/tvTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Return #1"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:textColor="#111827" />
-
-        <TextView
-            android:id="@+id/tvInvoice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Invoice: -"
-            android:textSize="14sp"
-            android:textColor="#374151"
-            android:layout_marginTop="6dp" />
-
-        <TextView
-            android:id="@+id/tvCustomer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Customer: -"
-            android:textSize="14sp"
-            android:textColor="#374151"
-            android:layout_marginTop="4dp" />
-
-        <TextView
-            android:id="@+id/tvReturnedBy"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Returned by: -"
-            android:textSize="14sp"
-            android:textColor="#374151"
-            android:layout_marginTop="4dp" />
-
-        <TextView
-            android:id="@+id/tvReturnedAt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Returned: -"
-            android:textSize="13sp"
-            android:textColor="#6B7280"
-            android:layout_marginTop="4dp" />
-
-        <TextView
-            android:id="@+id/tvNote"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Note: -"
-            android:textSize="14sp"
-            android:textColor="#374151"
-            android:layout_marginTop="8dp" />
-    </LinearLayout>
-
-    <!-- Table Header -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingTop="12dp"
-        android:paddingBottom="6dp">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1.6"
-            android:text="Product"
-            android:textStyle="bold"
-            android:textColor="#111827" />
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.6"
-            android:gravity="end"
-            android:text="Qty"
-            android:textStyle="bold"
-            android:textColor="#111827" />
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.9"
-            android:gravity="end"
-            android:text="Price"
-            android:textStyle="bold"
-            android:textColor="#111827" />
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.9"
-            android:gravity="end"
-            android:text="Total"
-            android:textStyle="bold"
-            android:textColor="#111827" />
-    </LinearLayout>
-
-    <!-- Items Recycler -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvItems"
+        android:id="@+id/detailContent"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@android:color/white"
-        android:padding="12dp" />
+        android:clipToPadding="false"
+        android:orientation="vertical"
+        android:paddingStart="14dp"
+        android:paddingTop="14dp"
+        android:paddingEnd="14dp">
 
-    <!-- Footer totals + print button -->
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.Valora.ListCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:id="@+id/tvTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    tools:text="Return #1" />
+
+                <TextView
+                    android:id="@+id/tvInvoice"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    tools:text="Invoice: INV-0042" />
+
+                <TextView
+                    android:id="@+id/tvCustomer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    tools:text="Customer: -" />
+
+                <TextView
+                    android:id="@+id/tvReturnedBy"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    tools:text="Returned by: -" />
+
+                <TextView
+                    android:id="@+id/tvReturnedAt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:textColor="@color/text_tertiary"
+                    android:textSize="12sp"
+                    tools:text="Returned: -" />
+
+                <TextView
+                    android:id="@+id/tvNote"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    tools:text="Note: -" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Kepala tabel -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="4dp"
+            android:paddingTop="14dp"
+            android:paddingEnd="4dp"
+            android:paddingBottom="6dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.6"
+                android:text="@string/detail_col_product"
+                android:textColor="@color/text_tertiary"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.6"
+                android:gravity="end"
+                android:text="@string/detail_col_qty"
+                android:textColor="@color/text_tertiary"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.9"
+                android:gravity="end"
+                android:text="@string/detail_col_price"
+                android:textColor="@color/text_tertiary"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.9"
+                android:gravity="end"
+                android:text="@string/detail_col_total"
+                android:textColor="@color/text_tertiary"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.Valora.ListCard"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvItems"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:padding="12dp" />
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+
     <LinearLayout
+        android:id="@+id/bottomBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        android:padding="12dp"
+        android:background="@color/surface"
+        android:elevation="8dp"
         android:orientation="vertical"
-        android:layout_marginTop="10dp">
+        android:paddingStart="14dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="10dp">
 
         <TextView
             android:id="@+id/tvSummary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Qty: 0 • Total: $0.00"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
             android:textStyle="bold"
-            android:textSize="15sp"
-            android:textColor="#111827" />
+            tools:text="Qty: 3 . Total: $42.00" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnPrint"
+            style="@style/Widget.Valora.PrimaryButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Print Return"
-            android:layout_marginTop="10dp" />
+            android:layout_marginTop="8dp"
+            android:text="@string/detail_print_return"
+            app:icon="@drawable/ic_print"
+            app:iconGravity="textStart" />
     </LinearLayout>
 
 </LinearLayout>

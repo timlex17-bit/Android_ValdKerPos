@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pranala yang disarankan asisten, tampil sebagai tombol lunak. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="@color/brand_tint" />
+    <corners android:radius="@dimen/radius_surface_sm" />
+</shape>

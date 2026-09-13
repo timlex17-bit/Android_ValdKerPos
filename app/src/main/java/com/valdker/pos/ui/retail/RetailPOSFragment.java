@@ -36,6 +36,7 @@ import com.google.android.material.chip.ChipGroup;
 import com.valdker.pos.R;
 import com.valdker.pos.money.Money;
 import com.valdker.pos.SessionManager;
+import com.valdker.pos.ui.common.SystemBars;
 import com.valdker.pos.drafts.PosDraftEntity;
 import com.valdker.pos.drafts.PosDraftItemEntity;
 import com.valdker.pos.drafts.PosDraftRepository;
@@ -48,14 +49,7 @@ import com.valdker.pos.repositories.MasterDataRepository;
 import com.valdker.pos.repositories.ShopRepository;
 
 import android.graphics.Color;
-import android.os.Build;
-import android.view.Window;
-import android.view.WindowManager;
 
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.core.view.WindowInsetsControllerCompat;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -115,6 +109,7 @@ public class RetailPOSFragment extends Fragment {
     // Content
     private RecyclerView rvProducts;
     private TextView tvEmptyState;
+    private View emptyStateScroll;
     private ProgressBar progressProducts;
     private TextView txtGrandTotal;
     private TextView txtItemCount;
@@ -238,64 +233,26 @@ public class RetailPOSFragment extends Fragment {
         updateSummary();
     }
 
+    /**
+     * Bilah sistem POS.
+     *
+     * <p>Versi sebelumnya menambahkan tinggi bilah status sebagai padding pada
+     * akar layout yang berlatar abu-abu terang, lalu memaksa ikon bilah status
+     * jadi putih. Di Android 14 ke bawah itu masih tertutupi karena
+     * {@code setStatusBarColor} mengecat strip ungu sendiri; di Android 15+
+     * warna itu diabaikan, sehingga yang tersisa adalah jam dan ikon baterai
+     * putih di atas abu-abu terang - praktis tak terlihat.
+     *
+     * <p>Sekarang yang tumbuh ke belakang bilah status adalah bilah atas ungu
+     * itu sendiri, jadi warnanya benar di semua versi Android tanpa API yang
+     * sudah tidak berlaku.
+     */
     private void applyRetailSystemBars(@NonNull View root) {
         if (!isAdded()) return;
 
-        Window window = requireActivity().getWindow();
-        View decorView = window.getDecorView();
-
-        // Pastikan status bar dan navigation bar tidak disembunyikan oleh fullscreen/immersive flag.
-        window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
-        int flags = decorView.getSystemUiVisibility();
-        flags &= ~View.SYSTEM_UI_FLAG_FULLSCREEN;
-        flags &= ~View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-        flags &= ~View.SYSTEM_UI_FLAG_IMMERSIVE;
-        flags &= ~View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-        flags &= ~View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-        flags &= ~View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
-        decorView.setSystemUiVisibility(flags);
-
-        // Biarkan fragment handle inset sendiri supaya aman di semua device.
-        WindowCompat.setDecorFitsSystemWindows(window, false);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            window.setStatusBarColor(Color.parseColor("#6204BF"));
-            window.setNavigationBarColor(Color.WHITE);
-        }
-
-        WindowInsetsControllerCompat controller =
-                new WindowInsetsControllerCompat(window, decorView);
-
-        controller.show(WindowInsetsCompat.Type.statusBars());
-        controller.show(WindowInsetsCompat.Type.navigationBars());
-
-        // Status bar hijau, jadi icon harus putih.
-        controller.setAppearanceLightStatusBars(false);
-
-        // Navigation bar putih, jadi icon sebaiknya gelap.
-        controller.setAppearanceLightNavigationBars(true);
-
-        final int baseLeft = root.getPaddingLeft();
-        final int baseTop = root.getPaddingTop();
-        final int baseRight = root.getPaddingRight();
-        final int baseBottom = root.getPaddingBottom();
-
-        ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
-            int statusBarTop = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
-            int navigationBottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
-
-            v.setPadding(
-                    baseLeft,
-                    baseTop + statusBarTop,
-                    baseRight,
-                    baseBottom + navigationBottom
-            );
-
-            return insets;
-        });
-
-        ViewCompat.requestApplyInsets(root);
+        SystemBars.apply(requireActivity());
+        SystemBars.padTopBar(root.findViewById(R.id.topBar));
+        SystemBars.padBottom(root.findViewById(R.id.bottomBar));
     }
 
     @Override
@@ -324,6 +281,7 @@ public class RetailPOSFragment extends Fragment {
 
         rvProducts = root.findViewById(R.id.rvProducts);
         tvEmptyState = root.findViewById(R.id.tvEmptyState);
+        emptyStateScroll = root.findViewById(R.id.emptyStateScroll);
         progressProducts = root.findViewById(R.id.progressProducts);
         txtGrandTotal = root.findViewById(R.id.txtGrandTotal);
         txtItemCount = root.findViewById(R.id.txtItemCount);
@@ -426,30 +384,15 @@ public class RetailPOSFragment extends Fragment {
 
     @NonNull
     private Chip createDraftChip() {
-        Chip chip = new Chip(requireContext());
-        chip.setCheckable(true);
-        chip.setClickable(true);
-        chip.setSingleLine(true);
-        chip.setEllipsize(TextUtils.TruncateAt.END);
-        chip.setTextSize(12f);
-        chip.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        chip.setChipMinHeight(dp(34));
-        chip.setMinHeight(dp(34));
-        chip.setHeight(dp(34));
-        chip.setChipCornerRadius(dp(17));
-        chip.setChipStrokeWidth(dp(1));
-        chip.setCheckedIconVisible(false);
-        chip.setEnsureMinTouchTargetSize(false);
-        return chip;
+        // Gaya chip datang dari view_draft_chip.xml, satu definisi yang juga
+        // dipakai chip bon yang ditulis langsung di layout POS.
+        return (Chip) LayoutInflater.from(requireContext())
+                .inflate(R.layout.view_draft_chip, chipGroupDrafts, false);
     }
 
     private void applyDraftChipStyle(@NonNull Chip chip, boolean active, @NonNull String name, int count) {
         chip.setChecked(active);
         chip.setText((active ? "\u25CF " : "") + name + " \u2022 " + Math.max(0, count));
-        chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor(active ? "#EBD9FD" : "#FFFFFF")));
-        chip.setChipStrokeColor(ColorStateList.valueOf(Color.parseColor(active ? "#BB80F4" : "#E2E8F0")));
-        chip.setTextColor(Color.parseColor(active ? "#3C0375" : "#334155"));
-        chip.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
     }
 
     @Nullable
@@ -888,7 +831,6 @@ public class RetailPOSFragment extends Fragment {
     private void setupClearDraftButton() {
         if (txtItemCount == null) return;
 
-        txtItemCount.setText(getString(R.string.action_clear_draft_items_symbol));
         txtItemCount.setOnClickListener(v -> confirmClearActiveDraftItems());
     }
 
@@ -1458,9 +1400,11 @@ public class RetailPOSFragment extends Fragment {
         double total = getGrandTotalAmount();
 
         if (txtItemCount != null) {
+            // Tombol kosongkan hanya masuk akal saat ada yang bisa dikosongkan.
+            // Sebelumnya ia selalu enabled dan hanya diredupkan dengan alpha,
+            // jadi menekannya saat bon kosong tetap membuka dialog konfirmasi.
             boolean canClearOrClose = itemCount > 0 || posDrafts.size() > 1;
-            txtItemCount.setText(getString(R.string.action_clear_draft_items_symbol));
-            txtItemCount.setEnabled(true);
+            txtItemCount.setEnabled(canClearOrClose);
             txtItemCount.setAlpha(canClearOrClose ? 1f : 0.35f);
         }
 
@@ -1469,16 +1413,13 @@ public class RetailPOSFragment extends Fragment {
         }
 
         if (txtSectionSubtitle != null) {
-            txtSectionSubtitle.setText(
-                    itemCount > 0
-                            ? "Review scanned items before checkout"
-                            : "Items will appear after barcode scan"
-            );
+            txtSectionSubtitle.setText(itemCount > 0
+                    ? getString(R.string.pos_review_before_checkout)
+                    : getString(R.string.pos_items_after_barcode));
         }
 
         if (btnCheckout != null) {
             btnCheckout.setEnabled(itemCount > 0);
-            btnCheckout.setAlpha(itemCount > 0 ? 1f : 0.6f);
         }
     }
 
@@ -1493,8 +1434,10 @@ public class RetailPOSFragment extends Fragment {
 
     private void showEmptyState(@NonNull String message) {
         if (tvEmptyState != null) {
-            tvEmptyState.setVisibility(View.VISIBLE);
             tvEmptyState.setText(message);
+        }
+        if (emptyStateScroll != null) {
+            emptyStateScroll.setVisibility(View.VISIBLE);
         }
         if (rvProducts != null) {
             rvProducts.setVisibility(View.GONE);
@@ -1502,8 +1445,8 @@ public class RetailPOSFragment extends Fragment {
     }
 
     private void hideEmptyState() {
-        if (tvEmptyState != null) {
-            tvEmptyState.setVisibility(View.GONE);
+        if (emptyStateScroll != null) {
+            emptyStateScroll.setVisibility(View.GONE);
         }
         if (rvProducts != null && (progressProducts == null || progressProducts.getVisibility() != View.VISIBLE)) {
             rvProducts.setVisibility(View.VISIBLE);

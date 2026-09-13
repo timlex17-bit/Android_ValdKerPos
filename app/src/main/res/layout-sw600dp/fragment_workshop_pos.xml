@@ -1,18 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    android:id="@+id/rootWorkshopPos"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+  POS bengkel.
+
+  Akar layout dibungkus LinearLayout dengan strip ungu setinggi bilah status di
+  atasnya. Sebelumnya akar ConstraintLayout berlatar #F6F7FB langsung menempel
+  ke tepi atas layar dan fragment hanya menambahkan tinggi bilah status sebagai
+  padding; warna ungu di belakang bilah status datang dari
+  window.setStatusBarColor, yang sejak targetSdk 36 diabaikan Android 15+.
+  Hasilnya di perangkat baru: ikon bilah status yang sengaja dibuat terang
+  berada di atas latar abu-abu sangat muda.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootWorkshopPos"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F6F7FB"
+    android:background="@color/app_bg"
+    android:orientation="vertical">
+
+    <View
+        android:id="@+id/statusBarScrim"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@color/status_bar_brand" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/workshopContent"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1"
+    android:background="@color/app_bg"
     android:clipToPadding="false"
-    android:fitsSystemWindows="true"
     android:paddingStart="6dp"
     android:paddingTop="6dp"
     android:paddingEnd="6dp"
     android:paddingBottom="6dp">
+
 
     <LinearLayout
         android:id="@+id/leftPanel"
@@ -98,7 +122,7 @@
                             android:maxLines="1"
                             android:text="@string/workshop_default_address"
                             android:textColor="#98A2B3"
-                            android:textSize="9sp"
+                            android:textSize="11sp"
                             tools:text="Becora, Dili" />
                     </LinearLayout>
 
@@ -222,7 +246,7 @@
                         android:text="@string/label_workshop_job_info"
                         android:textAllCaps="true"
                         android:textColor="#64748B"
-                        android:textSize="10sp"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
 
                     <com.google.android.material.button.MaterialButton
@@ -304,7 +328,7 @@
                         android:maxLines="1"
                         android:minHeight="22dp"
                         android:textColor="#334155"
-                        android:textSize="10sp"
+                        android:textSize="11sp"
                         app:chipBackgroundColor="#F8FAFC"
                         app:chipCornerRadius="11dp"
                         app:chipMinHeight="22dp"
@@ -322,7 +346,7 @@
                         android:maxLines="1"
                         android:minHeight="22dp"
                         android:textColor="#334155"
-                        android:textSize="10sp"
+                        android:textSize="11sp"
                         app:chipBackgroundColor="#F8FAFC"
                         app:chipCornerRadius="11dp"
                         app:chipMinHeight="22dp"
@@ -340,7 +364,7 @@
                         android:maxLines="1"
                         android:minHeight="22dp"
                         android:textColor="#334155"
-                        android:textSize="10sp"
+                        android:textSize="11sp"
                         app:chipBackgroundColor="#F8FAFC"
                         app:chipCornerRadius="11dp"
                         app:chipMinHeight="22dp"
@@ -500,7 +524,7 @@
                         android:text="@string/label_package"
                         android:textAllCaps="false"
                         android:textColor="#6204BF"
-                        android:textSize="9sp"
+                        android:textSize="11sp"
                         android:textStyle="bold"
                         app:backgroundTint="#F5ECFE"
                         app:cornerRadius="12dp"
@@ -522,7 +546,7 @@
                         android:text="@string/label_service"
                         android:textAllCaps="false"
                         android:textColor="#6204BF"
-                        android:textSize="9sp"
+                        android:textSize="11sp"
                         android:textStyle="bold"
                         app:backgroundTint="#F5ECFE"
                         app:cornerRadius="12dp"
@@ -544,7 +568,7 @@
                         android:text="@string/label_part"
                         android:textAllCaps="false"
                         android:textColor="#6204BF"
-                        android:textSize="9sp"
+                        android:textSize="11sp"
                         android:textStyle="bold"
                         app:backgroundTint="#F5ECFE"
                         app:cornerRadius="12dp"
@@ -566,7 +590,7 @@
                         android:text="@string/label_product"
                         android:textAllCaps="false"
                         android:textColor="#6204BF"
-                        android:textSize="9sp"
+                        android:textSize="11sp"
                         android:textStyle="bold"
                         app:backgroundTint="#F5ECFE"
                         app:cornerRadius="12dp"
@@ -624,4 +648,6 @@
                 tools:listitem="@layout/item_product_list" />
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</LinearLayout>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Latar tombol utama.
+
+  Keadaan nonaktif perlu warna sendiri. Tanpa ini MaterialButton hanya
+  memudarkan warna TEKS saat disabled dan membiarkan latarnya tetap ungu
+  pekat, sehingga label abu-abu duduk di atas ungu - kontrasnya di bawah 2:1
+  dan tombol praktis tidak terbaca. Itu terlihat di "Coba semua" pada Pesanan
+  Offline ketika tidak ada yang perlu disinkron.
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="#E5E7EB" android:state_enabled="false" />
+    <item android:color="@color/brand_primary" />
+</selector>

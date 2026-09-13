@@ -44,7 +44,8 @@
     <TextView
         android:id="@+id/btnOfflineOrders"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
         android:gravity="center_vertical"
         android:paddingLeft="14dp"
         android:paddingRight="14dp"
@@ -56,7 +57,8 @@
     <TextView
         android:id="@+id/btnPrivacy"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
         android:gravity="center_vertical"
         android:paddingLeft="14dp"
         android:paddingRight="14dp"
@@ -68,7 +70,8 @@
     <TextView
         android:id="@+id/btnCloseShift"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
         android:gravity="center_vertical"
         android:paddingLeft="14dp"
         android:paddingRight="14dp"
@@ -87,7 +90,8 @@
     <TextView
         android:id="@+id/btnLogout"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
         android:gravity="center_vertical"
         android:paddingLeft="14dp"
         android:paddingRight="14dp"

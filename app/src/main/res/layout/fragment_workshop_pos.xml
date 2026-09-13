@@ -1,18 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    android:id="@+id/rootWorkshopPos"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+  POS bengkel.
+
+  Akar layout dibungkus LinearLayout dengan strip ungu setinggi bilah status di
+  atasnya. Sebelumnya akar ConstraintLayout berlatar #F6F7FB langsung menempel
+  ke tepi atas layar dan fragment hanya menambahkan tinggi bilah status sebagai
+  padding; warna ungu di belakang bilah status datang dari
+  window.setStatusBarColor, yang sejak targetSdk 36 diabaikan Android 15+.
+  Hasilnya di perangkat baru: ikon bilah status yang sengaja dibuat terang
+  berada di atas latar abu-abu sangat muda.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootWorkshopPos"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F6F7FB"
+    android:background="@color/app_bg"
+    android:orientation="vertical">
+
+    <View
+        android:id="@+id/statusBarScrim"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@color/status_bar_brand" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/workshopContent"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1"
+    android:background="@color/app_bg"
     android:clipToPadding="false"
-    android:fitsSystemWindows="true"
     android:paddingStart="8dp"
     android:paddingTop="8dp"
     android:paddingEnd="8dp"
     android:paddingBottom="8dp">
+
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardWorkshopHeader"
@@ -89,7 +113,7 @@
                         android:maxLines="1"
                         android:text="@string/workshop_default_address"
                         android:textColor="#98A2B3"
-                        android:textSize="10sp"
+                        android:textSize="11sp"
                         tools:text="Becora, Dili" />
                 </LinearLayout>
 
@@ -386,7 +410,7 @@
                     android:maxLines="1"
                     android:text="@string/label_service"
                     android:textColor="#0F172A"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -433,7 +457,7 @@
                     android:maxLines="1"
                     android:text="@string/label_part"
                     android:textColor="#0F172A"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -479,7 +503,7 @@
                     android:maxLines="1"
                     android:text="@string/label_product"
                     android:textColor="#0F172A"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -586,7 +610,7 @@
                         android:text="@string/label_total"
                         android:textAllCaps="true"
                         android:textColor="#94A3B8"
-                        android:textSize="10sp"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
 
                     <TextView
@@ -657,7 +681,7 @@
                     android:text="@string/label_package"
                     android:textAllCaps="false"
                     android:textColor="#6204BF"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     android:textStyle="bold"
                     app:backgroundTint="#F5ECFE"
                     app:cornerRadius="14dp"
@@ -687,7 +711,7 @@
                     android:text="@string/label_service"
                     android:textAllCaps="false"
                     android:textColor="#6204BF"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     android:textStyle="bold"
                     app:backgroundTint="#F5ECFE"
                     app:cornerRadius="14dp"
@@ -717,7 +741,7 @@
                     android:text="@string/label_part"
                     android:textAllCaps="false"
                     android:textColor="#6204BF"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     android:textStyle="bold"
                     app:backgroundTint="#F5ECFE"
                     app:cornerRadius="14dp"
@@ -747,7 +771,7 @@
                     android:text="@string/label_product"
                     android:textAllCaps="false"
                     android:textColor="#6204BF"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     android:textStyle="bold"
                     app:backgroundTint="#F5ECFE"
                     app:cornerRadius="14dp"
@@ -761,4 +785,6 @@
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</LinearLayout>

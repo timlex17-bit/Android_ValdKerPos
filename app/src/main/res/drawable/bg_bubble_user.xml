@@ -1,4 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Gelembung pesan pengguna, sudut kanan-bawah kecil sebagai ekor ke arah
+  tepi kanan layar.
+-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="#6204BF"/>
-    <corners android:radius="18dp"/>
+    <solid android:color="@color/brand_primary" />
+    <corners
+        android:bottomLeftRadius="16dp"
+        android:bottomRightRadius="4dp"
+        android:topLeftRadius="16dp"
+        android:topRightRadius="16dp" />
 </shape>

@@ -24,6 +24,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.valdker.pos.ModuleRegistry;
 import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
+import com.valdker.pos.ui.common.SystemBars;
 import com.valdker.pos.models.MechanicRequest;
 import com.valdker.pos.models.MechanicResponse;
 import com.valdker.pos.repositories.MechanicRepository;
@@ -62,6 +63,11 @@ public class MechanicListActivity extends AppCompatActivity implements MechanicA
 
         repository = new MechanicRepository(this);
         setContentView(R.layout.activity_workshop_module_list);
+        // Bilah atas ungu yang tumbuh sampai ke belakang bilah status, sama
+        // seperti seluruh layar daftar lainnya.
+        SystemBars.apply(this);
+        SystemBars.padTopBar(findViewById(R.id.topBar));
+        SystemBars.padBottom(findViewById(R.id.moduleListContent));
         bindViews();
         setupViews();
         loadMechanics();
@@ -77,8 +83,8 @@ public class MechanicListActivity extends AppCompatActivity implements MechanicA
 
     private void bindViews() {
         ImageButton btnBack = findViewById(R.id.btnBack);
-        TextView tvTitle = findViewById(R.id.tvTitle);
-        TextView tvSubtitle = findViewById(R.id.tvSubtitle);
+        TextView tvTitle = findViewById(R.id.tvTopBarTitle);
+        TextView tvSubtitle = findViewById(R.id.tvTopBarSubtitle);
         recyclerView = findViewById(R.id.rvItems);
         progressBar = findViewById(R.id.progressBar);
         tvEmpty = findViewById(R.id.tvEmpty);
@@ -87,6 +93,7 @@ public class MechanicListActivity extends AppCompatActivity implements MechanicA
 
         if (btnBack != null) btnBack.setOnClickListener(v -> finish());
         if (tvTitle != null) tvTitle.setText("Mechanics");
+        if (tvSubtitle != null) tvSubtitle.setVisibility(View.VISIBLE);
         if (tvSubtitle != null) tvSubtitle.setText("Workshop mechanic directory");
     }
 

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Blok lunak untuk pesan galat / catatan di dalam kartu. Warnanya diberikan
+  pemakai lewat backgroundTint.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="@color/surface" />
+    <corners android:radius="@dimen/radius_surface_sm" />
+</shape>

@@ -1,79 +1,136 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+  Detail mutasi stok.
+
+  Tambahan penting selain bilah atas: badannya kini berada di dalam ScrollView.
+  Sebelumnya sembilan baris teks ditumpuk langsung di LinearLayout setinggi
+  layar, jadi pada ponsel pendek atau saat ukuran huruf sistem dinaikkan, baris
+  catatan di bawah terpotong tanpa cara apa pun untuk menggulir ke sana.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/detailRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:clipToPadding="false"
-    android:padding="14dp">
+    android:background="@color/app_bg"
+    android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tvTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/stock_movement_item_name_placeholder"
-        android:textSize="18sp"
-        android:textStyle="bold"/>
+    <include layout="@layout/view_topbar" />
 
-    <TextView
-        android:id="@+id/tvMeta"
+    <ScrollView
+        android:id="@+id/detailContent"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/stock_movement_meta_placeholder"
-        android:textSize="12sp"
-        android:alpha="0.75"
-        android:layout_marginTop="4dp"/>
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:paddingStart="14dp"
+        android:paddingTop="14dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="14dp">
 
-    <TextView
-        android:id="@+id/tvType"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/stock_movement_type_placeholder"
-        android:textStyle="bold"
-        android:layout_marginTop="14dp"/>
+        <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.Valora.ListCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/tvDate"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/stock_movement_date_placeholder"
-        android:textSize="12sp"
-        android:alpha="0.75"
-        android:layout_marginTop="4dp"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
 
-    <TextView
-        android:id="@+id/tvQty"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/stock_movement_qty_placeholder"
-        android:layout_marginTop="10dp"/>
+                <TextView
+                    android:id="@+id/tvTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/stock_movement_item_name_placeholder"
+                    android:textColor="@color/text_primary"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/tvStock"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/stock_movement_stock_placeholder"
-        android:layout_marginTop="6dp"/>
+                <TextView
+                    android:id="@+id/tvMeta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/stock_movement_meta_placeholder"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
 
-    <TextView
-        android:id="@+id/tvRef"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/stock_movement_ref_placeholder"
-        android:layout_marginTop="6dp"/>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="14dp"
+                    android:background="@color/stroke_soft" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/label_note"
-        android:textStyle="bold"
-        android:layout_marginTop="14dp"/>
+                <TextView
+                    android:id="@+id/tvType"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:text="@string/stock_movement_type_placeholder"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/tvNote"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/label_default_dash"
-        android:layout_marginTop="6dp"/>
+                <TextView
+                    android:id="@+id/tvDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/stock_movement_date_placeholder"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tvQty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/stock_movement_qty_placeholder"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvStock"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="@string/stock_movement_stock_placeholder"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvRef"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="@string/stock_movement_ref_placeholder"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/label_note"
+                    android:textColor="@color/text_tertiary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvNote"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:lineSpacingExtra="2dp"
+                    android:text="@string/label_default_dash"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </ScrollView>
+
 </LinearLayout>

@@ -48,6 +48,7 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.valdker.pos.ModuleRegistry;
 import com.valdker.pos.R;
+import com.valdker.pos.ui.common.SystemBars;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.cart.CartManager;
 import com.valdker.pos.drafts.PosDraftEntity;
@@ -276,64 +277,25 @@ public class WorkshopPOSFragment extends Fragment
         syncPendingOrdersIfOnline();
     }
 
+    /**
+     * Bilah sistem POS bengkel.
+     *
+     * <p>Yang dulu di sini: menghapus flag layar penuh warisan, memaksa ikon
+     * bilah status jadi terang, memanggil {@code setStatusBarColor} ungu, lalu
+     * menambahkan tinggi bilah status sebagai padding akar. Baris terakhir itu
+     * bekerja, tapi warnanya tidak: sejak targetSdk 36 Android 15+ mengabaikan
+     * setStatusBarColor, sehingga yang tampak di belakang bilah status adalah
+     * latar abu-abu muda layar ini - dengan ikon terang di atasnya.
+     *
+     * <p>Sekarang strip ungu digambar layout sendiri lewat statusBarScrim,
+     * jadi hasilnya sama di setiap versi Android.
+     */
     private void applyWorkshopSystemBars(@NonNull View root) {
         if (!isAdded()) return;
 
-        Window window = requireActivity().getWindow();
-        View decorView = window.getDecorView();
-
-        // Hilangkan efek fullscreen / immersive jika Activity sebelumnya mengaktifkannya.
-        window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
-        int flags = decorView.getSystemUiVisibility();
-        flags &= ~View.SYSTEM_UI_FLAG_FULLSCREEN;
-        flags &= ~View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-        flags &= ~View.SYSTEM_UI_FLAG_IMMERSIVE;
-        flags &= ~View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-        flags &= ~View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-        flags &= ~View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
-        decorView.setSystemUiVisibility(flags);
-
-        // Kita handle padding status bar secara manual agar aman di semua device.
-        WindowCompat.setDecorFitsSystemWindows(window, false);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            window.setStatusBarColor(Color.parseColor("#6204BF"));
-            window.setNavigationBarColor(Color.WHITE);
-        }
-
-        WindowInsetsControllerCompat controller =
-                new WindowInsetsControllerCompat(window, decorView);
-
-        controller.show(WindowInsetsCompat.Type.statusBars());
-        controller.show(WindowInsetsCompat.Type.navigationBars());
-
-        // Status bar hijau, icon putih.
-        controller.setAppearanceLightStatusBars(false);
-
-        // Navigation bar putih, icon gelap.
-        controller.setAppearanceLightNavigationBars(true);
-
-        final int baseLeft = root.getPaddingLeft();
-        final int baseTop = root.getPaddingTop();
-        final int baseRight = root.getPaddingRight();
-        final int baseBottom = root.getPaddingBottom();
-
-        ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
-            int statusTop = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
-            int navBottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
-
-            v.setPadding(
-                    baseLeft,
-                    Math.max(baseTop, 8) + statusTop,
-                    baseRight,
-                    Math.max(baseBottom, 8) + navBottom
-            );
-
-            return insets;
-        });
-
-        ViewCompat.requestApplyInsets(root);
+        SystemBars.apply(requireActivity());
+        SystemBars.fitStatusScrim(root.findViewById(R.id.statusBarScrim));
+        SystemBars.padBottom(root.findViewById(R.id.workshopContent));
     }
 
     @Override
@@ -509,32 +471,23 @@ public class WorkshopPOSFragment extends Fragment
         }
     }
 
+    /**
+     * Chip bon memakai gaya bersama {@code Widget.Valora.FilterChip}, sama
+     * dengan POS retail dan chip filter di modul lain. Sebelumnya tiga tempat
+     * berbeda menuliskan sendiri tinggi, radius, dan enam warna hex chip ini,
+     * dan ketiganya sudah menyimpang tipis satu sama lain.
+     */
     @NonNull
     private Chip createDraftChip() {
-        Chip chip = new Chip(requireContext());
-        chip.setCheckable(true);
-        chip.setClickable(true);
-        chip.setSingleLine(true);
-        chip.setEllipsize(TextUtils.TruncateAt.END);
-        chip.setTextSize(12f);
-        chip.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        chip.setChipMinHeight(dp(34));
-        chip.setMinHeight(dp(34));
-        chip.setHeight(dp(34));
-        chip.setChipCornerRadius(dp(17));
-        chip.setChipStrokeWidth(dp(1));
-        chip.setCheckedIconVisible(false);
-        chip.setEnsureMinTouchTargetSize(false);
-        return chip;
+        // Gaya chip datang dari view_draft_chip.xml, satu definisi yang juga
+        // dipakai chip bon yang ditulis langsung di layout POS.
+        return (Chip) LayoutInflater.from(requireContext())
+                .inflate(R.layout.view_draft_chip, chipGroupDrafts, false);
     }
 
     private void applyDraftChipStyle(@NonNull Chip chip, boolean active, @NonNull String name, int count) {
         chip.setChecked(active);
         chip.setText((active ? "\u25CF " : "") + name + " \u2022 " + Math.max(0, count));
-        chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor(active ? "#EBD9FD" : "#FFFFFF")));
-        chip.setChipStrokeColor(ColorStateList.valueOf(Color.parseColor(active ? "#BB80F4" : "#E2E8F0")));
-        chip.setTextColor(Color.parseColor(active ? "#3C0375" : "#334155"));
-        chip.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
     }
 
     @Nullable
@@ -1834,7 +1787,8 @@ public class WorkshopPOSFragment extends Fragment
         MaterialCardView card = new MaterialCardView(requireContext());
         card.setCardBackgroundColor(Color.parseColor("#F8FAFC"));
         card.setCardElevation(0f);
-        card.setRadius(dp(10));
+        // Kartu ini hidup di dalam dialog, jadi sudutnya ikut radius popup.
+        card.setRadius(getResources().getDimensionPixelSize(R.dimen.radius_dialog));
         card.setStrokeColor(Color.parseColor("#E2E8F0"));
         card.setStrokeWidth(dp(1));
         card.setContentPadding(dp(12), dp(8), dp(10), dp(8));
@@ -1985,7 +1939,7 @@ public class WorkshopPOSFragment extends Fragment
         button.setTextColor(Color.parseColor("#6204BF"));
         button.setStrokeColor(ColorStateList.valueOf(Color.parseColor("#BB80F4")));
         button.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#F5ECFE")));
-        button.setCornerRadius(dp(12));
+        button.setCornerRadius(getResources().getDimensionPixelSize(R.dimen.radius_dialog));
         return button;
     }
 

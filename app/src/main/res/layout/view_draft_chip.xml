@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Satu chip bon terbuka di POS.
+
+  Ada sebagai berkas layout, bukan dirakit dengan new Chip(...), karena gaya
+  widget Material hanya bisa dipasang lewat atribut style= saat inflate -
+  konstruktor Chip tidak menerima defStyleRes. Dulu akibatnya chip yang dibuat
+  dari kode menuliskan sendiri tinggi, radius, dan enam warna hex-nya di tiga
+  berkas berbeda, dan ketiganya perlahan menyimpang dari chip yang ditulis di
+  XML. Sekarang keduanya memakai satu definisi yang sama.
+-->
+<com.google.android.material.chip.Chip
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget.Valora.FilterChip"
+    android:ellipsize="end"
+    android:maxLines="1"
+    tools:text="A . 3" />

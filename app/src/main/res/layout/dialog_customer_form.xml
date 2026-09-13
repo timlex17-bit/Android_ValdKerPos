@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="14dp"
         android:backgroundTint="#F3F4F6"
-        app:cardCornerRadius="20dp"
+        app:cardCornerRadius="@dimen/radius_dialog"
         app:cardElevation="0dp"
         app:strokeColor="#E5E7EB"
         app:strokeWidth="1dp"

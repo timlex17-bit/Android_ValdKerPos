@@ -15,18 +15,47 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.valdker.pos.R;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class OwnerChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
+    /**
+     * Tipe khusus untuk baris "sedang mengetik". Ia tidak punya entri di
+     * {@code data}; jumlah barisnya ditambah satu selama {@link #thinking}
+     * bernilai true, jadi tidak perlu menyisipkan lalu menghapus pesan palsu
+     * dari daftar pesan sungguhan.
+     */
+    private static final int TYPE_TYPING = 3;
+
     private final List<OwnerChatMessage> data;
+    private final SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+    private boolean thinking = false;
 
     public OwnerChatAdapter(List<OwnerChatMessage> data) {
         this.data = data;
     }
 
+    /** Menyalakan/mematikan baris "sedang mengetik" di ujung daftar. */
+    public void setThinking(boolean value) {
+        if (thinking == value) return;
+        thinking = value;
+        if (value) {
+            notifyItemInserted(data.size());
+        } else {
+            notifyItemRemoved(data.size());
+        }
+    }
+
+    public boolean isThinking() {
+        return thinking;
+    }
+
     @Override
     public int getItemViewType(int position) {
+        if (position >= data.size()) return TYPE_TYPING;
         return data.get(position).type;
     }
 
@@ -34,64 +63,89 @@ public class OwnerChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inf = LayoutInflater.from(parent.getContext());
-        if (viewType == OwnerChatMessage.TYPE_USER) {
-            View v = inf.inflate(R.layout.item_owner_chat_user, parent, false);
-            return new UserVH(v);
-        } else {
-            View v = inf.inflate(R.layout.item_owner_chat_bot, parent, false);
-            return new BotVH(v);
+        if (viewType == TYPE_TYPING) {
+            return new TypingVH(inf.inflate(R.layout.item_owner_chat_typing, parent, false));
         }
+        if (viewType == OwnerChatMessage.TYPE_USER) {
+            return new UserVH(inf.inflate(R.layout.item_owner_chat_user, parent, false));
+        }
+        return new BotVH(inf.inflate(R.layout.item_owner_chat_bot, parent, false));
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        if (holder instanceof TypingVH) return;
+
         OwnerChatMessage msg = data.get(position);
+        String time = timeFormat.format(new Date(msg.timeMs));
+
         if (holder instanceof UserVH) {
-            ((UserVH) holder).tv.setText(msg.text);
+            ((UserVH) holder).bind(msg, time);
         } else if (holder instanceof BotVH) {
-            ((BotVH) holder).bind(msg);
+            ((BotVH) holder).bind(msg, time);
         }
     }
 
     @Override
     public int getItemCount() {
-        return data.size();
+        return data.size() + (thinking ? 1 : 0);
+    }
+
+    static class TypingVH extends RecyclerView.ViewHolder {
+        TypingVH(@NonNull View itemView) {
+            super(itemView);
+        }
     }
 
     static class UserVH extends RecyclerView.ViewHolder {
-        TextView tv;
+        final TextView tv;
+        final TextView time;
+
         UserVH(@NonNull View itemView) {
             super(itemView);
             tv = itemView.findViewById(R.id.tvText);
+            time = itemView.findViewById(R.id.tvTime);
+        }
+
+        void bind(@NonNull OwnerChatMessage msg, @NonNull String timeText) {
+            tv.setText(msg.text);
+            time.setText(timeText);
         }
     }
 
     static class BotVH extends RecyclerView.ViewHolder {
-        TextView tv;
-        LinearLayout linksContainer;
+        final TextView tv;
+        final TextView time;
+        final LinearLayout linksContainer;
 
         BotVH(@NonNull View itemView) {
             super(itemView);
             tv = itemView.findViewById(R.id.tvText);
+            time = itemView.findViewById(R.id.tvTime);
             linksContainer = itemView.findViewById(R.id.linksContainer);
         }
 
-        void bind(@NonNull OwnerChatMessage msg) {
+        void bind(@NonNull OwnerChatMessage msg, @NonNull String timeText) {
             tv.setText(msg.text);
+            time.setText(timeText);
             if (linksContainer == null) return;
 
             linksContainer.removeAllViews();
             linksContainer.setVisibility(msg.links.isEmpty() ? View.GONE : View.VISIBLE);
+
+            LayoutInflater inflater = LayoutInflater.from(itemView.getContext());
             for (OwnerChatResponse.Link link : msg.links) {
                 if (link == null || TextUtils.isEmpty(link.title) || TextUtils.isEmpty(link.url)) {
                     continue;
                 }
-                TextView row = new TextView(itemView.getContext());
-                row.setText(link.title);
-                row.setTextColor(0xFF2563EB);
-                row.setTextSize(13f);
-                row.setPadding(12, 8, 12, 8);
-                row.setSingleLine(false);
+                // Pranala dibuat dari layout supaya ukuran sentuh, warna, dan
+                // sudutnya sama dengan komponen lain. Versi sebelumnya memakai
+                // new TextView() dengan padding dalam piksel mentah - 12px,
+                // bukan 12dp - sehingga pada layar rapat area sentuhnya jauh
+                // di bawah 48dp.
+                View row = inflater.inflate(R.layout.item_owner_chat_link, linksContainer, false);
+                TextView label = row.findViewById(R.id.tvLinkTitle);
+                label.setText(link.title);
                 row.setOnClickListener(v -> openSafeUrl(link.url));
                 linksContainer.addView(row);
             }

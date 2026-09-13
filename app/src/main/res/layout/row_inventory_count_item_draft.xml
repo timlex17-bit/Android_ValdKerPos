@@ -14,7 +14,8 @@
     <EditText
         android:id="@+id/etCounted"
         android:layout_width="0dp"
-        android:layout_height="48dp"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
         android:layout_weight="0.8"
         android:layout_marginStart="10dp"
         android:hint="Counted"

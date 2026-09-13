@@ -1,69 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+  Kerangka daftar modul bengkel.
+
+  Satu layout ini dipakai tujuh layar (kendaraan, mekanik, work order, riwayat
+  servis, paket servis, booking, retur pembelian) lewat
+  WorkshopSimpleListActivity, jadi bilah atasnya menentukan tampilan sebagian
+  besar aplikasi. Sebelumnya bilah itu putih setinggi 72dp tetap dan tidak
+  menangani inset sama sekali: di Android 15+ judulnya duduk di bawah jam, dan
+  saat pengguna memperbesar ukuran huruf, judul dua baris terpotong oleh
+  tinggi 72dp yang tidak bisa tumbuh.
+
+  Kini memakai bilah bersama yang sama dengan modul lain - ungu, wrap_content
+  dengan minHeight, dan tumbuh sampai ke belakang bilah status.
+-->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/moduleListRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F4F7FB">
+    android:background="@color/app_bg">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <LinearLayout
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="72dp"
-            android:background="#FFFFFF"
-            android:elevation="2dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="12dp"
-            android:paddingEnd="16dp">
-
-            <ImageButton
-                android:id="@+id/btnBack"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/action_back"
-                android:padding="12dp"
-                android:src="@drawable/ic_arrow_back"
-                app:tint="#111827" />
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/tvTitle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:textColor="#111827"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tvSubtitle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:textColor="#64748B"
-                    android:textSize="13sp" />
-            </LinearLayout>
-        </LinearLayout>
+        <include layout="@layout/view_topbar" />
 
         <FrameLayout
+            android:id="@+id/moduleListContent"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:padding="16dp">
+            android:clipToPadding="false"
+            android:padding="14dp">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvItems"
@@ -78,29 +49,45 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_gravity="center"
+                android:indeterminateTint="@color/brand_primary"
                 android:visibility="gone" />
 
-            <TextView
-                android:id="@+id/tvEmpty"
+            <!--
+              Pesan kosong/galat dibungkus ScrollView: pada ponsel kecil dalam
+              mode lanskap tinggi tersisa bisa di bawah 200dp, dan teks galat
+              dari server kerap lebih panjang dari itu.
+            -->
+            <ScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:padding="24dp"
-                android:textColor="#64748B"
-                android:textSize="16sp"
-                android:visibility="gone" />
+                android:layout_gravity="center">
 
-            <TextView
-                android:id="@+id/tvError"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:padding="24dp"
-                android:textColor="#B91C1C"
-                android:textSize="15sp"
-                android:visibility="gone" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvEmpty"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:padding="24dp"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="15sp"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/tvError"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:padding="24dp"
+                        android:textColor="@color/state_danger_strong"
+                        android:textSize="14sp"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </ScrollView>
         </FrameLayout>
     </LinearLayout>
 
@@ -111,7 +98,8 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="20dp"
         android:contentDescription="@string/action_add"
+        app:backgroundTint="@color/brand_primary"
         app:srcCompat="@drawable/ic_add"
-        app:tint="#FFFFFF" />
+        app:tint="@color/text_on_brand" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

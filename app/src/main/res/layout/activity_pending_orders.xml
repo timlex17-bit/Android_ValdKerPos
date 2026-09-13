@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Pesanan Offline.
+
+  Sebelumnya seluruh layar ini dirakit di dalam PendingOrdersActivity dengan
+  new LinearLayout()/new TextView(), tanpa bilah atas, tanpa penanganan inset,
+  dan RecyclerView-nya dicari kembali dengan menelusuri pohon view memakai
+  tag string. Akibatnya: judul "Offline Orders" tertindih bilah status di
+  Android 15+, tidak ada tombol kembali, dan tidak satu pun teksnya bisa
+  diterjemahkan.
+
+  Susunannya sekarang: bilah atas ungu bersama -> ringkasan angka -> filter ->
+  daftar -> satu aksi utama di dasar layar (jempol paling mudah menjangkau
+  bagian bawah pada ponsel besar). Semua ukuran wrap_content dengan minHeight
+  supaya ikut membesar saat ukuran huruf sistem dinaikkan.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootPendingOrders"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/app_bg"
+    android:orientation="vertical"
+    tools:context=".ui.offlineorders.PendingOrdersActivity">
+
+    <include layout="@layout/view_topbar" />
+
+    <!-- ================= Ringkasan + filter ================= -->
+    <LinearLayout
+        android:id="@+id/summaryPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/surface"
+        android:elevation="2dp"
+        android:orientation="vertical"
+        android:paddingTop="12dp"
+        android:paddingBottom="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp">
+
+            <include
+                android:id="@+id/statPending"
+                layout="@layout/view_offline_stat"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <include
+                android:id="@+id/statFailed"
+                layout="@layout/view_offline_stat"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <include
+                android:id="@+id/statReview"
+                layout="@layout/view_offline_stat"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <include
+                android:id="@+id/statSynced"
+                layout="@layout/view_offline_stat"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:clipToPadding="false"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:scrollbars="none">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupFilters"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:chipSpacingHorizontal="6dp"
+                app:singleLine="true"
+                app:singleSelection="true"
+                app:selectionRequired="true">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipAll"
+                    style="@style/Widget.Valora.FilterChip"
+                    android:checked="true"
+                    android:text="@string/offline_orders_filter_all" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipPending"
+                    style="@style/Widget.Valora.FilterChip"
+                    android:text="@string/offline_orders_filter_pending" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipFailed"
+                    style="@style/Widget.Valora.FilterChip"
+                    android:text="@string/offline_orders_filter_failed" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipNeedsReview"
+                    style="@style/Widget.Valora.FilterChip"
+                    android:text="@string/offline_orders_filter_review" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipSynced"
+                    style="@style/Widget.Valora.FilterChip"
+                    android:text="@string/offline_orders_filter_synced" />
+            </com.google.android.material.chip.ChipGroup>
+        </HorizontalScrollView>
+    </LinearLayout>
+
+    <!-- ================= Daftar ================= -->
+    <!--
+      Keadaan kosong berada DI DALAM SwipeRefreshLayout, bukan sebagai
+      saudaranya. Kalau di luar, menyembunyikan daftar saat kosong juga
+      mematikan tarik-untuk-muat-ulang - padahal justru saat daftar kosong
+      orang paling ingin menariknya untuk memeriksa lagi.
+    -->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeOrders"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvPendingOrders"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingStart="12dp"
+                android:paddingTop="10dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="12dp"
+                android:scrollbars="vertical"
+                tools:itemCount="3"
+                tools:listitem="@layout/item_pending_order" />
+
+        <!--
+          Keadaan kosong. Dibungkus ScrollView supaya pada layar pendek
+          (ponsel kecil dalam mode lanskap) teksnya tetap bisa dibaca penuh
+          alih-alih terpotong.
+        -->
+        <ScrollView
+            android:id="@+id/emptyState"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:minHeight="240dp"
+                android:orientation="vertical"
+                android:paddingStart="32dp"
+                android:paddingTop="24dp"
+                android:paddingEnd="32dp"
+                android:paddingBottom="24dp">
+
+                <ImageView
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:alpha="0.35"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_inbox_empty"
+                    app:tint="@color/text_secondary" />
+
+                <TextView
+                    android:id="@+id/tvEmptyTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:gravity="center"
+                    android:text="@string/offline_orders_empty_title"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvEmptyMessage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center"
+                    android:lineSpacingExtra="2dp"
+                    android:text="@string/offline_orders_empty_message"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp" />
+            </LinearLayout>
+        </ScrollView>
+        </FrameLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <!-- ================= Aksi utama ================= -->
+    <LinearLayout
+        android:id="@+id/bottomBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/surface"
+        android:elevation="8dp"
+        android:orientation="vertical"
+        android:paddingStart="12dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="10dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRetryAll"
+            style="@style/Widget.Valora.PrimaryButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/offline_orders_retry_all"
+            app:icon="@drawable/ic_cloud_sync"
+            app:iconGravity="textStart" />
+    </LinearLayout>
+
+</LinearLayout>

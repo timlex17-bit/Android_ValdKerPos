@@ -38,6 +38,7 @@
                 android:id="@+id/imgIcon"
                 android:layout_width="28dp"
                 android:layout_height="28dp"
+                android:contentDescription="@null"
                 android:scaleType="centerCrop"/>
 
         </LinearLayout>

@@ -1,5 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Gelembung jawaban asisten. Sudut kiri-bawah dibuat kecil sehingga gelembung
+  terlihat "menempel" pada avatar di sebelah kirinya - itu yang membuat sebuah
+  daftar terbaca sebagai percakapan, bukan sebagai daftar kartu.
+-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="#FFFFFF"/>
-    <corners android:radius="18dp"/>
-    <stroke android:width="1dp" android:color="#E5E7EB"/>
+    <solid android:color="@color/surface" />
+    <corners
+        android:bottomLeftRadius="4dp"
+        android:bottomRightRadius="16dp"
+        android:topLeftRadius="16dp"
+        android:topRightRadius="16dp" />
+    <stroke
+        android:width="1dp"
+        android:color="@color/stroke" />
 </shape>

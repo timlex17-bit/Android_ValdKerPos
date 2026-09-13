@@ -15,7 +15,7 @@ import com.valdker.pos.ModuleRegistry;
 import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.models.StockAdjustment;
-import com.valdker.pos.utils.SystemBarsFix;
+import com.valdker.pos.ui.common.SystemBars;
 import com.valdker.pos.utils.Toast;
 
 import org.json.JSONObject;
@@ -58,8 +58,7 @@ public class StockAdjustmentDetailActivity extends AppCompatActivity {
         }
         Log.d("DETAIL_ACTIVITY", "OPEN StockAdjustmentDetailActivity");
         setContentView(R.layout.activity_stock_adjustment_detail);
-        View root = findViewById(R.id.detailRoot);
-        SystemBarsFix.applyForcedDetailSafeArea(this, root, "StockAdjustmentDetail");
+        setupDetailBars(R.string.detail_stock_adjustment_title);
 
         TextView tvTitle = findViewById(R.id.tvTitle);
         TextView tvDate = findViewById(R.id.tvDate);
@@ -152,4 +151,24 @@ public class StockAdjustmentDetailActivity extends AppCompatActivity {
             return iso;
         }
     }
+
+    /**
+     * Bilah sistem layar detail.
+     *
+     * <p>Dulu ini memanggil SystemBarsFix yang menambahkan tinggi bilah status
+     * sebagai padding pada akar berlatar terang, lalu memaksa ikon bilah status
+     * jadi terang - kombinasi yang di Android 15+ berarti jam dan ikon baterai
+     * putih di atas latar hampir putih. Sekarang bilah atas ungu itu sendiri
+     * yang tumbuh ke belakang bilah status.
+     */
+    private void setupDetailBars(int titleRes) {
+        SystemBars.apply(this);
+        SystemBars.padTopBar(findViewById(R.id.topBar));
+        SystemBars.padBottom(findViewById(R.id.detailContent));
+
+        View topBar = findViewById(R.id.topBar);
+        ((TextView) topBar.findViewById(R.id.tvTopBarTitle)).setText(titleRes);
+        topBar.findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+    }
+
 }

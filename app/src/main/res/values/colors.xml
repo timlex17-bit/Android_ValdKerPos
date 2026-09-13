@@ -25,4 +25,37 @@
     <color name="valora_surface">#F9FAFB</color>
     <color name="valora_muted">#64748B</color>
 
+
+    <!--
+      Palet semantik. Sebelum ini hampir setiap layout menuliskan hex sendiri
+      (#111827, #6B7280, #E5E7EB, ...), sehingga satu nada muncul dalam lima
+      ejaan berbeda dan tidak mungkin diubah serentak. Nama di bawah ini yang
+      dipakai layout baru; nilainya tetap nada yang sudah dominan di aplikasi.
+    -->
+    <color name="app_bg">#F4F6FA</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_subtle">#F8FAFC</color>
+    <color name="stroke">#E5E7EB</color>
+    <color name="stroke_soft">#EEF2F7</color>
+
+    <color name="text_primary">#111827</color>
+    <color name="text_secondary">#64748B</color>
+    <color name="text_tertiary">#94A3B8</color>
+    <color name="text_on_brand">#FFFFFF</color>
+
+    <color name="brand_tint">#EBD9FD</color>
+    <color name="brand_on_tint">#3C0375</color>
+
+    <color name="state_danger">#DC2626</color>
+    <color name="state_danger_strong">#B91C1C</color>
+    <color name="state_danger_tint">#FEE2E2</color>
+    <color name="state_warning">#B45309</color>
+    <color name="state_warning_tint">#FEF3C7</color>
+    <color name="state_review">#C2410C</color>
+    <color name="state_review_tint">#FFEDD5</color>
+    <color name="state_info">#2563EB</color>
+    <color name="state_info_tint">#DBEAFE</color>
+    <color name="state_success">#15803D</color>
+    <color name="state_success_tint">#DCFCE7</color>
+
 </resources>

@@ -76,7 +76,7 @@
                     android:text="RETURN"
                     android:textAllCaps="true"
                     android:textColor="#FFFFFF"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     android:fontFamily="sans-serif-medium"
                     android:textStyle="bold" />
 
@@ -133,7 +133,7 @@
                         android:layout_height="wrap_content"
                         android:text="Customer"
                         android:textColor="#9CA3AF"
-                        android:textSize="10sp"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
 
                     <TextView
@@ -157,7 +157,7 @@
                         android:layout_height="wrap_content"
                         android:text="Returned by"
                         android:textColor="#9CA3AF"
-                        android:textSize="10sp"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
 
                     <TextView
@@ -182,7 +182,7 @@
                     android:layout_height="wrap_content"
                     android:text="Note"
                     android:textColor="#9CA3AF"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
 
                 <TextView

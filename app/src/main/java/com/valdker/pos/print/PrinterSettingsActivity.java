@@ -7,8 +7,9 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import com.valdker.pos.utils.Toast;
@@ -19,6 +20,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.valdker.pos.R;
+import com.valdker.pos.ui.common.SystemBars;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +31,6 @@ public class PrinterSettingsActivity extends AppCompatActivity {
     private static final int REQ_BT_CONNECT = 5001;
 
     private TextView tvSelected;
-    private Button btnClear;
     private ListView list;
 
     private final List<BluetoothDevice> devices = new ArrayList<>();
@@ -39,19 +40,19 @@ public class PrinterSettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_printer_settings);
+        setupTopBar();
 
         tvSelected = findViewById(R.id.tvSelectedPrinter);
-        btnClear = findViewById(R.id.btnClearPrinter);
         list = findViewById(R.id.listDevices);
 
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<>());
         list.setAdapter(adapter);
 
-        btnClear.setOnClickListener(v -> {
+        findViewById(R.id.btnClearPrinter).setOnClickListener(v -> {
             PrinterPrefs.clear(this);
             BluetoothPrinterManager.getInstance().disconnect();
             updateSelectedText();
-            Toast.makeText(this, "Printer cleared", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.printer_cleared), Toast.LENGTH_SHORT).show();
         });
 
         list.setOnItemClickListener((parent, view, position, id) -> {
@@ -72,9 +73,13 @@ public class PrinterSettingsActivity extends AppCompatActivity {
                 PrinterPrefs.setSelected(this, name, mac);
                 updateSelectedText();
 
-                Toast.makeText(this, "Selected: " + name, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,
+                        getString(R.string.printer_selected_toast, name),
+                        Toast.LENGTH_SHORT).show();
             } catch (SecurityException se) {
-                Toast.makeText(this, "Bluetooth permission required", Toast.LENGTH_LONG).show();
+                Toast.makeText(this,
+                        getString(R.string.printer_permission_required),
+                        Toast.LENGTH_LONG).show();
             }
         });
 
@@ -82,21 +87,37 @@ public class PrinterSettingsActivity extends AppCompatActivity {
         ensurePermissionThenLoad();
     }
 
+    private void setupTopBar() {
+        SystemBars.apply(this);
+        SystemBars.padTopBar(findViewById(R.id.topBar));
+        SystemBars.padBottom(findViewById(R.id.printerContent));
+
+        View topBar = findViewById(R.id.topBar);
+        TextView title = topBar.findViewById(R.id.tvTopBarTitle);
+        TextView subtitle = topBar.findViewById(R.id.tvTopBarSubtitle);
+        ImageButton back = topBar.findViewById(R.id.btnBack);
+
+        title.setText(R.string.printer_title);
+        subtitle.setText(R.string.printer_subtitle);
+        subtitle.setVisibility(View.VISIBLE);
+        back.setOnClickListener(v -> finish());
+    }
+
     private void updateSelectedText() {
         String name = PrinterPrefs.getName(this);
         String mac = PrinterPrefs.getMac(this);
 
         if (TextUtils.isEmpty(name)) {
-            tvSelected.setText("Selected printer: -");
+            tvSelected.setText(R.string.printer_selected_none);
             return;
         }
 
         if (TextUtils.isEmpty(mac)) {
-            tvSelected.setText("Selected printer: " + name);
+            tvSelected.setText(name);
             return;
         }
 
-        tvSelected.setText("Selected printer: " + name + " (" + mac + ")");
+        tvSelected.setText(getString(R.string.printer_selected_value, name, mac));
     }
 
     private void ensurePermissionThenLoad() {
@@ -132,11 +153,11 @@ public class PrinterSettingsActivity extends AppCompatActivity {
 
         BluetoothAdapter bt = BluetoothAdapter.getDefaultAdapter();
         if (bt == null) {
-            Toast.makeText(this, "Bluetooth not supported", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.printer_unsupported), Toast.LENGTH_LONG).show();
             return;
         }
         if (!bt.isEnabled()) {
-            Toast.makeText(this, "Please enable Bluetooth first", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.printer_enable_bluetooth), Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -150,12 +171,12 @@ public class PrinterSettingsActivity extends AppCompatActivity {
         try {
             bonded = bt.getBondedDevices();
         } catch (SecurityException se) {
-            Toast.makeText(this, "Bluetooth permission required", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.printer_permission_required), Toast.LENGTH_LONG).show();
             return;
         }
 
         if (bonded == null || bonded.isEmpty()) {
-            Toast.makeText(this, "No paired devices found", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.printer_no_paired), Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -168,7 +189,7 @@ public class PrinterSettingsActivity extends AppCompatActivity {
                 name = safeDeviceName(d);
                 addr = safeDeviceAddress(d);
             } catch (SecurityException se) {
-                name = "Unknown device";
+                name = getString(R.string.printer_unknown_device);
                 addr = "-";
             }
 
@@ -183,7 +204,7 @@ public class PrinterSettingsActivity extends AppCompatActivity {
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private String safeDeviceName(@NonNull BluetoothDevice d) {
         String n = d.getName();
-        if (n == null || n.trim().isEmpty()) return "Unknown device";
+        if (n == null || n.trim().isEmpty()) return getString(R.string.printer_unknown_device);
         return n.trim();
     }
 
@@ -206,7 +227,7 @@ public class PrinterSettingsActivity extends AppCompatActivity {
             if (granted) {
                 loadPairedDevices();
             } else {
-                Toast.makeText(this, "Bluetooth permission denied", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, getString(R.string.printer_permission_denied), Toast.LENGTH_LONG).show();
             }
         }
     }

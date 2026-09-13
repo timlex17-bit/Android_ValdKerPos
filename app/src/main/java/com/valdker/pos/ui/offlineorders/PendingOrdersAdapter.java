@@ -1,21 +1,23 @@
 package com.valdker.pos.ui.offlineorders;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
+import android.content.res.ColorStateList;
 import android.text.TextUtils;
-import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.card.MaterialCardView;
+import com.valdker.pos.R;
 import com.valdker.pos.local.PendingOrderEntity;
 import com.valdker.pos.local.PendingOrderItemEntity;
 import com.valdker.pos.repositories.OfflineOrderRepository;
@@ -28,12 +30,24 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Daftar pesanan offline.
+ *
+ * <p>Baris-barisnya sekarang di-inflate dari {@code item_pending_order.xml}.
+ * Sebelumnya setiap ViewHolder dirakit dengan {@code new TextView(...)} dan
+ * warna hex yang ditulis ulang per view, sehingga tampilannya tidak bisa
+ * dipratinjau, tidak bisa disesuaikan untuk layar lebar, dan teksnya tidak
+ * bisa diterjemahkan.
+ */
 public class PendingOrdersAdapter extends RecyclerView.Adapter<PendingOrdersAdapter.VH> {
 
     public interface Listener {
         void onRetry(@NonNull PendingOrderEntity order);
+
         void onLoadItems(@NonNull String localOrderId);
+
         void onReprint(@NonNull PendingOrderEntity order);
+
         boolean isShopMismatch(@NonNull PendingOrderEntity order);
     }
 
@@ -49,7 +63,8 @@ public class PendingOrdersAdapter extends RecyclerView.Adapter<PendingOrdersAdap
 
     private final Listener listener;
     private final List<Row> rows = new ArrayList<>();
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm", Locale.US);
+    private final SimpleDateFormat dateFormat =
+            new SimpleDateFormat("dd MMM yyyy HH:mm", Locale.getDefault());
 
     public PendingOrdersAdapter(@NonNull Listener listener) {
         this.listener = listener;
@@ -77,160 +92,75 @@ public class PendingOrdersAdapter extends RecyclerView.Adapter<PendingOrdersAdap
     @NonNull
     @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        Context context = parent.getContext();
-
-        MaterialCardView card = new MaterialCardView(context);
-        RecyclerView.LayoutParams cardLp = new RecyclerView.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        int margin = dp(context, 8);
-        cardLp.setMargins(0, margin, 0, margin);
-        card.setLayoutParams(cardLp);
-        card.setRadius(dp(context, 10));
-        card.setCardElevation(dp(context, 1));
-        card.setStrokeWidth(1);
-        card.setStrokeColor(Color.parseColor("#E5E7EB"));
-        card.setCardBackgroundColor(Color.WHITE);
-
-        LinearLayout box = new LinearLayout(context);
-        box.setOrientation(LinearLayout.VERTICAL);
-        box.setPadding(dp(context, 14), dp(context, 14), dp(context, 14), dp(context, 12));
-        card.addView(box, new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        ));
-
-        LinearLayout top = new LinearLayout(context);
-        top.setOrientation(LinearLayout.HORIZONTAL);
-        top.setGravity(android.view.Gravity.CENTER_VERTICAL);
-        box.addView(top, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        ));
-
-        TextView title = text(context, 15, "#111827", true);
-        title.setSingleLine(true);
-        title.setEllipsize(TextUtils.TruncateAt.MIDDLE);
-        top.addView(title, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-
-        TextView status = text(context, 11, "#FFFFFF", true);
-        status.setGravity(Gravity.CENTER);
-        status.setPadding(dp(context, 9), dp(context, 5), dp(context, 9), dp(context, 5));
-        top.addView(status, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        ));
-
-        TextView meta = text(context, 12, "#6B7280", false);
-        meta.setPadding(0, dp(context, 7), 0, 0);
-        box.addView(meta);
-
-        TextView total = text(context, 17, "#111827", true);
-        total.setPadding(0, dp(context, 8), 0, 0);
-        box.addView(total);
-
-        TextView shortError = text(context, 12, "#B91C1C", false);
-        shortError.setPadding(dp(context, 10), dp(context, 8), dp(context, 10), dp(context, 8));
-        box.addView(shortError);
-
-        LinearLayout detail = new LinearLayout(context);
-        detail.setOrientation(LinearLayout.VERTICAL);
-        detail.setPadding(0, dp(context, 12), 0, 0);
-        box.addView(detail, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        ));
-
-        TextView detailText = text(context, 12, "#374151", false);
-        detail.addView(detailText);
-
-        TextView itemsText = text(context, 12, "#374151", false);
-        itemsText.setPadding(0, dp(context, 10), 0, 0);
-        detail.addView(itemsText);
-
-        LinearLayout actions = new LinearLayout(context);
-        actions.setOrientation(LinearLayout.HORIZONTAL);
-        actions.setGravity(Gravity.CENTER_VERTICAL);
-        LinearLayout.LayoutParams actionsLp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        actionsLp.topMargin = dp(context, 12);
-        detail.addView(actions, actionsLp);
-
-        MaterialButton retry = new MaterialButton(context);
-        retry.setText("Retry");
-        retry.setAllCaps(false);
-        retry.setCornerRadius(dp(context, 8));
-        retry.setMinHeight(dp(context, 38));
-        LinearLayout.LayoutParams retryLp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        retryLp.rightMargin = dp(context, 8);
-        actions.addView(retry, retryLp);
-
-        MaterialButton reprint = new MaterialButton(context);
-        reprint.setText("Reprint Receipt");
-        reprint.setAllCaps(false);
-        reprint.setCornerRadius(dp(context, 8));
-        reprint.setMinHeight(dp(context, 38));
-        LinearLayout.LayoutParams reprintLp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        actions.addView(reprint, reprintLp);
-
-        return new VH(card, title, status, meta, total, shortError, detail, detailText, itemsText, retry, reprint);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_pending_order, parent, false);
+        return new VH(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull VH holder, int position) {
         Row row = rows.get(position);
         PendingOrderEntity order = row.order;
+        Context context = holder.itemView.getContext();
 
         String clientOrderId = safe(order.clientOrderId);
-        String title = !clientOrderId.isEmpty() ? clientOrderId : safe(order.localOrderId);
-        holder.title.setText(title);
-        holder.status.setText(statusLabel(order.syncStatus));
-        holder.status.setTextColor(Color.WHITE);
-        holder.status.setBackground(badgeBg(holder.itemView.getContext(), statusColor(order.syncStatus)));
+        holder.orderId.setText(!clientOrderId.isEmpty() ? clientOrderId : safe(order.localOrderId));
+
         String meta = dateFormat.format(new Date(Math.max(0L, order.createdAt)));
         if (order.syncAttemptCount > 0) {
-            meta += "  |  Attempts: " + order.syncAttemptCount;
+            meta += "  •  " + context.getString(
+                    R.string.offline_orders_attempts, order.syncAttemptCount);
         }
-        holder.meta.setText(meta);
-        holder.total.setText(("$" + order.totalMoney().toPlainString()));
+        holder.orderMeta.setText(meta);
+
+        holder.statusBadge.setText(context.getString(statusLabel(order.syncStatus)));
+        holder.statusBadge.setBackgroundTintList(ColorStateList.valueOf(
+                ContextCompat.getColor(context, statusColor(order.syncStatus))));
+
+        holder.orderTotal.setText(order.totalMoney().format());
+
+        int itemCount = row.items == null ? -1 : row.items.size();
+        holder.itemCount.setVisibility(itemCount >= 0 ? View.VISIBLE : View.GONE);
+        if (itemCount >= 0) {
+            holder.itemCount.setText(
+                    context.getString(R.string.offline_orders_items_count, itemCount));
+        }
 
         String error = safe(order.lastSyncError);
-        boolean shopMismatch = listener.isShopMismatch(order);
         boolean showError = !error.isEmpty()
                 && (OfflineOrderRepository.STATUS_FAILED.equals(order.syncStatus)
                 || OfflineOrderRepository.STATUS_NEEDS_REVIEW.equals(order.syncStatus));
-        if (!showError) {
-            holder.shortError.setVisibility(View.GONE);
-        } else {
-            holder.shortError.setVisibility(View.VISIBLE);
-            holder.shortError.setText(shorten(error, 120));
-            holder.shortError.setBackground(softBg(holder.itemView.getContext(), "#FEF2F2"));
+        holder.shortError.setVisibility(showError ? View.VISIBLE : View.GONE);
+        if (showError) {
+            holder.shortError.setText(error);
         }
 
         holder.detail.setVisibility(row.expanded ? View.VISIBLE : View.GONE);
-        holder.detailText.setText(buildDetailText(order));
-        holder.itemsText.setText(buildItemsText(row.items));
+        holder.expandIcon.setImageResource(
+                row.expanded ? R.drawable.ic_arrow_up : R.drawable.ic_arrow_down);
+        holder.expandIcon.setContentDescription(context.getString(row.expanded
+                ? R.string.offline_orders_collapse
+                : R.string.offline_orders_expand));
 
+        holder.detailClientId.setText(context.getString(R.string.offline_orders_detail_client_id)
+                + ": " + (clientOrderId.isEmpty() ? "-" : clientOrderId));
+        holder.detailCreated.setText(context.getString(R.string.offline_orders_detail_created)
+                + ": " + extractOfflineCreatedAt(order));
+        holder.detailItems.setText(buildItemsText(context, row.items));
+
+        boolean shopMismatch = listener.isShopMismatch(order);
         boolean retryVisible = !OfflineOrderRepository.STATUS_SYNCED.equals(order.syncStatus)
                 && !OfflineOrderRepository.STATUS_SYNCING.equals(order.syncStatus)
                 && !shopMismatch;
         holder.retry.setVisibility(retryVisible ? View.VISIBLE : View.GONE);
         holder.retry.setOnClickListener(v -> listener.onRetry(order));
-        holder.reprint.setVisibility(View.VISIBLE);
         holder.reprint.setOnClickListener(v -> listener.onReprint(order));
 
         holder.itemView.setOnClickListener(v -> {
+            int adapterPosition = holder.getBindingAdapterPosition();
+            if (adapterPosition == RecyclerView.NO_POSITION) return;
             row.expanded = !row.expanded;
-            notifyItemChanged(holder.getBindingAdapterPosition());
+            notifyItemChanged(adapterPosition);
             if (row.expanded && row.items == null) {
                 listener.onLoadItems(order.localOrderId);
             }
@@ -242,35 +172,24 @@ public class PendingOrdersAdapter extends RecyclerView.Adapter<PendingOrdersAdap
         return rows.size();
     }
 
-    private String buildDetailText(@NonNull PendingOrderEntity order) {
-        StringBuilder out = new StringBuilder();
-        out.append("Client order ID: ").append(safe(order.clientOrderId)).append('\n');
-        out.append("Created: ").append(extractOfflineCreatedAt(order)).append('\n');
-        if (!safe(order.lastSyncError).isEmpty()) {
-            out.append("Error: ").append(safe(order.lastSyncError));
-        }
-        return out.toString();
-    }
+    @NonNull
+    private String buildItemsText(@NonNull Context context, List<PendingOrderItemEntity> items) {
+        if (items == null) return context.getString(R.string.offline_orders_items_loading);
+        if (items.isEmpty()) return context.getString(R.string.offline_orders_items_empty);
 
-    private String buildItemsText(List<PendingOrderItemEntity> items) {
-        if (items == null) return "Items: loading...";
-        if (items.isEmpty()) return "Items: no item rows found.";
-
-        StringBuilder out = new StringBuilder("Items");
+        StringBuilder out = new StringBuilder(context.getString(R.string.offline_orders_items_title));
         for (PendingOrderItemEntity item : items) {
+            String name = safe(item.name);
             out.append('\n')
-                    .append("- ")
-                    .append(safe(item.name).isEmpty() ? ("Product #" + item.productId) : item.name)
+                    .append("• ")
+                    .append(name.isEmpty() ? ("#" + item.productId) : name)
                     .append('\n')
-                    .append("  ")
+                    .append("   ")
                     .append(item.quantity)
-                    .append(" x ")
-                    .append("$").append(item.priceMoney().toPlainString())
-                    .append(" = ")
-                    .append("$").append(item.totalMoney().toPlainString());
-            if (!safe(item.itemType).isEmpty()) {
-                out.append("  ").append(safe(item.itemType));
-            }
+                    .append(" × ")
+                    .append(item.priceMoney().format())
+                    .append("  =  ")
+                    .append(item.totalMoney().format());
         }
         return out.toString();
     }
@@ -287,100 +206,74 @@ public class PendingOrdersAdapter extends RecyclerView.Adapter<PendingOrdersAdap
         }
     }
 
-    private static String statusLabel(@NonNull String status) {
-        if (OfflineOrderRepository.STATUS_PENDING_SYNC.equals(status)) return "Pending Sync";
-        if (OfflineOrderRepository.STATUS_FAILED.equals(status)) return "Failed";
-        if (OfflineOrderRepository.STATUS_NEEDS_REVIEW.equals(status)) return "Needs Review";
-        if (OfflineOrderRepository.STATUS_SYNCED.equals(status)) return "Synced";
-        if (OfflineOrderRepository.STATUS_SYNCING.equals(status)) return "Syncing";
-        return status;
-    }
-
-    private static int statusColor(@NonNull String status) {
-        if (OfflineOrderRepository.STATUS_FAILED.equals(status)
-                || OfflineOrderRepository.STATUS_NEEDS_REVIEW.equals(status)) {
-            return Color.parseColor("#B91C1C");
+    @StringRes
+    static int statusLabel(@NonNull String status) {
+        if (OfflineOrderRepository.STATUS_PENDING_SYNC.equals(status)) {
+            return R.string.offline_orders_status_pending;
+        }
+        if (OfflineOrderRepository.STATUS_FAILED.equals(status)) {
+            return R.string.offline_orders_status_failed;
+        }
+        if (OfflineOrderRepository.STATUS_NEEDS_REVIEW.equals(status)) {
+            return R.string.offline_orders_status_review;
         }
         if (OfflineOrderRepository.STATUS_SYNCED.equals(status)) {
-            return Color.parseColor("#50039B");
+            return R.string.offline_orders_status_synced;
+        }
+        return R.string.offline_orders_status_syncing;
+    }
+
+    @ColorRes
+    static int statusColor(@NonNull String status) {
+        if (OfflineOrderRepository.STATUS_FAILED.equals(status)) {
+            return R.color.state_danger_strong;
+        }
+        if (OfflineOrderRepository.STATUS_NEEDS_REVIEW.equals(status)) {
+            return R.color.state_review;
+        }
+        if (OfflineOrderRepository.STATUS_SYNCED.equals(status)) {
+            return R.color.state_success;
         }
         if (OfflineOrderRepository.STATUS_SYNCING.equals(status)) {
-            return Color.parseColor("#2563EB");
+            return R.color.state_info;
         }
-        return Color.parseColor("#92400E");
-    }
-
-    private static TextView text(@NonNull Context context, int sp, @NonNull String color, boolean bold) {
-        TextView tv = new TextView(context);
-        tv.setTextSize(sp);
-        tv.setTextColor(Color.parseColor(color));
-        if (bold) tv.setTypeface(Typeface.DEFAULT_BOLD);
-        tv.setIncludeFontPadding(true);
-        return tv;
-    }
-
-    @NonNull
-    private static GradientDrawable badgeBg(@NonNull Context context, int color) {
-        GradientDrawable bg = new GradientDrawable();
-        bg.setColor(color);
-        bg.setCornerRadius(dp(context, 999));
-        return bg;
-    }
-
-    @NonNull
-    private static GradientDrawable softBg(@NonNull Context context, @NonNull String color) {
-        GradientDrawable bg = new GradientDrawable();
-        bg.setColor(Color.parseColor(color));
-        bg.setCornerRadius(dp(context, 8));
-        return bg;
-    }
-
-    private static String shorten(@NonNull String text, int max) {
-        return text.length() <= max ? text : text.substring(0, max).trim() + "...";
+        return R.color.state_warning;
     }
 
     private static String safe(String value) {
         return value == null || TextUtils.isEmpty(value.trim()) ? "" : value.trim();
     }
 
-    private static int dp(@NonNull Context context, int value) {
-        return Math.round(value * context.getResources().getDisplayMetrics().density);
-    }
-
     static class VH extends RecyclerView.ViewHolder {
-        final TextView title;
-        final TextView status;
-        final TextView meta;
-        final TextView total;
+        final TextView orderId;
+        final TextView orderMeta;
+        final TextView statusBadge;
+        final TextView orderTotal;
+        final TextView itemCount;
+        final ImageView expandIcon;
         final TextView shortError;
         final LinearLayout detail;
-        final TextView detailText;
-        final TextView itemsText;
+        final TextView detailClientId;
+        final TextView detailCreated;
+        final TextView detailItems;
         final MaterialButton retry;
         final MaterialButton reprint;
 
-        VH(@NonNull View itemView,
-           @NonNull TextView title,
-           @NonNull TextView status,
-           @NonNull TextView meta,
-           @NonNull TextView total,
-           @NonNull TextView shortError,
-           @NonNull LinearLayout detail,
-           @NonNull TextView detailText,
-           @NonNull TextView itemsText,
-           @NonNull MaterialButton retry,
-           @NonNull MaterialButton reprint) {
+        VH(@NonNull View itemView) {
             super(itemView);
-            this.title = title;
-            this.status = status;
-            this.meta = meta;
-            this.total = total;
-            this.shortError = shortError;
-            this.detail = detail;
-            this.detailText = detailText;
-            this.itemsText = itemsText;
-            this.retry = retry;
-            this.reprint = reprint;
+            orderId = itemView.findViewById(R.id.tvOrderId);
+            orderMeta = itemView.findViewById(R.id.tvOrderMeta);
+            statusBadge = itemView.findViewById(R.id.tvStatusBadge);
+            orderTotal = itemView.findViewById(R.id.tvOrderTotal);
+            itemCount = itemView.findViewById(R.id.tvItemCount);
+            expandIcon = itemView.findViewById(R.id.imgExpand);
+            shortError = itemView.findViewById(R.id.tvShortError);
+            detail = itemView.findViewById(R.id.layoutDetail);
+            detailClientId = itemView.findViewById(R.id.tvDetailClientId);
+            detailCreated = itemView.findViewById(R.id.tvDetailCreated);
+            detailItems = itemView.findViewById(R.id.tvDetailItems);
+            retry = itemView.findViewById(R.id.btnRetry);
+            reprint = itemView.findViewById(R.id.btnReprint);
         }
     }
 }

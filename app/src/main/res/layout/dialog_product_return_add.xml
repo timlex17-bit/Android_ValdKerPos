@@ -35,7 +35,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:backgroundTint="#F3F4F6"
-                app:cardCornerRadius="20dp"
+                app:cardCornerRadius="@dimen/radius_dialog"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
                 app:strokeColor="#E5E7EB">
@@ -117,7 +117,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:backgroundTint="#FFFFFF"
-                            app:cardCornerRadius="16dp"
+                            app:cardCornerRadius="@dimen/radius_dialog"
                             app:cardElevation="0dp"
                             app:strokeWidth="1dp"
                             app:strokeColor="#D1D5DB">
@@ -155,7 +155,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:backgroundTint="#FFFFFF"
-                            app:cardCornerRadius="16dp"
+                            app:cardCornerRadius="@dimen/radius_dialog"
                             app:cardElevation="0dp"
                             app:strokeWidth="1dp"
                             app:strokeColor="#D1D5DB">
@@ -207,17 +207,14 @@
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnAddItem"
-                            style="@style/Widget.MaterialComponents.Button"
+                            style="@style/Widget.Valora.Dialog.Button.Filled"
                             android:layout_width="match_parent"
-                            android:layout_height="54dp"
+                            android:layout_height="wrap_content"
                             android:layout_marginTop="16dp"
-                            android:backgroundTint="#6204BF"
-                            android:text="Add Invoice Item"
-                            android:textAllCaps="false"
-                            android:textColor="#FFFFFF"
+                            android:minHeight="52dp"
+                            android:text="@string/action_add_invoice_item"
                             android:textSize="15sp"
-                            android:textStyle="bold"
-                            app:cornerRadius="16dp" />
+                            android:textStyle="bold" />
                     </LinearLayout>
 
                     <!-- Manual Section -->
@@ -252,7 +249,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:backgroundTint="#FFFFFF"
-                            app:cardCornerRadius="16dp"
+                            app:cardCornerRadius="@dimen/radius_dialog"
                             app:cardElevation="0dp"
                             app:strokeWidth="1dp"
                             app:strokeColor="#D1D5DB">
@@ -299,17 +296,14 @@
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnAddManualItem"
-                            style="@style/Widget.MaterialComponents.Button"
+                            style="@style/Widget.Valora.Dialog.Button.Filled"
                             android:layout_width="match_parent"
-                            android:layout_height="54dp"
+                            android:layout_height="wrap_content"
                             android:layout_marginTop="16dp"
-                            android:backgroundTint="#6204BF"
-                            android:text="Add Manual Item"
-                            android:textAllCaps="false"
-                            android:textColor="#FFFFFF"
+                            android:minHeight="52dp"
+                            android:text="@string/action_add_manual_item"
                             android:textSize="15sp"
-                            android:textStyle="bold"
-                            app:cornerRadius="16dp" />
+                            android:textStyle="bold" />
                     </LinearLayout>
 
                     <!-- Shared Note -->
@@ -339,7 +333,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
                 android:backgroundTint="#F3F4F6"
-                app:cardCornerRadius="20dp"
+                app:cardCornerRadius="@dimen/radius_dialog"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
                 app:strokeColor="#E5E7EB">

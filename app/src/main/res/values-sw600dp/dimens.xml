@@ -35,4 +35,19 @@
     <dimen name="pos_side_panel_min_width">300dp</dimen>
     <dimen name="pos_side_panel_max_width">360dp</dimen>
     <dimen name="product_card_image_height">220dp</dimen>
+
+    <!--
+      Token baru untuk tablet. radius_dialog sengaja TIDAK dilebihkan di sini:
+      radius popup harus persis sama di semua ukuran layar, sesuai permintaan
+      satu nilai untuk seluruh dialog.
+    -->
+    <dimen name="radius_surface">16dp</dimen>
+    <dimen name="radius_surface_sm">12dp</dimen>
+    <dimen name="topbar_min_height">64dp</dimen>
+    <dimen name="topbar_icon_size">44dp</dimen>
+
+    <!-- Kolom keranjang tablet: cukup lebar untuk nama item dua baris. -->
+    <dimen name="cart_pane_width">340dp</dimen>
+    <dimen name="cart_thumb_size">56dp</dimen>
+    <dimen name="cart_stepper_button">36dp</dimen>
 </resources>

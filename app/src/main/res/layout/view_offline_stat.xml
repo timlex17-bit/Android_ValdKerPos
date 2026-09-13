@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Satu kotak angka ringkasan di Pesanan Offline.
+
+  Ditulis sekali dan di-<include> empat kali, bukan disalin empat kali,
+  supaya keempatnya pasti sama tinggi dan sama gayanya. Nilai dan warnanya
+  diisi dari kode lewat findViewById pada tiap include.
+
+  Angkanya autoSizeText: pada ponsel 320dp keempat kotak hanya selebar ~70dp,
+  dan jumlah empat digit masih muat karena hurufnya mengecil sendiri alih-alih
+  terpotong.
+-->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="2dp"
+    android:layout_marginEnd="2dp"
+    app:cardBackgroundColor="@color/surface_subtle"
+    app:cardCornerRadius="@dimen/radius_surface_sm"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/stroke"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="8dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="8dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <View
+                android:id="@+id/statDot"
+                android:layout_width="7dp"
+                android:layout_height="7dp"
+                android:layout_marginEnd="5dp"
+                android:background="@drawable/bg_pill"
+                android:backgroundTint="@color/text_tertiary" />
+
+            <TextView
+                android:id="@+id/tvStatLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp"
+                tools:text="Menunggu" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvStatValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:autoSizeMaxTextSize="20sp"
+            android:autoSizeMinTextSize="12sp"
+            android:autoSizeTextType="uniform"
+            android:maxLines="1"
+            android:text="@string/pos_zero_count"
+            android:textColor="@color/text_primary"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            tools:text="12" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

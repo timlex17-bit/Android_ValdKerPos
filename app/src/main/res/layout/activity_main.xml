@@ -88,116 +88,9 @@
                         android:ellipsize="end"/>
 
                 </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/chipStatus"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:minWidth="40dp">
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipAddDraft"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="32dp"
-                        android:minWidth="40dp"
-                        android:text="@string/draft_add"
-                        android:textAlignment="center"
-                        android:textColor="#FFFFFF"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        app:checkedIconVisible="false"
-                        app:chipBackgroundColor="#6204BF"
-                        app:chipCornerRadius="16dp"
-                        app:chipMinHeight="32dp"
-                        app:chipStrokeWidth="0dp"
-                        app:ensureMinTouchTargetSize="false" />
-
-                </LinearLayout>
-
             </LinearLayout>
 
-            <HorizontalScrollView
-                android:id="@+id/draftChipScroll"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:clipToPadding="false"
-                android:fillViewport="false"
-                android:paddingTop="1dp"
-                android:paddingBottom="1dp"
-                android:scrollbars="none">
-
-                <com.google.android.material.chip.ChipGroup
-                    android:id="@+id/chipGroupDrafts"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:chipSpacingHorizontal="6dp"
-                    app:chipSpacingVertical="0dp"
-                    app:singleLine="true"
-                    app:singleSelection="true">
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipDraftA"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="32dp"
-                        android:checked="true"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:text="@string/draft_a_preview"
-                        android:textColor="#3C0375"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        app:checkedIconVisible="false"
-                        app:chipBackgroundColor="#EBD9FD"
-                        app:chipCornerRadius="16dp"
-                        app:chipMinHeight="32dp"
-                        app:chipStrokeColor="#BB80F4"
-                        app:chipStrokeWidth="1dp"
-                        app:ensureMinTouchTargetSize="false" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipDraftB"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="32dp"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:text="@string/draft_b_preview"
-                        android:textColor="#334155"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        app:checkedIconVisible="false"
-                        app:chipBackgroundColor="#FFFFFF"
-                        app:chipCornerRadius="16dp"
-                        app:chipMinHeight="32dp"
-                        app:chipStrokeColor="#E2E8F0"
-                        app:chipStrokeWidth="1dp"
-                        app:ensureMinTouchTargetSize="false" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipDraftC"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="32dp"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:text="@string/draft_walkin_preview"
-                        android:textColor="#334155"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        app:checkedIconVisible="false"
-                        app:chipBackgroundColor="#FFFFFF"
-                        app:chipCornerRadius="16dp"
-                        app:chipMinHeight="32dp"
-                        app:chipStrokeColor="#E2E8F0"
-                        app:chipStrokeWidth="1dp"
-                        app:ensureMinTouchTargetSize="false" />
-
-                </com.google.android.material.chip.ChipGroup>
-            </HorizontalScrollView>
+            <include layout="@layout/view_pos_draft_row" />
 
             <!-- Row 2: Search + Icons -->
             <LinearLayout
@@ -301,7 +194,7 @@
                         android:gravity="center"
                         android:text="@string/pos_zero_count"
                         android:textColor="#FFFFFF"
-                        android:textSize="10sp"
+                        android:textSize="11sp"
                         android:textStyle="bold"
                         android:visibility="gone" />
 
@@ -323,48 +216,13 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- Bottom Categories + Cart Bar -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/bottomCategoryBar"
+    <include
+        layout="@layout/view_pos_category_bar"
         android:layout_width="0dp"
-        android:layout_height="72dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="14dp"
-        app:cardBackgroundColor="#FFFFFF"
-        app:cardCornerRadius="18dp"
-        app:cardElevation="4dp"
-        app:cardUseCompatPadding="false"
+        android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:paddingTop="6dp"
-            android:paddingBottom="6dp">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvCategories"
-                android:layout_width="0dp"
-                android:layout_height="44dp"
-                android:layout_marginStart="0dp"
-                android:layout_marginEnd="0dp"
-                android:clipToPadding="false"
-                android:overScrollMode="never"
-                android:paddingStart="0dp"
-                android:paddingEnd="0dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.5" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </com.google.android.material.card.MaterialCardView>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <!-- Global Overlay Container -->
     <FrameLayout

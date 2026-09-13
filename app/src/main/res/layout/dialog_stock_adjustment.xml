@@ -34,7 +34,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:backgroundTint="#F3F4F6"
-                app:cardCornerRadius="20dp"
+                app:cardCornerRadius="@dimen/radius_dialog"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
                 app:strokeColor="#E5E7EB">
@@ -68,7 +68,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:backgroundTint="#FFFFFF"
-                        app:cardCornerRadius="16dp"
+                        app:cardCornerRadius="@dimen/radius_dialog"
                         app:cardElevation="0dp"
                         app:strokeWidth="1dp"
                         app:strokeColor="#D1D5DB">
@@ -135,7 +135,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:backgroundTint="#FFFFFF"
-                        app:cardCornerRadius="16dp"
+                        app:cardCornerRadius="@dimen/radius_dialog"
                         app:cardElevation="0dp"
                         app:strokeWidth="1dp"
                         app:strokeColor="#D1D5DB">

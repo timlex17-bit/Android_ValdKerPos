@@ -10,6 +10,8 @@ import androidx.annotation.LayoutRes;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.valdker.pos.ui.common.SystemBars;
+
 public class SplashActivity extends AppCompatActivity {
 
     public static final String PREFS_APP_SETTINGS = "app_settings";
@@ -48,6 +50,11 @@ public class SplashActivity extends AppCompatActivity {
     private void showPage(int index) {
         pageIndex = index;
         setContentView(layoutForPage(index));
+        // setContentView dipanggil ulang tiap halaman onboarding, jadi bilah
+        // sistem harus disiapkan lagi - view lama beserta listener inset-nya
+        // sudah dibuang bersama hierarki sebelumnya.
+        SystemBars.apply(this);
+        SystemBars.fitStatusScrim(findViewById(R.id.statusBarScrim));
         bindActions();
     }
 

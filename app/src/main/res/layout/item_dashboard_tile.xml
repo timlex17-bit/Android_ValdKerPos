@@ -52,6 +52,7 @@
             android:id="@+id/imgArrow"
             android:layout_width="18dp"
             android:layout_height="18dp"
+            android:contentDescription="@null"
             android:src="@drawable/ic_arrow_forward_24"
             app:tint="#9CA3AF"
             app:layout_constraintTop_toTopOf="@id/iconContainer"

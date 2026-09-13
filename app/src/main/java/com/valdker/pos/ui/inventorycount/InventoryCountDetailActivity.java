@@ -22,13 +22,14 @@ import com.android.volley.toolbox.Volley;
 import com.valdker.pos.R;
 import com.valdker.pos.ModuleRegistry;
 import com.valdker.pos.SessionManager;
+import com.valdker.pos.money.Money;
 import com.valdker.pos.models.InventoryCount;
 import com.valdker.pos.models.InventoryCountItem;
 import com.valdker.pos.network.ApiConfig;
 import com.valdker.pos.repositories.InventoryOperationCacheRepository;
 import com.valdker.pos.utils.ErrorHandler;
 import com.valdker.pos.utils.NetworkUtils;
-import com.valdker.pos.utils.SystemBarsFix;
+import com.valdker.pos.ui.common.SystemBars;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -112,8 +113,7 @@ public class InventoryCountDetailActivity extends AppCompatActivity {
         }
         Log.d("DETAIL_ACTIVITY", "OPEN InventoryCountDetailActivity");
         setContentView(R.layout.activity_inventory_count_detail);
-        View root = findViewById(R.id.detailRoot);
-        SystemBarsFix.applyForcedDetailSafeArea(this, root, "InventoryCountDetail");
+        setupDetailBars(R.string.detail_inventory_count_title);
 
         bindViews();
         setupRecycler();
@@ -140,8 +140,8 @@ public class InventoryCountDetailActivity extends AppCompatActivity {
     private void parseIntentAndRender() {
         String json = getIntent().getStringExtra(EXTRA_JSON);
         if (json == null || json.trim().isEmpty()) {
-            tvNote.setText("No detail data");
-            if (btnFinalize != null) btnFinalize.setVisibility(View.GONE);
+            tvNote.setText(R.string.detail_no_data);
+            setBottomBarVisible(false);
             return;
         }
 
@@ -181,8 +181,8 @@ public class InventoryCountDetailActivity extends AppCompatActivity {
             updateFinalizeButton();
 
         } catch (Exception e) {
-            tvNote.setText("Parse error: " + e.getMessage());
-            if (btnFinalize != null) btnFinalize.setVisibility(View.GONE);
+            tvNote.setText(getString(R.string.detail_parse_error, String.valueOf(e.getMessage())));
+            setBottomBarVisible(false);
         }
     }
 
@@ -209,17 +209,28 @@ public class InventoryCountDetailActivity extends AppCompatActivity {
         }
 
         if (tvTotalItems != null) {
-            tvTotalItems.setText("Total Items: " + totalItems);
+            tvTotalItems.setText(getString(R.string.detail_total_items_value, totalItems));
         }
 
         if (tvTotalDiff != null) {
-            tvTotalDiff.setText("Total Diff: " + totalDiff);
+            tvTotalDiff.setText(getString(R.string.detail_total_diff_value, totalDiff));
             applyDiffStyle(tvTotalDiff, totalDiff);
         }
 
         if (tvValueImpact != null) {
-            tvValueImpact.setText(String.format(Locale.US, "Total Value Impact: $%.2f", valueImpact));
+            tvValueImpact.setText(getString(R.string.detail_value_impact_value,
+                    Money.ofDouble(valueImpact).format()));
         }
+    }
+
+    /**
+     * Tombol finalisasi adalah satu-satunya isi bilah bawah, jadi saat ia tidak
+     * berlaku (opname sudah COMPLETED) bilahnya ikut disembunyikan - kalau
+     * tidak, yang tersisa hanyalah strip putih setinggi padding di dasar layar.
+     */
+    private void setBottomBarVisible(boolean visible) {
+        View bottomBar = findViewById(R.id.bottomBar);
+        if (bottomBar != null) bottomBar.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
     private void updateFinalizeButton() {
@@ -228,13 +239,14 @@ public class InventoryCountDetailActivity extends AppCompatActivity {
         boolean canFinalize = !"COMPLETED".equals(normalizeStatus(currentStatus));
 
         if (!canFinalize) {
-            btnFinalize.setVisibility(View.GONE);
+            setBottomBarVisible(false);
             return;
         }
 
+        setBottomBarVisible(true);
         btnFinalize.setVisibility(View.VISIBLE);
         btnFinalize.setEnabled(!isFinalizing);
-        btnFinalize.setText(isFinalizing ? "Finalizing..." : "Finalize");
+        btnFinalize.setText(isFinalizing ? R.string.detail_finalizing : R.string.detail_finalize);
 
         btnFinalize.setOnClickListener(v -> {
             if (isFinalizing) return;
@@ -248,7 +260,7 @@ public class InventoryCountDetailActivity extends AppCompatActivity {
             return;
         }
         if (inventoryId <= 0) {
-            Toast.makeText(this, "Invalid inventory count ID", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.detail_invalid_count_id), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -271,7 +283,7 @@ public class InventoryCountDetailActivity extends AppCompatActivity {
 
                     Toast.makeText(
                             InventoryCountDetailActivity.this,
-                            "Finalized successfully",
+                            getString(R.string.detail_finalize_ok),
                             Toast.LENGTH_SHORT
                     ).show();
 
@@ -281,7 +293,7 @@ public class InventoryCountDetailActivity extends AppCompatActivity {
                     isFinalizing = false;
                     updateFinalizeButton();
 
-                    String message = "Failed to finalize";
+                    String message = getString(R.string.detail_finalize_failed);
                     try {
                         if (error != null && error.networkResponse != null) {
                             int code = error.networkResponse.statusCode;
@@ -290,9 +302,9 @@ public class InventoryCountDetailActivity extends AppCompatActivity {
                                     : "";
 
                             if (body != null && !body.trim().isEmpty()) {
-                                message = "Failed to finalize (" + code + ")";
+                                message = getString(R.string.detail_finalize_failed_code, code);
                             } else {
-                                message = "Failed to finalize (" + code + ")";
+                                message = getString(R.string.detail_finalize_failed_code, code);
                             }
                         } else if (error != null && error.getMessage() != null && !error.getMessage().trim().isEmpty()) {
                             message = error.getMessage();
@@ -425,4 +437,24 @@ public class InventoryCountDetailActivity extends AppCompatActivity {
             tv.setTextColor(0xFFEF6C00);
         }
     }
+
+    /**
+     * Bilah sistem layar detail.
+     *
+     * <p>Dulu ini memanggil SystemBarsFix yang menambahkan tinggi bilah status
+     * sebagai padding pada akar berlatar terang, lalu memaksa ikon bilah status
+     * jadi terang - kombinasi yang di Android 15+ berarti jam dan ikon baterai
+     * putih di atas latar hampir putih. Sekarang bilah atas ungu itu sendiri
+     * yang tumbuh ke belakang bilah status.
+     */
+    private void setupDetailBars(int titleRes) {
+        SystemBars.apply(this);
+        SystemBars.padTopBar(findViewById(R.id.topBar));
+        SystemBars.padBottom(findViewById(R.id.bottomBar));
+
+        View topBar = findViewById(R.id.topBar);
+        ((TextView) topBar.findViewById(R.id.tvTopBarTitle)).setText(titleRes);
+        topBar.findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+    }
+
 }

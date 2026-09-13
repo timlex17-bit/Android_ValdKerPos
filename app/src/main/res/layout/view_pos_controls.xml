@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Panel kendali POS: kolom cari + daftar bon terbuka.
+
+  Dipisah dari bilah atas supaya kolom cari duduk di atas latar putih, bukan
+  di atas ungu - kolom putih di atas ungu memaksa dua garis tepi bertumpuk dan
+  membuat bilah atas jadi setinggi 140dp pada ponsel kecil.
+
+  Chip bon memakai gaya bersama Widget.Valora.FilterChip, jadi tinggi dan
+  warnanya sama dengan chip filter di modul lain. Sebelumnya tiap chip di sini
+  menuliskan sendiri chipMinHeight, chipCornerRadius, dan enam warna hex.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/posControls"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/surface"
+    android:elevation="2dp"
+    android:orientation="vertical"
+    android:paddingStart="12dp"
+    android:paddingTop="10dp"
+    android:paddingEnd="12dp"
+    android:paddingBottom="6dp">
+
+    <LinearLayout
+        android:id="@+id/cardSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_pos_search"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="14dp"
+        android:paddingEnd="8dp">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:contentDescription="@null"
+            android:src="@drawable/search_24"
+            app:tint="@color/text_tertiary" />
+
+        <EditText
+            android:id="@+id/tvSearchHint"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:hint="@string/pos_search_product_or_barcode"
+            android:imeOptions="actionSearch"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:maxLines="1"
+            android:minHeight="46dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_tertiary"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <!-- ===== Bon terbuka ===== -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <HorizontalScrollView
+            android:id="@+id/draftChipScroll"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:scrollbars="none">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupDrafts"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:chipSpacingHorizontal="6dp"
+                app:chipSpacingVertical="0dp"
+                app:singleLine="true"
+                app:singleSelection="true">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipDraftA"
+                    style="@style/Widget.Valora.FilterChip"
+                    android:checked="true"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="@string/draft_a_preview" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipDraftB"
+                    style="@style/Widget.Valora.FilterChip"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="@string/draft_b_preview" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipDraftC"
+                    style="@style/Widget.Valora.FilterChip"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="@string/draft_walkin_preview" />
+            </com.google.android.material.chip.ChipGroup>
+        </HorizontalScrollView>
+
+        <!--
+          Chip "+" berdiri di luar area gulir supaya tetap terjangkau walau
+          daftar bon sudah panjang. Di layout lama ia ikut tergulir bersama
+          chip lain dan menghilang di kanan begitu ada lebih dari tiga bon.
+        -->
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipAddDraft"
+            style="@style/Widget.Valora.FilterChip"
+            android:layout_marginStart="6dp"
+            android:contentDescription="@string/cd_pos_open_drafts"
+            android:minWidth="40dp"
+            android:text="@string/draft_add"
+            android:textColor="@color/text_on_brand"
+            android:textSize="15sp"
+            app:chipBackgroundColor="@color/brand_primary"
+            app:chipStrokeWidth="0dp"
+            tools:ignore="TouchTargetSizeCheck" />
+    </LinearLayout>
+
+</LinearLayout>

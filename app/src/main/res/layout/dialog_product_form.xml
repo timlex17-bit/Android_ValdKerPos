@@ -34,7 +34,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:backgroundTint="#F3F4F6"
-                app:cardCornerRadius="20dp"
+                app:cardCornerRadius="@dimen/radius_dialog"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
                 app:strokeColor="#E5E7EB">
@@ -127,7 +127,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:backgroundTint="#FFFFFF"
-                            app:cardCornerRadius="16dp"
+                            app:cardCornerRadius="@dimen/radius_dialog"
                             app:cardElevation="0dp"
                             app:strokeWidth="1dp"
                             app:strokeColor="#D1D5DB">
@@ -157,7 +157,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:backgroundTint="#FFFFFF"
-                        app:cardCornerRadius="16dp"
+                        app:cardCornerRadius="@dimen/radius_dialog"
                         app:cardElevation="0dp"
                         app:strokeWidth="1dp"
                         app:strokeColor="#D1D5DB">
@@ -197,7 +197,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
                 android:backgroundTint="#F3F4F6"
-                app:cardCornerRadius="20dp"
+                app:cardCornerRadius="@dimen/radius_dialog"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
                 app:strokeColor="#E5E7EB">
@@ -284,7 +284,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
                 android:backgroundTint="#F3F4F6"
-                app:cardCornerRadius="20dp"
+                app:cardCornerRadius="@dimen/radius_dialog"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
                 app:strokeColor="#E5E7EB">
@@ -317,7 +317,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:backgroundTint="#FFFFFF"
-                        app:cardCornerRadius="16dp"
+                        app:cardCornerRadius="@dimen/radius_dialog"
                         app:cardElevation="0dp"
                         app:strokeWidth="1dp"
                         app:strokeColor="#D1D5DB">
@@ -345,7 +345,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:backgroundTint="#FFFFFF"
-                        app:cardCornerRadius="16dp"
+                        app:cardCornerRadius="@dimen/radius_dialog"
                         app:cardElevation="0dp"
                         app:strokeWidth="1dp"
                         app:strokeColor="#D1D5DB">
@@ -367,7 +367,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
                 android:backgroundTint="#F3F4F6"
-                app:cardCornerRadius="20dp"
+                app:cardCornerRadius="@dimen/radius_dialog"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
                 app:strokeColor="#E5E7EB">
@@ -388,25 +388,21 @@
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnSelectImage"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        style="@style/Widget.Valora.Dialog.Button.Outlined"
                         android:layout_width="match_parent"
-                        android:layout_height="52dp"
+                        android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:text="Select Product Image"
-                        android:textAllCaps="false"
-                        android:textColor="#6204BF"
+                        android:minHeight="52dp"
+                        android:text="@string/action_select_product_image"
                         android:textSize="15sp"
-                        android:textStyle="bold"
-                        app:cornerRadius="16dp"
-                        app:strokeColor="#6204BF"
-                        app:strokeWidth="1dp" />
+                        android:textStyle="bold" />
 
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="140dp"
                         android:layout_height="140dp"
                         android:layout_marginTop="12dp"
                         android:backgroundTint="#FFFFFF"
-                        app:cardCornerRadius="18dp"
+                        app:cardCornerRadius="@dimen/radius_dialog"
                         app:cardElevation="0dp"
                         app:strokeWidth="1dp"
                         app:strokeColor="#D1D5DB">
@@ -415,6 +411,7 @@
                             android:id="@+id/imgPreview"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
+                            android:contentDescription="@string/action_select_product_image"
                             android:scaleType="centerCrop"
                             android:visibility="gone" />
                     </com.google.android.material.card.MaterialCardView>

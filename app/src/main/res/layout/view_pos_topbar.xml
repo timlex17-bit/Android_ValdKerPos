@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Bilah atas POS kasir: identitas toko + pemindai barcode.
+
+  Ditulis sekali dan di-<include> oleh tata letak potret, lanskap, dan tablet.
+  Sebelum ini ketiga varian menyalin isi bilahnya masing-masing, dan salinan
+  lanskapnya sudah menyimpang: chip bon (chipDraftA/B/C, chipGroupDrafts,
+  chipAddDraft) hilang seluruhnya di sana, jadi memutar perangkat membuat
+  daftar bon terbuka lenyap tanpa jejak. Dengan satu sumber, penyimpangan
+  seperti itu tidak mungkin terjadi lagi.
+
+  Latarnya ungu merek dan SystemBars.padTopBar() menumbuhkannya sampai ke
+  belakang bilah status, jadi di Android 15+ bilah status ikut ungu - bukan
+  abu-abu terang dengan ikon putih yang tak terbaca seperti sebelumnya.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/topBar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/brand_primary"
+    android:baselineAligned="false"
+    android:elevation="3dp"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/topbar_min_height"
+    android:orientation="horizontal"
+    android:paddingStart="12dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="8dp"
+    android:paddingBottom="8dp">
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        app:cardBackgroundColor="#F1E3FF"
+        app:cardCornerRadius="18dp"
+        app:cardElevation="0dp">
+
+        <ImageView
+            android:id="@+id/imgLogo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/cd_shop_logo"
+            android:padding="2dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/bg_logo_circle" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvBrand"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@string/pos_retail_title"
+            android:textColor="@color/text_on_brand"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvShopAddress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:alpha="0.82"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@string/pos_default_subtitle"
+            android:textColor="@color/text_on_brand"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/btnHeaderBarcode"
+        android:layout_width="@dimen/touch_target_min"
+        android:layout_height="@dimen/touch_target_min"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/cd_barcode_scan"
+        android:padding="11dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_barcode"
+        app:tint="@color/text_on_brand"
+        tools:ignore="TouchTargetSizeCheck" />
+
+</LinearLayout>

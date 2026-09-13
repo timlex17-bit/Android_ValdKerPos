@@ -21,7 +21,7 @@ import com.valdker.pos.SessionManager;
 import com.valdker.pos.models.ProductLite;
 import com.valdker.pos.models.ProductReturn;
 import com.valdker.pos.models.ProductReturnItem;
-import com.valdker.pos.utils.SystemBarsFix;
+import com.valdker.pos.ui.common.SystemBars;
 import com.google.android.material.button.MaterialButton;
 
 import java.text.NumberFormat;
@@ -50,8 +50,7 @@ public class ProductReturnDetailActivity extends AppCompatActivity {
         }
         Log.d("DETAIL_ACTIVITY", "OPEN ProductReturnDetailActivity");
         setContentView(R.layout.activity_product_return_detail);
-        View root = findViewById(R.id.detailRoot);
-        SystemBarsFix.applyForcedDetailSafeArea(this, root, "ProductReturnDetail");
+        setupDetailBars(R.string.detail_product_return_title);
 
         tvTitle = findViewById(R.id.tvTitle);
         tvInvoice = findViewById(R.id.tvInvoice);
@@ -66,7 +65,7 @@ public class ProductReturnDetailActivity extends AppCompatActivity {
 
         data = getIntent().getParcelableExtra(EXTRA_DATA);
         if (data == null) {
-            Toast.makeText(this, "No return data.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.detail_return_no_data), Toast.LENGTH_LONG).show();
             finish();
             return;
         }
@@ -86,32 +85,34 @@ public class ProductReturnDetailActivity extends AppCompatActivity {
         if (!inv.isEmpty()) {
             tvTitle.setText(inv);
         } else if (data.order != null) {
-            tvTitle.setText("Order #" + data.order);
+            tvTitle.setText(getString(R.string.detail_return_order_title, String.valueOf(data.order)));
         } else {
-            tvTitle.setText("Return #" + data.id);
+            tvTitle.setText(getString(R.string.detail_return_title_id, data.id));
         }
 
         if (inv.isEmpty()) {
-            tvInvoice.setText("Order: " + (data.order != null ? data.order : "-"));
+            tvInvoice.setText(getString(R.string.detail_field_order,
+                    data.order != null ? String.valueOf(data.order) : "-"));
         } else {
-            tvInvoice.setText("Invoice: " + inv);
+            tvInvoice.setText(getString(R.string.detail_field_invoice, inv));
         }
 
         String customerName = (data.customer != null && data.customer.name != null && !data.customer.name.trim().isEmpty())
                 ? data.customer.name : "-";
-        tvCustomer.setText("Customer: " + customerName);
+        tvCustomer.setText(getString(R.string.detail_field_customer, customerName));
 
         String returnedByName = (data.returnedBy != null) ? data.returnedBy.bestName() : "-";
-        tvReturnedBy.setText("Returned by: " + returnedByName);
+        tvReturnedBy.setText(getString(R.string.detail_field_returned_by, returnedByName));
 
-        tvReturnedAt.setText("Returned: " + formatIso(data.returnedAt));
+        tvReturnedAt.setText(getString(R.string.detail_field_returned_at, formatIso(data.returnedAt)));
 
         String note = data.note != null ? data.note.trim() : "";
-        tvNote.setText("Note: " + (note.isEmpty() ? "-" : note));
+        tvNote.setText(getString(R.string.detail_field_note, note.isEmpty() ? "-" : note));
 
         adapter.setData(data.items);
 
-        tvSummary.setText("Qty: " + trimZero(data.totalQty()) + " • Total: " + usd.format(data.totalAmount()));
+        tvSummary.setText(getString(R.string.detail_return_summary,
+                trimZero(data.totalQty()), usd.format(data.totalAmount())));
     }
 
     private String formatIso(String iso) {
@@ -155,14 +156,14 @@ public class ProductReturnDetailActivity extends AppCompatActivity {
                     != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 101);
-                Toast.makeText(this, "Grant Bluetooth permission then try again.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.detail_print_permission), Toast.LENGTH_SHORT).show();
                 return;
             }
         }
 
         String mac = com.valdker.pos.print.PrinterPrefs.getMac(this);
         if (mac == null || mac.trim().isEmpty()) {
-            Toast.makeText(this, "Printer not connected. Please select printer.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.detail_print_no_printer), Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -175,7 +176,8 @@ public class ProductReturnDetailActivity extends AppCompatActivity {
                     public void onSuccess() {
                         runOnUiThread(() -> {
                             if (btnPrint != null) btnPrint.setEnabled(true);
-                            Toast.makeText(ProductReturnDetailActivity.this, "Printed.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ProductReturnDetailActivity.this,
+                                    getString(R.string.detail_print_ok), Toast.LENGTH_SHORT).show();
                         });
                     }
 
@@ -183,7 +185,8 @@ public class ProductReturnDetailActivity extends AppCompatActivity {
                     public void onError(@androidx.annotation.NonNull String message) {
                         runOnUiThread(() -> {
                             if (btnPrint != null) btnPrint.setEnabled(true);
-                            Toast.makeText(ProductReturnDetailActivity.this, "Print failed: " + message, Toast.LENGTH_LONG).show();
+                            Toast.makeText(ProductReturnDetailActivity.this,
+                                    getString(R.string.detail_print_failed, message), Toast.LENGTH_LONG).show();
                         });
                     }
 
@@ -245,4 +248,24 @@ public class ProductReturnDetailActivity extends AppCompatActivity {
 
         return sb.toString();
     }
+
+    /**
+     * Bilah sistem layar detail.
+     *
+     * <p>Dulu ini memanggil SystemBarsFix yang menambahkan tinggi bilah status
+     * sebagai padding pada akar berlatar terang, lalu memaksa ikon bilah status
+     * jadi terang - kombinasi yang di Android 15+ berarti jam dan ikon baterai
+     * putih di atas latar hampir putih. Sekarang bilah atas ungu itu sendiri
+     * yang tumbuh ke belakang bilah status.
+     */
+    private void setupDetailBars(int titleRes) {
+        SystemBars.apply(this);
+        SystemBars.padTopBar(findViewById(R.id.topBar));
+        SystemBars.padBottom(findViewById(R.id.bottomBar));
+
+        View topBar = findViewById(R.id.topBar);
+        ((TextView) topBar.findViewById(R.id.tvTopBarTitle)).setText(titleRes);
+        topBar.findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+    }
+
 }

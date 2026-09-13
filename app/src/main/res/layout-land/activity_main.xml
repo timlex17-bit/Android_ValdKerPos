@@ -156,7 +156,7 @@
                     android:gravity="center"
                     android:text="@string/pos_zero_count"
                     android:textColor="#FFFFFF"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     android:textStyle="bold"
                     android:visibility="gone" />
             </LinearLayout>
@@ -172,11 +172,9 @@
                 android:src="@drawable/ic_barcode"
                 app:tint="#374151" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvCategories"
-                android:layout_width="1dp"
-                android:layout_height="1dp"
-                android:visibility="gone" />
+
+            <include layout="@layout/view_pos_draft_row" />
+
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
@@ -184,10 +182,18 @@
         android:id="@+id/fragmentContainer"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottomCategoryBar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/nativeHeader" />
+
+    <include
+        layout="@layout/view_pos_category_bar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <FrameLayout
         android:id="@+id/overlayContainer"
