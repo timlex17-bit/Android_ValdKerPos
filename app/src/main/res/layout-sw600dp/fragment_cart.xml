@@ -3,14 +3,31 @@
   Keranjang kasir - varian tablet (kolom tetap di sisi kanan).
 
   Di tablet layar kasir dibagi dua: menu di kiri, keranjang di kanan dan
-  selalu terlihat. Karena itu berkas ini tidak punya latar redup maupun
-  tombol tutup - tidak ada yang perlu ditutup, dan menyisakan tombol silang
-  akan meninggalkan kolom kosong selebar 340dp.
+  selalu terlihat.
 
-  CartFragment membaca id yang sama persis seperti pada varian ponsel dan
-  sudah menjaga setiap view dengan pemeriksaan null, jadi btnCloseCart dan
-  viewDim yang absen di sini aman: jalur tutup laci memang tidak berlaku
-  untuk mode dua kolom.
+  DUA ID YANG SENGAJA TIDAK ADA DI SINI
+
+  Dibanding layout/fragment_cart.xml (varian laci untuk ponsel), berkas ini
+  dengan sengaja TIDAK memuat:
+
+    - viewDim       latar redup. Tidak ada yang perlu diredupkan; kolom
+                    keranjang berdiri sejajar dengan daftar menu, bukan
+                    mengambang di atasnya.
+    - btnCloseCart  tombol tutup. Kolomnya bagian tetap dari layar kasir dan
+                    tidak pernah ditutup; tombol silang hanya akan
+                    meninggalkan kolom kosong selebar 340dp.
+
+  Ini aman karena CartFragment menjaga keduanya dengan pemeriksaan null:
+  btnClose dipasangi listener hanya bila findViewById mengembalikan view, dan
+  begitu pula latar redup. Jalur tutup laci sendiri sudah dimatikan lewat
+  CartFragment.closeOverlaySafely(), yang langsung keluar dalam mode kolom -
+  keranjang kolom tidak pernah didorong ke back stack, jadi popBackStack() di
+  sana akan membuang entri milik layar lain.
+
+  Jadi kalau lint mengeluh InconsistentLayout untuk pasangan berkas ini,
+  itu memang keadaan yang dikehendaki. Jangan menyalin viewDim dan
+  btnCloseCart ke sini untuk "menyamakan" kedua berkas. Semua id lain yang
+  dibaca CartFragment memang sengaja sama persis di kedua varian.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"

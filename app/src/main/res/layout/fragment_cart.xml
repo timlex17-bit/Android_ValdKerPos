@@ -8,10 +8,27 @@
   Pagamentu", dan "Your cart is empty" hanya ada dalam satu bahasa - berkas
   terjemahan values-in dan values-b+tet tidak pernah dipakai keranjang.
 
-  Varian tablet ada di layout-sw600dp/fragment_cart.xml: di sana keranjang
-  bukan laci melainkan kolom tetap di sisi kanan layar kasir, jadi tidak punya
-  latar redup maupun tombol tutup. Semua id yang dibaca CartFragment sengaja
-  sama persis di kedua berkas.
+  BEDA YANG DISENGAJA DENGAN VARIAN TABLET
+
+  Varian tablet ada di layout-sw600dp/fragment_cart.xml. Di sana keranjang
+  bukan laci melainkan kolom tetap di sisi kanan layar kasir, jadi DUA id di
+  bawah ini sengaja TIDAK ADA di berkas itu:
+
+    - viewDim       latar redup. Tidak ada yang perlu diredupkan; kolom
+                    keranjang berdiri sejajar dengan daftar menu.
+    - btnCloseCart  tombol tutup. Kolomnya bagian tetap dari layar kasir
+                    dan tidak pernah ditutup, jadi tombol silang hanya akan
+                    menyisakan kolom kosong selebar 340dp.
+
+  CartFragment menjaga keduanya dengan pemeriksaan null
+  (findViewById lalu "if (btnClose != null)", dan dim disambungkan hanya bila
+  ditemukan), jadi ketiadaannya aman - bukan kelalaian yang perlu "diperbaiki"
+  dengan menyalin kedua view itu ke varian tablet. Selain dua id tersebut,
+  semua id yang dibaca CartFragment sengaja sama persis di kedua berkas.
+
+  Lint menandai ini sebagai InconsistentLayout dan peringatannya sengaja tidak
+  dimatikan dengan tools:ignore - tapi jangan mengandalkan peringatan itu untuk
+  menjelaskan keadaan ini, ia tenggelam di antara seribu peringatan lain.
 -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
