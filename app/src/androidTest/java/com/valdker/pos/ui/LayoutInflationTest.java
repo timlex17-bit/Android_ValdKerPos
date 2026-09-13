@@ -46,6 +46,15 @@ public class LayoutInflationTest {
             R.layout.fragment_workshop_pos,
             R.layout.activity_main,
 
+            // Keranjang kasir. Pada tablet, R.layout.fragment_cart menunjuk
+            // varian layout-sw600dp yang TIDAK punya viewDim maupun
+            // btnCloseCart - jalur null-safe di CartFragment hanya benar
+            // selama varian itu benar-benar bisa di-inflate.
+            R.layout.fragment_cart,
+            R.layout.item_cart,
+            R.layout.item_category_chip,
+            R.layout.item_product_grid,
+
             // Pesanan Offline
             R.layout.activity_pending_orders,
             R.layout.item_pending_order,
@@ -84,6 +93,10 @@ public class LayoutInflationTest {
      */
     private static final int[] DIALOGS = {
             R.layout.dialog_bank_account,
+            // Popup pembayaran: TextInputLayout dan kartu bagian di dalamnya
+            // butuh tema Material, dan itu baru terbukti saat di-inflate.
+            R.layout.dialog_native_checkout,
+            R.layout.item_split_payment,
             R.layout.dialog_category_form,
             R.layout.dialog_close_shift,
             R.layout.dialog_customer_form,
