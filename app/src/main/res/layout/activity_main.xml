@@ -220,6 +220,9 @@
         layout="@layout/view_pos_category_bar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/category_bar_margin"
+        android:layout_marginEnd="@dimen/category_bar_margin"
+        android:layout_marginBottom="@dimen/category_bar_margin"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

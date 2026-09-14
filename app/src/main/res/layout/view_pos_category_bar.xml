@@ -11,6 +11,16 @@
 
   Tingginya wrap_content dengan minHeight supaya ikut tumbuh bersama ukuran
   huruf sistem, bukan terkunci 72dp seperti sebelumnya.
+
+  MARGINNYA ADA DI TAG <include>, BUKAN DI SINI
+
+  Ketika sebuah <include> menyebutkan layout_width dan layout_height, Android
+  membangun LayoutParams dari atribut tag include itu saja dan membuang semua
+  atribut layout_* milik akar berkas yang disertakan. Jadi layout_margin yang
+  ditulis di sini diam-diam bernilai nol - bilah menempel ke tepi kiri dan ke
+  dasar jendela, persis yang terlihat di tablet. Margin @dimen/category_bar_margin
+  sekarang ditulis di ketiga tag include (layout/, layout-sw600dp/, layout-land/
+  activity_main.xml). Jangan memindahkannya kembali ke sini.
 -->
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -18,13 +28,10 @@
     android:id="@+id/bottomCategoryBar"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
-    android:layout_marginStart="@dimen/category_bar_margin"
-    android:layout_marginEnd="@dimen/category_bar_margin"
-    android:layout_marginBottom="@dimen/category_bar_margin"
     android:minHeight="@dimen/category_bar_min_height"
     app:cardBackgroundColor="@color/surface"
     app:cardCornerRadius="@dimen/radius_surface"
-    app:cardElevation="2dp"
+    app:cardElevation="4dp"
     app:cardUseCompatPadding="false">
 
     <androidx.recyclerview.widget.RecyclerView

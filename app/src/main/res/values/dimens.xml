@@ -153,6 +153,6 @@
     <dimen name="category_chip_icon">16dp</dimen>
     <dimen name="category_chip_text">12sp</dimen>
     <dimen name="category_bar_min_height">46dp</dimen>
-    <dimen name="category_bar_margin">8dp</dimen>
+    <dimen name="category_bar_margin">14dp</dimen>
     <dimen name="category_bar_padding">6dp</dimen>
 </resources>
