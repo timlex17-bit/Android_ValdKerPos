@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Satu chip kategori pada bilah menu yang bergulir mendatar di dasar layar
-  kasir ponsel.
+  kasir.
 
-  Warnanya kini datang dari token bersama (@color/stroke, @color/text_primary,
-  @dimen/radius_pill), bukan hex yang ditulis ulang di sini dan sekali lagi di
-  CategoryAdapter. Tingginya wrap_content dengan minHeight 44dp supaya chip
-  ikut tumbuh saat ukuran huruf sistem dinaikkan - versi lama mengunci 44dp,
-  sehingga pada setelan huruf besar label terpotong di tengah.
+  SATU BERKAS UNTUK SEMUA LAYAR
+
+  Dulu ada dua salinan - layout/ dan layout-sw600dp/ - yang berbeda hanya
+  pada tujuh angka ukuran. Sekarang satu berkas membaca token @dimen, jadi
+  ponsel dan tablet memakai susunan yang sama persis dan hanya ukurannya yang
+  berbeda. Menambah ukuran layar baru berarti menambah nilai dimen, bukan
+  menyalin berkas.
+
+  Chipnya sengaja pendek: bilah ini duduk di dasar layar kasir dan setiap
+  dp yang dipakainya diambil dari daftar menu tepat di atasnya.
 -->
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -16,12 +21,12 @@
     android:id="@+id/cardCategory"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_marginEnd="8dp"
+    android:layout_marginEnd="@dimen/category_chip_gap"
     android:clickable="true"
     android:duplicateParentState="true"
     android:focusable="true"
-    android:minWidth="80dp"
-    android:minHeight="44dp"
+    android:minWidth="@dimen/category_chip_min_width"
+    android:minHeight="@dimen/category_chip_height"
     app:cardBackgroundColor="@color/surface"
     app:cardCornerRadius="@dimen/radius_pill"
     app:cardElevation="0dp"
@@ -34,16 +39,16 @@
         android:layout_height="wrap_content"
         android:duplicateParentState="true"
         android:gravity="center"
-        android:minHeight="44dp"
+        android:minHeight="@dimen/category_chip_height"
         android:orientation="horizontal"
-        android:paddingStart="14dp"
-        android:paddingEnd="14dp">
+        android:paddingStart="@dimen/category_chip_padding"
+        android:paddingEnd="@dimen/category_chip_padding">
 
         <LinearLayout
             android:id="@+id/iconWrapper"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:layout_marginEnd="8dp"
+            android:layout_width="@dimen/category_chip_icon_box"
+            android:layout_height="@dimen/category_chip_icon_box"
+            android:layout_marginEnd="6dp"
             android:background="@drawable/bg_category_icon"
             android:backgroundTint="@color/category_icon_bg_tint"
             android:duplicateParentState="true"
@@ -51,8 +56,8 @@
 
             <ImageView
                 android:id="@+id/imgIcon"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
+                android:layout_width="@dimen/category_chip_icon"
+                android:layout_height="@dimen/category_chip_icon"
                 android:adjustViewBounds="true"
                 android:contentDescription="@null"
                 android:scaleType="fitCenter" />
@@ -66,7 +71,7 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="@color/text_primary"
-            android:textSize="13sp"
+            android:textSize="@dimen/category_chip_text"
             android:textStyle="bold"
             tools:text="Bakery" />
     </LinearLayout>

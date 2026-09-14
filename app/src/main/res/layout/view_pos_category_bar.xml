@@ -18,13 +18,13 @@
     android:id="@+id/bottomCategoryBar"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
-    android:layout_marginStart="8dp"
-    android:layout_marginEnd="8dp"
-    android:layout_marginBottom="14dp"
-    android:minHeight="64dp"
+    android:layout_marginStart="@dimen/category_bar_margin"
+    android:layout_marginEnd="@dimen/category_bar_margin"
+    android:layout_marginBottom="@dimen/category_bar_margin"
+    android:minHeight="@dimen/category_bar_min_height"
     app:cardBackgroundColor="@color/surface"
     app:cardCornerRadius="@dimen/radius_surface"
-    app:cardElevation="4dp"
+    app:cardElevation="2dp"
     app:cardUseCompatPadding="false">
 
     <androidx.recyclerview.widget.RecyclerView
@@ -33,11 +33,11 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:clipToPadding="false"
-        android:minHeight="44dp"
+        android:minHeight="@dimen/category_chip_height"
         android:overScrollMode="never"
-        android:paddingStart="8dp"
-        android:paddingTop="6dp"
-        android:paddingEnd="8dp"
-        android:paddingBottom="6dp" />
+        android:paddingStart="@dimen/category_bar_padding"
+        android:paddingTop="@dimen/category_bar_padding"
+        android:paddingEnd="@dimen/category_bar_padding"
+        android:paddingBottom="@dimen/category_bar_padding" />
 
 </com.google.android.material.card.MaterialCardView>

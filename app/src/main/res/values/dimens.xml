@@ -139,4 +139,20 @@
     <dimen name="row_stepper_button">28dp</dimen>
     <!-- Tombol tambah bundar di kartu menu restoran. -->
     <dimen name="product_action_size">36dp</dimen>
+    <!--
+      Bilah kategori di dasar layar kasir. Dipendekkan: bilah ini duduk tepat
+      di bawah daftar menu, jadi setiap dp yang dipakainya diambil dari menu.
+      Chipnya dulu setinggi 44dp (52dp di tablet) dengan ikon 28dp di dalam
+      kotak - lebih besar daripada yang dibutuhkan untuk teks satu baris.
+    -->
+    <dimen name="category_chip_height">34dp</dimen>
+    <dimen name="category_chip_min_width">0dp</dimen>
+    <dimen name="category_chip_padding">10dp</dimen>
+    <dimen name="category_chip_gap">6dp</dimen>
+    <dimen name="category_chip_icon_box">22dp</dimen>
+    <dimen name="category_chip_icon">16dp</dimen>
+    <dimen name="category_chip_text">12sp</dimen>
+    <dimen name="category_bar_min_height">46dp</dimen>
+    <dimen name="category_bar_margin">8dp</dimen>
+    <dimen name="category_bar_padding">6dp</dimen>
 </resources>
