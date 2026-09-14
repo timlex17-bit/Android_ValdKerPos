@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Lebar panel samping kasir, per LEBAR LAYAR YANG TERSEDIA.
+
+  Dipisah dari values-sw600dp dengan sengaja. Smallest-width menjawab
+  "perangkat ini tablet atau bukan", padahal yang menentukan lebar panel
+  adalah ruang yang benar-benar ada saat itu: tablet 800dp dalam potret
+  punya 800dp untuk dibagi dua, dan tablet yang sama dalam lanskap punya
+  1280dp. Dengan sw600dp keduanya mendapat panel selebar sama, jadi yang
+  potret sesak dan yang lanskap menyisakan kolom kosong.
+
+  Android memilih nilai dari bucket terbesar yang masih muat, jadi tangga ini
+  menutup semua ukuran tablet tanpa perlu daftar perangkat.
+-->
+<resources>
+    <dimen name="pos_side_panel_width">360dp</dimen>
+    <dimen name="pos_side_panel_min_width">320dp</dimen>
+    <dimen name="pos_side_panel_max_width">400dp</dimen>
+    <dimen name="cart_pane_width">380dp</dimen>
+</resources>

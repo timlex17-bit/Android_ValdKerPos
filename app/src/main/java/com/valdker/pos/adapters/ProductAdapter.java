@@ -117,19 +117,20 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
     }
 
     private void applyBusinessUi(@NonNull VH h) {
-        if (h.btnAdd != null) h.btnAdd.setText("Add");
+        // Teks tombol dari string resource; sebelumnya "Add" ditulis di sini
+        // dan menimpa label yang sudah diterjemahkan di layout kartunya.
+        if (h.btnAdd != null) {
+            h.btnAdd.setText(h.itemView.getContext().getString(R.string.pos_add_to_cart));
+        }
+
+        // Kasir menambah item dengan mengetuk barisnya, jadi kendali jumlah di
+        // kartu tidak dipakai di sini. RetailProductAdapter yang memakainya.
         if (h.layoutQtyControl != null) h.layoutQtyControl.setVisibility(View.GONE);
         if (h.tvQty != null) h.tvQty.setText("1");
 
-        if ("restaurant".equals(businessType)) {
-            h.tvStock.setVisibility(View.VISIBLE);
-        } else if ("retail".equals(businessType)) {
-            h.tvStock.setVisibility(View.VISIBLE);
-        } else if ("workshop".equals(businessType)) {
-            h.tvStock.setVisibility(View.VISIBLE);
-        } else {
-            h.tvStock.setVisibility(View.VISIBLE);
-        }
+        // Stok tampil untuk semua jenis usaha. Dulu ditulis sebagai empat
+        // cabang if/else yang keempatnya melakukan hal yang sama persis.
+        h.tvStock.setVisibility(View.VISIBLE);
     }
 
     @Override

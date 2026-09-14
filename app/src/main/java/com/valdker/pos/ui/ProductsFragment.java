@@ -281,7 +281,6 @@ public class ProductsFragment extends Fragment {
         if (rv == null) return;
 
         final int baseListBottom = dp(96);
-        final int baseFabMargin = dp(16);
 
         View root = getView();
         if (root == null) root = rv;
@@ -299,14 +298,9 @@ public class ProductsFragment extends Fragment {
                     baseListBottom + navBottom
             );
 
-            if (fabAddProduct != null) {
-                ViewGroup.MarginLayoutParams lp =
-                        (ViewGroup.MarginLayoutParams) fabAddProduct.getLayoutParams();
-
-                lp.bottomMargin = baseFabMargin + navBottom;
-                lp.rightMargin = baseFabMargin + navRight;
-                fabAddProduct.setLayoutParams(lp);
-            }
+            // Jarak FAB tidak diatur di sini lagi: ValoraFab menghitung
+            // sendiri inset yang benar-benar menutupinya, dengan aturan yang
+            // sama untuk seluruh aplikasi.
 
             return insets;
         });

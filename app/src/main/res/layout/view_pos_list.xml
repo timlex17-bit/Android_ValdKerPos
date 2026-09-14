@@ -112,7 +112,7 @@
             android:paddingBottom="14dp"
             android:scrollbars="vertical"
             tools:itemCount="4"
-            tools:listitem="@layout/item_product" />
+            tools:listitem="@layout/item_product_list" />
 
         <!--
           Keadaan kosong. Di layout lama blok ini dikomentari, jadi

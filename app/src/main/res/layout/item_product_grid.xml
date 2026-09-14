@@ -1,102 +1,185 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Kartu menu pada kasir restoran (mode grid).
+
+  Ukurannya kini seluruhnya dari token: tinggi gambar, radius, jarak, dan
+  ukuran huruf mengikuti @dimen yang punya nilai berbeda per ukuran layar,
+  jadi kartu yang sama ikut tumbuh di tablet tanpa berkas salinan. Jumlah
+  kolomnya dihitung ProductsFragment dari lebar daftar yang sebenarnya -
+  bukan lebar layar - karena pada tablet kolom keranjang memakan sebagian
+  lebar itu.
+
+  Warna diambil dari palet (@color/...) alih-alih hex yang ditulis ulang di
+  tiap kartu, dan teks tombol dari string resource: sebelumnya tertulis
+  "ADD" mati di sini sementara kartu daftar menulis "+ Karosa".
+-->
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    android:backgroundTint="@android:color/white"
-    app:cardCornerRadius="18dp"
-    app:cardElevation="2dp"
-    app:strokeWidth="0dp">
+    android:layout_margin="@dimen/product_card_margin"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardBackgroundColor="@color/surface"
+    app:cardCornerRadius="@dimen/product_card_radius"
+    app:cardElevation="1dp"
+    app:rippleColor="@color/brand_tint"
+    app:strokeColor="@color/stroke"
+    app:strokeWidth="1dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
         <ImageView
             android:id="@+id/imgProduct"
-            android:layout_width="0dp"
-            android:layout_height="150dp"
-            android:contentDescription="Product image"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/product_card_image_height"
+            android:background="@color/surface_subtle"
+            android:contentDescription="@string/cd_product_image"
             android:scaleType="centerCrop"
-            android:src="@android:color/darker_gray"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:src="@drawable/bg_image_placeholder" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/body"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="12dp"
-            app:layout_constraintTop_toBottomOf="@id/imgProduct"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            android:orientation="vertical"
+            android:padding="@dimen/product_card_padding">
 
             <TextView
                 android:id="@+id/tvName"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:maxLines="2"
-                android:text="Pizza margherita"
-                android:textColor="#111827"
-                android:textSize="15sp"
+                android:minLines="2"
+                android:textColor="@color/text_primary"
+                android:textSize="@dimen/product_name_text"
                 android:textStyle="bold"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                tools:text="Nasi Goreng Spesial" />
 
             <TextView
                 android:id="@+id/tvStock"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="4dp"
+                android:ellipsize="end"
                 android:maxLines="1"
-                android:text="Stock: 16"
-                android:textColor="#9CA3AF"
-                android:textSize="12sp"
-                app:layout_constraintTop_toBottomOf="@id/tvName"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                android:textColor="@color/text_tertiary"
+                android:textSize="@dimen/product_meta_text"
+                tools:text="Stock: 16" />
 
             <TextView
                 android:id="@+id/tvPrice"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
+                android:ellipsize="end"
                 android:maxLines="1"
-                android:text="$1.50"
-                android:textColor="#111827"
-                android:textSize="18sp"
+                android:textColor="@color/brand_primary"
+                android:textSize="@dimen/product_price_text"
                 android:textStyle="bold"
-                app:layout_constraintTop_toBottomOf="@id/tvStock"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                tools:text="$1.50" />
+
+            <!--
+              Kendali jumlah. Tidak pernah ada di kartu grid sebelumnya,
+              padahal ProductAdapter mencarinya lewat findViewById dan
+              menyembunyikannya - jadi mode grid diam-diam kehilangan tombol
+              tambah/kurang yang dimiliki mode daftar.
+            -->
+            <LinearLayout
+                android:id="@+id/layoutQtyControl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_cart_stepper"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="2dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnMinus"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
+                    android:contentDescription="@string/cd_cart_decrease"
+                    android:insetLeft="0dp"
+                    android:insetTop="0dp"
+                    android:insetRight="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:paddingStart="0dp"
+                    android:paddingEnd="0dp"
+                    app:backgroundTint="@color/surface"
+                    app:cornerRadius="@dimen/radius_pill"
+                    app:icon="@drawable/ic_remove"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    app:iconSize="18dp"
+                    app:iconTint="@color/brand_primary"
+                    app:strokeColor="@color/stroke"
+                    app:strokeWidth="1dp"
+                    tools:ignore="TouchTargetSizeCheck" />
+
+                <TextView
+                    android:id="@+id/tvQty"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:text="@string/pos_zero_count"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    tools:text="2" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnPlus"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
+                    android:contentDescription="@string/cd_cart_increase"
+                    android:insetLeft="0dp"
+                    android:insetTop="0dp"
+                    android:insetRight="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:paddingStart="0dp"
+                    android:paddingEnd="0dp"
+                    app:backgroundTint="@color/brand_primary"
+                    app:cornerRadius="@dimen/radius_pill"
+                    app:elevation="0dp"
+                    app:icon="@drawable/ic_add"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    app:iconSize="18dp"
+                    app:iconTint="@color/text_on_brand"
+                    tools:ignore="TouchTargetSizeCheck" />
+            </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAdd"
-                android:layout_width="0dp"
+                style="@style/Widget.Valora.PrimaryButton"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minHeight="44dp"
-                android:layout_marginTop="12dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:text="ADD"
-                android:textAllCaps="true"
-                android:textColor="@android:color/white"
+                android:layout_marginTop="10dp"
+                android:minHeight="@dimen/product_action_height"
+                android:text="@string/pos_add_to_cart"
                 android:textSize="13sp"
-                android:textStyle="bold"
-                app:backgroundTint="#6204BF"
-                app:cornerRadius="14dp"
-                app:layout_constraintTop_toBottomOf="@id/tvPrice"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
+                app:icon="@drawable/ic_add"
+                app:iconGravity="textStart"
+                app:iconSize="18dp" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+        </LinearLayout>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 
 </com.google.android.material.card.MaterialCardView>

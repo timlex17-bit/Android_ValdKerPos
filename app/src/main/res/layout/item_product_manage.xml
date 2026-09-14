@@ -1,12 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Kartu produk pada layar kelola produk.
+
+  Satu berkas untuk semua ukuran layar: ukurannya dari token @dimen yang
+  berbeda per layar, bukan dari salinan di layout-sw600dp. Salinan itu sudah
+  menyimpang - yang ini mematok tinggi gambar 170dp sementara salinannya
+  memakai @dimen, jadi kartu di tablet berubah tinggi tergantung berkas mana
+  yang kebetulan terpilih.
+-->
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="10dp"
-    android:backgroundTint="@android:color/white"
-    app:cardCornerRadius="18dp"
+    android:layout_margin="@dimen/product_card_margin"
+    app:cardBackgroundColor="@color/surface"
+    app:cardCornerRadius="@dimen/product_card_radius"
     app:cardElevation="2dp"
     app:strokeWidth="0dp">
 
@@ -18,7 +27,7 @@
         <ImageView
             android:id="@+id/imgProduct"
             android:layout_width="0dp"
-            android:layout_height="170dp"
+            android:layout_height="@dimen/product_card_image_height"
             android:contentDescription="Product image"
             android:scaleType="centerCrop"
             android:src="@android:color/darker_gray"
@@ -49,7 +58,7 @@
             android:paddingEnd="10dp"
             android:paddingBottom="6dp"
             android:text="STOCK"
-            android:textColor="#111827"
+            android:textColor="@color/text_primary"
             android:textSize="12sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="@id/imgProduct"
@@ -60,7 +69,7 @@
             android:id="@+id/body"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:padding="12dp"
+            android:padding="@dimen/product_card_padding"
             app:layout_constraintTop_toBottomOf="@id/imgProduct"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
@@ -72,8 +81,8 @@
                 android:ellipsize="end"
                 android:maxLines="2"
                 android:text="Product Name"
-                android:textColor="#111827"
-                android:textSize="15sp"
+                android:textColor="@color/text_primary"
+                android:textSize="@dimen/product_name_text"
                 android:textStyle="bold"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -85,8 +94,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:text="Stock: 0 • $0.00"
-                android:textColor="#6B7280"
-                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:textSize="@dimen/product_meta_text"
                 app:layout_constraintTop_toBottomOf="@id/tvName"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
@@ -114,7 +123,7 @@
                     android:minHeight="0dp"
                     android:padding="0dp"
                     android:text=""
-                    app:backgroundTint="#4F46E5"
+                    app:backgroundTint="@color/brand_primary"
                     app:cornerRadius="14dp"
                     app:icon="@android:drawable/ic_menu_edit"
                     app:iconGravity="textTop"
@@ -138,13 +147,13 @@
                     android:minHeight="0dp"
                     android:padding="0dp"
                     android:text=""
-                    app:backgroundTint="#FEE2E2"
+                    app:backgroundTint="@color/state_danger_tint"
                     app:cornerRadius="14dp"
                     app:icon="@android:drawable/ic_menu_delete"
                     app:iconGravity="textTop"
                     app:iconPadding="0dp"
                     app:iconSize="20dp"
-                    app:iconTint="#991B1B" />
+                    app:iconTint="@color/state_danger_strong" />
 
             </LinearLayout>
 

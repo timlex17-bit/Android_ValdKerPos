@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Panel ringkasan + checkout kasir - varian tablet.
+
+  Pada ponsel berkas dengan nama sama adalah bilah tipis di dasar layar.
+  Di tablet, kasir dibagi dua kolom dan berkas ini mengisi seluruh kolom
+  kanan. Versi sebelumnya memakai bilah ponsel apa adanya lalu mendorongnya
+  ke dasar kolom dengan <Space android:layout_weight="1"/>, sehingga kolom
+  selebar 360dp berisi ruang kosong 80% dengan satu tombol menggantung di
+  bawah - itulah "berantakan" yang dilaporkan.
+
+  Semua id yang dibaca RetailPOSFragment sama persis dengan varian ponsel:
+  bottomBar (dipakai SystemBars.padBottom), txtGrandTotal, dan btnCheckout.
+  Jadi tidak ada satu baris Java pun yang perlu tahu varian mana yang sedang
+  di-inflate.
+-->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/bottomBar"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:cardBackgroundColor="@color/surface"
+    app:cardCornerRadius="@dimen/radius_surface"
+    app:cardElevation="1dp"
+    app:strokeColor="@color/stroke"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@string/label_summary"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="@string/pos_review_before_checkout"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="12dp"
+            android:background="@color/stroke_soft" />
+
+        <!--
+          Ruang kosong ditaruh DI SINI, bukan di layout pemanggil: ringkasan
+          menempel ke bawah panel supaya total selalu berada di dekat tombol
+          yang ditekan kasir, berapa pun tinggi tabletnya.
+        -->
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:letterSpacing="0.08"
+            android:text="@string/label_total"
+            android:textAllCaps="true"
+            android:textColor="@color/text_tertiary"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtGrandTotal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:autoSizeMaxTextSize="34sp"
+            android:autoSizeMinTextSize="18sp"
+            android:autoSizeTextType="uniform"
+            android:maxLines="1"
+            android:text="@string/amount_zero_usd"
+            android:textColor="@color/brand_primary"
+            android:textSize="34sp"
+            android:textStyle="bold"
+            tools:text="$1,284.50" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCheckout"
+            style="@style/Widget.Valora.PrimaryButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:minHeight="56dp"
+            android:text="@string/action_checkout"
+            android:textSize="16sp"
+            app:icon="@drawable/ic_bag"
+            app:iconGravity="textStart"
+            app:rippleColor="#33FFFFFF" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

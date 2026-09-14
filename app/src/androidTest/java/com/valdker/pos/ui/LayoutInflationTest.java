@@ -54,6 +54,26 @@ public class LayoutInflationTest {
             R.layout.item_cart,
             R.layout.item_category_chip,
             R.layout.item_product_grid,
+            R.layout.item_product_list,
+            R.layout.item_product_manage,
+
+            // Layar ber-FAB. ValoraFab memasang pendengar inset saat
+            // menempel ke jendela, jadi kegagalan inflate-nya hanya terlihat
+            // di perangkat sungguhan.
+            R.layout.fragment_customers,
+            R.layout.fragment_suppliers,
+            R.layout.fragment_units,
+            R.layout.fragment_expenses,
+            R.layout.fragment_purchases,
+            R.layout.fragment_warehouses,
+            R.layout.fragment_warehouse_stocks,
+            R.layout.fragment_stock_transfers,
+            R.layout.fragment_stock_adjustments,
+            R.layout.fragment_manage_categories,
+            R.layout.fragment_products_manage,
+            R.layout.fragment_product_returns,
+            R.layout.fragment_inventory_count_list,
+            R.layout.fragment_products,
 
             // Pesanan Offline
             R.layout.activity_pending_orders,
