@@ -68,4 +68,5 @@
     <dimen name="row_meta_text">11sp</dimen>
     <dimen name="row_price_text">15sp</dimen>
     <dimen name="row_stepper_button">30dp</dimen>
+    <dimen name="product_action_size">40dp</dimen>
 </resources>

@@ -137,4 +137,6 @@
     <dimen name="row_meta_text">11sp</dimen>
     <dimen name="row_price_text">14sp</dimen>
     <dimen name="row_stepper_button">28dp</dimen>
+    <!-- Tombol tambah bundar di kartu menu restoran. -->
+    <dimen name="product_action_size">36dp</dimen>
 </resources>
