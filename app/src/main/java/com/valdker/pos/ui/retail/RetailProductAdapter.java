@@ -119,9 +119,14 @@ public class RetailProductAdapter extends RecyclerView.Adapter<RetailProductAdap
             if (tvPrice != null) tvPrice.setText(moneyFormat.format(item.price));
 
             String sku = notEmpty(item.sku, "-");
-            if (tvSku != null) tvSku.setText("SKU: " + sku);
+            if (tvSku != null) {
+                tvSku.setText(itemView.getContext().getString(R.string.label_sku_value, sku));
+            }
 
-            if (tvStock != null) tvStock.setText("Stock: " + formatStock(item.stock));
+            if (tvStock != null) {
+                tvStock.setText(itemView.getContext()
+                        .getString(R.string.label_stock_value, formatStock(item.stock)));
+            }
 
             int qty = listener != null ? listener.getQuantity(item) : 1;
             if (tvQty != null) tvQty.setText(String.valueOf(Math.max(1, qty)));

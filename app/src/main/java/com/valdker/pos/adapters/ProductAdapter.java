@@ -74,7 +74,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
         double priceVal = p.price;
         h.tvPrice.setText(priceVal > 0 ? usd.format(priceVal) : "-");
 
-        h.tvStock.setText("Stock: " + p.stock);
+        h.tvStock.setText(h.itemView.getContext()
+                .getString(R.string.label_stock_value, String.valueOf(p.stock)));
 
         bindImage(h, p);
         applyBusinessUi(h);
@@ -117,11 +118,11 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
     }
 
     private void applyBusinessUi(@NonNull VH h) {
-        // Teks tombol dari string resource; sebelumnya "Add" ditulis di sini
-        // dan menimpa label yang sudah diterjemahkan di layout kartunya.
-        if (h.btnAdd != null) {
-            h.btnAdd.setText(h.itemView.getContext().getString(R.string.pos_add_to_cart));
-        }
+        // Label tombol dibiarkan milik layout: kartu grid memakai label
+        // pendek karena lebarnya hanya seperempat kolom menu, sementara baris
+        // daftar punya ruang untuk label penuh. Versi lama menimpa keduanya
+        // dengan satu teks, sehingga di kartu grid label itu terlipat tiga
+        // baris dan terpotong di tengah kata.
 
         // Kasir menambah item dengan mengetuk barisnya, jadi kendali jumlah di
         // kartu tidak dipakai di sini. RetailProductAdapter yang memakainya.

@@ -100,4 +100,17 @@
     <dimen name="product_price_text">18sp</dimen>
     <dimen name="product_action_height">44dp</dimen>
     <dimen name="product_thumb_size">56dp</dimen>
+    <!--
+      Lebar minimum satu kartu produk. Jumlah kolom grid dihitung dari lebar
+      daftar dibagi angka ini. Sempat 168dp: pada tablet 1280dp dengan kolom
+      keranjang, hasilnya lima kolom selebar 170dp - cukup sempit sehingga
+      label tombol terlipat tiga baris dan terpotong di tengah kata.
+    -->
+    <dimen name="product_card_min_width">180dp</dimen>
+    <!--
+      Lebar minimum jendela dialog. Di tablet, dialog bawaan Material hanya
+      memakai sekitar 520dp dari layar 1280dp, sehingga popup pembayaran
+      dengan lima kartu bagian harus digulir padahal ruangnya berlimpah.
+    -->
+    <dimen name="dialog_min_width">300dp</dimen>
 </resources>

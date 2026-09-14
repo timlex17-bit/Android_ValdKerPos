@@ -1456,4 +1456,8 @@
     <string name="vehicle_odometer_label">Odometer (optional)</string>
     <string name="vehicle_odometer_hint">Example: 125000</string>
     <string name="supplier_add_title">Add Supplier</string>
+    <!-- Kartu produk di kasir -->
+    <string name="pos_add_short">Add</string>
+    <string name="label_stock_value">Stock: %1$s</string>
+    <string name="label_sku_value">SKU: %1$s</string>
 </resources>

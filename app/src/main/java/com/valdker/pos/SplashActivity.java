@@ -55,6 +55,10 @@ public class SplashActivity extends AppCompatActivity {
         // sudah dibuang bersama hierarki sebelumnya.
         SystemBars.apply(this);
         SystemBars.fitStatusScrim(findViewById(R.id.statusBarScrim));
+        // Tombol lanjut duduk di dasar layar dengan margin 32dp. Tanpa inset
+        // ini, pada perangkat bergestur separuh tombolnya berada di belakang
+        // bilah navigasi - terlihat pada tablet SM-T510.
+        SystemBars.padBottom(findViewById(R.id.splashRoot));
         bindActions();
     }
 

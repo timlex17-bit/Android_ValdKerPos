@@ -204,19 +204,18 @@ public class ProductsFragment extends Fragment {
     /**
      * Jumlah kolom yang muat pada lebar daftar tertentu (piksel).
      *
-     * <p>Lebar minimum satu kartu produk dipatok 168dp: di bawah itu nama
-     * produk dua baris mulai terpotong dan tombol "ADD" kehilangan labelnya.
+     * <p>Lebar minimum satu kartu datang dari @dimen/product_card_min_width,
+     * bukan angka di dalam kode: nilainya berbeda antara ponsel dan tablet.
      * Selalu minimal dua kolom, supaya kolom menu yang sempit pada tablet
      * portrait tidak berubah jadi daftar satu kartu per baris yang boros.
      */
     private int spanForListWidth(int widthPx) {
         if (widthPx <= 0) return getResponsiveProductSpan();
 
-        float density = getResources().getDisplayMetrics().density;
-        if (density <= 0f) return getResponsiveProductSpan();
+        int minCardPx = getResources().getDimensionPixelSize(R.dimen.product_card_min_width);
+        if (minCardPx <= 0) return getResponsiveProductSpan();
 
-        int widthDp = Math.round(widthPx / density);
-        return Math.max(2, widthDp / 168);
+        return Math.max(2, widthPx / minCardPx);
     }
 
     private int getResponsiveProductSpan() {

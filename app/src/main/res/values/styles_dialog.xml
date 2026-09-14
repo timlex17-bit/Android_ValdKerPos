@@ -136,6 +136,14 @@
         <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.Valora.Dialog</item>
         <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.Valora.Dialog</item>
         <item name="dialogCornerRadius">@dimen/radius_dialog</item>
+
+        <!--
+          Lebar minimum jendela; nilainya berbeda antara ponsel dan tablet.
+          Tanpa ini dialog di tablet tetap selebar dialog ponsel dan isinya
+          harus digulir walau layarnya lapang.
+        -->
+        <item name="android:windowMinWidthMinor">@dimen/dialog_min_width</item>
+        <item name="android:windowMinWidthMajor">@dimen/dialog_min_width</item>
     </style>
 
     <!--

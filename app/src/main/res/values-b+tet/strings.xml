@@ -1445,4 +1445,8 @@
     <string name="vehicle_odometer_label">Odómetru (opsional)</string>
     <string name="vehicle_odometer_hint">Ezemplu: 125000</string>
     <string name="supplier_add_title">Aumenta Fornesedor</string>
+    <!-- Kartu produtu iha kaixa -->
+    <string name="pos_add_short">Aumenta</string>
+    <string name="label_stock_value">Stoku: %1$s</string>
+    <string name="label_sku_value">SKU: %1$s</string>
 </resources>

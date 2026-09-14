@@ -1471,4 +1471,8 @@
     <string name="vehicle_odometer_label">Odometer (opsional)</string>
     <string name="vehicle_odometer_hint">Contoh: 125000</string>
     <string name="supplier_add_title">Tambah Pemasok</string>
+    <!-- Kartu produk di kasir -->
+    <string name="pos_add_short">Tambah</string>
+    <string name="label_stock_value">Stok: %1$s</string>
+    <string name="label_sku_value">SKU: %1$s</string>
 </resources>

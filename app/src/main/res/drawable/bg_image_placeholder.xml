@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Latar gambar produk yang belum punya foto.
+
+  Tetap satu bentuk polos, BUKAN layer-list berisi ikon. Percobaan menaruh
+  ikon produk di tengahnya lewat <bitmap android:src="@drawable/ic_mod_products"/>
+  membuat aplikasi mati saat layout di-inflate: <bitmap> hanya menerima
+  gambar raster, dan ic_mod_products adalah vector, sehingga Android melempar
+  "<bitmap> requires a valid 'src' attribute".
+
+  Kalau nanti ingin ada ikon di tengahnya, buat satu berkas vector yang
+  menggambar kotaknya sekaligus ikonnya - bukan menumpuk vector di dalam
+  layer-list.
+-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="#E0E0E0" />
+    <solid android:color="@color/surface_subtle" />
     <corners android:radius="12dp" />
 </shape>
