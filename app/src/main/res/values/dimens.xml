@@ -122,6 +122,19 @@
     -->
     <dimen name="card_panel_radius">12dp</dimen>
     <dimen name="card_item_radius">16dp</dimen>
-    <dimen name="card_item_gap">8dp</dimen>
+    <dimen name="card_item_gap">6dp</dimen>
     <dimen name="card_item_padding">12dp</dimen>
+    <!--
+      Baris item kasir (yang dipindai / keranjang). Sengaja lebih padat dari
+      kartu menu restoran: kartu menu berisi foto dan dilihat dari jarak
+      pandang, sedangkan baris kasir dibaca dari dekat dan yang penting
+      berapa banyak yang muat di layar.
+    -->
+    <dimen name="row_card_padding">8dp</dimen>
+    <dimen name="row_card_margin">3dp</dimen>
+    <dimen name="row_thumb_size">36dp</dimen>
+    <dimen name="row_name_text">13sp</dimen>
+    <dimen name="row_meta_text">11sp</dimen>
+    <dimen name="row_price_text">14sp</dimen>
+    <dimen name="row_stepper_button">28dp</dimen>
 </resources>

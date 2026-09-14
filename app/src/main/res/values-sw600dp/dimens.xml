@@ -61,4 +61,11 @@
     <dimen name="product_thumb_size">64dp</dimen>
     <dimen name="product_card_min_width">200dp</dimen>
     <dimen name="dialog_min_width">560dp</dimen>
+    <dimen name="row_card_padding">10dp</dimen>
+    <dimen name="row_card_margin">4dp</dimen>
+    <dimen name="row_thumb_size">40dp</dimen>
+    <dimen name="row_name_text">14sp</dimen>
+    <dimen name="row_meta_text">11sp</dimen>
+    <dimen name="row_price_text">15sp</dimen>
+    <dimen name="row_stepper_button">30dp</dimen>
 </resources>

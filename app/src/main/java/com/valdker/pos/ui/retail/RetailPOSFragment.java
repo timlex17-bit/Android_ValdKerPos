@@ -252,7 +252,14 @@ public class RetailPOSFragment extends Fragment {
 
         SystemBars.apply(requireActivity());
         SystemBars.padTopBar(root.findViewById(R.id.topBar));
-        SystemBars.padBottom(root.findViewById(R.id.bottomBar));
+
+        // Pada tablet, bottomBar bukan bilah di dasar layar melainkan panel
+        // ringkasan setinggi kolom, jadi memberi padding di dalamnya tidak
+        // menjauhkan apa pun dari bilah navigasi - tombol Checkout tetap
+        // terpotong di tepi bawah. Insetnya dipasang pada akar layar supaya
+        // seluruh area dua kolom berhenti di atas bilah navigasi; pada ponsel
+        // hasilnya sama seperti sebelumnya.
+        SystemBars.padBottom(root.findViewById(R.id.rootRetailPos));
     }
 
     @Override

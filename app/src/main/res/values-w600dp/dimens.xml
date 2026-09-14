@@ -13,8 +13,8 @@
   menutup semua ukuran tablet tanpa perlu daftar perangkat.
 -->
 <resources>
-    <dimen name="pos_side_panel_width">280dp</dimen>
-    <dimen name="pos_side_panel_min_width">260dp</dimen>
-    <dimen name="pos_side_panel_max_width">300dp</dimen>
+    <dimen name="pos_side_panel_width">220dp</dimen>
+    <dimen name="pos_side_panel_min_width">200dp</dimen>
+    <dimen name="pos_side_panel_max_width">240dp</dimen>
     <dimen name="cart_pane_width">280dp</dimen>
 </resources>
