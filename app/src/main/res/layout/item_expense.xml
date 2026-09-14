@@ -8,7 +8,7 @@
     android:backgroundTint="@android:color/white"
     app:cardCornerRadius="18dp"
     app:cardElevation="2dp"
-    app:strokeColor="#D1D5DB"
+    app:strokeColor="@color/stroke_strong"
     app:strokeWidth="1dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -24,7 +24,7 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:text="Expense Name"
-            android:textColor="#111827"
+            android:textColor="@color/text_primary"
             android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@id/layoutActions"
@@ -39,7 +39,7 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:text="2026-03-16 12:51:00"
-            android:textColor="#374151"
+            android:textColor="@color/icon_muted"
             android:textSize="13sp"
             app:layout_constraintEnd_toEndOf="@id/tvName"
             app:layout_constraintStart_toStartOf="@id/tvName"
@@ -53,7 +53,7 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:text="$150.00"
-            android:textColor="#DC2626"
+            android:textColor="@color/state_danger"
             android:textSize="14sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="@id/tvName"
@@ -82,7 +82,7 @@
                 android:paddingEnd="12dp"
                 android:paddingBottom="6dp"
                 android:text="Edit"
-                android:textColor="#2563EB"
+                android:textColor="@color/state_info"
                 android:textSize="13sp" />
 
             <TextView
@@ -97,7 +97,7 @@
                 android:paddingEnd="12dp"
                 android:paddingBottom="6dp"
                 android:text="Delete"
-                android:textColor="#DC2626"
+                android:textColor="@color/state_danger"
                 android:textSize="13sp" />
 
         </LinearLayout>

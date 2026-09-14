@@ -5,14 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="16dp"
-    android:background="#F9FAFB">
+    android:background="@color/valora_surface">
 
     <TextView
         android:id="@+id/tvTitleCustomerForm"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/title_add_customer"
-        android:textColor="#111827"
+        android:textColor="@color/text_primary"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
@@ -23,10 +23,10 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="14dp"
-        android:backgroundTint="#F3F4F6"
+        android:backgroundTint="@color/surface_subtle"
         app:cardCornerRadius="@dimen/radius_dialog"
         app:cardElevation="0dp"
-        app:strokeColor="#E5E7EB"
+        app:strokeColor="@color/stroke"
         app:strokeWidth="1dp"
         app:layout_constraintTop_toBottomOf="@id/tvTitleCustomerForm"
         app:layout_constraintStart_toStartOf="parent"
@@ -42,7 +42,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/customer_details"
-                android:textColor="#111827"
+                android:textColor="@color/text_primary"
                 android:textSize="16sp"
                 android:textStyle="bold"/>
 
@@ -57,8 +57,8 @@
                     android:id="@+id/etCustomerName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="#111827"
-                    android:textColorHint="#9CA3AF"/>
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_tertiary"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Cell -->
@@ -72,8 +72,8 @@
                     android:id="@+id/etCustomerCell"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="#111827"
-                    android:textColorHint="#9CA3AF"/>
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_tertiary"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Email -->
@@ -87,8 +87,8 @@
                     android:id="@+id/etCustomerEmail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="#111827"
-                    android:textColorHint="#9CA3AF"/>
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_tertiary"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Address -->
@@ -102,8 +102,8 @@
                     android:id="@+id/etCustomerAddress"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="#111827"
-                    android:textColorHint="#9CA3AF"/>
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_tertiary"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <ProgressBar

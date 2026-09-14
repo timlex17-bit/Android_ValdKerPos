@@ -20,7 +20,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Inventory Count"
+                android:text="@string/inventory_count_title"
                 android:textStyle="bold"
                 android:textSize="18sp" />
 
@@ -34,23 +34,25 @@
         </RelativeLayout>
 
         <EditText
+            style="@style/Widget.Valora.EditText"
             android:id="@+id/etTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Title"
+            android:hint="@string/field_title"
             android:layout_marginTop="12dp"/>
 
         <EditText
+            style="@style/Widget.Valora.EditText"
             android:id="@+id/etNote"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Note (optional)"
+            android:hint="@string/field_note_optional"
             android:layout_marginTop="10dp"/>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Items"
+            android:text="@string/label_items_section"
             android:textStyle="bold"
             android:layout_marginTop="14dp" />
 

@@ -54,7 +54,7 @@
             android:layout_height="18dp"
             android:contentDescription="@null"
             android:src="@drawable/ic_arrow_forward_24"
-            app:tint="#9CA3AF"
+            app:tint="@color/text_tertiary"
             app:layout_constraintTop_toTopOf="@id/iconContainer"
             app:layout_constraintEnd_toEndOf="parent"/>
 
@@ -81,7 +81,7 @@
             android:layout_height="wrap_content"
             android:text="Start selling products"
             android:textSize="12sp"
-            android:textColor="#6B7280"
+            android:textColor="@color/text_secondary"
             android:layout_marginTop="4dp"
             android:maxLines="2"
             android:ellipsize="end"

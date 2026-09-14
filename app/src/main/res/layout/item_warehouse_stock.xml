@@ -32,7 +32,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/sample_product_name"
-                    android:textColor="#111827"
+                    android:textColor="@color/text_primary"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -42,7 +42,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="@string/sample_warehouse_stock_product_info"
-                    android:textColor="#4B5563"
+                    android:textColor="@color/text_secondary"
                     android:textSize="14sp" />
 
                 <TextView
@@ -51,7 +51,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:text="@string/sample_warehouse_stock_warehouse"
-                    android:textColor="#6B7280"
+                    android:textColor="@color/text_secondary"
                     android:textSize="14sp" />
 
                 <TextView
@@ -60,7 +60,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="@string/sample_warehouse_stock_qty"
-                    android:textColor="#111827"
+                    android:textColor="@color/text_primary"
                     android:textSize="15sp"
                     android:textStyle="bold" />
 
@@ -76,7 +76,7 @@
                 android:paddingEnd="10dp"
                 android:paddingBottom="5dp"
                 android:text="@string/label_normal"
-                android:textColor="#6204BF"
+                android:textColor="@color/brand_primary"
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
@@ -99,7 +99,7 @@
                 android:paddingEnd="22dp"
                 android:paddingBottom="9dp"
                 android:text="@string/action_edit"
-                android:textColor="#2563EB"
+                android:textColor="@color/state_info"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
@@ -114,7 +114,7 @@
                 android:paddingEnd="22dp"
                 android:paddingBottom="9dp"
                 android:text="@string/action_delete"
-                android:textColor="#DC2626"
+                android:textColor="@color/state_danger"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 

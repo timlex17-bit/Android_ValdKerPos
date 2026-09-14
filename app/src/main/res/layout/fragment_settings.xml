@@ -5,7 +5,7 @@
     android:id="@+id/rootSettingsContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F6F7FB">
+    android:background="@color/app_bg">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -17,7 +17,7 @@
             android:id="@+id/topBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#6204BF"
+            android:background="@color/brand_primary"
             android:elevation="4dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
@@ -66,7 +66,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:background="#F6F7FB"
+            android:background="@color/app_bg"
             android:clipToPadding="false"
             android:fillViewport="true"
             android:overScrollMode="never">
@@ -87,7 +87,7 @@
                     app:cardBackgroundColor="#FFFFFF"
                     app:cardCornerRadius="22dp"
                     app:cardElevation="0dp"
-                    app:strokeColor="#E5E7EB"
+                    app:strokeColor="@color/stroke"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -103,7 +103,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="@string/settings_shop_settings"
-                            android:textColor="#111827"
+                            android:textColor="@color/text_primary"
                             android:textSize="18sp"
                             android:textStyle="bold" />
 
@@ -126,7 +126,7 @@
                     app:cardBackgroundColor="#FFFFFF"
                     app:cardCornerRadius="22dp"
                     app:cardElevation="0dp"
-                    app:strokeColor="#E5E7EB"
+                    app:strokeColor="@color/stroke"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -139,7 +139,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/settings_language"
-                            android:textColor="#111827"
+                            android:textColor="@color/text_primary"
                             android:textSize="14sp"
                             android:textStyle="bold" />
 
@@ -148,7 +148,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
                             android:text="@string/settings_language_desc"
-                            android:textColor="#6B7280"
+                            android:textColor="@color/text_secondary"
                             android:textSize="12sp" />
 
                         <Spinner
@@ -171,7 +171,7 @@
                     app:cardBackgroundColor="#FFFFFF"
                     app:cardCornerRadius="22dp"
                     app:cardElevation="0dp"
-                    app:strokeColor="#E5E7EB"
+                    app:strokeColor="@color/stroke"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -184,7 +184,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/settings_server"
-                            android:textColor="#111827"
+                            android:textColor="@color/text_primary"
                             android:textSize="14sp"
                             android:textStyle="bold" />
 
@@ -215,9 +215,9 @@
                             android:insetBottom="0dp"
                             android:text="@string/settings_save_server"
                             android:textAllCaps="false"
-                            android:textColor="#111827"
+                            android:textColor="@color/text_primary"
                             app:cornerRadius="14dp"
-                            app:strokeColor="#E5E7EB"
+                            app:strokeColor="@color/stroke"
                             app:strokeWidth="1dp" />
 
                         <!--
@@ -238,7 +238,7 @@
                             android:minHeight="44dp"
                             android:text="@string/settings_reset_server"
                             android:textAllCaps="false"
-                            android:textColor="#DC2626"
+                            android:textColor="@color/state_danger"
                             android:textSize="13sp"
                             android:textStyle="bold"
                             app:cornerRadius="14dp" />
@@ -256,7 +256,7 @@
                     app:cardBackgroundColor="#FFFFFF"
                     app:cardCornerRadius="22dp"
                     app:cardElevation="0dp"
-                    app:strokeColor="#E5E7EB"
+                    app:strokeColor="@color/stroke"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -276,7 +276,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:text="@string/settings_printer_title"
-                                android:textColor="#111827"
+                                android:textColor="@color/text_primary"
                                 android:textSize="14sp"
                                 android:textStyle="bold" />
 
@@ -292,7 +292,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
                                 android:text="@string/settings_printer_not_connected"
-                                android:textColor="#6B7280"
+                                android:textColor="@color/text_secondary"
                                 android:textSize="12sp" />
                         </LinearLayout>
 
@@ -302,7 +302,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
                             android:text="@string/settings_selected_printer_empty"
-                            android:textColor="#111827"
+                            android:textColor="@color/text_primary"
                             android:textSize="12sp" />
 
                         <LinearLayout
@@ -323,9 +323,9 @@
                                 android:insetBottom="0dp"
                                 android:text="@string/title_printer_settings"
                                 android:textAllCaps="false"
-                                android:textColor="#111827"
+                                android:textColor="@color/text_primary"
                                 app:cornerRadius="14dp"
-                                app:strokeColor="#E5E7EB"
+                                app:strokeColor="@color/stroke"
                                 app:strokeWidth="1dp" />
 
                             <Space
@@ -344,9 +344,9 @@
                                 android:insetBottom="0dp"
                                 android:text="@string/settings_test_print"
                                 android:textAllCaps="false"
-                                android:textColor="#111827"
+                                android:textColor="@color/text_primary"
                                 app:cornerRadius="14dp"
-                                app:strokeColor="#E5E7EB"
+                                app:strokeColor="@color/stroke"
                                 app:strokeWidth="1dp" />
                         </LinearLayout>
 
@@ -356,14 +356,14 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
                             android:text="@string/settings_auto_print_after_payment"
-                            android:textColor="#111827" />
+                            android:textColor="@color/text_primary" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="14dp"
                             android:text="@string/label_paper_width"
-                            android:textColor="#111827"
+                            android:textColor="@color/text_primary"
                             android:textSize="12sp"
                             android:textStyle="bold" />
 
@@ -385,7 +385,7 @@
                                 android:clickable="true"
                                 android:focusable="true"
                                 android:text="@string/paper_width_58mm"
-                                android:textColor="#111827"
+                                android:textColor="@color/text_primary"
                                 app:checkedIconVisible="false"
                                 app:chipBackgroundColor="@color/chip_paper_bg_selector"
                                 app:chipCornerRadius="14dp"
@@ -400,7 +400,7 @@
                                 android:clickable="true"
                                 android:focusable="true"
                                 android:text="@string/paper_width_80mm"
-                                android:textColor="#111827"
+                                android:textColor="@color/text_primary"
                                 app:checkedIconVisible="false"
                                 app:chipBackgroundColor="@color/chip_paper_bg_selector"
                                 app:chipCornerRadius="14dp"
@@ -422,7 +422,7 @@
                     app:cardBackgroundColor="#FFFFFF"
                     app:cardCornerRadius="22dp"
                     app:cardElevation="0dp"
-                    app:strokeColor="#E5E7EB"
+                    app:strokeColor="@color/stroke"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -435,7 +435,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/settings_branding"
-                            android:textColor="#111827"
+                            android:textColor="@color/text_primary"
                             android:textSize="14sp"
                             android:textStyle="bold" />
 
@@ -444,17 +444,17 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="14dp"
                             android:text="@string/settings_shop_logo"
-                            android:textColor="#6B7280"
+                            android:textColor="@color/text_secondary"
                             android:textSize="12sp" />
 
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="88dp"
                             android:layout_height="88dp"
                             android:layout_marginTop="10dp"
-                            app:cardBackgroundColor="#F3F4F6"
+                            app:cardBackgroundColor="@color/surface_subtle"
                             app:cardCornerRadius="44dp"
                             app:cardElevation="0dp"
-                            app:strokeColor="#E5E7EB"
+                            app:strokeColor="@color/stroke"
                             app:strokeWidth="1dp">
 
                             <ImageView
@@ -478,9 +478,9 @@
                             android:insetBottom="0dp"
                             android:text="@string/settings_choose_logo"
                             android:textAllCaps="false"
-                            android:textColor="#111827"
+                            android:textColor="@color/text_primary"
                             app:cornerRadius="14dp"
-                            app:strokeColor="#E5E7EB"
+                            app:strokeColor="@color/stroke"
                             app:strokeWidth="1dp" />
 
                     </LinearLayout>
@@ -495,7 +495,7 @@
                     app:cardBackgroundColor="#FFFFFF"
                     app:cardCornerRadius="22dp"
                     app:cardElevation="0dp"
-                    app:strokeColor="#E5E7EB"
+                    app:strokeColor="@color/stroke"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -508,7 +508,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/settings_shop_profile"
-                            android:textColor="#111827"
+                            android:textColor="@color/text_primary"
                             android:textSize="14sp"
                             android:textStyle="bold" />
 
@@ -576,7 +576,7 @@
                             android:layout_height="wrap_content"
                             android:minHeight="56dp"
                             android:layout_marginTop="18dp"
-                            android:backgroundTint="#6204BF"
+                            android:backgroundTint="@color/brand_primary"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
                             android:text="@string/settings_save_changes"

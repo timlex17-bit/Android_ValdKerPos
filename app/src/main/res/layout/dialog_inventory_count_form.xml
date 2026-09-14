@@ -5,15 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="#F9FAFB"
+    android:background="@color/valora_surface"
     android:padding="16dp">
 
     <TextView
         android:id="@+id/tvTitleInventoryCountForm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="New Stock Count"
-        android:textColor="#111827"
+        android:text="@string/inventory_count_new_title"
+        android:textColor="@color/text_primary"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -32,10 +32,10 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#F3F4F6"
+                android:backgroundTint="@color/surface_subtle"
                 app:cardCornerRadius="@dimen/radius_dialog"
                 app:cardElevation="0dp"
-                app:strokeColor="#E5E7EB"
+                app:strokeColor="@color/stroke"
                 app:strokeWidth="1dp">
 
                 <LinearLayout
@@ -47,8 +47,8 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Count Details"
-                        android:textColor="#111827"
+                        android:text="@string/inventory_count_details"
+                        android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
@@ -56,22 +56,22 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:hint="Title">
+                        android:hint="@string/field_title">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etTitle"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="text"
-                            android:textColor="#111827"
-                            android:textColorHint="#9CA3AF" />
+                            android:textColor="@color/text_primary"
+                            android:textColorHint="@color/text_tertiary" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:hint="Note (optional)">
+                        android:hint="@string/field_note_optional">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etNote"
@@ -79,16 +79,16 @@
                             android:layout_height="wrap_content"
                             android:inputType="textMultiLine"
                             android:minLines="2"
-                            android:textColor="#111827"
-                            android:textColorHint="#9CA3AF" />
+                            android:textColor="@color/text_primary"
+                            android:textColorHint="@color/text_tertiary" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:text="Items"
-                        android:textColor="#6B7280"
+                        android:text="@string/label_items_section"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp"
                         android:textStyle="bold" />
 

@@ -5,15 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="#F9FAFB"
+    android:background="@color/valora_surface"
     android:padding="16dp">
 
     <TextView
         android:id="@+id/tvTitleProductForm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Product"
-        android:textColor="#111827"
+        android:text="@string/product_form_title"
+        android:textColor="@color/text_primary"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -33,11 +33,11 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#F3F4F6"
+                android:backgroundTint="@color/surface_subtle"
                 app:cardCornerRadius="@dimen/radius_dialog"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="#E5E7EB">
+                app:strokeColor="@color/stroke">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -48,24 +48,24 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Product Details"
+                        android:text="@string/product_form_details"
                         android:textStyle="bold"
                         android:textSize="16sp"
-                        android:textColor="#111827" />
+                        android:textColor="@color/text_primary" />
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:hint="Name *">
+                        android:hint="@string/field_name_required">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etProdName"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="textPersonName"
-                            android:textColor="#111827"
-                            android:textColorHint="#9CA3AF" />
+                            android:textColor="@color/text_primary"
+                            android:textColorHint="@color/text_tertiary" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
@@ -73,7 +73,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:hint="SKU (optional)"
+                        android:hint="@string/field_sku_optional"
                         app:endIconMode="custom"
                         app:endIconDrawable="@drawable/barcode_generate"
                         app:endIconContentDescription="Scan SKU">
@@ -83,8 +83,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="text"
-                            android:textColor="#111827"
-                            android:textColorHint="#9CA3AF" />
+                            android:textColor="@color/text_primary"
+                            android:textColorHint="@color/text_tertiary" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
@@ -92,7 +92,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:hint="Code *"
+                        android:hint="@string/field_code_required"
                         app:endIconMode="custom"
                         app:endIconDrawable="@drawable/ic_barcode"
                         app:endIconContentDescription="Scan Code">
@@ -102,8 +102,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="text"
-                            android:textColor="#111827"
-                            android:textColorHint="#9CA3AF" />
+                            android:textColor="@color/text_primary"
+                            android:textColorHint="@color/text_tertiary" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <LinearLayout
@@ -117,10 +117,10 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="14dp"
-                            android:text="Item Type"
+                            android:text="@string/label_item_type"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:textColor="#6B7280" />
+                            android:textColor="@color/text_secondary" />
 
                         <com.google.android.material.card.MaterialCardView
                             android:layout_width="match_parent"
@@ -130,7 +130,7 @@
                             app:cardCornerRadius="@dimen/radius_dialog"
                             app:cardElevation="0dp"
                             app:strokeWidth="1dp"
-                            app:strokeColor="#D1D5DB">
+                            app:strokeColor="@color/stroke_strong">
 
                             <Spinner
                                 android:id="@+id/spProdItemType"
@@ -147,10 +147,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:text="Category"
+                        android:text="@string/label_category"
                         android:textSize="12sp"
                         android:textStyle="bold"
-                        android:textColor="#6B7280" />
+                        android:textColor="@color/text_secondary" />
 
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
@@ -160,7 +160,7 @@
                         app:cardCornerRadius="@dimen/radius_dialog"
                         app:cardElevation="0dp"
                         app:strokeWidth="1dp"
-                        app:strokeColor="#D1D5DB">
+                        app:strokeColor="@color/stroke_strong">
 
                         <Spinner
                             android:id="@+id/spProdCategory"
@@ -175,7 +175,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:hint="Description">
+                        android:hint="@string/field_description">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etProdDesc"
@@ -184,8 +184,8 @@
                             android:gravity="top|start"
                             android:inputType="textMultiLine"
                             android:minLines="3"
-                            android:textColor="#111827"
-                            android:textColorHint="#9CA3AF" />
+                            android:textColor="@color/text_primary"
+                            android:textColorHint="@color/text_tertiary" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                 </LinearLayout>
@@ -196,11 +196,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                android:backgroundTint="#F3F4F6"
+                android:backgroundTint="@color/surface_subtle"
                 app:cardCornerRadius="@dimen/radius_dialog"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="#E5E7EB">
+                app:strokeColor="@color/stroke">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -211,69 +211,69 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Stock and Pricing"
+                        android:text="@string/product_form_stock_pricing"
                         android:textStyle="bold"
                         android:textSize="18sp"
-                        android:textColor="#111827" />
+                        android:textColor="@color/text_primary" />
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:hint="Stock *">
+                        android:hint="@string/field_stock_required">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etProdStock"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="number"
-                            android:textColor="#111827"
-                            android:textColorHint="#9CA3AF" />
+                            android:textColor="@color/text_primary"
+                            android:textColorHint="@color/text_tertiary" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:hint="Buy price * (e.g. 1.50)">
+                        android:hint="@string/field_buy_price">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etProdBuy"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="numberDecimal"
-                            android:textColor="#111827"
-                            android:textColorHint="#9CA3AF" />
+                            android:textColor="@color/text_primary"
+                            android:textColorHint="@color/text_tertiary" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:hint="Sell price * (e.g. 2.50)">
+                        android:hint="@string/field_sell_price">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etProdSell"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="numberDecimal"
-                            android:textColor="#111827"
-                            android:textColorHint="#9CA3AF" />
+                            android:textColor="@color/text_primary"
+                            android:textColorHint="@color/text_tertiary" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:hint="Weight * (e.g. 0.35)">
+                        android:hint="@string/field_weight">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etProdWeight"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="numberDecimal"
-                            android:textColor="#111827"
-                            android:textColorHint="#9CA3AF" />
+                            android:textColor="@color/text_primary"
+                            android:textColorHint="@color/text_tertiary" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                 </LinearLayout>
@@ -283,11 +283,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                android:backgroundTint="#F3F4F6"
+                android:backgroundTint="@color/surface_subtle"
                 app:cardCornerRadius="@dimen/radius_dialog"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="#E5E7EB">
+                app:strokeColor="@color/stroke">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -298,19 +298,19 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Unit and Supplier"
+                        android:text="@string/product_form_unit_supplier"
                         android:textStyle="bold"
                         android:textSize="18sp"
-                        android:textColor="#111827" />
+                        android:textColor="@color/text_primary" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:text="Unit"
+                        android:text="@string/label_unit"
                         android:textSize="12sp"
                         android:textStyle="bold"
-                        android:textColor="#6B7280" />
+                        android:textColor="@color/text_secondary" />
 
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
@@ -320,7 +320,7 @@
                         app:cardCornerRadius="@dimen/radius_dialog"
                         app:cardElevation="0dp"
                         app:strokeWidth="1dp"
-                        app:strokeColor="#D1D5DB">
+                        app:strokeColor="@color/stroke_strong">
 
                         <Spinner
                             android:id="@+id/spProdUnit"
@@ -335,10 +335,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:text="Supplier"
+                        android:text="@string/label_supplier"
                         android:textSize="12sp"
                         android:textStyle="bold"
-                        android:textColor="#6B7280" />
+                        android:textColor="@color/text_secondary" />
 
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
@@ -348,7 +348,7 @@
                         app:cardCornerRadius="@dimen/radius_dialog"
                         app:cardElevation="0dp"
                         app:strokeWidth="1dp"
-                        app:strokeColor="#D1D5DB">
+                        app:strokeColor="@color/stroke_strong">
 
                         <Spinner
                             android:id="@+id/spProdSupplier"
@@ -366,11 +366,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                android:backgroundTint="#F3F4F6"
+                android:backgroundTint="@color/surface_subtle"
                 app:cardCornerRadius="@dimen/radius_dialog"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="#E5E7EB">
+                app:strokeColor="@color/stroke">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -381,10 +381,10 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Product Image"
+                        android:text="@string/product_form_image"
                         android:textStyle="bold"
                         android:textSize="18sp"
-                        android:textColor="#111827" />
+                        android:textColor="@color/text_primary" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnSelectImage"
@@ -405,7 +405,7 @@
                         app:cardCornerRadius="@dimen/radius_dialog"
                         app:cardElevation="0dp"
                         app:strokeWidth="1dp"
-                        app:strokeColor="#D1D5DB">
+                        app:strokeColor="@color/stroke_strong">
 
                         <ImageView
                             android:id="@+id/imgPreview"
@@ -427,18 +427,18 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="18dp"
-                        android:text="Product Settings"
+                        android:text="@string/product_form_settings"
                         android:textStyle="bold"
                         android:textSize="16sp"
-                        android:textColor="#111827"/>
+                        android:textColor="@color/text_primary"/>
 
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/swTrackStock"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:text="Track stock"
-                        android:textColor="#111827"
+                        android:text="@string/product_form_track_stock"
+                        android:textColor="@color/text_primary"
                         android:checked="true"/>
 
                     <com.google.android.material.materialswitch.MaterialSwitch
@@ -446,8 +446,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
-                        android:text="Product Active"
-                        android:textColor="#111827"
+                        android:text="@string/product_form_active"
+                        android:textColor="@color/text_primary"
                         android:checked="true"/>
 
                 </LinearLayout>

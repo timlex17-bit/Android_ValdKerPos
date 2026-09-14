@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="10dp"
@@ -11,10 +12,10 @@
         android:id="@+id/cardDialog"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:backgroundTint="#F9FAFB"
+        android:backgroundTint="@color/valora_surface"
         app:cardCornerRadius="@dimen/radius_dialog"
         app:cardElevation="0dp"
-        app:strokeColor="#E5E7EB"
+        app:strokeColor="@color/stroke"
         app:strokeWidth="1dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -31,7 +32,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="@string/title_add_purchase"
-                android:textColor="#111827"
+                android:textColor="@color/text_primary"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 app:layout_constraintTop_toTopOf="parent"
@@ -72,10 +73,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="14dp"
-                        android:backgroundTint="#F3F4F6"
+                        android:backgroundTint="@color/surface_subtle"
                         app:cardCornerRadius="@dimen/radius_dialog"
                         app:cardElevation="0dp"
-                        app:strokeColor="#E5E7EB"
+                        app:strokeColor="@color/stroke"
                         app:strokeWidth="1dp">
 
                         <LinearLayout
@@ -88,7 +89,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/title_purchase_details"
-                                android:textColor="#111827"
+                                android:textColor="@color/text_primary"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
 
@@ -97,7 +98,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="14dp"
                                 android:text="@string/title_add_upplier"
-                                android:textColor="#6B7280"
+                                android:textColor="@color/text_secondary"
                                 android:textSize="12sp"
                                 android:textStyle="bold" />
 
@@ -108,7 +109,7 @@
                                 android:backgroundTint="#FFFFFF"
                                 app:cardCornerRadius="@dimen/radius_dialog"
                                 app:cardElevation="0dp"
-                                app:strokeColor="#D1D5DB"
+                                app:strokeColor="@color/stroke_strong"
                                 app:strokeWidth="1dp">
 
                                 <Spinner
@@ -125,22 +126,22 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="14dp"
-                                android:hint="Invoice ID (optional)">
+                                android:hint="@string/field_invoice_id_optional">
 
                                 <com.google.android.material.textfield.TextInputEditText
                                     android:id="@+id/etInvoice"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:inputType="text"
-                                    android:textColor="#111827"
-                                    android:textColorHint="#9CA3AF" />
+                                    android:textColor="@color/text_primary"
+                                    android:textColorHint="@color/text_tertiary" />
                             </com.google.android.material.textfield.TextInputLayout>
 
                             <com.google.android.material.textfield.TextInputLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="12dp"
-                                android:hint="Note (optional)">
+                                android:hint="@string/field_note_optional">
 
                                 <com.google.android.material.textfield.TextInputEditText
                                     android:id="@+id/etNote"
@@ -149,8 +150,8 @@
                                     android:gravity="top|start"
                                     android:inputType="textMultiLine"
                                     android:minLines="3"
-                                    android:textColor="#111827"
-                                    android:textColorHint="#9CA3AF" />
+                                    android:textColor="@color/text_primary"
+                                    android:textColorHint="@color/text_tertiary" />
                             </com.google.android.material.textfield.TextInputLayout>
 
                             <TextView
@@ -158,7 +159,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="14dp"
                                 android:text="@string/purchase_date"
-                                android:textColor="#6B7280"
+                                android:textColor="@color/text_secondary"
                                 android:textSize="12sp"
                                 android:textStyle="bold" />
 
@@ -169,7 +170,7 @@
                                 android:backgroundTint="#FFFFFF"
                                 app:cardCornerRadius="@dimen/radius_dialog"
                                 app:cardElevation="0dp"
-                                app:strokeColor="#D1D5DB"
+                                app:strokeColor="@color/stroke_strong"
                                 app:strokeWidth="1dp">
 
                                 <TextView
@@ -180,8 +181,8 @@
                                     android:gravity="center_vertical"
                                     android:paddingStart="16dp"
                                     android:paddingEnd="16dp"
-                                    android:text="2026-03-09"
-                                    android:textColor="#111827"
+                                    tools:text="2026-03-09"
+                                    android:textColor="@color/text_primary"
                                     android:textSize="15sp" />
                             </com.google.android.material.card.MaterialCardView>
 
@@ -193,10 +194,10 @@
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:backgroundTint="#F3F4F6"
+                        android:backgroundTint="@color/surface_subtle"
                         app:cardCornerRadius="@dimen/radius_dialog"
                         app:cardElevation="0dp"
-                        app:strokeColor="#E5E7EB"
+                        app:strokeColor="@color/stroke"
                         app:strokeWidth="1dp">
 
                         <LinearLayout
@@ -209,7 +210,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/purchase_items"
-                                android:textColor="#111827"
+                                android:textColor="@color/text_primary"
                                 android:textSize="18sp"
                                 android:textStyle="bold" />
 
@@ -218,7 +219,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="14dp"
                                 android:text="@string/title_product_items"
-                                android:textColor="#6B7280"
+                                android:textColor="@color/text_secondary"
                                 android:textSize="12sp"
                                 android:textStyle="bold" />
 
@@ -229,7 +230,7 @@
                                 android:backgroundTint="#FFFFFF"
                                 app:cardCornerRadius="@dimen/radius_dialog"
                                 app:cardElevation="0dp"
-                                app:strokeColor="#D1D5DB"
+                                app:strokeColor="@color/stroke_strong"
                                 app:strokeWidth="1dp">
 
                                 <Spinner
@@ -251,15 +252,15 @@
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
-                                    android:hint="Qty">
+                                    android:hint="@string/field_qty">
 
                                     <com.google.android.material.textfield.TextInputEditText
                                         android:id="@+id/etQty"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
                                         android:inputType="number"
-                                        android:textColor="#111827"
-                                        android:textColorHint="#9CA3AF" />
+                                        android:textColor="@color/text_primary"
+                                        android:textColorHint="@color/text_tertiary" />
                                 </com.google.android.material.textfield.TextInputLayout>
 
                                 <com.google.android.material.textfield.TextInputLayout
@@ -267,15 +268,15 @@
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
                                     android:layout_marginStart="10dp"
-                                    android:hint="Cost price">
+                                    android:hint="@string/field_cost_price">
 
                                     <com.google.android.material.textfield.TextInputEditText
                                         android:id="@+id/etCost"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
                                         android:inputType="numberDecimal"
-                                        android:textColor="#111827"
-                                        android:textColorHint="#9CA3AF" />
+                                        android:textColor="@color/text_primary"
+                                        android:textColorHint="@color/text_tertiary" />
                                 </com.google.android.material.textfield.TextInputLayout>
                             </LinearLayout>
 
@@ -284,7 +285,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="14dp"
                                 android:text="@string/expired_date"
-                                android:textColor="#6B7280"
+                                android:textColor="@color/text_secondary"
                                 android:textSize="12sp"
                                 android:textStyle="bold" />
 
@@ -295,7 +296,7 @@
                                 android:backgroundTint="#FFFFFF"
                                 app:cardCornerRadius="@dimen/radius_dialog"
                                 app:cardElevation="0dp"
-                                app:strokeColor="#D1D5DB"
+                                app:strokeColor="@color/stroke_strong"
                                 app:strokeWidth="1dp">
 
                                 <TextView
@@ -306,8 +307,8 @@
                                     android:gravity="center_vertical"
                                     android:paddingStart="16dp"
                                     android:paddingEnd="16dp"
-                                    android:text="2026-03-09"
-                                    android:textColor="#111827"
+                                    tools:text="2026-03-09"
+                                    android:textColor="@color/text_primary"
                                     android:textSize="15sp" />
 
                             </com.google.android.material.card.MaterialCardView>
@@ -366,8 +367,8 @@
                     android:paddingTop="10dp"
                     android:paddingEnd="12dp"
                     android:paddingBottom="10dp"
-                    android:text="Cancel"
-                    android:textColor="#6204BF"
+                    android:text="@string/action_cancel"
+                    android:textColor="@color/brand_primary"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -381,8 +382,8 @@
                     android:paddingTop="10dp"
                     android:paddingEnd="12dp"
                     android:paddingBottom="10dp"
-                    android:text="Save"
-                    android:textColor="#6204BF"
+                    android:text="@string/action_save"
+                    android:textColor="@color/brand_primary"
                     android:textSize="16sp"
                     android:textStyle="bold" />
             </LinearLayout>

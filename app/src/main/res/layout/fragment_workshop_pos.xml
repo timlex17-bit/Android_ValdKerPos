@@ -49,7 +49,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:strokeColor="#E9EDF5"
+        app:strokeColor="@color/stroke"
         app:strokeWidth="1dp">
 
         <LinearLayout
@@ -100,7 +100,7 @@
                         android:ellipsize="end"
                         android:maxLines="1"
                         android:text="@string/workshop_default_title"
-                        android:textColor="#0F172A"
+                        android:textColor="@color/valora_ink"
                         android:textSize="16sp"
                         android:textStyle="bold"
                         tools:text="Valora POS Workshop" />
@@ -130,7 +130,7 @@
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:checkedIconVisible="false"
-                    app:chipBackgroundColor="#6204BF"
+                    app:chipBackgroundColor="@color/brand_primary"
                     app:chipCornerRadius="16dp"
                     app:chipMinHeight="32dp"
                     app:chipStrokeWidth="0dp"
@@ -166,14 +166,14 @@
                         android:maxLines="1"
                         android:minHeight="34dp"
                         android:text="@string/draft_a_preview"
-                        android:textColor="#3C0375"
+                        android:textColor="@color/brand_on_tint"
                         android:textSize="12sp"
                         android:textStyle="bold"
                         app:checkedIconVisible="false"
-                        app:chipBackgroundColor="#EBD9FD"
+                        app:chipBackgroundColor="@color/brand_tint"
                         app:chipCornerRadius="17dp"
                         app:chipMinHeight="34dp"
-                        app:chipStrokeColor="#BB80F4"
+                        app:chipStrokeColor="@color/brand_stroke"
                         app:chipStrokeWidth="1dp"
                         app:ensureMinTouchTargetSize="false" />
 
@@ -186,14 +186,14 @@
                         android:maxLines="1"
                         android:minHeight="34dp"
                         android:text="@string/draft_b_preview"
-                        android:textColor="#334155"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp"
                         android:textStyle="bold"
                         app:checkedIconVisible="false"
                         app:chipBackgroundColor="#FFFFFF"
                         app:chipCornerRadius="17dp"
                         app:chipMinHeight="34dp"
-                        app:chipStrokeColor="#E2E8F0"
+                        app:chipStrokeColor="@color/stroke"
                         app:chipStrokeWidth="1dp"
                         app:ensureMinTouchTargetSize="false" />
 
@@ -206,14 +206,14 @@
                         android:maxLines="1"
                         android:minHeight="34dp"
                         android:text="@string/draft_walkin_preview"
-                        android:textColor="#334155"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp"
                         android:textStyle="bold"
                         app:checkedIconVisible="false"
                         app:chipBackgroundColor="#FFFFFF"
                         app:chipCornerRadius="17dp"
                         app:chipMinHeight="34dp"
-                        app:chipStrokeColor="#E2E8F0"
+                        app:chipStrokeColor="@color/stroke"
                         app:chipStrokeWidth="1dp"
                         app:ensureMinTouchTargetSize="false" />
                 </com.google.android.material.chip.ChipGroup>
@@ -237,7 +237,7 @@
                     android:maxLines="1"
                     android:text="@string/label_workshop_job_info"
                     android:textAllCaps="true"
-                    android:textColor="#64748B"
+                    android:textColor="@color/text_secondary"
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
@@ -256,7 +256,7 @@
                     android:paddingEnd="8dp"
                     android:text="@string/action_change"
                     android:textAllCaps="false"
-                    android:textColor="#6204BF"
+                    android:textColor="@color/brand_primary"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     app:backgroundTint="@android:color/transparent"
@@ -272,7 +272,7 @@
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:text="@string/workshop_vehicle_not_selected"
-                android:textColor="#0F172A"
+                android:textColor="@color/valora_ink"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 tools:text="Walk-in Customer • Veikulu belum dipilih" />
@@ -286,7 +286,7 @@
                 android:visibility="gone"
                 android:maxLines="1"
                 android:text="@string/workshop_vehicle_not_selected"
-                android:textColor="#334155"
+                android:textColor="@color/text_secondary"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 tools:text="Veikulu: CAR - Toyota Hilux - B1234" />
@@ -299,7 +299,7 @@
                 android:ellipsize="end"
                 android:visibility="gone"
                 android:maxLines="1"
-                android:textColor="#64748B"
+                android:textColor="@color/text_secondary"
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
@@ -322,12 +322,12 @@
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:minHeight="24dp"
-                    android:textColor="#334155"
+                    android:textColor="@color/text_secondary"
                     android:textSize="11sp"
-                    app:chipBackgroundColor="#F8FAFC"
+                    app:chipBackgroundColor="@color/surface_subtle"
                     app:chipCornerRadius="12dp"
                     app:chipMinHeight="24dp"
-                    app:chipStrokeColor="#E2E8F0"
+                    app:chipStrokeColor="@color/stroke"
                     app:chipStrokeWidth="1dp"
                     app:ensureMinTouchTargetSize="false"
                     tools:text="Mekanik: Antonio" />
@@ -340,12 +340,12 @@
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:minHeight="24dp"
-                    android:textColor="#334155"
+                    android:textColor="@color/text_secondary"
                     android:textSize="11sp"
-                    app:chipBackgroundColor="#F8FAFC"
+                    app:chipBackgroundColor="@color/surface_subtle"
                     app:chipCornerRadius="12dp"
                     app:chipMinHeight="24dp"
-                    app:chipStrokeColor="#E2E8F0"
+                    app:chipStrokeColor="@color/stroke"
                     app:chipStrokeWidth="1dp"
                     app:ensureMinTouchTargetSize="false"
                     tools:text="WO: WO-001" />
@@ -358,12 +358,12 @@
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:minHeight="24dp"
-                    android:textColor="#334155"
+                    android:textColor="@color/text_secondary"
                     android:textSize="11sp"
-                    app:chipBackgroundColor="#F8FAFC"
+                    app:chipBackgroundColor="@color/surface_subtle"
                     app:chipCornerRadius="12dp"
                     app:chipMinHeight="24dp"
-                    app:chipStrokeColor="#E2E8F0"
+                    app:chipStrokeColor="@color/stroke"
                     app:chipStrokeWidth="1dp"
                     app:ensureMinTouchTargetSize="false"
                     tools:text="Rezerva: BK-001" />
@@ -388,10 +388,10 @@
             android:layout_height="54dp"
             android:layout_marginEnd="4dp"
             android:layout_weight="1"
-            android:backgroundTint="#F5ECFE"
+            android:backgroundTint="@color/brand_tint_soft"
             app:cardCornerRadius="10dp"
             app:cardElevation="0dp"
-            app:strokeColor="#EBD9FD"
+            app:strokeColor="@color/brand_tint"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -409,7 +409,7 @@
                     android:gravity="center"
                     android:maxLines="1"
                     android:text="@string/label_service"
-                    android:textColor="#0F172A"
+                    android:textColor="@color/valora_ink"
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
@@ -422,7 +422,7 @@
                     android:gravity="center"
                     android:maxLines="1"
                     android:text="@string/amount_zero_usd"
-                    android:textColor="#6204BF"
+                    android:textColor="@color/brand_primary"
                     android:textSize="13sp"
                     android:textStyle="bold"
                     tools:text="$40.99" />
@@ -435,10 +435,10 @@
             android:layout_marginStart="2dp"
             android:layout_marginEnd="2dp"
             android:layout_weight="1"
-            android:backgroundTint="#F5ECFE"
+            android:backgroundTint="@color/brand_tint_soft"
             app:cardCornerRadius="10dp"
             app:cardElevation="0dp"
-            app:strokeColor="#EBD9FD"
+            app:strokeColor="@color/brand_tint"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -456,7 +456,7 @@
                     android:gravity="center"
                     android:maxLines="1"
                     android:text="@string/label_part"
-                    android:textColor="#0F172A"
+                    android:textColor="@color/valora_ink"
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
@@ -469,7 +469,7 @@
                     android:gravity="center"
                     android:maxLines="1"
                     android:text="@string/amount_zero_usd"
-                    android:textColor="#6204BF"
+                    android:textColor="@color/brand_primary"
                     android:textSize="13sp"
                     android:textStyle="bold"
                     tools:text="$40.99" />
@@ -481,10 +481,10 @@
             android:layout_height="54dp"
             android:layout_marginStart="4dp"
             android:layout_weight="1"
-            android:backgroundTint="#F5ECFE"
+            android:backgroundTint="@color/brand_tint_soft"
             app:cardCornerRadius="10dp"
             app:cardElevation="0dp"
-            app:strokeColor="#EBD9FD"
+            app:strokeColor="@color/brand_tint"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -502,7 +502,7 @@
                     android:gravity="center"
                     android:maxLines="1"
                     android:text="@string/label_product"
-                    android:textColor="#0F172A"
+                    android:textColor="@color/valora_ink"
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
@@ -515,7 +515,7 @@
                     android:gravity="center"
                     android:maxLines="1"
                     android:text="@string/amount_zero_usd"
-                    android:textColor="#6204BF"
+                    android:textColor="@color/brand_primary"
                     android:textSize="13sp"
                     android:textStyle="bold"
                     tools:text="$40.99" />
@@ -543,7 +543,7 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:text="@string/label_workshop_cart_items"
-            android:textColor="#0F172A"
+            android:textColor="@color/valora_ink"
             android:textSize="13sp"
             android:textStyle="bold" />
 
@@ -574,7 +574,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:strokeColor="#E8EEF5"
+        app:strokeColor="@color/stroke"
         app:strokeWidth="1dp">
 
         <LinearLayout
@@ -609,7 +609,7 @@
                         android:maxLines="1"
                         android:text="@string/label_total"
                         android:textAllCaps="true"
-                        android:textColor="#94A3B8"
+                        android:textColor="@color/text_tertiary"
                         android:textSize="11sp"
                         android:textStyle="bold" />
 
@@ -624,7 +624,7 @@
                         android:ellipsize="end"
                         android:maxLines="1"
                         android:text="@string/amount_zero_usd"
-                        android:textColor="#6204BF"
+                        android:textColor="@color/brand_primary"
                         android:textSize="21sp"
                         android:textStyle="bold"
                         tools:text="$1,240.99" />
@@ -648,7 +648,7 @@
                     android:textColor="#FFFFFF"
                     android:textSize="14sp"
                     android:textStyle="bold"
-                    app:backgroundTint="#6204BF"
+                    app:backgroundTint="@color/brand_primary"
                     app:cornerRadius="16dp"
                     app:elevation="0dp"
                     app:rippleColor="#226204BF" />
@@ -680,17 +680,17 @@
                     android:paddingEnd="2dp"
                     android:text="@string/label_package"
                     android:textAllCaps="false"
-                    android:textColor="#6204BF"
+                    android:textColor="@color/brand_primary"
                     android:textSize="11sp"
                     android:textStyle="bold"
-                    app:backgroundTint="#F5ECFE"
+                    app:backgroundTint="@color/brand_tint_soft"
                     app:cornerRadius="14dp"
                     app:icon="@drawable/ic_service"
                     app:iconGravity="textStart"
                     app:iconPadding="2dp"
                     app:iconSize="13dp"
-                    app:iconTint="#6204BF"
-                    app:strokeColor="#BB80F4"
+                    app:iconTint="@color/brand_primary"
+                    app:strokeColor="@color/brand_stroke"
                     app:strokeWidth="1dp" />
 
                 <com.google.android.material.button.MaterialButton
@@ -710,17 +710,17 @@
                     android:paddingEnd="2dp"
                     android:text="@string/label_service"
                     android:textAllCaps="false"
-                    android:textColor="#6204BF"
+                    android:textColor="@color/brand_primary"
                     android:textSize="11sp"
                     android:textStyle="bold"
-                    app:backgroundTint="#F5ECFE"
+                    app:backgroundTint="@color/brand_tint_soft"
                     app:cornerRadius="14dp"
                     app:icon="@drawable/ic_service"
                     app:iconGravity="textStart"
                     app:iconPadding="2dp"
                     app:iconSize="13dp"
-                    app:iconTint="#6204BF"
-                    app:strokeColor="#BB80F4"
+                    app:iconTint="@color/brand_primary"
+                    app:strokeColor="@color/brand_stroke"
                     app:strokeWidth="1dp" />
 
                 <com.google.android.material.button.MaterialButton
@@ -740,17 +740,17 @@
                     android:paddingEnd="2dp"
                     android:text="@string/label_part"
                     android:textAllCaps="false"
-                    android:textColor="#6204BF"
+                    android:textColor="@color/brand_primary"
                     android:textSize="11sp"
                     android:textStyle="bold"
-                    app:backgroundTint="#F5ECFE"
+                    app:backgroundTint="@color/brand_tint_soft"
                     app:cornerRadius="14dp"
                     app:icon="@drawable/ic_shopping_cart"
                     app:iconGravity="textStart"
                     app:iconPadding="2dp"
                     app:iconSize="13dp"
-                    app:iconTint="#6204BF"
-                    app:strokeColor="#BB80F4"
+                    app:iconTint="@color/brand_primary"
+                    app:strokeColor="@color/brand_stroke"
                     app:strokeWidth="1dp" />
 
                 <com.google.android.material.button.MaterialButton
@@ -770,17 +770,17 @@
                     android:paddingEnd="2dp"
                     android:text="@string/label_product"
                     android:textAllCaps="false"
-                    android:textColor="#6204BF"
+                    android:textColor="@color/brand_primary"
                     android:textSize="11sp"
                     android:textStyle="bold"
-                    app:backgroundTint="#F5ECFE"
+                    app:backgroundTint="@color/brand_tint_soft"
                     app:cornerRadius="14dp"
                     app:icon="@drawable/ic_bag"
                     app:iconGravity="textStart"
                     app:iconPadding="2dp"
                     app:iconSize="13dp"
-                    app:iconTint="#6204BF"
-                    app:strokeColor="#BB80F4"
+                    app:iconTint="@color/brand_primary"
+                    app:strokeColor="@color/brand_stroke"
                     app:strokeWidth="1dp" />
             </LinearLayout>
         </LinearLayout>

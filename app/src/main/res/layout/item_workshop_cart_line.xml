@@ -7,7 +7,7 @@
     app:cardCornerRadius="16dp"
     app:cardElevation="0dp"
     app:strokeWidth="1dp"
-    app:strokeColor="#E5E7EB">
+    app:strokeColor="@color/stroke">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -26,7 +26,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Ganti Oli"
-                android:textColor="#111827"
+                android:textColor="@color/text_primary"
                 android:textSize="15sp"
                 android:textStyle="bold" />
 
@@ -51,7 +51,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="Qty 1 × $5.00"
-            android:textColor="#6B7280"
+            android:textColor="@color/text_secondary"
             android:textSize="13sp" />
 
         <LinearLayout
@@ -64,7 +64,7 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="#F3F4F6"
+                android:background="@color/surface_subtle"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:padding="4dp">
@@ -78,7 +78,7 @@
                     android:padding="9dp"
                     android:scaleType="centerInside"
                     android:src="@drawable/ic_remove"
-                    app:tint="#111827" />
+                    app:tint="@color/text_primary" />
 
                 <TextView
                     android:id="@+id/txtQty"
@@ -86,7 +86,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="1"
-                    android:textColor="#111827"
+                    android:textColor="@color/text_primary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
@@ -99,7 +99,7 @@
                     android:padding="9dp"
                     android:scaleType="centerInside"
                     android:src="@drawable/ic_add"
-                    app:tint="#111827" />
+                    app:tint="@color/text_primary" />
 
             </LinearLayout>
 
@@ -111,7 +111,7 @@
                 android:layout_weight="1"
                 android:gravity="end"
                 android:text="$5.00"
-                android:textColor="#111827"
+                android:textColor="@color/text_primary"
                 android:textSize="15sp"
                 android:textStyle="bold" />
 

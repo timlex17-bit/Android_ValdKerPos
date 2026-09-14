@@ -9,7 +9,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Loke Turnu"
+        android:text="@string/shift_open_title"
         android:textStyle="bold"
         android:textSize="18sp"
         android:paddingBottom="8dp"/>
@@ -17,22 +17,24 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Espesifika montante osan iha ita-boot nia gaveta iha inísiu turnu nian."
+        android:text="@string/shift_open_hint"
         android:textSize="13sp"
         android:paddingBottom="12dp"/>
 
     <EditText
+        style="@style/Widget.Valora.EditText"
         android:id="@+id/etOpeningCash"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Osan Abertura (exemplo: $100.00)"
+        android:hint="@string/shift_open_cash_hint"
         android:inputType="numberDecimal"/>
 
     <EditText
+        style="@style/Widget.Valora.EditText"
         android:id="@+id/etNote"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Nota (opsional)"
+        android:hint="@string/shift_open_note_hint"
         android:layout_marginTop="10dp"/>
 
 </LinearLayout>

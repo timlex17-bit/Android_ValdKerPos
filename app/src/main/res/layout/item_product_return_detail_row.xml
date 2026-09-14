@@ -13,7 +13,7 @@
         android:layout_weight="1.6"
         android:text="Nasi Goreng"
         android:textSize="14sp"
-        android:textColor="#111827"
+        android:textColor="@color/text_primary"
         android:textStyle="bold" />
 
     <TextView
@@ -24,7 +24,7 @@
         android:gravity="end"
         android:text="1"
         android:textSize="14sp"
-        android:textColor="#374151" />
+        android:textColor="@color/icon_muted" />
 
     <TextView
         android:id="@+id/tvUnitPrice"
@@ -34,7 +34,7 @@
         android:gravity="end"
         android:text="$1.50"
         android:textSize="14sp"
-        android:textColor="#374151" />
+        android:textColor="@color/icon_muted" />
 
     <TextView
         android:id="@+id/tvLineTotal"
@@ -44,7 +44,7 @@
         android:gravity="end"
         android:text="$1.50"
         android:textSize="14sp"
-        android:textColor="#111827"
+        android:textColor="@color/text_primary"
         android:textStyle="bold" />
 
 </LinearLayout>

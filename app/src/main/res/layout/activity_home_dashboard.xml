@@ -6,7 +6,7 @@
     android:id="@+id/rootDashboard"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F6F7FB">
+    android:background="@color/app_bg">
 
     <!-- TOP HEADER -->
     <FrameLayout
@@ -110,7 +110,7 @@
                 android:layout_marginTop="4dp"
                 android:text="@string/select_a_module_to_continue"
                 android:textSize="13sp"
-                android:textColor="#EAF0FF"
+                android:textColor="@color/state_info_tint"
                 android:maxLines="2"
                 android:ellipsize="end"
                 app:layout_constraintStart_toEndOf="@id/cardLogo"
@@ -149,7 +149,7 @@
                             android:layout_height="wrap_content"
                             android:text="@string/today_sales"
                             android:textSize="11sp"
-                            android:textColor="#EAF0FF"
+                            android:textColor="@color/state_info_tint"
                             android:maxLines="1"
                             android:ellipsize="end"
                             app:layout_constraintStart_toStartOf="parent"
@@ -191,7 +191,7 @@
                             android:layout_height="wrap_content"
                             android:text="@string/today_expenses"
                             android:textSize="11sp"
-                            android:textColor="#EAF0FF"
+                            android:textColor="@color/state_info_tint"
                             android:gravity="center"
                             android:maxLines="1"
                             android:ellipsize="end"
@@ -221,7 +221,7 @@
                             android:layout_height="wrap_content"
                             android:text="@string/net_profit"
                             android:textSize="11sp"
-                            android:textColor="#EAF0FF"
+                            android:textColor="@color/state_info_tint"
                             android:gravity="end"
                             android:maxLines="1"
                             android:ellipsize="end"
@@ -286,7 +286,7 @@
                             android:layout_marginTop="4dp"
                             android:text="@string/shift_summary_hint"
                             android:textSize="12sp"
-                            android:textColor="#EAF0FF"
+                            android:textColor="@color/state_info_tint"
                             android:maxLines="1"
                             android:ellipsize="end"
                             app:layout_constraintStart_toStartOf="parent"

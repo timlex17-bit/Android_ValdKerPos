@@ -13,56 +13,60 @@
             android:id="@+id/tvDialogTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#111827"
+            android:textColor="@color/text_primary"
             android:textSize="20sp"
             android:textStyle="bold" />
 
         <EditText
+            style="@style/Widget.Valora.EditText"
             android:id="@+id/etName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="52dp"
             android:layout_marginTop="18dp"
             android:background="@drawable/bg_dialog_input"
-            android:hint="Name *"
+            android:hint="@string/field_name_required"
             android:inputType="textCapWords"
             android:maxLines="1"
             android:paddingStart="14dp"
             android:paddingEnd="14dp"
-            android:textColor="#111827"
-            android:textColorHint="#94A3B8" />
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_tertiary" />
 
         <EditText
+            style="@style/Widget.Valora.EditText"
             android:id="@+id/etPrice"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="52dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_dialog_input"
-            android:hint="Price *"
+            android:hint="@string/field_price_required"
             android:inputType="numberDecimal"
             android:maxLines="1"
             android:paddingStart="14dp"
             android:paddingEnd="14dp"
-            android:textColor="#111827"
-            android:textColorHint="#94A3B8" />
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_tertiary" />
 
         <EditText
+            style="@style/Widget.Valora.EditText"
             android:id="@+id/etDuration"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="52dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_dialog_input"
-            android:hint="Duration minutes"
+            android:hint="@string/field_duration_minutes"
             android:inputType="number"
             android:maxLines="1"
             android:paddingStart="14dp"
             android:paddingEnd="14dp"
-            android:textColor="#111827"
-            android:textColorHint="#94A3B8" />
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_tertiary" />
 
         <EditText
+            style="@style/Widget.Valora.EditText"
             android:id="@+id/etDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -70,7 +74,7 @@
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_dialog_input"
             android:gravity="top"
-            android:hint="Description"
+            android:hint="@string/field_description"
             android:inputType="textMultiLine|textCapSentences"
             android:maxLines="4"
             android:minLines="3"
@@ -78,8 +82,8 @@
             android:paddingTop="12dp"
             android:paddingEnd="14dp"
             android:paddingBottom="12dp"
-            android:textColor="#111827"
-            android:textColorHint="#94A3B8" />
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_tertiary" />
 
         <Switch
             android:id="@+id/swActive"
@@ -87,8 +91,8 @@
             android:layout_height="52dp"
             android:layout_marginTop="12dp"
             android:checked="true"
-            android:text="Active"
-            android:textColor="#111827"
+            android:text="@string/field_active"
+            android:textColor="@color/text_primary"
             android:textSize="15sp" />
     </LinearLayout>
 </ScrollView>

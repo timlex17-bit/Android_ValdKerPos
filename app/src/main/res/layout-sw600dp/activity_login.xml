@@ -6,7 +6,7 @@
     android:id="@+id/rootLogin"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F6F8FB">
+    android:background="@color/app_bg">
 
     <!--
       Strip ungu setinggi bilah status. Layar ini berlatar terang, sementara
@@ -73,7 +73,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:text="@string/app_name"
-                    android:textColor="#0F172A"
+                    android:textColor="@color/valora_ink"
                     android:textSize="30sp"
                     android:textStyle="bold" />
 
@@ -82,7 +82,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:text="@string/login_subtitle"
-                    android:textColor="#64748B"
+                    android:textColor="@color/text_secondary"
                     android:textSize="15sp" />
 
             </LinearLayout>
@@ -100,7 +100,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/login_welcome"
-                    android:textColor="#6204BF"
+                    android:textColor="@color/brand_primary"
                     android:textSize="12sp"
                     android:textStyle="bold" />
 
@@ -109,7 +109,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="@string/login_title"
-                    android:textColor="#111827"
+                    android:textColor="@color/text_primary"
                     android:textSize="24sp"
                     android:textStyle="bold" />
 
@@ -118,7 +118,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:text="@string/login_shop_code"
-                    android:textColor="#111827"
+                    android:textColor="@color/text_primary"
                     android:textSize="13sp"
                     android:textStyle="bold" />
 
@@ -153,8 +153,8 @@
                         android:inputType="textCapCharacters|textNoSuggestions"
                         android:maxLines="1"
                         android:singleLine="true"
-                        android:textColor="#111827"
-                        android:textColorHint="#94A3B8"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_tertiary"
                         android:textSize="15sp" />
                 </LinearLayout>
 
@@ -163,7 +163,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
                     android:text="@string/login_username"
-                    android:textColor="#111827"
+                    android:textColor="@color/text_primary"
                     android:textSize="13sp"
                     android:textStyle="bold" />
 
@@ -198,8 +198,8 @@
                         android:inputType="textNoSuggestions"
                         android:maxLines="1"
                         android:singleLine="true"
-                        android:textColor="#111827"
-                        android:textColorHint="#94A3B8"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_tertiary"
                         android:textSize="15sp" />
                 </LinearLayout>
 
@@ -208,7 +208,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
                     android:text="@string/login_password"
-                    android:textColor="#111827"
+                    android:textColor="@color/text_primary"
                     android:textSize="13sp"
                     android:textStyle="bold" />
 
@@ -243,8 +243,8 @@
                         android:inputType="textPassword"
                         android:maxLines="1"
                         android:singleLine="true"
-                        android:textColor="#111827"
-                        android:textColorHint="#94A3B8"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_tertiary"
                         android:textSize="15sp" />
 
                     <TextView
@@ -254,7 +254,7 @@
                         android:minHeight="40dp"
                         android:gravity="center"
                         android:text="@string/show_password"
-                        android:textColor="#50039B"
+                        android:textColor="@color/brand_primary_dark"
                         android:textSize="12sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -293,7 +293,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/login_advanced"
-                        android:textColor="#3C0375"
+                        android:textColor="@color/brand_on_tint"
                         android:textSize="13sp"
                         android:textStyle="bold" />
 
@@ -303,7 +303,7 @@
                         android:layout_height="20dp"
                         android:contentDescription="@null"
                         android:src="@drawable/ic_arrow_down"
-                        app:tint="#3C0375" />
+                        app:tint="@color/brand_on_tint" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -319,7 +319,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:text="@string/login_advanced_hint"
-                        android:textColor="#64748B"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
 
                     <TextView
@@ -327,7 +327,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
                         android:text="@string/login_server_label"
-                        android:textColor="#111827"
+                        android:textColor="@color/text_primary"
                         android:textSize="13sp"
                         android:textStyle="bold" />
 
@@ -355,8 +355,8 @@
                             android:maxLines="1"
                             android:minHeight="48dp"
                             android:singleLine="true"
-                            android:textColor="#111827"
-                            android:textColorHint="#94A3B8"
+                            android:textColor="@color/text_primary"
+                            android:textColorHint="@color/text_tertiary"
                             android:textSize="14sp" />
                     </LinearLayout>
 
@@ -365,7 +365,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:textColor="#64748B"
+                        android:textColor="@color/text_secondary"
                         android:textSize="11sp"
                         tools:text="Aktif sekarang: http://10.0.2.2:8000/api/ (bawaan build debug)" />
                 </LinearLayout>
@@ -392,7 +392,7 @@
                     android:minHeight="0dp"
                     android:text="@string/login_demo"
                     android:textAllCaps="false"
-                    android:textColor="#3C0375"
+                    android:textColor="@color/brand_on_tint"
                     android:textSize="15sp"
                     android:textStyle="bold" />
             </LinearLayout>

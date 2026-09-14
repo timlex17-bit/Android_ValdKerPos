@@ -5,15 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="#F9FAFB"
+    android:background="@color/valora_surface"
     android:padding="16dp">
 
     <TextView
         android:id="@+id/tvTitleStockAdjustment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Stock Adjustment"
-        android:textColor="#111827"
+        android:text="@string/stock_adjustment_title"
+        android:textColor="@color/text_primary"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -33,11 +33,11 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#F3F4F6"
+                android:backgroundTint="@color/surface_subtle"
                 app:cardCornerRadius="@dimen/radius_dialog"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="#E5E7EB">
+                app:strokeColor="@color/stroke">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -48,18 +48,18 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Adjustment Details"
+                        android:text="@string/stock_adjustment_details"
                         android:textStyle="bold"
                         android:textSize="16sp"
-                        android:textColor="#111827" />
+                        android:textColor="@color/text_primary" />
 
                     <!-- Product -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:text="Product *"
-                        android:textColor="#6B7280"
+                        android:text="@string/field_product_required"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp"
                         android:textStyle="bold" />
 
@@ -71,7 +71,7 @@
                         app:cardCornerRadius="@dimen/radius_dialog"
                         app:cardElevation="0dp"
                         app:strokeWidth="1dp"
-                        app:strokeColor="#D1D5DB">
+                        app:strokeColor="@color/stroke_strong">
 
                         <Spinner
                             android:id="@+id/spProduct"
@@ -87,9 +87,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:hint="Old stock *">
+                        android:hint="@string/field_old_stock">
 
                         <EditText
+                            style="@style/Widget.Valora.EditText"
                             android:id="@+id/etOldStock"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -99,7 +100,7 @@
                             android:focusableInTouchMode="false"
                             android:inputType="none"
                             android:longClickable="false"
-                            android:textColor="#111827"/>
+                            android:textColor="@color/text_primary"/>
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -108,15 +109,16 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:hint="New stock *">
+                        android:hint="@string/field_new_stock">
 
                         <EditText
+                            style="@style/Widget.Valora.EditText"
                             android:id="@+id/etNewStock"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="number"
-                            android:textColor="#111827"
-                            android:textColorHint="#9CA3AF"/>
+                            android:textColor="@color/text_primary"
+                            android:textColorHint="@color/text_tertiary"/>
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -125,8 +127,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:text="Reason *"
-                        android:textColor="#6B7280"
+                        android:text="@string/field_reason_required"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp"
                         android:textStyle="bold" />
 
@@ -138,7 +140,7 @@
                         app:cardCornerRadius="@dimen/radius_dialog"
                         app:cardElevation="0dp"
                         app:strokeWidth="1dp"
-                        app:strokeColor="#D1D5DB">
+                        app:strokeColor="@color/stroke_strong">
 
                         <Spinner
                             android:id="@+id/spReason"
@@ -154,16 +156,17 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:hint="Note">
+                        android:hint="@string/field_note">
 
                         <EditText
+                            style="@style/Widget.Valora.EditText"
                             android:id="@+id/etNote"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:gravity="top|start"
                             android:minLines="3"
-                            android:textColor="#111827"
-                            android:textColorHint="#9CA3AF"/>
+                            android:textColor="@color/text_primary"
+                            android:textColorHint="@color/text_tertiary"/>
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -171,8 +174,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:text="Adjusted at &amp; Adjusted by: otomatis dari sistem"
-                        android:textColor="#6B7280"
+                        android:text="@string/stock_adjustment_auto_fields"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
 
                 </LinearLayout>

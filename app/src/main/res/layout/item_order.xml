@@ -28,7 +28,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Order #1"
-                android:textColor="#111827"
+                android:textColor="@color/text_primary"
                 android:textStyle="bold"
                 android:textSize="15sp" />
 
@@ -38,7 +38,7 @@
                 android:layout_height="wrap_content"
                 android:text="PAID"
                 android:textStyle="bold"
-                android:textColor="#6204BF"
+                android:textColor="@color/brand_primary"
                 android:textSize="11sp" />
 
         </LinearLayout>
@@ -50,7 +50,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="2026-02-13 16:31"
-            android:textColor="#6B7280"
+            android:textColor="@color/text_secondary"
             android:textSize="12sp" />
 
         <!-- Row 3 -->
@@ -66,7 +66,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Cash"
-                android:textColor="#374151"
+                android:textColor="@color/icon_muted"
                 android:textStyle="bold"
                 android:textSize="12sp" />
 
@@ -74,7 +74,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=" • "
-                android:textColor="#9CA3AF"
+                android:textColor="@color/text_tertiary"
                 android:textSize="12sp"
                 android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"/>
@@ -84,7 +84,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="2 items"
-                android:textColor="#6B7280"
+                android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 
             <TextView
@@ -94,7 +94,7 @@
                 android:layout_weight="1"
                 android:gravity="end"
                 android:text="$4.25"
-                android:textColor="#111827"
+                android:textColor="@color/text_primary"
                 android:textStyle="bold"
                 android:textSize="14sp" />
         </LinearLayout>

@@ -37,10 +37,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Scan Barcode"
+                android:text="@string/scanner_title"
                 android:textStyle="bold"
                 android:textSize="16sp"
-                android:textColor="#111827" />
+                android:textColor="@color/text_primary" />
 
             <ImageButton
                 android:id="@+id/btnCloseScanner"
@@ -56,9 +56,9 @@
             android:id="@+id/tvHint"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Aponta kámara ba kódigu barra. Skaner sei halo eskaneamentu."
+            android:text="@string/scanner_hint"
             android:textSize="12sp"
-            android:textColor="#6B7280"
+            android:textColor="@color/text_secondary"
             android:layout_marginTop="6dp"
             android:layout_marginBottom="10dp" />
 
@@ -89,7 +89,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal|bottom"
                 android:layout_marginBottom="12dp"
-                android:text="Scan here"
+                android:text="@string/scanner_frame_label"
                 android:textStyle="bold"
                 android:textSize="12sp"
                 android:textColor="#FFFFFF" />
@@ -101,9 +101,9 @@
             android:id="@+id/tvLast"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Last: -"
+            android:text="@string/scanner_last_result"
             android:textSize="12sp"
-            android:textColor="#111827"
+            android:textColor="@color/text_primary"
             android:layout_marginTop="10dp" />
 
     </LinearLayout>

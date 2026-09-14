@@ -14,7 +14,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/bank_ledger_title"
-            android:textColor="#0F172A"
+            android:textColor="@color/valora_ink"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -24,7 +24,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="14dp"
             android:lineSpacingExtra="4dp"
-            android:textColor="#334155"
+            android:textColor="@color/text_secondary"
             android:textSize="14sp" />
 
     </LinearLayout>

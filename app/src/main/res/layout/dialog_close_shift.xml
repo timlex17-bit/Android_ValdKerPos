@@ -8,7 +8,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Taka Turnu"
+        android:text="@string/shift_close_title"
         android:textStyle="bold"
         android:textSize="18sp"
         android:paddingBottom="8dp" />
@@ -16,7 +16,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hatama osan kas iha turnu bainhira taka (Osan Taka nian)."
+        android:text="@string/shift_close_hint"
         android:textSize="13sp"
         android:alpha="0.75"
         android:paddingBottom="14dp" />
@@ -24,31 +24,33 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Osan Taka nian"
+        android:text="@string/shift_close_cash_label"
         android:textStyle="bold"
         android:paddingBottom="6dp" />
 
     <EditText
+        style="@style/Widget.Valora.EditText"
         android:id="@+id/etClosingCash"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="exemplo: $ 120.00"
+        android:hint="@string/shift_close_cash_hint"
         android:inputType="numberDecimal"
         android:padding="12dp" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Note (optional)"
+        android:text="@string/shift_note_label"
         android:textStyle="bold"
         android:paddingTop="12dp"
         android:paddingBottom="6dp" />
 
     <EditText
+        style="@style/Widget.Valora.EditText"
         android:id="@+id/etNote"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Nota taka turnu..."
+        android:hint="@string/shift_close_note_hint"
         android:minLines="2"
         android:gravity="top"
         android:inputType="textMultiLine"

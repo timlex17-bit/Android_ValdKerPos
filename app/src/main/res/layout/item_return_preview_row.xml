@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Product name"
-        android:textColor="#111827"
+        android:textColor="@color/text_primary"
         android:textSize="16sp"
         android:textStyle="bold" />
 
@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:text="Qty • Unit • Max"
-        android:textColor="#4B5563"
+        android:textColor="@color/text_secondary"
         android:textSize="14sp" />
 
     <LinearLayout
@@ -46,11 +46,11 @@
             android:ellipsize="end"
             android:text="Edit Qty"
             android:textAllCaps="false"
-            android:textColor="#6204BF"
+            android:textColor="@color/brand_primary"
             android:textSize="14sp"
             android:textStyle="bold"
             app:cornerRadius="14dp"
-            app:strokeColor="#6204BF"
+            app:strokeColor="@color/brand_primary"
             app:strokeWidth="1dp" />
 
         <Space
@@ -69,7 +69,7 @@
             android:insetBottom="0dp"
             android:maxLines="1"
             android:ellipsize="end"
-            android:backgroundTint="#6204BF"
+            android:backgroundTint="@color/brand_primary"
             android:text="Remove"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"

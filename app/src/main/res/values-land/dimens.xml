@@ -9,9 +9,6 @@
     <dimen name="scanner_card_max_height">460dp</dimen>
     <dimen name="scanner_frame_size">200dp</dimen>
     <dimen name="report_chart_height">240dp</dimen>
-    <dimen name="pos_side_panel_width">280dp</dimen>
-    <dimen name="pos_side_panel_min_width">260dp</dimen>
-    <dimen name="pos_side_panel_max_width">320dp</dimen>
     <dimen name="product_card_image_height">210dp</dimen>
 
     <!--

@@ -7,6 +7,6 @@
     android:layout_marginBottom="6dp"
     android:text="SERVICES"
     android:textAllCaps="true"
-    android:textColor="#6B7280"
+    android:textColor="@color/text_secondary"
     android:textSize="12sp"
     android:textStyle="bold" />

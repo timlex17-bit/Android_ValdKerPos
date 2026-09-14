@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F6F7FB">
+    android:background="@color/app_bg">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,7 +14,7 @@
             android:id="@+id/topBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#6204BF"
+            android:background="@color/brand_primary"
             android:elevation="4dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
@@ -78,7 +78,7 @@
                     app:cardBackgroundColor="#FFFFFF"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="0dp"
-                    app:strokeColor="#E5E7EB"
+                    app:strokeColor="@color/stroke"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -92,7 +92,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="Sales Report"
-                            android:textColor="#111827"
+                            android:textColor="@color/text_primary"
                             android:textSize="20sp"
                             android:textStyle="bold" />
 
@@ -102,7 +102,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
                             android:text="Dynamic report based on your shop business type."
-                            android:textColor="#64748B"
+                            android:textColor="@color/text_secondary"
                             android:textSize="12sp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -114,7 +114,7 @@
                     app:cardBackgroundColor="#FFFFFF"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="0dp"
-                    app:strokeColor="#E5E7EB"
+                    app:strokeColor="@color/stroke"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -127,7 +127,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Report"
-                            android:textColor="#111827"
+                            android:textColor="@color/text_primary"
                             android:textSize="13sp"
                             android:textStyle="bold" />
 
@@ -184,7 +184,7 @@
                     app:cardBackgroundColor="#FFFFFF"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="0dp"
-                    app:strokeColor="#E5E7EB"
+                    app:strokeColor="@color/stroke"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -197,7 +197,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Filters"
-                            android:textColor="#111827"
+                            android:textColor="@color/text_primary"
                             android:textSize="13sp"
                             android:textStyle="bold" />
 
@@ -284,7 +284,7 @@
                                 android:layout_height="wrap_content"
                                 android:minHeight="50dp"
                                 android:layout_weight="1"
-                                android:backgroundTint="#6204BF"
+                                android:backgroundTint="@color/brand_primary"
                                 android:insetTop="0dp"
                                 android:insetBottom="0dp"
                                 android:text="@string/fetch_report"
@@ -323,7 +323,7 @@
                     android:layout_marginTop="14dp"
                     android:gravity="center"
                     android:padding="14dp"
-                    android:textColor="#64748B"
+                    android:textColor="@color/text_secondary"
                     android:textSize="14sp"
                     android:visibility="gone" />
 
@@ -341,7 +341,7 @@
                     app:cardBackgroundColor="#FFFFFF"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="0dp"
-                    app:strokeColor="#E5E7EB"
+                    app:strokeColor="@color/stroke"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -355,7 +355,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Sales"
-                            android:textColor="#111827"
+                            android:textColor="@color/text_primary"
                             android:textSize="13sp"
                             android:textStyle="bold" />
 

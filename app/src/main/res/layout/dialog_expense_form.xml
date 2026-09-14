@@ -10,12 +10,14 @@
         android:padding="16dp">
 
         <EditText
+            style="@style/Widget.Valora.EditText"
             android:id="@+id/etName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/expense_name"/>
 
         <EditText
+            style="@style/Widget.Valora.EditText"
             android:id="@+id/etNote"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -23,6 +25,7 @@
             android:layout_marginTop="10dp"/>
 
         <EditText
+            style="@style/Widget.Valora.EditText"
             android:id="@+id/etAmount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -31,20 +34,22 @@
             android:layout_marginTop="10dp"/>
 
         <EditText
+            style="@style/Widget.Valora.EditText"
             android:id="@+id/etDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Date * (YYYY-MM-DD)"
+            android:hint="@string/field_date_ymd"
             android:layout_marginTop="10dp"
             android:focusable="false"
             android:clickable="true"
             android:inputType="none" />
 
         <EditText
+            style="@style/Widget.Valora.EditText"
             android:id="@+id/etTime"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Time * (HH:mm:ss)"
+            android:hint="@string/field_time_hms"
             android:layout_marginTop="10dp"
             android:focusable="false"
             android:clickable="true"

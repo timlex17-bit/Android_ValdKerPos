@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="#F9FAFB"
+        android:background="@color/valora_surface"
         android:padding="12dp">
 
         <TextView
@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:text="Signed in as"
             android:textSize="12sp"
-            android:textColor="#6B7280"/>
+            android:textColor="@color/text_secondary"/>
 
         <TextView
             android:id="@+id/tvUserName"
@@ -28,7 +28,7 @@
             android:text="admin"
             android:textStyle="bold"
             android:textSize="18sp"
-            android:textColor="#111827"
+            android:textColor="@color/text_primary"
             android:paddingTop="4dp"/>
 
         <TextView
@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:text="cashier"
             android:textSize="12sp"
-            android:textColor="#6B7280"
+            android:textColor="@color/text_secondary"
             android:paddingTop="2dp"/>
     </LinearLayout>
 
@@ -51,7 +51,7 @@
         android:paddingRight="14dp"
         android:text="@string/menu_offline_orders"
         android:textStyle="bold"
-        android:textColor="#111827"
+        android:textColor="@color/text_primary"
         android:background="?android:attr/selectableItemBackground" />
 
     <TextView
@@ -64,7 +64,7 @@
         android:paddingRight="14dp"
         android:text="🛡️   Privacy Policy"
         android:textStyle="bold"
-        android:textColor="#111827"
+        android:textColor="@color/text_primary"
         android:background="?android:attr/selectableItemBackground" />
 
     <TextView
@@ -77,13 +77,13 @@
         android:paddingRight="14dp"
         android:text="🧾   Close Shift"
         android:textStyle="bold"
-        android:textColor="#111827"
+        android:textColor="@color/text_primary"
         android:background="?android:attr/selectableItemBackground" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#E5E7EB"
+        android:background="@color/stroke"
         android:layout_marginTop="6dp"
         android:layout_marginBottom="6dp"/>
 
@@ -97,7 +97,7 @@
         android:paddingRight="14dp"
         android:text="🚪   Log Out"
         android:textStyle="bold"
-        android:textColor="#DC2626"
+        android:textColor="@color/state_danger"
         android:background="?android:attr/selectableItemBackground" />
 
 </LinearLayout>

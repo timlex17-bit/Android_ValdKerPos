@@ -168,4 +168,37 @@
         <item name="android:popupBackground">@drawable/bg_popup_menu</item>
     </style>
 
+
+    <!-- ============ Kolom isian polos ============ -->
+
+    <!--
+      Sebelas dialog formulir memakai EditText polos tanpa TextInputLayout -
+      pembelian, pengeluaran, mekanik, kendaraan, gudang, buka/tutup shift,
+      dan lainnya. Tanpa gaya, masing-masing tampil dengan garis bawah bawaan
+      Android sementara dialog tetangganya memakai kotak bergaris, jadi dua
+      popup dari layar yang sama tidak terlihat bersaudara.
+
+      Gaya ini memberi mereka kotak yang sama dengan TextInputLayout aplikasi:
+      latar putih, garis tipis, radius popup, dan tinggi sentuh yang layak -
+      tanpa mengubah struktur layout, sehingga tidak ada satu pun findViewById
+      yang berubah arti.
+    -->
+    <style name="Widget.Valora.EditText" parent="Widget.AppCompat.EditText">
+        <item name="android:background">@drawable/bg_dialog_input</item>
+        <item name="android:minHeight">@dimen/touch_target_min</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:paddingBottom">10dp</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textColorHint">@color/text_tertiary</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <!-- Label di atas kolom isian dialog. -->
+    <style name="TextAppearance.Valora.FieldLabel" parent="">
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
 </resources>

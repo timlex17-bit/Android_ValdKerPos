@@ -9,7 +9,7 @@
     android:backgroundTint="@android:color/white"
     app:cardCornerRadius="16dp"
     app:cardElevation="1dp"
-    app:strokeColor="#E5E7EB"
+    app:strokeColor="@color/stroke"
     app:strokeWidth="1dp">
 
     <LinearLayout
@@ -42,7 +42,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="INV000000000013"
-                    android:textColor="#111827"
+                    android:textColor="@color/text_primary"
                     android:textSize="15sp"
                     android:textStyle="bold" />
 
@@ -52,7 +52,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
                     android:text="05/03/2026 23:13"
-                    android:textColor="#6B7280"
+                    android:textColor="@color/text_secondary"
                     android:textSize="11sp" />
             </LinearLayout>
 
@@ -86,7 +86,7 @@
                     android:layout_height="20dp"
                     android:contentDescription="@null"
                     android:src="@drawable/ic_arrow_down"
-                    app:tint="#6B7280" />
+                    app:tint="@color/text_secondary" />
             </LinearLayout>
 
         </LinearLayout>
@@ -98,7 +98,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Items: 1 • Qty: 2 • Total: $4.00"
-            android:textColor="#4B5563"
+            android:textColor="@color/text_secondary"
             android:textSize="11sp"
             android:textStyle="bold" />
 
@@ -115,7 +115,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:layout_marginBottom="10dp"
-                android:background="#F3F4F6" />
+                android:background="@color/surface_subtle" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -132,7 +132,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Customer"
-                        android:textColor="#9CA3AF"
+                        android:textColor="@color/text_tertiary"
                         android:textSize="11sp"
                         android:textStyle="bold" />
 
@@ -142,7 +142,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:text="-"
-                        android:textColor="#374151"
+                        android:textColor="@color/icon_muted"
                         android:textSize="12sp" />
                 </LinearLayout>
 
@@ -156,7 +156,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Returned by"
-                        android:textColor="#9CA3AF"
+                        android:textColor="@color/text_tertiary"
                         android:textSize="11sp"
                         android:textStyle="bold" />
 
@@ -166,7 +166,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:text="Rivaldo"
-                        android:textColor="#374151"
+                        android:textColor="@color/icon_muted"
                         android:textSize="12sp" />
                 </LinearLayout>
             </LinearLayout>
@@ -181,7 +181,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Note"
-                    android:textColor="#9CA3AF"
+                    android:textColor="@color/text_tertiary"
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
@@ -191,7 +191,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:text="Damage"
-                    android:textColor="#374151"
+                    android:textColor="@color/icon_muted"
                     android:textSize="12sp" />
             </LinearLayout>
         </LinearLayout>

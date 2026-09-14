@@ -58,4 +58,15 @@
     <color name="state_success">#15803D</color>
     <color name="state_success_tint">#DCFCE7</color>
 
+    <!--
+      Dua nada ungu pendukung yang sudah dipakai belasan layout sebagai hex:
+      latar sangat muda untuk blok bertanda merek, dan garis tepi untuk chip
+      terpilih. Diberi nama supaya ikut berubah saat warna merek diganti.
+    -->
+    <color name="brand_tint_soft">#F5ECFE</color>
+    <color name="brand_stroke">#BB80F4</color>
+
+    <!-- Nada netral tambahan yang dipakai ikon dan pembatas. -->
+    <color name="icon_muted">#374151</color>
+    <color name="stroke_strong">#D1D5DB</color>
 </resources>

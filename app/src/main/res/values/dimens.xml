@@ -37,9 +37,6 @@
     <dimen name="scanner_card_max_height">560dp</dimen>
     <dimen name="scanner_frame_size">220dp</dimen>
     <dimen name="report_chart_height">220dp</dimen>
-    <dimen name="pos_side_panel_width">300dp</dimen>
-    <dimen name="pos_side_panel_min_width">260dp</dimen>
-    <dimen name="pos_side_panel_max_width">340dp</dimen>
     <dimen name="product_card_image_height">170dp</dimen>
 
 
@@ -69,7 +66,38 @@
       (layout-sw600dp/activity_main.xml); nilainya tetap didefinisikan di sini
       supaya rujukan dari layout mana pun tidak pernah gagal di-resolve.
     -->
-    <dimen name="cart_pane_width">320dp</dimen>
     <dimen name="cart_thumb_size">52dp</dimen>
     <dimen name="cart_stepper_button">34dp</dimen>
+
+    <!--
+      Jarak FAB ke penghalang terdekat di bawah dan di sampingnya. Satu nilai
+      untuk seluruh aplikasi; ValoraFab yang menghitung sisanya (inset bilah
+      sistem) sendiri, jadi tidak ada lagi layar yang memakai angka ajaib.
+    -->
+    <dimen name="fab_margin">16dp</dimen>
+    <!--
+      Lebar panel samping kasir. Nilai sesungguhnya datang dari bucket
+      values-w###dp; yang di sini hanya cadangan untuk layar sempit, tempat
+      tata letak dua kolom memang tidak dipakai.
+    -->
+    <dimen name="pos_side_panel_width">280dp</dimen>
+    <dimen name="pos_side_panel_min_width">260dp</dimen>
+    <dimen name="pos_side_panel_max_width">300dp</dimen>
+    <dimen name="cart_pane_width">300dp</dimen>
+
+    <!--
+      Ukuran kartu produk. Dulu tiga salinan berkas kartu (layout, -land,
+      -sw600dp) berbeda hanya pada angka-angka ini, dan ketiganya sudah
+      menyimpang - yang satu memakai 170dp mati, yang lain @dimen. Sekarang
+      satu berkas kartu membaca token di bawah, jadi ukuran per layar diatur
+      di sini saja.
+    -->
+    <dimen name="product_card_radius">16dp</dimen>
+    <dimen name="product_card_margin">6dp</dimen>
+    <dimen name="product_card_padding">12dp</dimen>
+    <dimen name="product_name_text">15sp</dimen>
+    <dimen name="product_meta_text">12sp</dimen>
+    <dimen name="product_price_text">18sp</dimen>
+    <dimen name="product_action_height">44dp</dimen>
+    <dimen name="product_thumb_size">56dp</dimen>
 </resources>

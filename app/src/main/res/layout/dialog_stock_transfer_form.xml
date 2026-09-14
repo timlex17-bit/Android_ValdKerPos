@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -33,6 +34,7 @@
             android:orientation="horizontal">
 
             <EditText
+                style="@style/Widget.Valora.EditText"
                 android:id="@+id/etBarcode"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -63,7 +65,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:text="@string/label_unit_required"
-            android:textColor="#374151"
+            android:textColor="@color/icon_muted"
             android:textSize="13sp"
             android:textStyle="bold" />
 
@@ -81,19 +83,24 @@
                 android:paddingEnd="40dp"
                 android:singleLine="true" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="end"
-                android:gravity="center"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
-                android:text="▼"
-                android:textColor="#4B5563"
-                android:textSize="14sp" />
+            <!--
+              Panah pemilih. Dulu karakter "▼" di dalam TextView: bentuk dan
+              ukurannya ikut font perangkat, jadi di sebagian ponsel tampil
+              sebagai kotak kosong. Sekarang ikon vektor yang sama dengan
+              pemilih lain di aplikasi.
+            -->
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="12dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_arrow_down"
+                app:tint="@color/text_tertiary" />
         </FrameLayout>
 
         <EditText
+            style="@style/Widget.Valora.EditText"
             android:id="@+id/etQuantity"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -106,7 +113,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:textColor="#2563EB"
+            android:textColor="@color/state_info"
             android:textSize="13sp"
             android:textStyle="bold" />
 
@@ -115,10 +122,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:textColor="#374151"
+            android:textColor="@color/icon_muted"
             android:textSize="13sp" />
 
         <EditText
+            style="@style/Widget.Valora.EditText"
             android:id="@+id/etNote"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

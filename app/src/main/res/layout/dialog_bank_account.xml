@@ -23,11 +23,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/title_add_bank_account"
-                android:textColor="#0F172A"
+                android:textColor="@color/valora_ink"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
             <EditText
+                style="@style/Widget.Valora.EditText"
                 android:id="@+id/etName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -35,10 +36,11 @@
                 android:background="@drawable/bg_input_modern"
                 android:hint="@string/hint_account_name"
                 android:padding="14dp"
-                android:textColor="#0F172A"
-                android:textColorHint="#94A3B8" />
+                android:textColor="@color/valora_ink"
+                android:textColorHint="@color/text_tertiary" />
 
             <EditText
+                style="@style/Widget.Valora.EditText"
                 android:id="@+id/etBankName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -46,10 +48,11 @@
                 android:background="@drawable/bg_input_modern"
                 android:hint="@string/hint_bank_name"
                 android:padding="14dp"
-                android:textColor="#0F172A"
-                android:textColorHint="#94A3B8" />
+                android:textColor="@color/valora_ink"
+                android:textColorHint="@color/text_tertiary" />
 
             <EditText
+                style="@style/Widget.Valora.EditText"
                 android:id="@+id/etAccountNumber"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -58,10 +61,11 @@
                 android:hint="@string/hint_account_number"
                 android:inputType="text"
                 android:padding="14dp"
-                android:textColor="#0F172A"
-                android:textColorHint="#94A3B8" />
+                android:textColor="@color/valora_ink"
+                android:textColorHint="@color/text_tertiary" />
 
             <EditText
+                style="@style/Widget.Valora.EditText"
                 android:id="@+id/etAccountHolder"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -69,8 +73,8 @@
                 android:background="@drawable/bg_input_modern"
                 android:hint="@string/hint_account_holder"
                 android:padding="14dp"
-                android:textColor="#0F172A"
-                android:textColorHint="#94A3B8" />
+                android:textColor="@color/valora_ink"
+                android:textColorHint="@color/text_tertiary" />
 
             <Spinner
                 android:id="@+id/spinnerAccountType"
@@ -81,6 +85,7 @@
                 android:padding="10dp" />
 
             <EditText
+                style="@style/Widget.Valora.EditText"
                 android:id="@+id/etOpeningBalance"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -89,8 +94,8 @@
                 android:hint="@string/hint_opening_balance"
                 android:inputType="numberDecimal"
                 android:padding="14dp"
-                android:textColor="#0F172A"
-                android:textColorHint="#94A3B8" />
+                android:textColor="@color/valora_ink"
+                android:textColorHint="@color/text_tertiary" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -106,7 +111,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/bank_active_status"
-                    android:textColor="#334155"
+                    android:textColor="@color/text_secondary"
                     android:textSize="15sp" />
 
                 <Switch
@@ -116,6 +121,7 @@
             </LinearLayout>
 
             <EditText
+                style="@style/Widget.Valora.EditText"
                 android:id="@+id/etNote"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -125,8 +131,8 @@
                 android:gravity="top"
                 android:hint="@string/hint_bank_note"
                 android:padding="14dp"
-                android:textColor="#0F172A"
-                android:textColorHint="#94A3B8" />
+                android:textColor="@color/valora_ink"
+                android:textColorHint="@color/text_tertiary" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -143,7 +149,7 @@
                     android:background="@drawable/bg_button_secondary"
                     android:text="@string/action_cancel"
                     android:textAllCaps="false"
-                    android:textColor="#334155" />
+                    android:textColor="@color/text_secondary" />
 
                 <Button
                     android:id="@+id/btnSave"

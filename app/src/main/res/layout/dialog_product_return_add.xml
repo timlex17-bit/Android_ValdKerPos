@@ -5,15 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="#F9FAFB"
+    android:background="@color/valora_surface"
     android:padding="16dp">
 
     <TextView
         android:id="@+id/tvTitleProductReturnAdd"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Product Return"
-        android:textColor="#111827"
+        android:text="@string/product_return_title"
+        android:textColor="@color/text_primary"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -34,11 +34,11 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#F3F4F6"
+                android:backgroundTint="@color/surface_subtle"
                 app:cardCornerRadius="@dimen/radius_dialog"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="#E5E7EB">
+                app:strokeColor="@color/stroke">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -49,18 +49,18 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Return Details"
+                        android:text="@string/product_return_details"
                         android:textStyle="bold"
                         android:textSize="16sp"
-                        android:textColor="#111827" />
+                        android:textColor="@color/text_primary" />
 
                     <!-- Return Mode -->
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:text="Return Type"
-                        android:textColor="#6B7280"
+                        android:text="@string/product_return_type"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp"
                         android:textStyle="bold" />
 
@@ -76,10 +76,10 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:buttonTint="#6204BF"
+                            android:buttonTint="@color/brand_primary"
                             android:checked="true"
-                            android:text="By Invoice"
-                            android:textColor="#111827"
+                            android:text="@string/product_return_by_invoice"
+                            android:textColor="@color/text_primary"
                             android:textSize="14sp"
                             android:textStyle="bold" />
 
@@ -88,9 +88,9 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:buttonTint="#6204BF"
-                            android:text="Manual"
-                            android:textColor="#111827"
+                            android:buttonTint="@color/brand_primary"
+                            android:text="@string/product_return_manual"
+                            android:textColor="@color/text_primary"
                             android:textSize="14sp"
                             android:textStyle="bold" />
                     </RadioGroup>
@@ -107,8 +107,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="14dp"
-                            android:text="Invoice"
-                            android:textColor="#6B7280"
+                            android:text="@string/label_invoice"
+                            android:textColor="@color/text_secondary"
                             android:textSize="12sp"
                             android:textStyle="bold" />
 
@@ -120,7 +120,7 @@
                             app:cardCornerRadius="@dimen/radius_dialog"
                             app:cardElevation="0dp"
                             app:strokeWidth="1dp"
-                            app:strokeColor="#D1D5DB">
+                            app:strokeColor="@color/stroke_strong">
 
                             <Spinner
                                 android:id="@+id/spOrder"
@@ -136,8 +136,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="14dp"
-                            android:text="Customer: -"
-                            android:textColor="#111827"
+                            android:text="@string/product_return_customer_none"
+                            android:textColor="@color/text_primary"
                             android:textSize="14sp"
                             android:textStyle="bold" />
 
@@ -145,8 +145,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="14dp"
-                            android:text="Item in Invoice"
-                            android:textColor="#6B7280"
+                            android:text="@string/product_return_item_in_invoice"
+                            android:textColor="@color/text_secondary"
                             android:textSize="12sp"
                             android:textStyle="bold" />
 
@@ -158,7 +158,7 @@
                             app:cardCornerRadius="@dimen/radius_dialog"
                             app:cardElevation="0dp"
                             app:strokeWidth="1dp"
-                            app:strokeColor="#D1D5DB">
+                            app:strokeColor="@color/stroke_strong">
 
                             <Spinner
                                 android:id="@+id/spOrderItem"
@@ -173,23 +173,23 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="14dp"
-                            android:hint="Qty Return">
+                            android:hint="@string/field_qty_return">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etQty"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:hint="Qty"
+                                android:hint="@string/field_qty"
                                 android:inputType="number"
-                                android:textColor="#111827"
-                                android:textColorHint="#9CA3AF" />
+                                android:textColor="@color/text_primary"
+                                android:textColorHint="@color/text_tertiary" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
-                            android:hint="Unit Price">
+                            android:hint="@string/field_unit_price">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etUnitPrice"
@@ -201,7 +201,7 @@
                                 android:importantForAutofill="no"
                                 android:inputType="none"
                                 android:longClickable="false"
-                                android:textColor="#111827"
+                                android:textColor="@color/text_primary"
                                 android:textIsSelectable="false" />
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -231,16 +231,16 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="14dp"
-                            android:text="Manual return does not require invoice or customer."
-                            android:textColor="#6B7280"
+                            android:text="@string/product_return_manual_hint"
+                            android:textColor="@color/text_secondary"
                             android:textSize="13sp" />
 
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="14dp"
-                            android:text="Product"
-                            android:textColor="#6B7280"
+                            android:text="@string/label_product"
+                            android:textColor="@color/text_secondary"
                             android:textSize="12sp"
                             android:textStyle="bold" />
 
@@ -252,7 +252,7 @@
                             app:cardCornerRadius="@dimen/radius_dialog"
                             app:cardElevation="0dp"
                             app:strokeWidth="1dp"
-                            app:strokeColor="#D1D5DB">
+                            app:strokeColor="@color/stroke_strong">
 
                             <Spinner
                                 android:id="@+id/spManualProduct"
@@ -267,31 +267,31 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="14dp"
-                            android:hint="Qty Return">
+                            android:hint="@string/field_qty_return">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etManualQty"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:hint="Qty"
+                                android:hint="@string/field_qty"
                                 android:inputType="number"
-                                android:textColor="#111827"
-                                android:textColorHint="#9CA3AF" />
+                                android:textColor="@color/text_primary"
+                                android:textColorHint="@color/text_tertiary" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
-                            android:hint="Unit Price">
+                            android:hint="@string/field_unit_price">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etManualUnitPrice"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="numberDecimal"
-                                android:textColor="#111827"
-                                android:textColorHint="#9CA3AF" />
+                                android:textColor="@color/text_primary"
+                                android:textColorHint="@color/text_tertiary" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.button.MaterialButton
@@ -311,7 +311,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:hint="Reason / note">
+                        android:hint="@string/field_reason_note">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etNote"
@@ -320,8 +320,8 @@
                             android:gravity="top|start"
                             android:inputType="textMultiLine"
                             android:minLines="2"
-                            android:textColor="#111827"
-                            android:textColorHint="#9CA3AF" />
+                            android:textColor="@color/text_primary"
+                            android:textColorHint="@color/text_tertiary" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                 </LinearLayout>
@@ -332,11 +332,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
-                android:backgroundTint="#F3F4F6"
+                android:backgroundTint="@color/surface_subtle"
                 app:cardCornerRadius="@dimen/radius_dialog"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="#E5E7EB">
+                app:strokeColor="@color/stroke">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -347,8 +347,8 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Items Preview"
-                        android:textColor="#111827"
+                        android:text="@string/product_return_items_preview"
+                        android:textColor="@color/text_primary"
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
@@ -357,8 +357,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
-                        android:text="No items yet"
-                        android:textColor="#6B7280"
+                        android:text="@string/product_return_no_items"
+                        android:textColor="@color/text_secondary"
                         android:textSize="14sp" />
 
                     <androidx.recyclerview.widget.RecyclerView
