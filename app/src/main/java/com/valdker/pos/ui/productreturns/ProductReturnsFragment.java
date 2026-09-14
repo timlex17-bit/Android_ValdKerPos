@@ -172,7 +172,6 @@ public class ProductReturnsFragment extends BaseFragment {
 
     private void applyInsets(@NonNull View root) {
         InsetsHelper.applyRecyclerBottomInsets(root, rv, TAG);
-        applyFabBottomInset(fabAdd, 56);
     }
 
     private void setupHeader() {

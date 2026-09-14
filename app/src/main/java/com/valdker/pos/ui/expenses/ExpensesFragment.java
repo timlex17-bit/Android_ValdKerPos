@@ -95,7 +95,6 @@ public class ExpensesFragment extends BaseFragment {
         btnDateRange = view.findViewById(R.id.btnDateRange);
 
         InsetsHelper.applyRecyclerBottomInsets(view, rv, "EXPENSES");
-        applyFabBottomInset(fabAdd, 56);
 
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(requireContext()));

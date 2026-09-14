@@ -93,7 +93,6 @@ public class WarehouseStocksFragment extends BaseFragment {
         initViews(view);
 
         InsetsHelper.applyRecyclerBottomInsets(view, rvWarehouseStocks, "WAREHOUSE_STOCKS");
-        applyFabBottomInset(fabAddWarehouseStock, 56);
 
         setupRecyclerView();
         setupListeners();

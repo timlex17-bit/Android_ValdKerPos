@@ -209,7 +209,6 @@ public class CategoriesFragment extends BaseFragment {
         etSearch = view.findViewById(R.id.etSearch);
 
         InsetsHelper.applyRecyclerBottomInsets(view, rv, TAG);
-        applyFabBottomInset(fabAdd, 56);
 
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(requireContext()));

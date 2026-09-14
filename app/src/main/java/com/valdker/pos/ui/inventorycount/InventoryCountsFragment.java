@@ -123,7 +123,6 @@ public class InventoryCountsFragment extends BaseFragment {
 
     private void applyInsets(@NonNull View root) {
         InsetsHelper.applyRecyclerBottomInsets(root, rv, TAG);
-        applyFabBottomInset(fab, 56);
     }
 
     private void setupHeader() {

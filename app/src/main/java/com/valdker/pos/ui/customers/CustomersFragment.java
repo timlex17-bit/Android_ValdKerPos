@@ -127,7 +127,6 @@ public class CustomersFragment extends BaseFragment {
         if (fabAdd == null) Log.w(TAG, "fabAddCustomer not found.");
 
         InsetsHelper.applyRecyclerBottomInsets(view, rv, TAG);
-        applyFabBottomInset(fabAdd, 56);
 
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(requireContext()));

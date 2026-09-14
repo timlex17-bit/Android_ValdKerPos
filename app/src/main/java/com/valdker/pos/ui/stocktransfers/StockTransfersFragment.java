@@ -102,7 +102,6 @@ public class StockTransfersFragment extends BaseFragment {
         setupListeners();
 
         InsetsHelper.applyRecyclerBottomInsets(view, rvStockTransfers, "STOCK_TRANSFERS");
-        applyFabBottomInset(fabAddStockTransfer, 56);
 
         loadDropdownOptions();
         loadStockTransfers();

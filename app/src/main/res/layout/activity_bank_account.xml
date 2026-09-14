@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F6F7FB">
+    android:background="@color/app_bg">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,7 +16,7 @@
             android:id="@+id/topBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#6204BF"
+            android:background="@color/brand_primary"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingStart="16dp"
@@ -44,7 +44,7 @@
                 app:cardBackgroundColor="@android:color/white"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="1dp"
-                app:strokeColor="#E5E7EB"
+                app:strokeColor="@color/stroke"
                 app:strokeWidth="1dp">
 
                 <LinearLayout
@@ -62,7 +62,7 @@
                         android:layout_height="20dp"
                         android:contentDescription="@string/action_search"
                         android:src="@drawable/search_24"
-                        app:tint="#9CA3AF" />
+                        app:tint="@color/text_tertiary" />
 
                     <EditText
                         android:id="@+id/etSearchBank"
@@ -78,8 +78,8 @@
                         android:minHeight="48dp"
                         android:paddingTop="12dp"
                         android:paddingBottom="12dp"
-                        android:textColor="#111827"
-                        android:textColorHint="#9CA3AF"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_tertiary"
                         android:textSize="15sp" />
 
                 </LinearLayout>
@@ -138,7 +138,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/empty_bank_accounts"
-                    android:textColor="#6B7280"
+                    android:textColor="@color/text_secondary"
                     android:textSize="15sp"
                     android:textStyle="bold" />
 
@@ -149,7 +149,7 @@
                     android:layout_marginTop="6dp"
                     android:gravity="center"
                     android:text="@string/empty_bank_accounts_sub"
-                    android:textColor="#9CA3AF"
+                    android:textColor="@color/text_tertiary"
                     android:textSize="13sp" />
             </LinearLayout>
 
@@ -165,16 +165,9 @@
 
     </LinearLayout>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <com.valdker.pos.ui.common.ValoraFab
         android:id="@+id/fabAddBank"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        android:contentDescription="@string/action_add_bank_account"
-        app:backgroundTint="#6204BF"
-        app:srcCompat="@android:drawable/ic_input_add"
-        app:tint="@android:color/white" />
+        style="@style/Widget.Valora.Fab"
+        android:contentDescription="@string/cd_add_bank_account" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

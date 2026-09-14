@@ -216,7 +216,6 @@ public class ProductsManageFragment extends BaseFragment {
 
     private void applyInsets() {
         InsetsHelper.applyRecyclerBottomInsets(rootManage != null ? rootManage : requireView(), rv, TAG);
-        applyFabBottomInset(fabAdd, 56);
     }
 
     private boolean isRapidFabClick() {

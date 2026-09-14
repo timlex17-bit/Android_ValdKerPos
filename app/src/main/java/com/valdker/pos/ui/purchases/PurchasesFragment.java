@@ -80,7 +80,6 @@ public class PurchasesFragment extends BaseFragment {
         }
 
         InsetsHelper.applyRecyclerBottomInsets(view, rv, TAG_REQ);
-        applyFabBottomInset(fabAdd, 56);
 
         adapter = new PurchaseListAdapter(new ArrayList<>());
         if (rv != null) {

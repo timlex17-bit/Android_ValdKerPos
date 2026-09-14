@@ -117,79 +117,18 @@ public abstract class BaseFragment extends Fragment {
         ViewCompat.requestApplyInsets(view);
     }
 
-    /**
-     * Universal FAB bottom inset.
-     *
-     * XML cukup pakai:
-     * android:layout_marginEnd="16dp"
-     * android:layout_marginBottom="16dp"
-     *
-     * Lalu di Fragment panggil:
-     * applyFabBottomInset(fab, 56);
-     */
-    protected void applyFabBottomInset(@Nullable View fab, int extraBottomDp) {
-        if (fab == null) return;
+    /*
+      Dulu di sini ada applyFabBottomInset(fab, extraBottomDp) dan
+      applyFabEndAndBottomInsets(...). Keduanya dihapus, bukan diperbaiki:
+      jarak FAB bukan urusan tiap layar. Sebelas fragment memanggilnya dengan
+      angka ajaib 56dp - dimaksudkan untuk menghindari bilah navigasi aplikasi,
+      padahal wadah fragment-nya memang sudah berhenti di atas bilah itu - jadi
+      FAB-nya mengambang 56dp terlalu tinggi, sementara layar yang tidak
+      memanggil apa pun menaruh FAB-nya di belakang bilah navigasi sistem.
 
-        ViewGroup.LayoutParams params = fab.getLayoutParams();
-        if (!(params instanceof ViewGroup.MarginLayoutParams)) return;
-
-        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) params;
-
-        final int baseLeft = lp.leftMargin;
-        final int baseTop = lp.topMargin;
-        final int baseRight = lp.rightMargin;
-        final int baseBottom = lp.bottomMargin;
-        final int extraBottomPx = dp(extraBottomDp);
-
-        ViewCompat.setOnApplyWindowInsetsListener(fab, (v, insets) -> {
-            int bottomInset = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
-
-            lp.leftMargin = baseLeft;
-            lp.topMargin = baseTop;
-            lp.rightMargin = baseRight;
-            lp.bottomMargin = baseBottom + bottomInset + extraBottomPx;
-
-            v.setLayoutParams(lp);
-            return insets;
-        });
-
-        ViewCompat.requestApplyInsets(fab);
-    }
-
-    /**
-     * Kalau ingin FAB ikut aman juga dari sisi kanan pada device tertentu.
-     * Optional, dipakai kalau dibutuhkan.
-     */
-    protected void applyFabEndAndBottomInsets(@Nullable View fab, int extraEndDp, int extraBottomDp) {
-        if (fab == null) return;
-
-        ViewGroup.LayoutParams params = fab.getLayoutParams();
-        if (!(params instanceof ViewGroup.MarginLayoutParams)) return;
-
-        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) params;
-
-        final int baseLeft = lp.leftMargin;
-        final int baseTop = lp.topMargin;
-        final int baseRight = lp.rightMargin;
-        final int baseBottom = lp.bottomMargin;
-        final int extraEndPx = dp(extraEndDp);
-        final int extraBottomPx = dp(extraBottomDp);
-
-        ViewCompat.setOnApplyWindowInsetsListener(fab, (v, insets) -> {
-            int rightInset = insets.getInsets(WindowInsetsCompat.Type.systemBars()).right;
-            int bottomInset = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
-
-            lp.leftMargin = baseLeft;
-            lp.topMargin = baseTop;
-            lp.rightMargin = baseRight + rightInset + extraEndPx;
-            lp.bottomMargin = baseBottom + bottomInset + extraBottomPx;
-
-            v.setLayoutParams(lp);
-            return insets;
-        });
-
-        ViewCompat.requestApplyInsets(fab);
-    }
+      Sekarang ValoraFab yang menghitung sendiri seberapa banyak inset sistem
+      yang benar-benar menutupinya. Lihat com.valdker.pos.ui.common.ValoraFab.
+    */
 
     protected int dp(int value) {
         if (getContext() == null) return value;

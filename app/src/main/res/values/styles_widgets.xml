@@ -71,4 +71,23 @@
         <item name="elevation">0dp</item>
     </style>
 
+
+    <!-- ============ Tombol tambah mengambang ============ -->
+
+    <!--
+      Satu tampilan untuk semua FAB. Sebelumnya empat belas layar menuliskan
+      "#6204BF" sendiri dan memakai @android:drawable/ic_input_add - ikon
+      bawaan sistem, yang bentuknya berbeda di tiap OEM, sehingga tombol yang
+      sama terlihat lain di tiap perangkat.
+    -->
+    <style name="Widget.Valora.Fab" parent="Widget.Material3.FloatingActionButton.Primary">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">bottom|end</item>
+        <item name="android:layout_margin">@dimen/fab_margin</item>
+        <item name="backgroundTint">@color/brand_primary</item>
+        <item name="tint">@color/text_on_brand</item>
+        <item name="srcCompat">@drawable/ic_add</item>
+        <item name="elevation">6dp</item>
+    </style>
 </resources>

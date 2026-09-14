@@ -198,7 +198,6 @@ public class HomeDashboardActivity extends AppCompatActivity {
         applyRoleDeviceUI();
 
         applyHeaderInsets();
-        applyFabInsets();
 
         setupActions();
         showDashboardGrid();
@@ -1129,35 +1128,6 @@ public class HomeDashboardActivity extends AppCompatActivity {
         });
 
         ViewCompat.requestApplyInsets(headerContent);
-    }
-
-    private void applyFabInsets() {
-        if (fabAddCustomer == null) {
-            logw("fabAddCustomer missing. Add FAB id @+id/fabAddCustomer in layout.");
-            return;
-        }
-
-        final int baseMargin = dp(16);
-
-        final View parent = (View) fabAddCustomer.getParent();
-        final int parentPadBottom = parent != null ? parent.getPaddingBottom() : 0;
-        final int parentPadRight = parent != null ? parent.getPaddingRight() : 0;
-
-        ViewCompat.setOnApplyWindowInsetsListener(fabAddCustomer, (v, insets) -> {
-            int bottomInset = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
-            int rightInset = insets.getInsets(WindowInsetsCompat.Type.systemBars()).right;
-
-            ViewGroup.LayoutParams p = v.getLayoutParams();
-            if (p instanceof ViewGroup.MarginLayoutParams) {
-                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) p;
-                lp.bottomMargin = baseMargin + parentPadBottom + bottomInset;
-                lp.rightMargin = baseMargin + parentPadRight + rightInset;
-                v.setLayoutParams(lp);
-            }
-            return insets;
-        });
-
-        ViewCompat.requestApplyInsets(fabAddCustomer);
     }
 
     private int dp(int value) {

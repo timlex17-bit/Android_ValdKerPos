@@ -143,7 +143,6 @@ public class UnitsFragment extends BaseFragment {
         }
 
         InsetsHelper.applyRecyclerBottomInsets(view, rv, TAG);
-        applyFabBottomInset(fabAdd, 56);
 
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(requireContext()));
