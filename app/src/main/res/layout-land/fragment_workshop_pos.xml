@@ -52,14 +52,12 @@
         app:layout_constraintWidth_percent="0.42">
 
         <com.google.android.material.card.MaterialCardView
+
+            style="@style/Widget.Valora.PanelCard"
             android:id="@+id/cardWorkshopHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:backgroundTint="#FFFFFF"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="1dp"
-            app:strokeColor="@color/stroke"
-            app:strokeWidth="1dp">
+            android:backgroundTint="#FFFFFF">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -78,13 +76,12 @@
                     android:orientation="horizontal">
 
                     <com.google.android.material.card.MaterialCardView
+
+                        style="@style/Widget.Valora.PanelCard"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:layout_marginEnd="7dp"
-                        android:backgroundTint="#1F2937"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="0dp"
-                        app:strokeWidth="0dp">
+                        android:backgroundTint="#1F2937">
 
                         <ImageView
                             android:id="@+id/imgLogo"
@@ -439,15 +436,13 @@
             android:layout_weight="1" />
 
         <com.google.android.material.card.MaterialCardView
+
+            style="@style/Widget.Valora.PanelCard"
             android:id="@+id/layoutBottomPanel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
-            android:backgroundTint="#FFFFFF"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="1dp"
-            app:strokeColor="@color/stroke"
-            app:strokeWidth="1dp">
+            android:backgroundTint="#FFFFFF">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -624,14 +619,12 @@
             android:textStyle="bold" />
 
         <com.google.android.material.card.MaterialCardView
+
+            style="@style/Widget.Valora.PanelCard"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:backgroundTint="#FFFFFF"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="1dp"
-            app:strokeColor="@color/stroke"
-            app:strokeWidth="1dp">
+            android:backgroundTint="#FFFFFF">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerWorkspace"

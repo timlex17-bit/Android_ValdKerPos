@@ -9,15 +9,12 @@
   yang kebetulan terpilih.
 -->
 <com.google.android.material.card.MaterialCardView
+    style="@style/Widget.Valora.ItemCard"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="@dimen/product_card_margin"
-    app:cardBackgroundColor="@color/surface"
-    app:cardCornerRadius="@dimen/product_card_radius"
-    app:cardElevation="2dp"
-    app:strokeWidth="0dp">
+    android:layout_margin="@dimen/product_card_margin">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"

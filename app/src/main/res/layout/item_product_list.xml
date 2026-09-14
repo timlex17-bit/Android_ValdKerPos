@@ -15,6 +15,7 @@
      keranjang maupun di kartu grid.
 -->
 <com.google.android.material.card.MaterialCardView
+    style="@style/Widget.Valora.ItemCard"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -24,13 +25,7 @@
     android:layout_marginTop="@dimen/product_card_margin"
     android:layout_marginEnd="@dimen/product_card_margin"
     android:clickable="true"
-    android:focusable="true"
-    app:cardBackgroundColor="@color/surface"
-    app:cardCornerRadius="@dimen/product_card_radius"
-    app:cardElevation="0dp"
-    app:rippleColor="@color/brand_tint"
-    app:strokeColor="@color/stroke"
-    app:strokeWidth="1dp">
+    android:focusable="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -41,14 +36,11 @@
         android:padding="@dimen/product_card_padding">
 
         <com.google.android.material.card.MaterialCardView
+
+            style="@style/Widget.Valora.ItemCard"
             android:layout_width="@dimen/product_thumb_size"
             android:layout_height="@dimen/product_thumb_size"
-            android:layout_marginEnd="12dp"
-            app:cardBackgroundColor="@color/surface_subtle"
-            app:cardCornerRadius="@dimen/radius_surface_sm"
-            app:cardElevation="0dp"
-            app:strokeColor="@color/stroke_soft"
-            app:strokeWidth="1dp">
+            android:layout_marginEnd="12dp">
 
             <ImageView
                 android:id="@+id/imgProduct"

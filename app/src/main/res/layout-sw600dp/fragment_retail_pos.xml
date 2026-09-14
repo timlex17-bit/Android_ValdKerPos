@@ -44,19 +44,16 @@
         android:paddingBottom="12dp">
 
         <com.google.android.material.card.MaterialCardView
+
+            style="@style/Widget.Valora.PanelCard"
             android:id="@+id/cardRetailWorkspace"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginEnd="12dp"
-            app:cardBackgroundColor="@color/surface"
-            app:cardCornerRadius="@dimen/radius_surface"
-            app:cardElevation="1dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/panelRetailCheckout"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:strokeColor="@color/stroke"
-            app:strokeWidth="1dp">
+            app:layout_constraintTop_toTopOf="parent">
 
             <include layout="@layout/view_pos_list" />
         </com.google.android.material.card.MaterialCardView>

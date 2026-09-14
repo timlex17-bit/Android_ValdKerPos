@@ -90,4 +90,34 @@
         <item name="srcCompat">@drawable/ic_add</item>
         <item name="elevation">6dp</item>
     </style>
+
+    <!-- ============ Kartu ============ -->
+
+    <!--
+      Resep kartu kasir bengkel, dijadikan gaya bersama. Bengkel adalah layar
+      yang paling rapi menurut pemilik, dan yang membuatnya rapi bukan warna
+      melainkan konsistensi: setiap wadah adalah kartu putih bergaris rambut
+      dengan sudut 12dp dan bayangan nyaris nol, dan setiap baris item adalah
+      kartu tersendiri bersudut 16dp - bukan baris polos yang dipisah garis.
+
+      Retail dan restoran dulu memakai campuran: kartu produk berbayang 2dp,
+      baris keranjang tanpa kartu sama sekali, panel bersudut 14dp. Sekarang
+      ketiga modul menunjuk dua gaya di bawah ini.
+    -->
+    <style name="Widget.Valora.PanelCard" parent="Widget.Material3.CardView.Outlined">
+        <item name="cardBackgroundColor">@color/surface</item>
+        <item name="cardCornerRadius">@dimen/card_panel_radius</item>
+        <item name="cardElevation">1dp</item>
+        <item name="strokeColor">@color/stroke</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <style name="Widget.Valora.ItemCard" parent="Widget.Material3.CardView.Outlined">
+        <item name="cardBackgroundColor">@color/surface</item>
+        <item name="cardCornerRadius">@dimen/card_item_radius</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeColor">@color/stroke</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="rippleColor">@color/brand_tint</item>
+    </style>
 </resources>

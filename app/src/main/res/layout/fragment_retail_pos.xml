@@ -25,6 +25,7 @@
     <include layout="@layout/view_pos_controls" />
 
     <com.google.android.material.card.MaterialCardView
+    style="@style/Widget.Valora.PanelCard"
         android:id="@+id/cardRetailWorkspace"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
@@ -33,12 +34,7 @@
         android:layout_marginTop="10dp"
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="8dp"
-        android:layout_weight="1"
-        app:cardBackgroundColor="@color/surface"
-        app:cardCornerRadius="@dimen/radius_surface"
-        app:cardElevation="1dp"
-        app:strokeColor="@color/stroke"
-        app:strokeWidth="1dp">
+        android:layout_weight="1">
 
         <include layout="@layout/view_pos_list" />
     </com.google.android.material.card.MaterialCardView>

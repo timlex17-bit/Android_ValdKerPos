@@ -35,20 +35,30 @@
     android:id="@+id/cartOverlayRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/app_bg"
     android:baselineAligned="false"
     android:orientation="horizontal">
 
-    <View
-        android:layout_width="1dp"
-        android:layout_height="match_parent"
-        android:background="@color/stroke" />
-
-    <LinearLayout
+    <!--
+      Kolom keranjang mengikuti bentuk kasir bengkel: isinya kartu panel di
+      atas latar abu-abu, bukan satu bidang putih yang dipisah garis. Itu yang
+      membuat kolom bengkel terlihat rapi - batas tiap bagian terbaca dari
+      kartunya sendiri.
+    -->
+    <com.google.android.material.card.MaterialCardView
+        style="@style/Widget.Valora.PanelCard"
         android:id="@+id/cartRoot"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="@color/surface"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="12dp"
+        android:layout_weight="1">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:orientation="vertical">
 
         <!-- ===== Kepala ===== -->
@@ -293,5 +303,7 @@
                 app:cornerRadius="@dimen/radius_surface_sm" />
         </LinearLayout>
     </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
 
 </LinearLayout>

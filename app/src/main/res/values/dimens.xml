@@ -113,4 +113,15 @@
       dengan lima kartu bagian harus digulir padahal ruangnya berlimpah.
     -->
     <dimen name="dialog_min_width">300dp</dimen>
+
+    <!--
+      Radius kartu, diambil dari kasir bengkel - satu-satunya layar yang sudah
+      rapi. Panel/wadah 12dp, kartu item 16dp. Dipakai lewat
+      @style/Widget.Valora.PanelCard dan Widget.Valora.ItemCard supaya retail,
+      restoran, dan bengkel benar-benar memakai angka yang sama.
+    -->
+    <dimen name="card_panel_radius">12dp</dimen>
+    <dimen name="card_item_radius">16dp</dimen>
+    <dimen name="card_item_gap">8dp</dimen>
+    <dimen name="card_item_padding">12dp</dimen>
 </resources>
