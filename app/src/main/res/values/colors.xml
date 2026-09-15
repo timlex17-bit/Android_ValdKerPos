@@ -77,4 +77,18 @@
     -->
     <color name="row_action_edit_bg">#EEF2FF</color>
     <color name="row_action_delete_bg">#FEE2E2</color>
+
+    <!--
+      Lencana arah pada baris buku besar bank: MASUK / KELUAR / lainnya.
+      Nilainya diambil apa adanya dari BankLedgerAdapter, tempat keenam warna
+      ini dulu ditulis sebagai hex di dalam kode - jadi memindahkannya ke sini
+      tidak mengubah satu piksel warna pun, hanya memberinya nama dan satu
+      tempat tinggal.
+    -->
+    <color name="ledger_in_tint">#EBD9FD</color>
+    <color name="ledger_in_text">#6204BF</color>
+    <color name="ledger_out_tint">#FFEDD5</color>
+    <color name="ledger_out_text">#C2410C</color>
+    <color name="ledger_neutral_tint">#E5E7EB</color>
+    <color name="ledger_neutral_text">#374151</color>
 </resources>

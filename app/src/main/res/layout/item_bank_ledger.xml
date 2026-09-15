@@ -31,16 +31,32 @@
                 android:textSize="17sp"
                 android:textStyle="bold" />
 
+            <!--
+              Lencana arah (MASUK / KELUAR). Bentuknya @drawable/bg_pill -
+              kapsul putih yang warnanya diberikan pemakainya lewat
+              backgroundTint - pola lencana status yang sama dengan pesanan
+              offline, papan dapur, dan popup pembayaran.
+
+              Sebelum ini tampilan ini tidak punya latar sama sekali, jadi
+              keempat paddingnya tidak menghasilkan apa pun, dan
+              BankLedgerAdapter mengecatnya dengan setBackgroundColor() -
+              yang memasang ColorDrawable polos, membuang bentuk apa pun, dan
+              menghasilkan kotak bersudut siku. Adapter kini hanya mengganti
+              TINT-nya, jadi bentuk kapsul ini bertahan.
+            -->
             <TextView
                 android:id="@+id/tvDirection"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@drawable/bg_pill"
+                android:backgroundTint="@color/ledger_in_tint"
+                android:gravity="center"
                 android:paddingStart="10dp"
                 android:paddingTop="4dp"
                 android:paddingEnd="10dp"
                 android:paddingBottom="4dp"
                 android:text="@string/sample_bank_ledger_direction"
-                android:textColor="@color/brand_primary"
+                android:textColor="@color/ledger_in_text"
                 android:textSize="11sp"
                 android:textStyle="bold" />
         </LinearLayout>

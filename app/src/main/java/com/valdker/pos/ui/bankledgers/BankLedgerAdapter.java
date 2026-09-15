@@ -1,14 +1,16 @@
 package com.valdker.pos.ui.bankledgers;
 
 import android.content.Context;
-import android.graphics.Color;
+import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.valdker.pos.R;
@@ -71,19 +73,35 @@ public class BankLedgerAdapter extends RecyclerView.Adapter<BankLedgerAdapter.Vi
         holder.tvDescription.setText(context.getString(R.string.bank_ledger_description_format, description));
 
         if (ledger.isIn()) {
-            holder.tvDirection.setBackgroundColor(Color.parseColor("#EBD9FD"));
-            holder.tvDirection.setTextColor(Color.parseColor("#6204BF"));
+            tintDirection(holder.tvDirection, R.color.ledger_in_tint, R.color.ledger_in_text);
         } else if (ledger.isOut()) {
-            holder.tvDirection.setBackgroundColor(Color.parseColor("#FFEDD5"));
-            holder.tvDirection.setTextColor(Color.parseColor("#C2410C"));
+            tintDirection(holder.tvDirection, R.color.ledger_out_tint, R.color.ledger_out_text);
         } else {
-            holder.tvDirection.setBackgroundColor(Color.parseColor("#E5E7EB"));
-            holder.tvDirection.setTextColor(Color.parseColor("#374151"));
+            tintDirection(holder.tvDirection, R.color.ledger_neutral_tint, R.color.ledger_neutral_text);
         }
 
         holder.cardRoot.setOnClickListener(v -> {
             if (listener != null) listener.onClick(ledger);
         });
+    }
+
+    /**
+     * Mewarnai lencana arah tanpa merusak bentuknya.
+     *
+     * <p>Versi sebelumnya memakai {@code setBackgroundColor()}. Metode itu
+     * MENGGANTI latar tampilan dengan ColorDrawable polos - bentuk kapsul,
+     * sudut, apa pun yang ditulis di layout ikut terbuang - sehingga lencana
+     * ini selalu tampil sebagai kotak bersudut siku, dan keempat padding di
+     * layoutnya tidak menghasilkan apa-apa karena memang tidak ada latar yang
+     * dipadding. Mengganti TINT membiarkan bentuknya tetap milik layout.
+     *
+     * <p>Keenam warnanya pindah ke colors.xml dengan nilai hex yang sama
+     * persis, jadi yang berubah hanya bentuknya.
+     */
+    private void tintDirection(@NonNull TextView badge, @ColorRes int tintRes, @ColorRes int textRes) {
+        badge.setBackgroundTintList(
+                ColorStateList.valueOf(ContextCompat.getColor(context, tintRes)));
+        badge.setTextColor(ContextCompat.getColor(context, textRes));
     }
 
     @Override
