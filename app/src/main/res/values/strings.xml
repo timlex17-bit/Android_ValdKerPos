@@ -1474,4 +1474,8 @@
 
     <!-- Bilah luring di layar kasir. -->
     <string name="offline_banner_message">Offline — showing local POS data</string>
+
+    <!-- Kasir bengkel: keadaan kosong kolom item. -->
+    <string name="workshop_items_empty_title">No items yet</string>
+    <string name="workshop_items_empty_message">Tap Package, Service, Part, or Product below to add items.</string>
 </resources>

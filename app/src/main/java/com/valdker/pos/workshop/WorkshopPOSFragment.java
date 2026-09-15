@@ -195,6 +195,9 @@ public class WorkshopPOSFragment extends Fragment
     private TextView txtGrandTotal;
 
     private RecyclerView recyclerWorkspace;
+    /** Keadaan kosong kolom item; hanya ada pada varian layar lebar. */
+    @Nullable
+    private View workshopItemsEmpty;
     private MaterialButton btnSelectCustomer;
     private MaterialButton btnSelectMechanic;
     private MaterialButton btnSelectWorkOrder;
@@ -371,6 +374,7 @@ public class WorkshopPOSFragment extends Fragment
         txtGrandTotal = view.findViewById(R.id.txtGrandTotal);
 
         recyclerWorkspace = view.findViewById(R.id.recyclerWorkspace);
+        workshopItemsEmpty = view.findViewById(R.id.workshopItemsEmpty);
         btnSelectCustomer = view.findViewById(R.id.btnSelectCustomer);
         btnSelectMechanic = view.findViewById(R.id.btnSelectMechanic);
         btnSelectWorkOrder = view.findViewById(R.id.btnSelectWorkOrder);
@@ -2880,8 +2884,15 @@ public class WorkshopPOSFragment extends Fragment
     }
 
     private void refreshWorkspace() {
+        List<WorkshopDisplayItem> display = buildDisplayItems();
         if (adapter != null) {
-            adapter.submitList(buildDisplayItems());
+            adapter.submitList(display);
+        }
+        // Kolom item adalah bidang terluas di layar ini, dan pada bon baru ia
+        // kosong seluruhnya. Tanpa keadaan kosong, tidak ada satu kata pun di
+        // sana yang memberi tahu apa yang harus ditekan berikutnya.
+        if (workshopItemsEmpty != null) {
+            workshopItemsEmpty.setVisibility(display.isEmpty() ? View.VISIBLE : View.GONE);
         }
         updateSummary();
     }

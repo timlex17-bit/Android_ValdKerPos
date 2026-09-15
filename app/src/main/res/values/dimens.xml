@@ -243,7 +243,7 @@
     <dimen name="workshop_stats_row_min_height">54dp</dimen>
     <dimen name="workshop_checkout_row_min_height">48dp</dimen>
     <dimen name="workshop_checkout_button_min_height">48dp</dimen>
-    <dimen name="workshop_action_button_min_height">42dp</dimen>
+    <dimen name="workshop_action_button_min_height">44dp</dimen>
     <dimen name="workshop_action_button_min_width">42dp</dimen>
     <dimen name="workshop_stepper_button_size">38dp</dimen>
     <dimen name="workshop_qty_min_width">40dp</dimen>

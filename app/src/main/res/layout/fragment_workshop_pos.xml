@@ -239,7 +239,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSelectCustomer"
-                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
@@ -247,13 +247,14 @@
                     android:insetBottom="0dp"
                     android:maxLines="1"
                     android:minWidth="@dimen/workshop_customer_button_min_width"
-                    android:minHeight="@dimen/workshop_customer_button_min_height"
+                    android:letterSpacing="0"
+                    android:minHeight="@dimen/touch_target_min"
                     android:paddingStart="8dp"
                     android:paddingEnd="8dp"
                     android:text="@string/action_change"
                     android:textAllCaps="false"
                     android:textColor="@color/brand_primary"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     app:backgroundTint="@android:color/transparent"
                     app:elevation="0dp"
@@ -658,7 +659,7 @@
                     android:id="@+id/btnAddPackage"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:ellipsize="end"
                     android:insetTop="0dp"
@@ -666,8 +667,8 @@
                     android:maxLines="1"
                     android:minWidth="@dimen/workshop_action_button_min_width"
                     android:minHeight="@dimen/workshop_action_button_min_height"
-                    android:paddingStart="2dp"
-                    android:paddingEnd="2dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
                     android:text="@string/label_package"
                     android:textAllCaps="false"
                     android:textColor="@color/brand_primary"
@@ -681,13 +682,16 @@
                     app:iconSize="13dp"
                     app:iconTint="@color/brand_primary"
                     app:strokeColor="@color/brand_stroke"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="1dp" app:autoSizeTextType="uniform"
+                        app:autoSizeMinTextSize="9sp"
+                        app:autoSizeMaxTextSize="11sp"
+                        app:autoSizeStepGranularity="1sp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnAddService"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_marginStart="5dp"
                     android:layout_weight="1"
                     android:ellipsize="end"
@@ -696,8 +700,8 @@
                     android:maxLines="1"
                     android:minWidth="@dimen/workshop_action_button_min_width"
                     android:minHeight="@dimen/workshop_action_button_min_height"
-                    android:paddingStart="2dp"
-                    android:paddingEnd="2dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
                     android:text="@string/label_service"
                     android:textAllCaps="false"
                     android:textColor="@color/brand_primary"
@@ -711,13 +715,16 @@
                     app:iconSize="13dp"
                     app:iconTint="@color/brand_primary"
                     app:strokeColor="@color/brand_stroke"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="1dp" app:autoSizeTextType="uniform"
+                        app:autoSizeMinTextSize="9sp"
+                        app:autoSizeMaxTextSize="11sp"
+                        app:autoSizeStepGranularity="1sp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnAddPart"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_marginStart="5dp"
                     android:layout_weight="1"
                     android:ellipsize="end"
@@ -726,8 +733,8 @@
                     android:maxLines="1"
                     android:minWidth="@dimen/workshop_action_button_min_width"
                     android:minHeight="@dimen/workshop_action_button_min_height"
-                    android:paddingStart="2dp"
-                    android:paddingEnd="2dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
                     android:text="@string/label_part"
                     android:textAllCaps="false"
                     android:textColor="@color/brand_primary"
@@ -741,13 +748,16 @@
                     app:iconSize="13dp"
                     app:iconTint="@color/brand_primary"
                     app:strokeColor="@color/brand_stroke"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="1dp" app:autoSizeTextType="uniform"
+                        app:autoSizeMinTextSize="9sp"
+                        app:autoSizeMaxTextSize="11sp"
+                        app:autoSizeStepGranularity="1sp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnAddProduct"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_marginStart="5dp"
                     android:layout_weight="1"
                     android:ellipsize="end"
@@ -756,8 +766,8 @@
                     android:maxLines="1"
                     android:minWidth="@dimen/workshop_action_button_min_width"
                     android:minHeight="@dimen/workshop_action_button_min_height"
-                    android:paddingStart="2dp"
-                    android:paddingEnd="2dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
                     android:text="@string/label_product"
                     android:textAllCaps="false"
                     android:textColor="@color/brand_primary"
@@ -771,7 +781,10 @@
                     app:iconSize="13dp"
                     app:iconTint="@color/brand_primary"
                     app:strokeColor="@color/brand_stroke"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="1dp" app:autoSizeTextType="uniform"
+                        app:autoSizeMinTextSize="9sp"
+                        app:autoSizeMaxTextSize="11sp"
+                        app:autoSizeStepGranularity="1sp" />
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>

@@ -63,10 +63,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingStart="8dp"
-                android:paddingTop="7dp"
-                android:paddingEnd="8dp"
-                android:paddingBottom="7dp">
+                android:paddingStart="@dimen/workspace_card_padding"
+                android:paddingTop="@dimen/workspace_card_padding"
+                android:paddingEnd="@dimen/workspace_card_padding"
+                android:paddingBottom="@dimen/workspace_card_padding">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -107,7 +107,7 @@
                             android:maxLines="1"
                             android:text="@string/workshop_default_title"
                             android:textColor="@color/valora_ink"
-                            android:textSize="15sp"
+                            android:textSize="17sp"
                             android:textStyle="bold"
                             tools:text="Valora POS Workshop" />
 
@@ -119,7 +119,7 @@
                             android:maxLines="1"
                             android:text="@string/workshop_default_address"
                             android:textColor="#98A2B3"
-                            android:textSize="11sp"
+                            android:textSize="13sp"
                             tools:text="Becora, Dili" />
                     </LinearLayout>
 
@@ -247,38 +247,65 @@
                         android:textSize="11sp"
                         android:textStyle="bold" />
 
+                </LinearLayout>
+
+                <!--
+                  "Ganti" duduk di baris NILAI, bukan baris label.
+
+                  Sebelumnya ia sebaris dengan "PELANGGAN & KENDARAAN" - label
+                  kecil huruf kapital - sehingga tombolnya tampak sejajar
+                  dengan judul, bukan dengan hal yang diubahnya.
+
+                  letterSpacing nol: gaya TextButton bawaan Material membawa
+                  jarak huruf 0,089em yang memang untuk teks kapital, dan pada
+                  kata biasa jarak itu terbaca seperti huruf tercerai-berai.
+                  Itulah "teks Change terlihat aneh" yang dilaporkan. Tinggi
+                  sentuhnya dinaikkan ke ambang 48dp; sebelumnya 28dp.
+                -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:baselineAligned="false"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/txtCustomerName"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:minHeight="@dimen/workshop_summary_line_min_height"
+                        android:ellipsize="end"
+                        android:gravity="center_vertical"
+                        android:maxLines="1"
+                        android:text="@string/workshop_vehicle_not_selected"
+                        android:textColor="@color/valora_ink"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        tools:text="Walk-in Customer • Veikulu belum dipilih" />
+
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnSelectCustomer"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        style="@style/Widget.Material3.Button.TextButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
+                        android:letterSpacing="0"
+                        android:maxLines="1"
                         android:minWidth="@dimen/workshop_customer_button_min_width"
-                        android:minHeight="@dimen/workshop_customer_button_min_height"
-                        android:paddingStart="6dp"
-                        android:paddingEnd="6dp"
+                        android:minHeight="@dimen/touch_target_min"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
                         android:text="@string/action_change"
                         android:textAllCaps="false"
                         android:textColor="@color/brand_primary"
-                        android:textSize="11sp"
+                        android:textSize="14sp"
                         android:textStyle="bold"
-                        app:backgroundTint="@android:color/transparent" />
+                        app:cornerRadius="@dimen/radius_surface_sm"
+                        app:rippleColor="@color/brand_tint" />
                 </LinearLayout>
-
-                <TextView
-                    android:id="@+id/txtCustomerName"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minHeight="@dimen/workshop_summary_line_min_height"
-                    android:ellipsize="end"
-                    android:gravity="center_vertical"
-                    android:maxLines="1"
-                    android:text="@string/workshop_vehicle_not_selected"
-                    android:textColor="@color/valora_ink"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    tools:text="Walk-in Customer • Veikulu belum dipilih" />
 
                 <TextView
                     android:id="@+id/txtVehicleSummary"
@@ -603,13 +630,15 @@
                         android:id="@+id/btnAddPackage"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
                         android:minHeight="@dimen/workshop_action_button_min_height"
-                        android:paddingStart="1dp"
-                        android:paddingEnd="1dp"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
                         android:text="@string/label_package"
                         android:textAllCaps="false"
                         android:textColor="@color/brand_primary"
@@ -618,20 +647,25 @@
                         app:backgroundTint="@color/brand_tint_soft"
                         app:cornerRadius="12dp"
                         app:strokeColor="@color/brand_stroke"
-                        app:strokeWidth="1dp" />
+                        app:strokeWidth="1dp" app:autoSizeTextType="uniform"
+                        app:autoSizeMinTextSize="9sp"
+                        app:autoSizeMaxTextSize="11sp"
+                        app:autoSizeStepGranularity="1sp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnAddService"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:layout_marginStart="4dp"
                         android:layout_weight="1"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
                         android:minHeight="@dimen/workshop_action_button_min_height"
-                        android:paddingStart="1dp"
-                        android:paddingEnd="1dp"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
                         android:text="@string/label_service"
                         android:textAllCaps="false"
                         android:textColor="@color/brand_primary"
@@ -640,20 +674,25 @@
                         app:backgroundTint="@color/brand_tint_soft"
                         app:cornerRadius="12dp"
                         app:strokeColor="@color/brand_stroke"
-                        app:strokeWidth="1dp" />
+                        app:strokeWidth="1dp" app:autoSizeTextType="uniform"
+                        app:autoSizeMinTextSize="9sp"
+                        app:autoSizeMaxTextSize="11sp"
+                        app:autoSizeStepGranularity="1sp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnAddPart"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:layout_marginStart="4dp"
                         android:layout_weight="1"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
                         android:minHeight="@dimen/workshop_action_button_min_height"
-                        android:paddingStart="1dp"
-                        android:paddingEnd="1dp"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
                         android:text="@string/label_part"
                         android:textAllCaps="false"
                         android:textColor="@color/brand_primary"
@@ -662,20 +701,25 @@
                         app:backgroundTint="@color/brand_tint_soft"
                         app:cornerRadius="12dp"
                         app:strokeColor="@color/brand_stroke"
-                        app:strokeWidth="1dp" />
+                        app:strokeWidth="1dp" app:autoSizeTextType="uniform"
+                        app:autoSizeMinTextSize="9sp"
+                        app:autoSizeMaxTextSize="11sp"
+                        app:autoSizeStepGranularity="1sp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnAddProduct"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:layout_marginStart="4dp"
                         android:layout_weight="1"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
                         android:minHeight="@dimen/workshop_action_button_min_height"
-                        android:paddingStart="1dp"
-                        android:paddingEnd="1dp"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
                         android:text="@string/label_product"
                         android:textAllCaps="false"
                         android:textColor="@color/brand_primary"
@@ -684,7 +728,10 @@
                         app:backgroundTint="@color/brand_tint_soft"
                         app:cornerRadius="12dp"
                         app:strokeColor="@color/brand_stroke"
-                        app:strokeWidth="1dp" />
+                        app:strokeWidth="1dp" app:autoSizeTextType="uniform"
+                        app:autoSizeMinTextSize="9sp"
+                        app:autoSizeMaxTextSize="11sp"
+                        app:autoSizeStepGranularity="1sp" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -733,6 +780,53 @@
                 android:paddingBottom="8dp"
                 android:scrollbars="vertical"
                 tools:listitem="@layout/item_product_list" />
+
+            <!--
+              Keadaan kosong. Kolom ini yang paling luas di layar kasir
+              bengkel, dan saat bon baru dimulai ia kosong seluruhnya - tanpa
+              satu kata pun yang memberi tahu apa yang harus ditekan
+              berikutnya, padahal tombolnya ada tepat di bawah kolom sebelah.
+              WorkshopPOSFragment yang menyalakan/mematikannya.
+            -->
+            <LinearLayout
+                android:id="@+id/workshopItemsEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <ImageView
+                    android:layout_width="@dimen/cart_empty_icon_size"
+                    android:layout_height="@dimen/cart_empty_icon_size"
+                    android:alpha="0.28"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_shopping_cart"
+                    app:tint="@color/text_secondary" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center"
+                    android:text="@string/workshop_items_empty_title"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center"
+                    android:lineSpacingExtra="2dp"
+                    android:text="@string/workshop_items_empty_message"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp" />
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
