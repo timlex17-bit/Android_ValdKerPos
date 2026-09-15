@@ -44,8 +44,21 @@
       Radius tunggal untuk SEMUA popup: jendela dialog, kartu di dalamnya,
       kolom isian, tombol, menu popup, dan toast. Satu nilai supaya tidak ada
       lagi sudut 16/18/20/22/24dp yang berbeda-beda di tiap berkas.
+
+      Nilainya 12dp, naik dari 3dp. Pada 3dp sudutnya nyaris siku: di layar
+      besar sebuah kotak selebar 560dp dengan sudut 3dp terbaca seperti
+      jendela sistem, bukan seperti permukaan aplikasi yang sama dengan kartu
+      di belakangnya. Angka 12dp bukan dipilih karena enak dilihat saja - itu
+      persis @dimen/card_panel_radius, radius panel dan kartu di layar. Jadi
+      popup kini bersudut sama dengan permukaan yang ia tumpangi, dan
+      mengubah keduanya berarti mengubah dua angka yang memang bersaudara.
+
+      Tetap SATU nilai untuk semua ukuran layar. Radius adalah ciri bentuk,
+      bukan ukuran: popup yang sama harus terlihat sama di ponsel dan tablet,
+      dan yang menyesuaikan diri terhadap layar adalah lebarnya
+      (@dimen/dialog_min_width) - bukan lengkung sudutnya.
     -->
-    <dimen name="radius_dialog">3dp</dimen>
+    <dimen name="radius_dialog">12dp</dimen>
 
     <!--
       Radius permukaan aplikasi (kartu di layar, bilah, panel). Dipisah dari
@@ -245,4 +258,15 @@
     <dimen name="split_row_min_height">52dp</dimen>
     <dimen name="split_check_icon_size">16dp</dimen>
     <dimen name="split_remove_button_size">40dp</dimen>
+
+    <!--
+      Tombol aksi pada baris daftar: Edit dan Hapus. Ukurannya punya token
+      sendiri karena tombol ini muncul di hampir setiap modul - pelanggan,
+      pemasok, kategori, satuan, gudang, transfer stok, rekening bank,
+      produk - dan sebelumnya setiap berkas menuliskan ukurannya sendiri.
+    -->
+    <dimen name="row_action_min_height">40dp</dimen>
+    <dimen name="row_action_padding_h">16dp</dimen>
+    <dimen name="row_action_gap">8dp</dimen>
+    <dimen name="row_action_text">13sp</dimen>
 </resources>

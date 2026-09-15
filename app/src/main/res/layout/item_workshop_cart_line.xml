@@ -113,14 +113,13 @@
                 android:textSize="15sp"
                 android:textStyle="bold" />
 
-            <ImageButton
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnRemove"
-                android:layout_width="@dimen/workshop_remove_button_size"
-                android:layout_height="@dimen/workshop_remove_button_size"
+                style="@style/Widget.Valora.RowAction.Delete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:background="@android:color/transparent"
-                android:contentDescription="Remove"
-                android:src="@android:drawable/ic_menu_delete" />
+                android:text="@string/action_delete" />
         </LinearLayout>
     </LinearLayout>
 

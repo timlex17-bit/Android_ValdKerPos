@@ -81,23 +81,20 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <ImageButton
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCustomerEdit"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@android:color/transparent"
-                android:contentDescription="Edit"
-                android:padding="8dp"
-                android:src="@android:drawable/ic_menu_edit" />
+                style="@style/Widget.Valora.RowAction.Edit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/action_edit" />
 
-            <ImageButton
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCustomerDelete"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@android:color/transparent"
-                android:contentDescription="Delete"
-                android:padding="8dp"
-                android:src="@android:drawable/ic_menu_delete" />
+                style="@style/Widget.Valora.RowAction.Delete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/row_action_gap"
+                android:text="@string/action_delete" />
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

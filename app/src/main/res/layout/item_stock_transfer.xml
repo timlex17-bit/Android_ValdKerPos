@@ -91,22 +91,12 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp">
 
-            <TextView
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnEdit"
+                style="@style/Widget.Valora.RowAction.Edit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_stock_transfer_action_edit"
-                android:gravity="center"
-                android:includeFontPadding="false"
-                android:minWidth="74dp"
-                android:minHeight="36dp"
-                android:maxLines="1"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
-                android:text="@string/action_edit"
-                android:textColor="@color/state_info"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+                android:text="@string/action_edit" />
 
             <TextView
                 android:id="@+id/btnComplete"
@@ -142,22 +132,13 @@
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
-            <TextView
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnDelete"
+                style="@style/Widget.Valora.RowAction.Delete"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_stock_transfer_action_delete"
-                android:gravity="center"
-                android:includeFontPadding="false"
-                android:minWidth="74dp"
-                android:minHeight="36dp"
-                android:maxLines="1"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
-                android:text="@string/action_delete"
-                android:textColor="@color/state_danger"
-                android:textSize="12sp"
-                android:textStyle="bold" />
+                android:layout_marginStart="@dimen/row_action_gap"
+                android:text="@string/action_delete" />
 
             <androidx.constraintlayout.helper.widget.Flow
                 android:id="@+id/actionFlow"

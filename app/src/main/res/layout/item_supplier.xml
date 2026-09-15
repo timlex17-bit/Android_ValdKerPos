@@ -64,25 +64,24 @@
             app:layout_constraintTop_toBottomOf="@id/tvSupplierCell"
             app:layout_constraintEnd_toEndOf="@id/tvSupplierName"/>
 
-        <ImageButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSupplierEdit"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@android:color/transparent"
-            android:src="@android:drawable/ic_menu_edit"
-            android:contentDescription="Edit"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/btnSupplierDelete"/>
+            style="@style/Widget.Valora.RowAction.Edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/row_action_gap"
+            android:text="@string/action_edit"
+            app:layout_constraintEnd_toStartOf="@id/btnSupplierDelete"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSupplierDelete"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@android:color/transparent"
-            android:src="@android:drawable/ic_menu_delete"
-            android:contentDescription="Delete"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            style="@style/Widget.Valora.RowAction.Delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/action_delete"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

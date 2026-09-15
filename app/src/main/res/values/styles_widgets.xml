@@ -120,4 +120,54 @@
         <item name="strokeWidth">1dp</item>
         <item name="rippleColor">@color/brand_tint</item>
     </style>
+
+    <!--
+      ============ TOMBOL AKSI BARIS: EDIT DAN HAPUS ============
+
+      Satu pola untuk seluruh aplikasi, dan polanya adalah KATA, bukan ikon.
+
+      Sebelum ini ada lima pola berbeda untuk dua aksi yang sama: ImageButton
+      berikon pensil/tong sampah bawaan Android (pelanggan, pemasok, kategori,
+      satuan, rekening bank), MaterialButton yang hanya berikon (kelola
+      produk), ImageView berikon tong sampah (draft hitung stok), TextView
+      berlatar drawable dengan teks (gudang, stok gudang, transfer stok), dan
+      Button polos bertema bawaan (mekanik, paket servis, modul bengkel). Dua
+      di antaranya bahkan menuliskan "Edit" dan "Delete" langsung di layout,
+      jadi keduanya tidak pernah ikut diterjemahkan.
+
+      Ikon pensil dan tong sampah dibuang seluruhnya. Alasannya bukan selera:
+      ikon bawaan Android itu abu-abu kecil tanpa label, dan pada tablet yang
+      dipegang jauh dari mata - dipakai bergantian beberapa orang, sebagian
+      baru - "pensil" dan "tong sampah" terlihat mirip pada ukuran 24dp.
+      Menghapus data pelanggan tidak boleh bergantung pada tebakan bentuk.
+      Kata "Hapus" tidak bisa salah baca, dan warnanya (merah) menguatkan,
+      bukan menggantikan, maknanya.
+
+      Ukurannya token, jadi tablet mendapat tombol lebih lega tanpa satu pun
+      berkas layout yang perlu tahu ukuran layar.
+    -->
+    <style name="Widget.Valora.RowAction" parent="Widget.Material3.Button.TextButton">
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">@dimen/row_action_min_height</item>
+        <item name="android:paddingStart">@dimen/row_action_padding_h</item>
+        <item name="android:paddingEnd">@dimen/row_action_padding_h</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:textSize">@dimen/row_action_text</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="cornerRadius">@dimen/radius_surface_sm</item>
+    </style>
+
+    <style name="Widget.Valora.RowAction.Edit">
+        <item name="android:textColor">@color/state_info</item>
+        <item name="backgroundTint">@color/row_action_edit_bg</item>
+        <item name="rippleColor">@color/state_info</item>
+    </style>
+
+    <style name="Widget.Valora.RowAction.Delete">
+        <item name="android:textColor">@color/state_danger</item>
+        <item name="backgroundTint">@color/row_action_delete_bg</item>
+        <item name="rippleColor">@color/state_danger</item>
+    </style>
 </resources>

@@ -123,7 +123,7 @@ public class BankAccountAdapter extends RecyclerView.Adapter<BankAccountAdapter.
         CardView cardRoot;
         TextView tvBankTitle, tvAccountNumber, tvAccountHolder, tvAccountType,
                 tvOpeningBalance, tvCurrentBalance, tvStatus, tvNote;
-        ImageButton btnEdit, btnDelete;
+        TextView btnEdit, btnDelete;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);

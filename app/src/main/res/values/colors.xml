@@ -69,4 +69,12 @@
     <!-- Nada netral tambahan yang dipakai ikon dan pembatas. -->
     <color name="icon_muted">#374151</color>
     <color name="stroke_strong">#D1D5DB</color>
+
+    <!--
+      Latar tombol aksi baris (Edit / Hapus). Nilainya diambil apa adanya dari
+      drawable bg_button_edit dan bg_button_delete yang dulu dipakai tiga
+      modul, supaya warnanya tidak berubah saat polanya disatukan.
+    -->
+    <color name="row_action_edit_bg">#EEF2FF</color>
+    <color name="row_action_delete_bg">#FEE2E2</color>
 </resources>

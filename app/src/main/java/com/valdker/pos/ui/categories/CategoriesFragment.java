@@ -1155,8 +1155,8 @@ public class CategoriesFragment extends BaseFragment {
         static class VH extends RecyclerView.ViewHolder {
             final ImageView img;
             final TextView tvTitle;
-            final ImageButton btnEdit;
-            final ImageButton btnDelete;
+            final TextView btnEdit;
+            final TextView btnDelete;
 
             VH(@NonNull View itemView) {
                 super(itemView);

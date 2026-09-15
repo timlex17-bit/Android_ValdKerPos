@@ -103,34 +103,20 @@
             android:gravity="end"
             android:orientation="horizontal">
 
-            <TextView
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnEdit"
+                style="@style/Widget.Valora.RowAction.Edit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_button_edit"
-                android:paddingStart="22dp"
-                android:paddingTop="9dp"
-                android:paddingEnd="22dp"
-                android:paddingBottom="9dp"
-                android:text="@string/action_edit"
-                android:textColor="@color/state_info"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:text="@string/action_edit" />
 
-            <TextView
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnDelete"
+                style="@style/Widget.Valora.RowAction.Delete"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:background="@drawable/bg_button_delete"
-                android:paddingStart="22dp"
-                android:paddingTop="9dp"
-                android:paddingEnd="22dp"
-                android:paddingBottom="9dp"
-                android:text="@string/action_delete"
-                android:textColor="@color/state_danger"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:layout_marginStart="@dimen/row_action_gap"
+                android:text="@string/action_delete" />
 
         </LinearLayout>
 

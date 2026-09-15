@@ -77,7 +77,7 @@ public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.VH> {
 
     static class VH extends RecyclerView.ViewHolder {
         TextView tvName, tvPoints, tvCell, tvMeta;
-        ImageButton btnEdit, btnDelete;
+        TextView btnEdit, btnDelete;
 
         VH(@NonNull View itemView) {
             super(itemView);

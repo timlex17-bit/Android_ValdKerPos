@@ -95,7 +95,7 @@ public class WorkshopWorkspaceAdapter extends RecyclerView.Adapter<RecyclerView.
         private final TextView txtLineTotal;
         private final ImageButton btnMinus;
         private final ImageButton btnPlus;
-        private final ImageButton btnRemove;
+        private final TextView btnRemove;
 
         public ItemViewHolder(@NonNull View itemView) {
             super(itemView);

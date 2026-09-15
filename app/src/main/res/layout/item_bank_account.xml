@@ -52,22 +52,20 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <ImageButton
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnEdit"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginEnd="0dp"
-                android:background="@android:color/transparent"
-                android:src="@android:drawable/ic_menu_edit"
-                android:contentDescription="@string/action_edit" />
+                style="@style/Widget.Valora.RowAction.Edit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/action_edit" />
 
-            <ImageButton
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnDelete"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@android:color/transparent"
-                android:src="@android:drawable/ic_menu_delete"
-                android:contentDescription="@string/action_delete" />
+                style="@style/Widget.Valora.RowAction.Delete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/row_action_gap"
+                android:text="@string/action_delete" />
 
         </LinearLayout>
 

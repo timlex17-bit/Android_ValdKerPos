@@ -6,6 +6,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -269,7 +270,7 @@ public class InventoryCountItemDraftAdapter
     static class VH extends RecyclerView.ViewHolder {
         Spinner spProduct;
         EditText etCounted;
-        ImageView btnRemove;
+        TextView btnRemove;
         TextWatcher watcher;
 
         VH(@NonNull View itemView) {

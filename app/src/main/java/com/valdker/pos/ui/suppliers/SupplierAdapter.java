@@ -65,7 +65,7 @@ public class SupplierAdapter extends RecyclerView.Adapter<SupplierAdapter.VH> {
 
     static class VH extends RecyclerView.ViewHolder {
         TextView tvName, tvContact, tvCell, tvMeta;
-        ImageButton btnEdit, btnDelete;
+        TextView btnEdit, btnDelete;
 
         VH(@NonNull View itemView) {
             super(itemView);
