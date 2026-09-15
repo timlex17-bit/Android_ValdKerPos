@@ -1507,4 +1507,7 @@
     <string name="activation_message">Minta kode toko kepada pemilik. Cukup diisi sekali — perangkat ini tetap terhubung ke toko tersebut, dan halaman berikutnya hanya meminta username dan password.</string>
     <string name="activation_continue">Lanjut</string>
     <string name="activation_invalid">Masukkan kode toko yang sah (minimal 3 karakter).</string>
+    <string name="activation_not_found">Kode toko tidak ditemukan. Cek lagi dengan pemilik.</string>
+    <string name="activation_shop_inactive">Toko ini sedang tidak aktif. Hubungi pemilik atau dukungan.</string>
+    <string name="activation_rate_limited">Terlalu banyak percobaan. Tunggu satu menit, lalu coba lagi.</string>
 </resources>

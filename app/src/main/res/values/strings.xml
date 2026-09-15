@@ -1492,4 +1492,7 @@
     <string name="activation_message">Ask the owner for the shop code. It is entered once — this device stays linked to that shop, and the next screens only ask for username and password.</string>
     <string name="activation_continue">Continue</string>
     <string name="activation_invalid">Enter a valid shop code (at least 3 characters).</string>
+    <string name="activation_not_found">Shop code not found. Check it with the owner.</string>
+    <string name="activation_shop_inactive">This shop is not active. Contact the owner or support.</string>
+    <string name="activation_rate_limited">Too many attempts. Wait a minute, then try again.</string>
 </resources>

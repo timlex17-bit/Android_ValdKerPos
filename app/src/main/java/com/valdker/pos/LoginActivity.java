@@ -647,11 +647,15 @@ public class LoginActivity extends AppCompatActivity {
             );
             sm.setTaxPercent(taxPercent);
 
-            // Login yang berhasil membuktikan kode tokonya sah - itulah
-            // "verifikasi sekali" yang dimaksud: sejak saat ini perangkat
-            // terikat pada toko tersebut dan layar masuk tidak pernah lagi
-            // menanyakan kodenya. Nama tokonya ikut disimpan supaya layar
-            // masuk bisa memperlihatkan toko mana, bukan sekadar kodenya.
+            // Aktivasi sudah menyimpan kode ini sebelum layar masuk tampil;
+            // yang ditulis ulang di sini adalah NAMA tokonya. Aktivasi tidak
+            // selalu mendapatkannya - pada server yang belum punya endpoint
+            // aktivasi, ShopActivationActivity menerima kodenya tanpa nama -
+            // dan login inilah kesempatan berikutnya untuk melengkapinya,
+            // supaya layar masuk memperlihatkan toko mana, bukan sekadar
+            // kodenya. Kode dari respons juga menang atas yang tersimpan:
+            // keduanya pasti sama, karena login menolak kode yang bukan milik
+            // pengguna ini.
             sm.setActivatedShop(shopCode, shopName);
             new AuthCacheRepository(this).saveCurrentSessionFromLogin(response);
 

@@ -1481,4 +1481,7 @@
     <string name="activation_message">Husu kodigu loja ba na’in. Hatama dala ida de’it — aparellu ne’e sei kontinua ligadu ba loja ne’e, no pajina tuirmai husu de’it username no password.</string>
     <string name="activation_continue">Kontinua</string>
     <string name="activation_invalid">Hatama kodigu loja ne’ebe validu (menus karakter 3).</string>
+    <string name="activation_not_found">La hetan kodigu loja ne’e. Konfirma fali ho na’in.</string>
+    <string name="activation_shop_inactive">Loja ne’e la aktivu. Kontaktu na’in ka suporta.</string>
+    <string name="activation_rate_limited">Koko barak liu ona. Hein minutu ida, depois koko fali.</string>
 </resources>

@@ -58,6 +58,7 @@ public class SessionManager {
     private static final String KEY_ACTIVATED_SHOP_CODE = "activated_shop_code";
     private static final String KEY_ACTIVATED_SHOP_NAME = "activated_shop_name";
     private static final String KEY_ACTIVATED_AT = "activated_at";
+    private static final String KEY_DEVICE_ID = "device_id";
     private static final String KEY_SHOP_ID = "shop_id";
     private static final String KEY_FULL_NAME = "full_name";
     private static final String KEY_SHOP_NAME = "shop_name";
@@ -874,6 +875,31 @@ public class SessionManager {
                 .remove(KEY_ACTIVATED_SHOP_NAME)
                 .remove(KEY_ACTIVATED_AT)
                 .apply();
+    }
+
+    /**
+     * Penanda perangkat untuk endpoint aktivasi, dibuat sekali saat pertama
+     * dibutuhkan lalu dipakai seterusnya.
+     *
+     * <p>Sengaja BUKAN ANDROID_ID atau nomor seri. Keduanya adalah sifat
+     * perangkat kerasnya dan sama nilainya untuk semua aplikasi di tablet ini,
+     * sedangkan yang ditanyakan server hanyalah "pemasangan yang mana". Nilai
+     * acak per pemasangan menjawab tepat itu dan tidak bisa dipakai mengenali
+     * perangkat yang sama di luar aplikasi ini.
+     *
+     * <p>Tidak ikut terhapus oleh {@link #clearAuth()} maupun
+     * {@link #clearActivatedShop()}: tablet yang dipindah ke toko lain tetap
+     * tablet yang sama, dan daftar perangkat di sisi admin baru ada gunanya
+     * kalau penandanya tidak berganti setiap kali tokonya diganti.
+     */
+    @NonNull
+    public String getOrCreateDeviceId() {
+        String existing = prefs.getString(KEY_DEVICE_ID, "");
+        if (existing != null && !existing.trim().isEmpty()) return existing;
+
+        String created = "android-" + java.util.UUID.randomUUID();
+        prefs.edit().putString(KEY_DEVICE_ID, created).apply();
+        return created;
     }
 
     public void clearBaseUrl() {
