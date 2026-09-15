@@ -393,6 +393,17 @@ public class ProductFormDialog extends DialogFragment {
                         String itemType = getDefaultItemTypeForBusiness(businessType);
                         if (showItemType && spItemType.getSelectedItem() != null) {
                             itemType = safeLower(String.valueOf(spItemType.getSelectedItem()));
+                        } else if (editing != null
+                                && editing.itemType != null
+                                && !editing.itemType.trim().isEmpty()) {
+                            // Pilihannya disembunyikan untuk jenis usaha ini, jadi
+                            // tidak ada seorang pun di layar ini yang bermaksud
+                            // mengubahnya. Menimpanya dengan nilai bawaan akan
+                            // diam-diam mengubah data produk lama - toko retail
+                            // yang sempat menyimpan "sparepart" sebelum pilihan
+                            // ini dihilangkan akan kehilangan nilainya hanya
+                            // karena namanya diperbaiki.
+                            itemType = safeLower(editing.itemType);
                         }
 
                         boolean isActive = swProdActive != null && swProdActive.isChecked();
@@ -560,9 +571,22 @@ public class ProductFormDialog extends DialogFragment {
         }
     }
 
+    /**
+     * Hanya kasir bengkel yang menjual lebih dari satu jenis barang.
+     *
+     * <p>Pilihan "Product / Service / Sparepart" dulu juga muncul di toko
+     * retail. Di sana pilihan itu tidak punya arti: seluruh layar retail -
+     * daftar produk, pemindai barcode, laporan stok - memperlakukan setiap
+     * baris sebagai produk, dan tidak ada satu pun tempat yang memperlakukan
+     * "sparepart" berbeda. Yang tersisa hanyalah satu kolom tambahan yang
+     * harus dilewati kasir setiap kali menambah barang, dan satu kesempatan
+     * memilih nilai yang kemudian tidak berpengaruh ke mana-mana.
+     *
+     * <p>Restoran tidak pernah menampilkannya dan tetap begitu; barangnya
+     * selalu tersimpan sebagai "menu".
+     */
     private static boolean ITEM_TYPE_VISIBLE_FOR_BUSINESS(@Nullable String businessType) {
-        String bt = safeLower(businessType);
-        return "retail".equals(bt) || "workshop".equals(bt);
+        return "workshop".equals(safeLower(businessType));
     }
 
     @NonNull
