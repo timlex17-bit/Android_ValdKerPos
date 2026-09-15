@@ -1449,4 +1449,9 @@
     <string name="pos_add_short">Aumenta</string>
     <string name="label_stock_value">Stoku: %1$s</string>
     <string name="label_sku_value">SKU: %1$s</string>
+
+    <!-- Panel ringkasan kasir retail: keadaan kosong dan jumlah item. -->
+    <string name="pos_summary_empty_title">Rezumu sei mamuk</string>
+    <string name="pos_summary_empty_message">Total sei mosu iha ne’e depois item dahuluk aumenta.</string>
+    <string name="label_items_count">Item</string>
 </resources>

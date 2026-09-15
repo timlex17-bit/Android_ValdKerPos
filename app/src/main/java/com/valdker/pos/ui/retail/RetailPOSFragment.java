@@ -36,6 +36,7 @@ import com.google.android.material.chip.ChipGroup;
 import com.valdker.pos.R;
 import com.valdker.pos.money.Money;
 import com.valdker.pos.SessionManager;
+import com.valdker.pos.ui.common.ShopAvatar;
 import com.valdker.pos.ui.common.SystemBars;
 import com.valdker.pos.drafts.PosDraftEntity;
 import com.valdker.pos.drafts.PosDraftItemEntity;
@@ -113,6 +114,10 @@ public class RetailPOSFragment extends Fragment {
     private ProgressBar progressProducts;
     private TextView txtGrandTotal;
     private TextView txtItemCount;
+    // Hanya ada pada varian tablet panel ringkasan; null di ponsel, tempat
+    // view_pos_checkout masih bilah tipis di dasar layar.
+    private TextView txtSummaryItemCount;
+    private View posSummaryEmpty;
     private TextView txtSectionSubtitle;
     private MaterialButton btnCheckout;
 
@@ -243,15 +248,22 @@ public class RetailPOSFragment extends Fragment {
      * warna itu diabaikan, sehingga yang tersisa adalah jam dan ikon baterai
      * putih di atas abu-abu terang - praktis tak terlihat.
      *
-     * <p>Sekarang yang tumbuh ke belakang bilah status adalah bilah atas ungu
-     * itu sendiri, jadi warnanya benar di semua versi Android tanpa API yang
-     * sudah tidak berlaku.
+     * <p>Sekarang strip di belakang bilah status adalah View tersendiri di
+     * dalam view_pos_topbar yang tingginya diisi dari inset, jadi warnanya
+     * benar di semua versi Android tanpa API yang sudah tidak berlaku - dan
+     * kepala kasirnya bebas menjadi kartu membulat seperti kasir lain.
      */
     private void applyRetailSystemBars(@NonNull View root) {
         if (!isAdded()) return;
 
         SystemBars.apply(requireActivity());
-        SystemBars.padTopBar(root.findViewById(R.id.topBar));
+
+        // Kepala kasir retail kini kartu membulat di atas latar aplikasi,
+        // sama seperti kasir restoran dan bengkel - bukan lagi balok ungu
+        // rata tepi. Yang menjaga strip di belakang bilah status tetap ungu
+        // adalah posHeaderScrim di dalam view_pos_topbar, bukan padding pada
+        // bilahnya sendiri.
+        SystemBars.fitStatusScrim(root.findViewById(R.id.posHeaderScrim));
 
         // Pada tablet, bottomBar bukan bilah di dasar layar melainkan panel
         // ringkasan setinggi kolom, jadi memberi padding di dalamnya tidak
@@ -292,6 +304,8 @@ public class RetailPOSFragment extends Fragment {
         progressProducts = root.findViewById(R.id.progressProducts);
         txtGrandTotal = root.findViewById(R.id.txtGrandTotal);
         txtItemCount = root.findViewById(R.id.txtItemCount);
+        txtSummaryItemCount = root.findViewById(R.id.txtSummaryItemCount);
+        posSummaryEmpty = root.findViewById(R.id.posSummaryEmpty);
         txtSectionSubtitle = root.findViewById(R.id.txtSectionSubtitle);
         btnCheckout = root.findViewById(R.id.btnCheckout);
     }
@@ -927,7 +941,7 @@ public class RetailPOSFragment extends Fragment {
         if (token == null || token.trim().isEmpty()) {
             if (tvBrand != null) tvBrand.setText("Retail POS");
             if (tvShopAddress != null) tvShopAddress.setText("—");
-            if (imgLogo != null) imgLogo.setImageResource(R.drawable.bg_logo_circle);
+            ShopAvatar.apply(imgLogo, "Retail POS", null);
             return;
         }
 
@@ -947,19 +961,7 @@ public class RetailPOSFragment extends Fragment {
                 if (tvBrand != null) tvBrand.setText(name);
                 if (tvShopAddress != null) tvShopAddress.setText(address);
 
-                String logoUrl = forceHttps(shop.logoUrl);
-                if (imgLogo != null) {
-                    if (logoUrl == null || logoUrl.trim().isEmpty()) {
-                        imgLogo.setImageResource(R.drawable.bg_logo_circle);
-                    } else {
-                        Glide.with(requireContext())
-                                .load(logoUrl)
-                                .circleCrop()
-                                .placeholder(R.drawable.bg_logo_circle)
-                                .error(R.drawable.bg_logo_circle)
-                                .into(imgLogo);
-                    }
-                }
+                ShopAvatar.apply(imgLogo, name, forceHttps(shop.logoUrl));
             }
 
             @Override
@@ -967,7 +969,7 @@ public class RetailPOSFragment extends Fragment {
                 if (!isAdded()) return;
                 if (tvBrand != null) tvBrand.setText("Retail POS");
                 if (tvShopAddress != null) tvShopAddress.setText("—");
-                if (imgLogo != null) imgLogo.setImageResource(R.drawable.bg_logo_circle);
+                ShopAvatar.apply(imgLogo, "Retail POS", null);
             }
 
             @Override
@@ -975,7 +977,7 @@ public class RetailPOSFragment extends Fragment {
                 if (!isAdded()) return;
                 if (tvBrand != null) tvBrand.setText("Retail POS");
                 if (tvShopAddress != null) tvShopAddress.setText("—");
-                if (imgLogo != null) imgLogo.setImageResource(R.drawable.bg_logo_circle);
+                ShopAvatar.apply(imgLogo, "Retail POS", null);
             }
         });
     }
@@ -1417,6 +1419,16 @@ public class RetailPOSFragment extends Fragment {
 
         if (txtGrandTotal != null) {
             txtGrandTotal.setText(getGrandTotalMoney().format());
+        }
+
+        if (txtSummaryItemCount != null) {
+            txtSummaryItemCount.setText(String.valueOf(itemCount));
+        }
+
+        // Keadaan kosong panel ringkasan hanya ada di tablet, tempat panel itu
+        // setinggi kolom dan ruang tengahnya benar-benar terlihat.
+        if (posSummaryEmpty != null) {
+            posSummaryEmpty.setVisibility(itemCount > 0 ? View.INVISIBLE : View.VISIBLE);
         }
 
         if (txtSectionSubtitle != null) {

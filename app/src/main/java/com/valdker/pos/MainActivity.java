@@ -86,6 +86,7 @@ import com.valdker.pos.print.ReceiptPayloadReader;
 import com.valdker.pos.ui.checkout.PaymentMethodItem;
 import com.valdker.pos.ui.offlineorders.PendingOrdersActivity;
 import com.valdker.pos.ui.retail.RetailCartItem;
+import com.valdker.pos.ui.common.ShopAvatar;
 import com.valdker.pos.ui.common.SystemBars;
 import com.valdker.pos.ui.retail.RetailPOSFragment;
 import com.valdker.pos.ui.retail.RetailProductItem;
@@ -534,33 +535,19 @@ public class MainActivity extends AppCompatActivity
                     categoryAdapter.setData(categoryList);
                 }
 
+                String name = (shop.name != null && !shop.name.trim().isEmpty())
+                        ? shop.name.trim()
+                        : "—";
+
                 TextView tvBrand = findViewById(R.id.tvBrand);
-                if (tvBrand != null) {
-                    String name = (shop.name != null && !shop.name.trim().isEmpty())
-                            ? shop.name.trim()
-                            : "—";
-                    tvBrand.setText(name);
-                }
+                if (tvBrand != null) tvBrand.setText(name);
 
                 if (tvShopAddress != null) {
                     String address = (shop.address != null) ? shop.address.trim() : "";
                     tvShopAddress.setText(address.isEmpty() ? "—" : address);
                 }
 
-                if (imgLogo == null) return;
-
-                String logoUrl = forceHttps(shop.logoUrl);
-                if (logoUrl == null || logoUrl.trim().isEmpty()) {
-                    imgLogo.setImageResource(R.drawable.bg_logo_circle);
-                    return;
-                }
-
-                Glide.with(MainActivity.this)
-                        .load(logoUrl)
-                        .circleCrop()
-                        .placeholder(R.drawable.bg_logo_circle)
-                        .error(R.drawable.bg_logo_circle)
-                        .into(imgLogo);
+                ShopAvatar.apply(imgLogo, name, forceHttps(shop.logoUrl));
             }
 
             @Override
@@ -568,13 +555,13 @@ public class MainActivity extends AppCompatActivity
                 TextView tvBrand = findViewById(R.id.tvBrand);
                 if (tvBrand != null) tvBrand.setText("—");
                 if (tvShopAddress != null) tvShopAddress.setText("—");
-                if (imgLogo != null) imgLogo.setImageResource(R.drawable.bg_logo_circle);
+                ShopAvatar.apply(imgLogo, null, null);
             }
 
             @Override
             public void onError(String message) {
                 if (tvShopAddress != null) tvShopAddress.setText("—");
-                if (imgLogo != null) imgLogo.setImageResource(R.drawable.bg_logo_circle);
+                ShopAvatar.apply(imgLogo, null, null);
             }
         });
     }

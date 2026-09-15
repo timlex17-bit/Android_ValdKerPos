@@ -1475,4 +1475,9 @@
     <string name="pos_add_short">Tambah</string>
     <string name="label_stock_value">Stok: %1$s</string>
     <string name="label_sku_value">SKU: %1$s</string>
+
+    <!-- Panel ringkasan kasir retail: keadaan kosong dan jumlah item. -->
+    <string name="pos_summary_empty_title">Ringkasan masih kosong</string>
+    <string name="pos_summary_empty_message">Total muncul di sini setelah item pertama ditambahkan.</string>
+    <string name="label_items_count">Item</string>
 </resources>

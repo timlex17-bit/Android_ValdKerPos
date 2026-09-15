@@ -195,8 +195,7 @@
     <dimen name="pos_search_icon_size">20dp</dimen>
     <dimen name="pos_search_min_height">48dp</dimen>
 
-    <!-- Kepala dan kendali kasir retail (view_pos_topbar / view_pos_controls). -->
-    <dimen name="pos_avatar_size">36dp</dimen>
+    <!-- Kendali kasir retail (view_pos_controls / view_pos_draft_row). -->
     <dimen name="pos_draft_chip_min_width">40dp</dimen>
 
     <!-- Daftar item kasir (view_pos_list) dan daftar menu (fragment_products). -->

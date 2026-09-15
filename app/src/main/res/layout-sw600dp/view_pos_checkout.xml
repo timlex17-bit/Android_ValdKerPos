@@ -49,14 +49,109 @@
             android:background="@color/stroke_soft" />
 
         <!--
-          Ruang kosong ditaruh DI SINI, bukan di layout pemanggil: ringkasan
+          Ruang sisa ditaruh DI SINI, bukan di layout pemanggil: ringkasan
           menempel ke bawah panel supaya total selalu berada di dekat tombol
           yang ditekan kasir, berapa pun tinggi tabletnya.
+
+          Ruang itu dulu <Space> kosong. Pada tablet ini berarti 377dp kosong
+          melompong setiap kali transaksi baru dimulai - keadaan layar yang
+          paling sering dilihat kasir - sehingga kolomnya tampak gagal memuat,
+          bukan tampak kosong. Sekarang ruangnya diisi keadaan kosong dengan
+          kalimatnya sendiri; sengaja BUKAN kalimat yang sama dengan keadaan
+          kosong di kolom kiri, karena dua kolom bersebelahan yang mengucapkan
+          kalimat identik terbaca seperti kesalahan.
+
+          posSummaryEmpty dan txtSummaryItemCount sengaja HANYA ada di varian
+          tablet, jadi lint menandainya InconsistentLayout. Peringatan itu
+          benar sebagai aturan umum - id yang hilang di satu varian membuat
+          findViewById mengembalikan null tanpa suara - tetapi di sini
+          perbedaannya memang maksud kita: varian ponsel dari berkas ini
+          adalah bilah tipis di dasar layar yang tidak punya ruang tengah
+          untuk diisi. RetailPOSFragment memeriksa null pada keduanya.
         -->
-        <Space
+        <LinearLayout
+            android:id="@+id/posSummaryEmpty"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            tools:ignore="InconsistentLayout"
+            tools:visibility="visible">
+
+            <ImageView
+                android:layout_width="@dimen/cart_empty_icon_size"
+                android:layout_height="@dimen/cart_empty_icon_size"
+                android:alpha="0.28"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_bag"
+                app:tint="@color/text_secondary" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center"
+                android:text="@string/pos_summary_empty_title"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:lineSpacingExtra="2dp"
+                android:text="@string/pos_summary_empty_message"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <!--
+          Jumlah item selalu terlihat, juga saat nol. Sebelumnya panel ini
+          hanya memuat TOTAL, sehingga satu-satunya cara kasir memastikan
+          berapa baris yang sudah masuk adalah membaca ulang kolom kiri.
+        -->
+        <LinearLayout
+            android:id="@+id/rowSummaryItems"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:baselineAligned="false"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:letterSpacing="0.08"
+                android:maxLines="1"
+                android:text="@string/label_items_count"
+                android:textAllCaps="true"
+                android:textColor="@color/text_tertiary"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtSummaryItemCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:maxLines="1"
+                android:minWidth="@dimen/row_qty_min_width"
+                android:text="@string/pos_zero_count"
+                android:textAlignment="viewEnd"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:ignore="InconsistentLayout"
+                tools:text="12" />
+        </LinearLayout>
 
         <TextView
             android:layout_width="wrap_content"
