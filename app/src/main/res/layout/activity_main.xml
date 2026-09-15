@@ -206,11 +206,35 @@
     </androidx.cardview.widget.CardView>
 
     <!-- CONTENT AREA -->
+
+    <!--
+      Bilah luring. Ia menempati barisnya sendiri antara kepala layar dan isi
+      kasir, jadi isi bergeser turun alih-alih tertutup - bedanya dengan toast
+      yang dulu melayang tepat di atas bilah kategori. Saat tersembunyi
+      (GONE), ConstraintLayout memperlakukannya sebagai titik tanpa tinggi di
+      posisi yang sama, jadi isi kasir kembali menempel ke kepala layar tanpa
+      perlu rantai kedua.
+    -->
+    <!--
+      TANPA android:id di tag include. Sama seperti margin, id pada tag
+      <include> MENIMPA id akar berkas yang disertakan - dan begitu id-nya
+      berganti, OfflineBanner.attach() mencari R.id.offlineBanner dan tidak
+      menemukan apa pun, jadi bilahnya tidak pernah muncul. Terbukti di ponsel
+      pemilik: layar kasir luring tampil tanpa toast DAN tanpa bilah.
+    -->
+    <include
+        layout="@layout/view_offline_banner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/nativeHeader" />
+
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragmentContainer"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/nativeHeader"
+        app:layout_constraintTop_toBottomOf="@id/offlineBanner"
         app:layout_constraintBottom_toTopOf="@id/bottomCategoryBar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

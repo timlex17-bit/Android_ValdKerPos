@@ -594,7 +594,11 @@ public class CartFragment extends Fragment
                     }
                     return;
                 }
-                if (!offlineNoticeShown[0]) {
+                // Bilah luring milik layar kasir, bukan toast milik keranjang:
+                // satu pemberitahuan untuk seluruh layar.
+                if (getActivity() instanceof com.valdker.pos.MainActivity) {
+                    ((com.valdker.pos.MainActivity) getActivity()).setPosOffline(true);
+                } else if (!offlineNoticeShown[0]) {
                     offlineNoticeShown[0] = true;
                     Toast.makeText(requireContext(), MasterDataRepository.MESSAGE_NO_INTERNET_SHOWING_LOCAL, Toast.LENGTH_SHORT).show();
                 }

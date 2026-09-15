@@ -1471,4 +1471,7 @@
     <string name="inventory_count_select_product">Select product</string>
     <string name="inventory_count_no_items">No items yet. Tap Add Item to add one.</string>
     <string name="inventory_count_edit_title">Edit Stock Count</string>
+
+    <!-- Bilah luring di layar kasir. -->
+    <string name="offline_banner_message">Offline — showing local POS data</string>
 </resources>

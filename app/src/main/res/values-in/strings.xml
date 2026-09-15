@@ -1486,4 +1486,7 @@
     <string name="inventory_count_select_product">Pilih produk</string>
     <string name="inventory_count_no_items">Belum ada item. Ketuk Tambah Item untuk menambah.</string>
     <string name="inventory_count_edit_title">Ubah Hitung Stok</string>
+
+    <!-- Bilah luring di layar kasir. -->
+    <string name="offline_banner_message">Luring — menampilkan data POS lokal</string>
 </resources>

@@ -278,4 +278,11 @@
     -->
     <dimen name="checkout_label_text">12sp</dimen>
     <dimen name="checkout_field_text">15sp</dimen>
+
+    <!-- Bilah luring di layar kasir. -->
+    <dimen name="offline_banner_min_height">40dp</dimen>
+    <dimen name="offline_banner_action_min_height">36dp</dimen>
+    <dimen name="offline_banner_icon">18dp</dimen>
+    <dimen name="offline_banner_margin">12dp</dimen>
+    <dimen name="offline_banner_text">12sp</dimen>
 </resources>

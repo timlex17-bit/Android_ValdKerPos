@@ -86,6 +86,7 @@ import com.valdker.pos.print.ReceiptPayloadReader;
 import com.valdker.pos.ui.checkout.PaymentMethodItem;
 import com.valdker.pos.ui.offlineorders.PendingOrdersActivity;
 import com.valdker.pos.ui.retail.RetailCartItem;
+import com.valdker.pos.ui.common.OfflineBanner;
 import com.valdker.pos.ui.common.ShopAvatar;
 import com.valdker.pos.ui.common.SystemBars;
 import com.valdker.pos.ui.retail.RetailPOSFragment;
@@ -206,6 +207,10 @@ public class MainActivity extends AppCompatActivity
     private boolean initialDraftLoadPending = true;
 
     private SessionManager session;
+
+    /** Bilah luring layar kasir; null kalau layoutnya tidak memuatnya. */
+    @Nullable
+    private OfflineBanner offlineBanner;
     private String cachedUsername = "admin";
     private String cachedRole = "cashier";
 
@@ -632,12 +637,34 @@ public class MainActivity extends AppCompatActivity
         syncPendingOrdersIfOnline();
     }
 
+    /**
+     * Menyatakan layar kasir sedang memakai data lokal.
+     *
+     * <p>Publik karena fragment di dalam layar ini - daftar menu dan
+     * keranjang - juga tahu lebih dulu saat pemuatannya jatuh ke data lokal.
+     * Aman dipanggil berulang: bilahnya hanya bergerak kalau keadaannya
+     * berubah, jadi pemuatan ulang yang beruntun tidak lagi menghasilkan
+     * pemberitahuan beruntun.
+     */
+    public void setPosOffline(boolean offline) {
+        if (offlineBanner != null) offlineBanner.setOffline(offline);
+    }
+
+    /** Dipanggil tombol "Coba lagi" pada bilah luring. */
+    private void reloadPosDataAfterRetry() {
+        loadCategoriesRoomFirst();
+    }
+
     private void setupPosSystemBars() {
         // Aturan bilah sistem yang sama dengan seluruh aplikasi: gambar sampai
         // tepi, bilah status ungu dengan ikon terang, bilah navigasi putih
         // dengan ikon gelap. Sebelumnya blok ini mengulang delapan baris
         // setSystemUiVisibility yang sudah usang sejak API 30.
         SystemBars.apply(this);
+
+        // Bilah luring menggantikan toast yang dulu melayang di tengah-bawah
+        // layar kasir, menutupi bilah kategori dan baris kartu menu terbawah.
+        offlineBanner = OfflineBanner.attach(findViewById(R.id.root), this::reloadPosDataAfterRetry);
 
         if (BuildConfig.DEBUG) {
             Log.d("STATUS_BAR_THEME", "screen=MainActivity color=status_bar_brand icons=light");
@@ -842,7 +869,12 @@ public class MainActivity extends AppCompatActivity
         if (searchView != null) searchView.setVisibility(View.VISIBLE);
 
         lp.topToTop = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET;
-        lp.topToBottom = R.id.nativeHeader;
+        // Ke BILAH LURING, bukan langsung ke kepala layar. Bilah itu duduk di
+        // antara keduanya; merangkai isi kasir langsung ke kepala membuat
+        // gridnya menimpa bilah alih-alih bergeser turun. Saat bilahnya
+        // tersembunyi, ConstraintLayout memperlakukannya sebagai titik tanpa
+        // tinggi di posisi yang sama, jadi hasilnya persis seperti dulu.
+        lp.topToBottom = R.id.offlineBanner;
 
         lp.bottomToBottom = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET;
         lp.bottomToTop = R.id.bottomCategoryBar;
@@ -1654,10 +1686,7 @@ public class MainActivity extends AppCompatActivity
                     retailCheckoutDialogOpening = false;
                     return;
                 }
-                if (!offlineNoticeShown[0]) {
-                    offlineNoticeShown[0] = true;
-                    Toast.makeText(MainActivity.this, MasterDataRepository.MESSAGE_NO_INTERNET_SHOWING_LOCAL, Toast.LENGTH_SHORT).show();
-                }
+                setPosOffline(true);
                 if (!dialogShown[0]) {
                     showOrUpdateRetailCheckoutDialog(dialog, dialogShown, customers, paymentItems, bankItems);
                 }
@@ -2664,6 +2693,9 @@ public class MainActivity extends AppCompatActivity
             public void onRemoteCategories(@NonNull List<Category> categories) {
                 if (!isActivityAlive()) return;
                 categoriesAppliedFromOnline = true;
+                // Data datang dari jaringan: layar ini tidak lagi memakai data
+                // lokal, jadi bilah luringnya menutup dirinya sendiri.
+                setPosOffline(false);
                 Log.i(TAG, "API category count=" + categories.size());
                 applyCategoriesToUI(categories, "ONLINE_API_ROOM_SYNCED");
             }
@@ -2677,9 +2709,7 @@ public class MainActivity extends AppCompatActivity
                             Toast.LENGTH_SHORT).show();
                     return;
                 }
-                Toast.makeText(MainActivity.this,
-                        MasterDataRepository.MESSAGE_NO_INTERNET_SHOWING_LOCAL,
-                        Toast.LENGTH_SHORT).show();
+                setPosOffline(true);
             }
 
             @Override

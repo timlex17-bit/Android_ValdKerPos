@@ -36,6 +36,7 @@ import com.google.android.material.chip.ChipGroup;
 import com.valdker.pos.R;
 import com.valdker.pos.money.Money;
 import com.valdker.pos.SessionManager;
+import com.valdker.pos.ui.common.OfflineBanner;
 import com.valdker.pos.ui.common.ShopAvatar;
 import com.valdker.pos.ui.common.SystemBars;
 import com.valdker.pos.drafts.PosDraftEntity;
@@ -146,6 +147,8 @@ public class RetailPOSFragment extends Fragment {
     private String lastScannedBarcode = null;
     private long lastScannedAt = 0L;
     private boolean offlineNoticeShown = false;
+    @Nullable
+    private OfflineBanner offlineBanner;
     private boolean noLocalDataNoticeShown = false;
 
     public static RetailPOSFragment newInstance(
@@ -226,6 +229,10 @@ public class RetailPOSFragment extends Fragment {
         applyRetailSystemBars(view);
 
         bindViews(view);
+        // Bilah luring menggantikan toast yang dulu melayang menutupi bilah
+        // kategori. "Coba lagi" memuat ulang produk lewat jalur yang sama
+        // dengan pemuatan biasa - tidak ada logika sambungan baru di sini.
+        offlineBanner = OfflineBanner.attach(view, this::loadProducts);
         setupDraftChips();
         setupHeaderActions();
         setupSearchBox();
@@ -1324,6 +1331,8 @@ public class RetailPOSFragment extends Fragment {
                 if (!isAdded()) return;
                 offlineNoticeShown = false;
                 noLocalDataNoticeShown = false;
+                // Data datang dari jaringan: sambungannya kembali.
+                if (offlineBanner != null) offlineBanner.setOffline(false);
                 applyCachedProducts(products);
                 showLoading(false);
             }
@@ -1439,7 +1448,20 @@ public class RetailPOSFragment extends Fragment {
         return clean.startsWith("http://") ? forceHttps(clean) : clean;
     }
 
+    /**
+     * Menyatakan layar ini sedang memakai data lokal.
+     *
+     * <p>Boleh dipanggil setiap kali pemuatan selesai: OfflineBanner sendiri
+     * yang mengingat keadaan terakhir dan hanya bergerak kalau keadaannya
+     * benar-benar berubah. Penanda offlineNoticeShown dipertahankan untuk
+     * perangkat/layar yang layoutnya belum memuat bilah - di sana toast lama
+     * tetap jadi jalan terakhir.
+     */
     private void showOfflineNoticeOnce() {
+        if (offlineBanner != null) {
+            offlineBanner.setOffline(true);
+            return;
+        }
         if (offlineNoticeShown) return;
         offlineNoticeShown = true;
         toast(MasterDataRepository.MESSAGE_NO_INTERNET_SHOWING_LOCAL);

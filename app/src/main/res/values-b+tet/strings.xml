@@ -1460,4 +1460,7 @@
     <string name="inventory_count_select_product">Hili produtu</string>
     <string name="inventory_count_no_items">Seidauk iha item. Tona Aumenta Item atu aumenta ida.</string>
     <string name="inventory_count_edit_title">Edita Kontajen Stok</string>
+
+    <!-- Bilah luring di layar kasir. -->
+    <string name="offline_banner_message">Offline — hatudu dadus POS lokal</string>
 </resources>

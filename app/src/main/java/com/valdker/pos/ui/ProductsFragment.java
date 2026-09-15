@@ -353,6 +353,11 @@ public class ProductsFragment extends Fragment {
 
             @Override
             public void onRemoteProducts(@NonNull List<Product> products) {
+                // Data datang dari jaringan: sambungannya kembali, dan bilah
+                // luring layar kasir menutup dirinya sendiri.
+                if (getActivity() instanceof com.valdker.pos.MainActivity) {
+                    ((com.valdker.pos.MainActivity) getActivity()).setPosOffline(false);
+                }
                 if (!isAdded() || getView() == null) return;
                 offlineNoticeShown = false;
                 noLocalDataNoticeShown = false;
@@ -429,6 +434,11 @@ public class ProductsFragment extends Fragment {
 
             @Override
             public void onRemoteProducts(@NonNull List<Product> products) {
+                // Data datang dari jaringan: sambungannya kembali, dan bilah
+                // luring layar kasir menutup dirinya sendiri.
+                if (getActivity() instanceof com.valdker.pos.MainActivity) {
+                    ((com.valdker.pos.MainActivity) getActivity()).setPosOffline(false);
+                }
                 allProductsCacheLoading = false;
                 allProductsCacheLoaded = true;
                 offlineNoticeShown = false;
@@ -578,6 +588,11 @@ public class ProductsFragment extends Fragment {
 
             @Override
             public void onRemoteProducts(@NonNull List<Product> products) {
+                // Data datang dari jaringan: sambungannya kembali, dan bilah
+                // luring layar kasir menutup dirinya sendiri.
+                if (getActivity() instanceof com.valdker.pos.MainActivity) {
+                    ((com.valdker.pos.MainActivity) getActivity()).setPosOffline(false);
+                }
                 if (!isAdded()) return;
 
                 allProductsCacheLoading = false;
@@ -639,7 +654,17 @@ public class ProductsFragment extends Fragment {
         showList();
     }
 
+    /**
+     * Daftar menu ini tinggal di dalam MainActivity, dan bilah luring layar
+     * kasir milik activity itu - satu bilah untuk seluruh layar, bukan satu
+     * pemberitahuan per bagian yang memuat data. Toast hanya dipakai kalau
+     * fragment ini kebetulan dipasang di layar lain.
+     */
     private void showOfflineNoticeOnce() {
+        if (getActivity() instanceof com.valdker.pos.MainActivity) {
+            ((com.valdker.pos.MainActivity) getActivity()).setPosOffline(true);
+            return;
+        }
         if (offlineNoticeShown) return;
         offlineNoticeShown = true;
         safeToast(MasterDataRepository.MESSAGE_NO_INTERNET_SHOWING_LOCAL);
