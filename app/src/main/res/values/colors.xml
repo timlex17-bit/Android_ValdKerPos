@@ -25,7 +25,6 @@
     <color name="valora_surface">#F9FAFB</color>
     <color name="valora_muted">#64748B</color>
 
-
     <!--
       Palet semantik. Sebelum ini hampir setiap layout menuliskan hex sendiri
       (#111827, #6B7280, #E5E7EB, ...), sehingga satu nada muncul dalam lima
@@ -92,12 +91,4 @@
     <color name="ledger_neutral_tint">#E5E7EB</color>
     <color name="ledger_neutral_text">#374151</color>
 
-    <!--
-      Bilah luring: kuning lembut, cukup kontras untuk dibaca sekilas tetapi
-      tidak berteriak seperti warna galat - luring bukan kesalahan pengguna,
-      hanya keadaan yang perlu diketahui.
-    -->
-    <color name="offline_banner_bg">#FEF3C7</color>
-    <color name="offline_banner_stroke">#FDE68A</color>
-    <color name="offline_banner_text">#92400E</color>
 </resources>

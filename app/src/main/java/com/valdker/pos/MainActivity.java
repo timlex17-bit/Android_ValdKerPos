@@ -86,7 +86,7 @@ import com.valdker.pos.print.ReceiptPayloadReader;
 import com.valdker.pos.ui.checkout.PaymentMethodItem;
 import com.valdker.pos.ui.offlineorders.PendingOrdersActivity;
 import com.valdker.pos.ui.retail.RetailCartItem;
-import com.valdker.pos.ui.common.OfflineBanner;
+import com.valdker.pos.ui.common.OfflineNotice;
 import com.valdker.pos.ui.common.ShopAvatar;
 import com.valdker.pos.ui.common.SystemBars;
 import com.valdker.pos.ui.retail.RetailPOSFragment;
@@ -208,9 +208,9 @@ public class MainActivity extends AppCompatActivity
 
     private SessionManager session;
 
-    /** Bilah luring layar kasir; null kalau layoutnya tidak memuatnya. */
+    /** Pemberitahuan luring layar kasir, berupa popup. */
     @Nullable
-    private OfflineBanner offlineBanner;
+    private OfflineNotice offlineNotice;
     private String cachedUsername = "admin";
     private String cachedRole = "cashier";
 
@@ -647,12 +647,9 @@ public class MainActivity extends AppCompatActivity
      * pemberitahuan beruntun.
      */
     public void setPosOffline(boolean offline) {
-        if (offlineBanner != null) offlineBanner.setOffline(offline);
-    }
-
-    /** Dipanggil tombol "Coba lagi" pada bilah luring. */
-    private void reloadPosDataAfterRetry() {
-        loadCategoriesRoomFirst();
+        if (offlineNotice != null) {
+            offlineNotice.setOffline(offline, getString(R.string.offline_banner_message));
+        }
     }
 
     private void setupPosSystemBars() {
@@ -662,9 +659,11 @@ public class MainActivity extends AppCompatActivity
         // setSystemUiVisibility yang sudah usang sejak API 30.
         SystemBars.apply(this);
 
-        // Bilah luring menggantikan toast yang dulu melayang di tengah-bawah
-        // layar kasir, menutupi bilah kategori dan baris kartu menu terbawah.
-        offlineBanner = OfflineBanner.attach(findViewById(R.id.root), this::reloadPosDataAfterRetry);
+        // Popup luring: menggantikan toast yang dulu melayang menutupi bilah
+        // kategori. Ia hanya muncul saat keadaan BERUBAH menjadi luring -
+        // popup yang muncul setiap kali data dimuat ulang akan jauh lebih
+        // mengganggu daripada toast, karena ia menuntut ketukan.
+        offlineNotice = OfflineNotice.attach(this);
 
         if (BuildConfig.DEBUG) {
             Log.d("STATUS_BAR_THEME", "screen=MainActivity color=status_bar_brand icons=light");
@@ -869,12 +868,7 @@ public class MainActivity extends AppCompatActivity
         if (searchView != null) searchView.setVisibility(View.VISIBLE);
 
         lp.topToTop = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET;
-        // Ke BILAH LURING, bukan langsung ke kepala layar. Bilah itu duduk di
-        // antara keduanya; merangkai isi kasir langsung ke kepala membuat
-        // gridnya menimpa bilah alih-alih bergeser turun. Saat bilahnya
-        // tersembunyi, ConstraintLayout memperlakukannya sebagai titik tanpa
-        // tinggi di posisi yang sama, jadi hasilnya persis seperti dulu.
-        lp.topToBottom = R.id.offlineBanner;
+        lp.topToBottom = R.id.nativeHeader;
 
         lp.bottomToBottom = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET;
         lp.bottomToTop = R.id.bottomCategoryBar;

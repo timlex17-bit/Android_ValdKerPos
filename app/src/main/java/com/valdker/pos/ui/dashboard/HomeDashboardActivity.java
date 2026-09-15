@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import com.valdker.pos.ui.common.OfflineNotice;
 import com.valdker.pos.utils.Toast;
 
 import androidx.activity.OnBackPressedCallback;
@@ -136,6 +137,10 @@ public class HomeDashboardActivity extends AppCompatActivity {
     private TextView tvHello;
     private TextView tvBrand;
     private TextView tvSubtitle;
+
+    /** Popup kabar data lokal; menggantikan kalimat panjang di tvSubtitle. */
+    @Nullable
+    private OfflineNotice offlineNotice;
     private ImageView imgLogo;
 
     private TextView tvSumValue;
@@ -287,6 +292,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
         tvHello = findViewById(R.id.tvHello);
         tvBrand = findViewById(R.id.tvAppBrand);
         tvSubtitle = findViewById(R.id.tvSubtitle);
+        offlineNotice = OfflineNotice.attach(this);
         imgLogo = findViewById(R.id.imgAppLogo);
         if (imgLogo != null) imgLogo.setImageResource(R.drawable.ic_logovaldker);
 
@@ -670,14 +676,30 @@ public class HomeDashboardActivity extends AppCompatActivity {
         if (tvNetValue != null) tvNetValue.setText(usd.format(net));
     }
 
+    /**
+     * Kabar tentang kesegaran data dashboard.
+     *
+     * <p>Dulu kalimat ini ditulis ke tvSubtitle - baris kecil di bawah sapaan
+     * di kepala layar. Tempat itu salah untuk dua alasan. Pertama, baris itu
+     * punya pekerjaan tetap: memberi tahu apa yang harus dilakukan
+     * ("Pilih modul untuk melanjutkan"), dan pekerjaan itu hilang setiap kali
+     * aplikasi luring. Kedua, kalimatnya panjang - "Cached dashboard data -
+     * not live financial truth - Last synced: ..." - sehingga ia terpotong
+     * pada dua baris dan justru paling sulit dibaca ketika paling penting
+     * dibaca.
+     *
+     * <p>Sekarang tvSubtitle tetap pada kalimat tetapnya, dan kabar ini
+     * muncul sebagai popup yang harus ditutup sendiri - satu kali, saat
+     * keadaan berubah menjadi luring.
+     */
     private void showDashboardCacheLabel(@NonNull ReportCacheRepository.CacheInfo cacheInfo) {
-        showDashboardMessage(cacheInfo.dashboardLabel());
+        if (offlineNotice == null) return;
+        offlineNotice.setOffline(cacheInfo.cached, cacheInfo.dashboardLabel());
     }
 
     private void showDashboardMessage(@NonNull String message) {
-        if (tvSubtitle != null) {
-            tvSubtitle.setText(message);
-        }
+        if (offlineNotice == null) return;
+        offlineNotice.setOffline(true, message);
     }
 
     private double firstDouble(@NonNull JSONObject object, @NonNull String... keys) {

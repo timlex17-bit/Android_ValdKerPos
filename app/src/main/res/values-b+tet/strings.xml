@@ -1462,9 +1462,12 @@
     <string name="inventory_count_edit_title">Edita Kontajen Stok</string>
 
     <!-- Bilah luring di layar kasir. -->
-    <string name="offline_banner_message">Offline — hatudu dadus POS lokal</string>
+    <string name="offline_banner_message">Hatudu dadus POS lokal</string>
 
     <!-- Kasir bengkel: keadaan kosong kolom item. -->
     <string name="workshop_items_empty_title">Seidauk iha item</string>
     <string name="workshop_items_empty_message">Tona Pakote, Servisu, Peca, ka Produtu iha okos atu aumenta item.</string>
+
+    <!-- Judul popup pemberitahuan luring. -->
+    <string name="offline_notice_title">Offline</string>
 </resources>

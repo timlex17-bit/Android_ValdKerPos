@@ -24,13 +24,6 @@
 
     <include layout="@layout/view_pos_controls" />
 
-    <!--
-      Bilah luring. Menempati barisnya sendiri di bawah kendali kasir, jadi
-      isi di bawahnya bergeser alih-alih tertutup - itulah bedanya dengan
-      toast yang dulu melayang di atas bilah kategori. Tersembunyi sampai
-      OfflineBanner menyatakan keadaannya berubah jadi luring.
-    -->
-    <include layout="@layout/view_offline_banner" />
 
     <com.google.android.material.card.MaterialCardView
     style="@style/Widget.Valora.PanelCard"

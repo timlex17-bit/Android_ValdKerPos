@@ -1488,9 +1488,12 @@
     <string name="inventory_count_edit_title">Ubah Hitung Stok</string>
 
     <!-- Bilah luring di layar kasir. -->
-    <string name="offline_banner_message">Luring — menampilkan data POS lokal</string>
+    <string name="offline_banner_message">Menampilkan data POS lokal</string>
 
     <!-- Kasir bengkel: keadaan kosong kolom item. -->
     <string name="workshop_items_empty_title">Belum ada item</string>
     <string name="workshop_items_empty_message">Ketuk Paket, Layanan, Suku cadang, atau Produk di bawah untuk menambah item.</string>
+
+    <!-- Judul popup pemberitahuan luring. -->
+    <string name="offline_notice_title">Luring</string>
 </resources>
