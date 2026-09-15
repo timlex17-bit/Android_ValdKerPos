@@ -118,6 +118,7 @@ public class RetailPOSFragment extends Fragment {
     // view_pos_checkout masih bilah tipis di dasar layar.
     private TextView txtSummaryItemCount;
     private View posSummaryEmpty;
+    private View posSummaryTotals;
     private TextView txtSectionSubtitle;
     private MaterialButton btnCheckout;
 
@@ -306,6 +307,7 @@ public class RetailPOSFragment extends Fragment {
         txtItemCount = root.findViewById(R.id.txtItemCount);
         txtSummaryItemCount = root.findViewById(R.id.txtSummaryItemCount);
         posSummaryEmpty = root.findViewById(R.id.posSummaryEmpty);
+        posSummaryTotals = root.findViewById(R.id.posSummaryTotals);
         txtSectionSubtitle = root.findViewById(R.id.txtSectionSubtitle);
         btnCheckout = root.findViewById(R.id.btnCheckout);
     }
@@ -1358,12 +1360,57 @@ public class RetailPOSFragment extends Fragment {
             allProducts.add(item);
         }
 
+        hydrateScannedProductsFromCatalog();
+
         if (scannedProducts.isEmpty()) {
             showEmptyState("Scan barcode to add product");
         } else {
             hideEmptyState();
         }
         updateSummary();
+    }
+
+    /**
+     * Melengkapi item bon yang dipulihkan dari draft dengan data katalog.
+     *
+     * <p>Urutannya yang menjadi masalah: draft dibaca dari basis data lokal
+     * dan langsung ditampilkan, sementara katalog produk baru tiba beberapa
+     * saat kemudian dari jaringan. createRetailItemFromDraft() sudah mencoba
+     * mengambil SKU dan stok dari katalog, tetapi pada saat itu katalognya
+     * masih kosong - jadi bon yang dibuka kembali menampilkan "SKU: -" dan
+     * "Stock: 0" untuk produk yang sebenarnya lengkap.
+     *
+     * <p>Stok nol bukan sekadar kurang rapi: kasir yang melihatnya bisa
+     * mengira barangnya habis dan membatalkan penjualan yang sebenarnya bisa
+     * dilayani. Karena itu begitu katalog tiba, barisnya dilengkapi di sini.
+     *
+     * <p>Harga sengaja TIDAK ikut diperbarui: harga pada draft adalah harga
+     * saat item dipindai, dan bon yang sudah dibuka tidak boleh berubah
+     * nilainya hanya karena katalog di server sempat berubah.
+     */
+    private void hydrateScannedProductsFromCatalog() {
+        if (scannedProducts.isEmpty() || allProducts.isEmpty()) return;
+
+        boolean changed = false;
+        for (RetailProductItem shown : scannedProducts) {
+            if (shown == null || shown.id <= 0) continue;
+
+            RetailProductItem catalog = findCatalogProductById(shown.id);
+            if (catalog == null) continue;
+
+            shown.sku = catalog.sku;
+            shown.stock = catalog.stock;
+            shown.trackStock = catalog.trackStock;
+            shown.categoryId = catalog.categoryId;
+            shown.categoryName = catalog.categoryName;
+            if (safe(shown.barcode).isEmpty()) shown.barcode = catalog.barcode;
+            if (safe(shown.imageUrl).isEmpty()) shown.imageUrl = catalog.imageUrl;
+            changed = true;
+        }
+
+        if (changed && productAdapter != null) {
+            productAdapter.setData(scannedProducts);
+        }
     }
 
     @NonNull
@@ -1425,10 +1472,16 @@ public class RetailPOSFragment extends Fragment {
             txtSummaryItemCount.setText(String.valueOf(itemCount));
         }
 
-        // Keadaan kosong panel ringkasan hanya ada di tablet, tempat panel itu
-        // setinggi kolom dan ruang tengahnya benar-benar terlihat.
+        // Panel ringkasan tablet menampilkan tepat satu hal di ruang tengahnya:
+        // angka bon kalau ada isinya, keadaan kosong kalau tidak. Keduanya
+        // tidak ada pada varian ponsel, yang hanya bilah tipis di dasar layar.
+        // INVISIBLE, bukan GONE: bobot tampilan inilah yang menahan tombol
+        // checkout tetap di dasar panel, dan bobot ikut hilang kalau di-GONE.
         if (posSummaryEmpty != null) {
             posSummaryEmpty.setVisibility(itemCount > 0 ? View.INVISIBLE : View.VISIBLE);
+        }
+        if (posSummaryTotals != null) {
+            posSummaryTotals.setVisibility(itemCount > 0 ? View.VISIBLE : View.GONE);
         }
 
         if (txtSectionSubtitle != null) {

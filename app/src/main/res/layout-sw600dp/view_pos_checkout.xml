@@ -9,10 +9,37 @@
   selebar 360dp berisi ruang kosong 80% dengan satu tombol menggantung di
   bawah - itulah "berantakan" yang dilaporkan.
 
+  SATU HAL SAJA YANG MENGISI RUANG TENGAH
+
+  Kolom setinggi layar ini hanya memuat satu angka, jadi ruang tengahnya
+  selalu berlebih. Yang menentukan rapi atau tidak adalah apa yang mengisinya,
+  dan pada saat apa:
+
+  - Bon kosong: angkanya tidak ada gunanya ($0.00 tidak memberi tahu apa pun
+    yang belum diketahui), jadi blok angka disembunyikan dan ruang tengah
+    diisi keadaan kosong - ikon, judul, satu kalimat. Kalimatnya sengaja BUKAN
+    kalimat yang sama dengan keadaan kosong di kolom kiri: dua kolom
+    bersebelahan yang mengucapkan kalimat identik terbaca seperti kesalahan.
+  - Bon berisi: keadaan kosong menghilang dan angkanya naik ke bawah garis
+    pemisah, tempat mata jatuh setelah judul. Sisa ruang menjadi jarak antara
+    angka dan tombol, bukan lubang antara judul dan kaki panel.
+
+  Tombol checkout tetap menempel di dasar pada kedua keadaan: itu tombol yang
+  paling sering ditekan, dan letaknya tidak boleh berpindah hanya karena bon
+  berubah isi.
+
   Semua id yang dibaca RetailPOSFragment sama persis dengan varian ponsel:
   bottomBar (dipakai SystemBars.padBottom), txtGrandTotal, dan btnCheckout.
   Jadi tidak ada satu baris Java pun yang perlu tahu varian mana yang sedang
   di-inflate.
+
+  posSummaryTotals, posSummaryEmpty, dan txtSummaryItemCount sengaja HANYA
+  ada di varian tablet, jadi lint menandainya InconsistentLayout. Peringatan
+  itu benar sebagai aturan umum - id yang hilang di satu varian membuat
+  findViewById mengembalikan null tanpa suara - tetapi di sini perbedaannya
+  memang maksud kita: varian ponsel dari berkas ini adalah bilah tipis di
+  dasar layar yang tidak punya ruang tengah untuk diisi. RetailPOSFragment
+  memeriksa null pada ketiganya.
 -->
 <com.google.android.material.card.MaterialCardView
     style="@style/Widget.Valora.PanelCard"
@@ -48,26 +75,90 @@
             android:layout_marginTop="12dp"
             android:background="@color/stroke_soft" />
 
+        <!-- Angka bon: jumlah item lalu total. Disembunyikan saat bon kosong. -->
+        <LinearLayout
+            android:id="@+id/posSummaryTotals"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:ignore="InconsistentLayout"
+            tools:visibility="visible">
+
+            <!--
+              Jumlah item ditampilkan di sini karena kolom kiri hanya
+              menyebutkan baris produk, bukan jumlahnya: satu baris "Biskuat"
+              bisa berarti satu atau dua belas.
+            -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:baselineAligned="false"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:letterSpacing="0.08"
+                    android:maxLines="1"
+                    android:text="@string/label_items_count"
+                    android:textAllCaps="true"
+                    android:textColor="@color/text_tertiary"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txtSummaryItemCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:maxLines="1"
+                    android:minWidth="@dimen/row_qty_min_width"
+                    android:text="@string/pos_zero_count"
+                    android:textAlignment="viewEnd"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    tools:ignore="InconsistentLayout"
+                    tools:text="12" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.08"
+                android:text="@string/label_total"
+                android:textAllCaps="true"
+                android:textColor="@color/text_tertiary"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtGrandTotal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:autoSizeMaxTextSize="22sp"
+                android:autoSizeMinTextSize="18sp"
+                android:autoSizeTextType="uniform"
+                android:maxLines="1"
+                android:text="@string/amount_zero_usd"
+                android:textColor="@color/brand_primary"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                tools:text="$1,284.50" />
+        </LinearLayout>
+
         <!--
-          Ruang sisa ditaruh DI SINI, bukan di layout pemanggil: ringkasan
-          menempel ke bawah panel supaya total selalu berada di dekat tombol
-          yang ditekan kasir, berapa pun tinggi tabletnya.
-
-          Ruang itu dulu <Space> kosong. Pada tablet ini berarti 377dp kosong
-          melompong setiap kali transaksi baru dimulai - keadaan layar yang
-          paling sering dilihat kasir - sehingga kolomnya tampak gagal memuat,
-          bukan tampak kosong. Sekarang ruangnya diisi keadaan kosong dengan
-          kalimatnya sendiri; sengaja BUKAN kalimat yang sama dengan keadaan
-          kosong di kolom kiri, karena dua kolom bersebelahan yang mengucapkan
-          kalimat identik terbaca seperti kesalahan.
-
-          posSummaryEmpty dan txtSummaryItemCount sengaja HANYA ada di varian
-          tablet, jadi lint menandainya InconsistentLayout. Peringatan itu
-          benar sebagai aturan umum - id yang hilang di satu varian membuat
-          findViewById mengembalikan null tanpa suara - tetapi di sini
-          perbedaannya memang maksud kita: varian ponsel dari berkas ini
-          adalah bilah tipis di dasar layar yang tidak punya ruang tengah
-          untuk diisi. RetailPOSFragment memeriksa null pada keduanya.
+          Ruang sisa. Saat bon kosong blok ini berisi keadaan kosong; saat
+          bon berisi ia dibuat INVISIBLE, bukan GONE - bobotnyalah yang
+          menahan tombol checkout tetap di dasar panel, dan bobot itu ikut
+          hilang kalau tampilannya di-GONE-kan.
         -->
         <LinearLayout
             android:id="@+id/posSummaryEmpty"
@@ -78,8 +169,7 @@
             android:orientation="vertical"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            tools:ignore="InconsistentLayout"
-            tools:visibility="visible">
+            tools:ignore="InconsistentLayout">
 
             <ImageView
                 android:layout_width="@dimen/cart_empty_icon_size"
@@ -109,74 +199,6 @@
                 android:textColor="@color/text_secondary"
                 android:textSize="13sp" />
         </LinearLayout>
-
-        <!--
-          Jumlah item selalu terlihat, juga saat nol. Sebelumnya panel ini
-          hanya memuat TOTAL, sehingga satu-satunya cara kasir memastikan
-          berapa baris yang sudah masuk adalah membaca ulang kolom kiri.
-        -->
-        <LinearLayout
-            android:id="@+id/rowSummaryItems"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:baselineAligned="false"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:ellipsize="end"
-                android:letterSpacing="0.08"
-                android:maxLines="1"
-                android:text="@string/label_items_count"
-                android:textAllCaps="true"
-                android:textColor="@color/text_tertiary"
-                android:textSize="11sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/txtSummaryItemCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:maxLines="1"
-                android:minWidth="@dimen/row_qty_min_width"
-                android:text="@string/pos_zero_count"
-                android:textAlignment="viewEnd"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                tools:ignore="InconsistentLayout"
-                tools:text="12" />
-        </LinearLayout>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:letterSpacing="0.08"
-            android:text="@string/label_total"
-            android:textAllCaps="true"
-            android:textColor="@color/text_tertiary"
-            android:textSize="11sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/txtGrandTotal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:autoSizeMaxTextSize="22sp"
-            android:autoSizeMinTextSize="18sp"
-            android:autoSizeTextType="uniform"
-            android:maxLines="1"
-            android:text="@string/amount_zero_usd"
-            android:textColor="@color/brand_primary"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            tools:text="$1,284.50" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCheckout"
