@@ -1465,4 +1465,10 @@
     <string name="pos_summary_empty_title">Summary is empty</string>
     <string name="pos_summary_empty_message">The total appears here after the first item is added.</string>
     <string name="label_items_count">Items</string>
+
+    <!-- Dialog hitung stok: label pendek, placeholder, keadaan kosong. -->
+    <string name="label_qty_short">Qty</string>
+    <string name="inventory_count_select_product">Select product</string>
+    <string name="inventory_count_no_items">No items yet. Tap Add Item to add one.</string>
+    <string name="inventory_count_edit_title">Edit Stock Count</string>
 </resources>

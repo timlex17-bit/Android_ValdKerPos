@@ -1454,4 +1454,10 @@
     <string name="pos_summary_empty_title">Rezumu sei mamuk</string>
     <string name="pos_summary_empty_message">Total sei mosu iha ne’e depois item dahuluk aumenta.</string>
     <string name="label_items_count">Item</string>
+
+    <!-- Dialog hitung stok: label pendek, placeholder, keadaan kosong. -->
+    <string name="label_qty_short">Qty</string>
+    <string name="inventory_count_select_product">Hili produtu</string>
+    <string name="inventory_count_no_items">Seidauk iha item. Tona Aumenta Item atu aumenta ida.</string>
+    <string name="inventory_count_edit_title">Edita Kontajen Stok</string>
 </resources>

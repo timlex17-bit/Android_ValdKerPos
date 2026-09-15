@@ -1,33 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Satu baris item pada dialog hitung stok: produk, jumlah, hapus.
+
+  Versi sebelumnya memakai Spinner telanjang - tanpa kotak, tanpa garis - di
+  sebelah EditText polos, jadi kolom produk terlihat kosong dengan panah kecil
+  menggantung sendirian sementara kolom di sebelahnya bergaris. Dua widget
+  untuk satu baris formulir, dengan dua penampilan berbeda.
+
+  Sekarang kolom produk memakai kotak yang sama dengan kolom isian lain
+  (@drawable/bg_dialog_input + panah), persis pola yang dipakai popup
+  pembayaran, dan tingginya match_parent supaya benar-benar sejajar dengan
+  kolom jumlah di sebelahnya.
+
+  Bobotnya 4:3 - nama produk tetap yang terlebar, tetapi kolom jumlah harus
+  benar-benar memuat labelnya beserta empat sampai lima angka, dan pada lebar
+  dialog ponsel proporsi 5:2 menyisakan 40dp saja untuknya - labelnya hilang.
+  Tombol hapus berlebar tetap di ujung. Labelnya "Qty", bukan "Counted":
+  pada lebar yang tersisa di dialog ponsel, kata sepanjang "Counted" hanya
+  akan terpotong jadi "Co...", dan label yang terpotong tidak memberi tahu
+  apa pun.
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:baselineAligned="false"
+    android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:padding="10dp">
+    android:paddingTop="8dp">
 
-    <Spinner
-        android:id="@+id/spProduct"
+    <FrameLayout
         android:layout_width="0dp"
-        android:layout_height="48dp"
-        android:layout_weight="1.6" />
+        android:layout_height="match_parent"
+        android:layout_weight="4"
+        android:background="@drawable/bg_dialog_input"
+        android:minHeight="@dimen/checkout_field_min_height">
 
-    <EditText
-        android:id="@+id/etCounted"
+        <Spinner
+            android:id="@+id/spProduct"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:background="@null"
+            android:paddingStart="10dp"
+            android:paddingEnd="24dp" />
+
+        <ImageView
+            android:layout_width="@dimen/checkout_field_icon_size"
+            android:layout_height="@dimen/checkout_field_icon_size"
+            android:layout_gravity="center_vertical|end"
+            android:layout_marginEnd="4dp"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_arrow_down"
+            app:tint="@color/text_tertiary" />
+    </FrameLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:layout_weight="0.8"
-        android:layout_marginStart="10dp"
-        android:hint="Counted"
-        android:inputType="number" />
+        android:layout_marginStart="8dp"
+        android:layout_weight="3"
+        android:hint="@string/label_qty_short">
 
+        <!--
+          Padding mendatar dipersempit dari bawaan Material (16dp) ke 8dp:
+          pada dialog ponsel kolom ini hanya kebagian sekitar 59dp, dan 32dp
+          padding menyisakan 27dp - tidak cukup untuk label "Qty" sekalipun,
+          apalagi lima angka. Terukur di ponsel pemilik: dengan bawaannya,
+          labelnya hilang sama sekali.
+        -->
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etCounted"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:importantForAutofill="no"
+            android:inputType="number"
+            android:maxLines="1"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            tools:text="12345" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!--
+      Tetap berupa KATA, bukan ikon tong sampah, mengikuti aturan yang berlaku
+      di seluruh aplikasi ini: menghapus data tidak boleh bergantung pada
+      tebakan bentuk. Yang dipakai varian padat - padding sempit dan huruf
+      yang menyusut sendiri - supaya katanya utuh tanpa memakan lebar yang
+      dibutuhkan kolom produk.
+    -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnRemove"
-        style="@style/Widget.Valora.RowAction.Delete"
+        style="@style/Widget.Valora.RowAction.Delete.Compact"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="8dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="8dp"
+        android:minHeight="@dimen/row_action_min_height"
         android:text="@string/action_delete" />
 
 </LinearLayout>

@@ -15,6 +15,7 @@ import android.widget.Spinner;
 import com.valdker.pos.utils.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.valdker.pos.R;
@@ -37,6 +38,21 @@ public class InventoryCountItemDraftAdapter
     private final JSONArray productsJson;
     private final List<ItemDraft> drafts;
     private final OnRemoveListener removeListener;
+    /**
+     * Dipanggil setiap kali isi sebuah baris berubah - produk dipilih atau
+     * angkanya diketik. Dipakai dialog untuk menghidupkan/mematikan tombol
+     * Simpan; tidak menyentuh apa pun soal penyimpanan data.
+     */
+    @Nullable
+    private Runnable onDraftChanged;
+
+    public void setOnDraftChanged(@Nullable Runnable listener) {
+        this.onDraftChanged = listener;
+    }
+
+    private void notifyDraftChanged() {
+        if (onDraftChanged != null) onDraftChanged.run();
+    }
 
     public static class ItemDraft {
         public int productId = 0;
@@ -84,11 +100,16 @@ public class InventoryCountItemDraftAdapter
         }
 
         List<String> names = buildProductNames();
+        // Layout isi Spinner milik aplikasi, bukan android.R.layout.simple_*.
+        // Yang dipakai sebelumnya bahkan simple_spinner_dropdown_item - layout
+        // untuk BARIS DAFTAR yang terbuka, bukan untuk isi terpilih - jadi
+        // kotak produk tampil nyaris kosong dengan padding milik daftar.
         ArrayAdapter<String> ad = new ArrayAdapter<>(
                 h.itemView.getContext(),
-                android.R.layout.simple_spinner_dropdown_item,
+                R.layout.item_field_spinner,
                 names
         );
+        ad.setDropDownViewResource(R.layout.item_field_spinner_dropdown);
         h.spProduct.setAdapter(ad);
 
         int sel = findSelectionIndexByProductId(d.productId);
@@ -110,6 +131,7 @@ public class InventoryCountItemDraftAdapter
                 if (selectedId > 0) {
                     d.productId = selectedId;
                 }
+                notifyDraftChanged();
             }
 
             @Override
@@ -136,6 +158,7 @@ public class InventoryCountItemDraftAdapter
                 String t = (s == null) ? "" : s.toString().trim();
                 if (TextUtils.isEmpty(t)) {
                     d.countedStock = 0;
+                    notifyDraftChanged();
                     return;
                 }
 
@@ -145,9 +168,11 @@ public class InventoryCountItemDraftAdapter
                 } catch (Exception e) {
                     d.countedStock = 0;
                 }
+                notifyDraftChanged();
             }
         };
         h.etCounted.addTextChangedListener(h.watcher);
+        notifyDraftChanged();
 
         h.btnRemove.setOnClickListener(v -> {
             int pos = h.getBindingAdapterPosition();

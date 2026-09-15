@@ -6,8 +6,10 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import com.valdker.pos.utils.Toast;
 
 import androidx.annotation.NonNull;
@@ -86,6 +88,7 @@ public class InventoryCountFormDialog extends DialogFragment {
     private MaterialButton btnSave;
     private MaterialButton btnCancel;
     private ProgressBar progress;
+    private TextView tvItemsEmpty;
 
     private JSONArray productsJson = new JSONArray();
     private final List<InventoryCountItemDraftAdapter.ItemDraft> drafts = new ArrayList<>();
@@ -139,7 +142,13 @@ public class InventoryCountFormDialog extends DialogFragment {
         btnCancel = v.findViewById(R.id.btnCancel);
         progress = v.findViewById(R.id.progress);
 
-        tvTitle.setText("edit".equals(mode) ? "Edit Stock Count" : "New Stock Count");
+        tvItemsEmpty = v.findViewById(R.id.tvItemsEmpty);
+
+        // Dulu dua kalimat Inggris ditulis langsung di sini, jadi judul dialog
+        // ini satu-satunya bagian layar yang tidak pernah ikut diterjemahkan.
+        tvTitle.setText("edit".equals(mode)
+                ? getString(R.string.inventory_count_edit_title)
+                : getString(R.string.inventory_count_new_title));
 
         rvItems.setLayoutManager(new LinearLayoutManager(requireContext()));
         draftAdapter = new InventoryCountItemDraftAdapter(productsJson, drafts, position -> {
@@ -148,11 +157,11 @@ public class InventoryCountFormDialog extends DialogFragment {
 
             drafts.remove(pos);
             draftAdapter.notifyItemRemoved(pos);
-
-            if (drafts.isEmpty()) {
-                drafts.add(new InventoryCountItemDraftAdapter.ItemDraft());
-                draftAdapter.notifyItemInserted(0);
-            }
+            // Baris kosong TIDAK ditambahkan kembali secara otomatis. Dulu
+            // begitu, sehingga daftar ini tidak pernah benar-benar kosong dan
+            // tidak pernah ada tempat untuk memberi tahu apa yang harus
+            // dilakukan pengguna berikutnya.
+            refreshFormState();
         });
         rvItems.setAdapter(draftAdapter);
 
@@ -169,6 +178,7 @@ public class InventoryCountFormDialog extends DialogFragment {
             drafts.add(new InventoryCountItemDraftAdapter.ItemDraft());
             draftAdapter.notifyItemInserted(drafts.size() - 1);
             rvItems.smoothScrollToPosition(drafts.size() - 1);
+            refreshFormState();
         });
 
         btnCancel.setOnClickListener(x -> {
@@ -185,12 +195,69 @@ public class InventoryCountFormDialog extends DialogFragment {
             }
         });
 
+        draftAdapter.setOnDraftChanged(this::refreshFormState);
+        etTitle.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int a, int b2, int c) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int a, int b2, int c) {}
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+                refreshFormState();
+            }
+        });
+        refreshFormState();
+
         Dialog dialog = new MaterialAlertDialogBuilder(requireContext())
                 .setView(v)
                 .create();
 
+        // Naikkan dialog saat papan ketik muncul, supaya kolom yang sedang
+        // diisi tidak tertutup - pada dialog berisi daftar, kolom terakhir
+        // justru yang paling sering tertutup.
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setSoftInputMode(
+                    WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        }
+
         dialog.setCanceledOnTouchOutside(!isSubmitting);
         return dialog;
+    }
+
+    /**
+     * Menyesuaikan tampilan dengan isi formulir - dan HANYA tampilan.
+     *
+     * <p>Tombol Simpan dimatikan selama judulnya kosong atau belum ada satu
+     * pun baris item yang lengkap, dan keadaan kosong muncul saat daftar
+     * itemnya benar-benar kosong. Aturan sahnya sendiri tidak dipindahkan ke
+     * sini: submitCreate()/submitUpdate() tetap memeriksa ulang, karena
+     * tombol yang mati hanyalah cara memberi tahu lebih awal, bukan
+     * penjaga data.
+     */
+    private void refreshFormState() {
+        boolean hasTitle = etTitle != null
+                && etTitle.getText() != null
+                && !etTitle.getText().toString().trim().isEmpty();
+
+        boolean hasValidItem = false;
+        for (InventoryCountItemDraftAdapter.ItemDraft d : drafts) {
+            if (d != null && d.isValid()) {
+                hasValidItem = true;
+                break;
+            }
+        }
+
+        if (btnSave != null) {
+            boolean enabled = hasTitle && hasValidItem && !isSubmitting;
+            btnSave.setEnabled(enabled);
+            btnSave.setAlpha(enabled ? 1f : 0.45f);
+        }
+
+        if (tvItemsEmpty != null) {
+            tvItemsEmpty.setVisibility(drafts.isEmpty() ? View.VISIBLE : View.GONE);
+        }
     }
 
     private void prefillEdit() {

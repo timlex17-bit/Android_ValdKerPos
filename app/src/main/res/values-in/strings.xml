@@ -1480,4 +1480,10 @@
     <string name="pos_summary_empty_title">Ringkasan masih kosong</string>
     <string name="pos_summary_empty_message">Total muncul di sini setelah item pertama ditambahkan.</string>
     <string name="label_items_count">Item</string>
+
+    <!-- Dialog hitung stok: label pendek, placeholder, keadaan kosong. -->
+    <string name="label_qty_short">Qty</string>
+    <string name="inventory_count_select_product">Pilih produk</string>
+    <string name="inventory_count_no_items">Belum ada item. Ketuk Tambah Item untuk menambah.</string>
+    <string name="inventory_count_edit_title">Ubah Hitung Stok</string>
 </resources>

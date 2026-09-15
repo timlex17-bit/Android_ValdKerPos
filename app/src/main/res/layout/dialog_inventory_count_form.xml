@@ -2,6 +2,7 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -17,11 +18,25 @@
         android:textSize="18sp"
         android:textStyle="bold" />
 
+    <!--
+      Tinggi wrap_content DENGAN bobot, bukan angka mati.
+
+      Sebelumnya tingginya dipaku @dimen/dialog_scroll_max_height (420dp,
+      560dp di tablet). Angka mati itu memaksa dialog setinggi itu walau
+      isinya cuma satu baris item - itulah ruang kosong besar antara baris
+      item dan tombol "Tambah Item" - dan pada layar pendek ia memaksa dialog
+      lebih tinggi daripada layarnya.
+
+      Dengan wrap_content + weight 1: selama isinya muat, dialog setinggi
+      isinya saja; begitu isinya melebihi ruang yang tersisa, LinearLayout
+      menyusutkan tampilan berbobot ini dan isinya mulai bisa digulir -
+      sementara kepala di atas dan tombol di bawah tetap di tempatnya.
+    -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="@dimen/dialog_scroll_max_height"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:layout_marginTop="14dp"
-        android:fillViewport="true"
         android:overScrollMode="never">
 
         <LinearLayout
@@ -92,13 +107,35 @@
                         android:textSize="12sp"
                         android:textStyle="bold" />
 
+                    <!--
+                      Setinggi isinya. Tinggi mati @dimen/dialog_list_height
+                      (180dp) menyisakan lubang di bawah baris terakhir saat
+                      itemnya sedikit, dan memotong daftarnya saat itemnya
+                      banyak. Penggulirnya sudah ada di luar, jadi daftar ini
+                      tidak perlu menggulir sendiri - nestedScrollingEnabled
+                      false supaya keduanya tidak berebut sentuhan.
+                    -->
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/rvItems"
                         android:layout_width="match_parent"
-                        android:layout_height="@dimen/dialog_list_height"
+                        android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:clipToPadding="false"
                         android:nestedScrollingEnabled="false" />
+
+                    <TextView
+                        android:id="@+id/tvItemsEmpty"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginBottom="4dp"
+                        android:gravity="center"
+                        android:lineSpacingExtra="2dp"
+                        android:text="@string/inventory_count_no_items"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="13sp"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnAddRow"
