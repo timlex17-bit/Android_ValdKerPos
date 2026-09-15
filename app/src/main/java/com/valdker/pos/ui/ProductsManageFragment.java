@@ -126,15 +126,36 @@ public class ProductsManageFragment extends BaseFragment {
             );
         }
 
+        int span;
         if (widthDp >= 840) {
-            return Math.max(configuredSpan, 4);
+            span = Math.max(configuredSpan, 4);
+        } else if (widthDp >= 600) {
+            span = Math.max(configuredSpan, 3);
+        } else {
+            // Jangan pernah membuat kolom lebih sempit daripada lebar minimum
+            // yang diakui aplikasi ini sendiri untuk sebuah kartu produk.
+            // Aturan lama memaksa dua kolom pada lebar berapa pun: di ponsel
+            // 320dp hasilnya kartu selebar 136dp, dan di dalam kartu sesempit
+            // itu sepasang tombol Edit/Hapus tinggal 45dp seorang - terlalu
+            // sempit untuk kata "Delete", yang lalu terlipat dua baris.
+            int minCardWidthDp = Math.max(1, Math.round(
+                    getResources().getDimension(R.dimen.product_card_min_width)
+                            / getResources().getDisplayMetrics().density));
+            int fitSpan = Math.max(1, widthDp / minCardWidthDp);
+            span = Math.min(Math.max(configuredSpan, 2), fitSpan);
         }
 
-        if (widthDp >= 600) {
-            return Math.max(configuredSpan, 3);
+        // Huruf sistem yang diperbesar butuh kolom yang lebih LEBAR, bukan
+        // kolom yang lebih banyak. Pada skala 1,3x ke atas - setelan "Large"
+        // dan "Largest" - batas bawah autosize ikut membesar (10sp menjadi
+        // 13sp), sehingga label tombol tidak lagi bisa menyusut agar muat di
+        // kolom sempit. Satu kolom lebih sedikit mengembalikan ruang itu ke
+        // seluruh isi kartu, bukan hanya ke tombolnya.
+        if (getResources().getConfiguration().fontScale >= 1.3f) {
+            span = Math.max(1, span - 1);
         }
 
-        return Math.max(configuredSpan, 2);
+        return span;
     }
 
     private void setupAdapter() {

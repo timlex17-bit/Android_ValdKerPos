@@ -108,25 +108,39 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
 
+                <!--
+                  Dua tombol yang harus SELALU kembar: lebar 50:50 lewat
+                  bobot (bukan angka dp, supaya ikut lebar kolom grid berapa
+                  pun), dan tinggi match_parent.
+
+                  match_parent di sini bukan gaya penulisan: di LinearLayout
+                  mendatar yang tingginya wrap_content, anak ber-match_parent
+                  mendapat tinggi anak tertinggi. Artinya kedua tombol pasti
+                  setinggi satu sama lain apa pun yang terjadi pada teksnya -
+                  bukan kebetulan sama karena isinya kebetulan sama panjang.
+
+                  Jaraknya satu sumber saja: @dimen/row_action_gap. Sebelum
+                  ini ada Space 10dp DAN margin 8dp sekaligus, jadi jaraknya
+                  18dp dan 18dp itu ikut memakan lebar yang dibutuhkan kata
+                  "Delete".
+                -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnEdit"
-                    style="@style/Widget.Valora.RowAction.Edit"
+                    style="@style/Widget.Valora.RowAction.Edit.Compact"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
+                    android:minHeight="@dimen/row_action_min_height"
                     android:text="@string/action_edit" />
-
-                <Space
-                    android:layout_width="10dp"
-                    android:layout_height="1dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDelete"
-                    style="@style/Widget.Valora.RowAction.Delete"
+                    style="@style/Widget.Valora.RowAction.Delete.Compact"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:layout_marginStart="@dimen/row_action_gap"
+                    android:minHeight="@dimen/row_action_min_height"
                     android:text="@string/action_delete" />
 
             </LinearLayout>

@@ -266,6 +266,7 @@
     -->
     <dimen name="row_action_min_height">40dp</dimen>
     <dimen name="row_action_padding_h">16dp</dimen>
+    <dimen name="row_action_padding_compact">6dp</dimen>
     <dimen name="row_action_gap">8dp</dimen>
     <dimen name="row_action_text">13sp</dimen>
 

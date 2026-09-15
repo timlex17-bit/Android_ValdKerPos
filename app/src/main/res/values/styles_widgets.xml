@@ -147,6 +147,15 @@
       berkas layout yang perlu tahu ukuran layar.
     -->
     <style name="Widget.Valora.RowAction" parent="Widget.Material3.Button.TextButton">
+        <!--
+          Satu baris, selalu. Tanpa ini MaterialButton melipat labelnya begitu
+          lebarnya sempit - "Delete" jadi "Del" di atas dan "ete" di bawah -
+          dan tombol yang terlipat menjadi lebih tinggi daripada tetangganya,
+          sehingga sepasang tombol Edit/Hapus berhenti sejajar. Terukur di
+          ponsel pemilik: Edit 57x40dp, Delete 57x45dp.
+        -->
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
         <item name="android:minWidth">0dp</item>
         <item name="android:minHeight">@dimen/row_action_min_height</item>
         <item name="android:paddingStart">@dimen/row_action_padding_h</item>
@@ -169,5 +178,47 @@
         <item name="android:textColor">@color/state_danger</item>
         <item name="backgroundTint">@color/row_action_delete_bg</item>
         <item name="rippleColor">@color/state_danger</item>
+    </style>
+
+    <!--
+      Varian padat: dipakai saat kedua tombol berbagi lebar kartu (weight 1
+      masing-masing), bukan melebar sesuai isinya.
+
+      Di kartu produk pada grid dua kolom, satu tombol hanya kebagian sekitar
+      57dp pada ponsel 360dp - dan 32dp di antaranya habis oleh padding gaya
+      dasarnya, menyisakan 25dp untuk kata "Delete" yang butuh sekitar 40dp.
+      Karena itu paddingnya dipersempit DAN ukuran hurufnya dibuat menyusut
+      sendiri: pada lebar yang tidak mungkin memuat kata utuh, yang mengalah
+      adalah ukuran huruf, bukan kata yang terpotong jadi "Del...". Batas
+      bawahnya 10sp supaya tidak pernah menyusut sampai tak terbaca.
+    -->
+    <style name="Widget.Valora.RowAction.Edit.Compact">
+        <item name="android:paddingStart">@dimen/row_action_padding_compact</item>
+        <item name="android:paddingEnd">@dimen/row_action_padding_compact</item>
+        <!--
+          Atribut AppCompat, bukan android:*. Yang versi framework baru ada di
+          API 26, sementara aplikasi ini melayani sampai API 24; AppCompat
+          menyediakan perilaku yang sama sejak API 14 lewat AppCompatButton -
+          induk MaterialButton.
+        -->
+        <item name="autoSizeTextType">uniform</item>
+        <item name="autoSizeMinTextSize">10sp</item>
+        <item name="autoSizeMaxTextSize">@dimen/row_action_text</item>
+        <item name="autoSizeStepGranularity">1sp</item>
+    </style>
+
+    <style name="Widget.Valora.RowAction.Delete.Compact">
+        <item name="android:paddingStart">@dimen/row_action_padding_compact</item>
+        <item name="android:paddingEnd">@dimen/row_action_padding_compact</item>
+        <!--
+          Atribut AppCompat, bukan android:*. Yang versi framework baru ada di
+          API 26, sementara aplikasi ini melayani sampai API 24; AppCompat
+          menyediakan perilaku yang sama sejak API 14 lewat AppCompatButton -
+          induk MaterialButton.
+        -->
+        <item name="autoSizeTextType">uniform</item>
+        <item name="autoSizeMinTextSize">10sp</item>
+        <item name="autoSizeMaxTextSize">@dimen/row_action_text</item>
+        <item name="autoSizeStepGranularity">1sp</item>
     </style>
 </resources>

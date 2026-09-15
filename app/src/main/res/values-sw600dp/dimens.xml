@@ -109,6 +109,7 @@
     <!-- Tombol aksi baris sedikit lebih lega di tablet. -->
     <dimen name="row_action_min_height">44dp</dimen>
     <dimen name="row_action_padding_h">20dp</dimen>
+    <dimen name="row_action_padding_compact">8dp</dimen>
     <dimen name="row_action_gap">10dp</dimen>
     <dimen name="row_action_text">14sp</dimen>
 
