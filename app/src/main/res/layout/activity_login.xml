@@ -1,4 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Layar masuk.
+
+  SATU KODE TOKO, SEKALI SEUMUR PERANGKAT
+
+  Dulu layar ini meminta tiga hal setiap kali: kode toko, nama pengguna, dan
+  sandi. Kode toko tidak pernah berubah sepanjang umur perangkat - satu tablet
+  melayani satu toko - jadi mengetiknya setiap pagi hanyalah tiga belas
+  ketukan yang jawabannya sudah diketahui aplikasi, dan satu kesempatan salah
+  ketik pada kolom yang paling tidak dimengerti kasir.
+
+  Sekarang kolom itu punya dua keadaan:
+
+  - Perangkat belum diaktifkan: kolom kode toko tampil bersama penjelasan
+    satu kalimat bahwa ini hanya diminta sekali.
+  - Perangkat sudah diaktifkan: kolom itu hilang seluruhnya, diganti sebaris
+    keterangan toko aktif beserta tombol "Ganti". Yang tersisa untuk diketik
+    tiap hari hanyalah nama pengguna dan sandi.
+
+  Dua keadaan itu memakai layout yang SAMA - LoginActivity hanya menyalakan
+  atau mematikan satu wadah - supaya tidak ada dua berkas yang harus dijaga
+  tetap mirip.
+
+  Bentuknya mengikuti bahasa rupa aplikasi: kolom Material bergaya
+  Widget.Valora.TextField (radius sama dengan seluruh popup), kartu ber-radius
+  @dimen/radius_surface, dan ukuran dari token - bukan angka yang hanya hidup
+  di berkas ini.
+-->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -9,10 +37,10 @@
     android:background="@color/app_bg">
 
     <!--
-      Strip ungu setinggi bilah status. Layar ini berlatar terang, sementara
+      Strip ungu setinggi bilah status. Layar ini berlatar terang sementara
       seluruh aplikasi memakai bilah status ungu dengan ikon terang; tanpa
-      strip ini, di Android 15+ jam dan ikon baterai putih akan berada di atas
-      latar #F6F8FB dan praktis tidak terlihat. Tingginya diisi runtime oleh
+      strip ini, di Android 15+ jam dan ikon baterai putih berada di atas
+      latar terang dan praktis tidak terlihat. Tingginya diisi runtime oleh
       SystemBars.fitStatusScrim(), jadi nol di perangkat tanpa bilah status.
     -->
     <View
@@ -27,7 +55,7 @@
     <View
         android:id="@+id/topAccent"
         android:layout_width="0dp"
-        android:layout_height="188dp"
+        android:layout_height="@dimen/login_accent_height"
         android:background="@color/brand_tint_soft"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -51,25 +79,28 @@
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:orientation="vertical"
-            android:paddingStart="20dp"
-            android:paddingTop="34dp"
-            android:paddingEnd="20dp"
+            android:paddingStart="@dimen/login_screen_padding"
+            android:paddingTop="32dp"
+            android:paddingEnd="@dimen/login_screen_padding"
             android:paddingBottom="24dp">
 
+            <!-- ===== Identitas aplikasi ===== -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
+                android:layout_marginBottom="22dp"
+                android:baselineAligned="false"
                 android:gravity="center_vertical"
+                android:maxWidth="@dimen/login_card_max_width"
                 android:orientation="horizontal">
 
                 <TextView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="@dimen/login_logo_size"
+                    android:layout_height="@dimen/login_logo_size"
                     android:background="@drawable/bg_login_logo"
                     android:gravity="center"
-                    android:text="V"
-                    android:textColor="#FFFFFF"
+                    android:text="@string/login_logo_letter"
+                    android:textColor="@color/text_on_brand"
                     android:textSize="22sp"
                     android:textStyle="bold" />
 
@@ -81,355 +112,38 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="1"
                         android:text="@string/app_name"
                         android:textColor="@color/valora_ink"
                         android:textSize="21sp"
                         android:textStyle="bold" />
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
+                        android:ellipsize="end"
+                        android:maxLines="2"
                         android:text="@string/login_subtitle"
                         android:textColor="@color/text_secondary"
                         android:textSize="13sp" />
                 </LinearLayout>
             </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/cardRight"
+            <!--
+              Tanpa android:id di tag include: id pada tag <include> menimpa
+              id akar berkas yang disertakan, dan kartu ini perlu tetap
+              bernama cardRight.
+            -->
+            <include
+                layout="@layout/view_login_card"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_login_panel"
-                android:orientation="vertical"
-                android:padding="20dp">
+                android:layout_height="wrap_content" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/login_welcome"
-                            android:textColor="@color/brand_primary"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="@string/login_title"
-                            android:textColor="@color/text_primary"
-                            android:textSize="20sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:text="@string/login_shop_code"
-                    android:textColor="@color/text_primary"
-                    android:textSize="13sp"
-                    android:textStyle="bold" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="54dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_login_input"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingStart="14dp"
-                    android:paddingEnd="14dp">
-
-                    <TextView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginEnd="10dp"
-                        android:gravity="center"
-                        android:text="@string/icon_shop"
-                        android:textSize="14sp" />
-
-                    <EditText
-                        android:id="@+id/etShopCode"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:autofillHints="organizationName"
-                        android:background="@android:color/transparent"
-                        android:hint="@string/hint_shop_code"
-                        android:imeOptions="actionNext"
-                        android:importantForAutofill="yes"
-                        android:inputType="textCapCharacters|textNoSuggestions"
-                        android:maxLines="1"
-                        android:singleLine="true"
-                        android:textColor="@color/text_primary"
-                        android:textColorHint="@color/text_tertiary"
-                        android:textSize="15sp" />
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:text="@string/login_username"
-                    android:textColor="@color/text_primary"
-                    android:textSize="13sp"
-                    android:textStyle="bold" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="54dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_login_input"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingStart="14dp"
-                    android:paddingEnd="14dp">
-
-                    <TextView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginEnd="10dp"
-                        android:gravity="center"
-                        android:text="@string/icon_user"
-                        android:textSize="14sp" />
-
-                    <EditText
-                        android:id="@+id/etUsername"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:autofillHints="username"
-                        android:background="@android:color/transparent"
-                        android:hint="@string/hint_username"
-                        android:imeOptions="actionNext"
-                        android:importantForAutofill="yes"
-                        android:inputType="textNoSuggestions"
-                        android:maxLines="1"
-                        android:singleLine="true"
-                        android:textColor="@color/text_primary"
-                        android:textColorHint="@color/text_tertiary"
-                        android:textSize="15sp" />
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:text="@string/login_password"
-                    android:textColor="@color/text_primary"
-                    android:textSize="13sp"
-                    android:textStyle="bold" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="54dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_login_input"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingStart="14dp"
-                    android:paddingEnd="10dp">
-
-                    <TextView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginEnd="10dp"
-                        android:gravity="center"
-                        android:text="@string/icon_lock"
-                        android:textSize="14sp" />
-
-                    <EditText
-                        android:id="@+id/etPassword"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:autofillHints="password"
-                        android:background="@android:color/transparent"
-                        android:hint="@string/hint_password_mask"
-                        android:imeOptions="actionDone"
-                        android:importantForAutofill="yes"
-                        android:inputType="textPassword"
-                        android:maxLines="1"
-                        android:singleLine="true"
-                        android:textColor="@color/text_primary"
-                        android:textColorHint="@color/text_tertiary"
-                        android:textSize="15sp" />
-
-                    <TextView
-                        android:id="@+id/btnTogglePwd"
-                        android:layout_width="58dp"
-                        android:layout_height="wrap_content"
-                        android:minHeight="40dp"
-                        android:gravity="center"
-                        android:text="@string/show_password"
-                        android:textColor="@color/brand_primary_dark"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-
-                <!--
-                  Bagian "Lanjutan": alamat server.
-
-                  Ada di layar Login, bukan hanya di Settings, karena Settings
-                  berada di balik login. Kalau alamat servernya salah, login
-                  tidak pernah berhasil, Settings tidak pernah terbuka, dan
-                  satu-satunya pemulihan adalah menghapus data aplikasi -
-                  termasuk order offline yang belum tersinkron. Itu benar-benar
-                  terjadi: build debug default menunjuk 10.0.2.2 (alias
-                  emulator) sementara perangkatnya ponsel sungguhan.
-
-                  Dilipat secara bawaan supaya kasir harian tidak pernah
-                  melihatnya, dan dibuka sendiri oleh LoginActivity begitu
-                  sebuah percobaan login gagal karena masalah jaringan.
-                -->
-                <LinearLayout
-                    android:id="@+id/btnToggleAdvanced"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:background="?attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:gravity="center_vertical"
-                    android:minHeight="44dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/tvAdvancedLabel"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/login_advanced"
-                        android:textColor="@color/brand_on_tint"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-
-                    <ImageView
-                        android:id="@+id/imgAdvancedChevron"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:contentDescription="@null"
-                        android:src="@drawable/ic_arrow_down"
-                        app:tint="@color/brand_on_tint" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/layoutAdvanced"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:visibility="gone"
-                    tools:visibility="visible">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="@string/login_advanced_hint"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:text="@string/login_server_label"
-                        android:textColor="@color/text_primary"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:background="@drawable/bg_login_input"
-                        android:gravity="center_vertical"
-                        android:minHeight="54dp"
-                        android:orientation="horizontal"
-                        android:paddingStart="14dp"
-                        android:paddingEnd="14dp">
-
-                        <EditText
-                            android:id="@+id/etServerUrl"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:background="@android:color/transparent"
-                            android:hint="@string/login_server_hint"
-                            android:imeOptions="actionDone"
-                            android:importantForAutofill="no"
-                            android:inputType="textUri|textNoSuggestions"
-                            android:maxLines="1"
-                            android:minHeight="48dp"
-                            android:singleLine="true"
-                            android:textColor="@color/text_primary"
-                            android:textColorHint="@color/text_tertiary"
-                            android:textSize="14sp" />
-                    </LinearLayout>
-
-                    <TextView
-                        android:id="@+id/tvServerOrigin"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="11sp"
-                        tools:text="Aktif sekarang: http://10.0.2.2:8000/api/ (bawaan build debug)" />
-                </LinearLayout>
-
-                <Button
-                    android:id="@+id/btnLogin"
-                    android:layout_width="match_parent"
-                    android:layout_height="54dp"
-                    android:layout_marginTop="20dp"
-                    android:background="@drawable/bg_login_button_primary"
-                    android:minHeight="0dp"
-                    android:text="@string/login_btn"
-                    android:textAllCaps="false"
-                    android:textColor="#FFFFFF"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <Button
-                    android:id="@+id/btnDemo"
-                    android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:layout_marginTop="10dp"
-                    android:background="@drawable/bg_login_button_secondary"
-                    android:minHeight="0dp"
-                    android:text="@string/login_demo"
-                    android:textAllCaps="false"
-                    android:textColor="@color/brand_on_tint"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:gravity="center"
-                    android:text="@string/login_help_text"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
-            </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

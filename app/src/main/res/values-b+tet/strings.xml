@@ -35,7 +35,7 @@
     <string name="login_btn">Tama</string>
     <string name="login_help_text">Uza ita-nia shop code, username no password atu asesu loja loos.</string>
     <string name="login_title">Tama ba ita-nia loja</string>
-    <string name="login_subtitle">Uza ita-nia shop code, username no password atu kontinua</string>
+    <string name="login_subtitle">Tama atu kontinua</string>
     <string name="login_shop_code">Kode Loja</string>
     <string name="login_username">Naran Uzuariu</string>
     <string name="login_password">Senha</string>
@@ -46,11 +46,8 @@
     <string name="login_invalid_credentials">Dadus login la loos</string>
     <string name="login_failed">Login falla</string>
     <string name="login_success">Login susesu</string>
-    <string name="hint_shop_code">Ezemplu: WFOUR</string>
     <string name="hint_username">Hatama naran uzuariu</string>
     <string name="hint_password">Hatama senha</string>
-    <string name="show_password">Haree senha</string>
-    <string name="hide_password">Subar senha</string>
 
     <!-- ================================================== -->
     <!-- DASHBOARD EXTRA -->
@@ -803,7 +800,6 @@
     <!-- ================================================== -->
     <!-- LOGIN / POS / CHECKOUT LOCALIZATION BATCH -->
     <!-- ================================================== -->
-    <string name="icon_shop">🏬</string>
     <string name="icon_user">👤</string>
     <string name="icon_lock">🔒</string>
     <string name="icon_password_show">👁</string>
@@ -1470,4 +1466,12 @@
 
     <!-- Judul popup pemberitahuan luring. -->
     <string name="offline_notice_title">Offline</string>
+
+    <!-- Layar masuk: aktivasi kode toko sekali seumur perangkat. -->
+    <string name="login_logo_letter">V</string>
+    <string name="login_shop_code_once">Tama dala ida de’it. Aparellu ne’e sei kontinua ligadu ba loja.</string>
+    <string name="login_active_shop">Loja ativu</string>
+    <string name="login_change_shop_title">Troka loja?</string>
+    <string name="login_change_shop_message">Aparellu ne’e sei husu kodigu loja fali iha tama oinmai.</string>
+    <string name="login_server_url">Diresaun servidor</string>
 </resources>

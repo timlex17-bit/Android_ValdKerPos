@@ -35,7 +35,7 @@
     <string name="login_btn">Masuk</string>
     <string name="login_help_text">Masuk menggunakan kode toko, username, dan password untuk mengakses toko yang benar.</string>
     <string name="login_title">Masuk ke toko Anda</string>
-    <string name="login_subtitle">Gunakan kode toko, username, dan password untuk melanjutkan</string>
+    <string name="login_subtitle">Masuk untuk melanjutkan</string>
     <string name="login_shop_code">Kode Toko</string>
     <string name="login_username">Nama pengguna</string>
     <string name="login_password">Kata sandi</string>
@@ -46,11 +46,8 @@
     <string name="login_invalid_credentials">Data login tidak valid</string>
     <string name="login_failed">Login gagal</string>
     <string name="login_success">Login berhasil</string>
-    <string name="hint_shop_code">Contoh: WFOUR</string>
     <string name="hint_username">Masukkan username</string>
     <string name="hint_password">Masukkan password</string>
-    <string name="show_password">Tampilkan password</string>
-    <string name="hide_password">Sembunyikan password</string>
 
     <!-- ================================================== -->
     <!-- DASHBOARD EXTRA -->
@@ -815,7 +812,6 @@
     <!-- ================================================== -->
     <!-- LOGIN / POS / CHECKOUT LOCALIZATION BATCH -->
     <!-- ================================================== -->
-    <string name="icon_shop">🏬</string>
     <string name="icon_user">👤</string>
     <string name="icon_lock">🔒</string>
     <string name="icon_password_show">👁</string>
@@ -1496,4 +1492,12 @@
 
     <!-- Judul popup pemberitahuan luring. -->
     <string name="offline_notice_title">Luring</string>
+
+    <!-- Layar masuk: aktivasi kode toko sekali seumur perangkat. -->
+    <string name="login_logo_letter">V</string>
+    <string name="login_shop_code_once">Diisi sekali saja. Perangkat ini tetap terhubung ke toko tersebut.</string>
+    <string name="login_active_shop">Toko aktif</string>
+    <string name="login_change_shop_title">Ganti toko?</string>
+    <string name="login_change_shop_message">Perangkat ini akan meminta kode toko lagi pada masuk berikutnya.</string>
+    <string name="login_server_url">Alamat server</string>
 </resources>

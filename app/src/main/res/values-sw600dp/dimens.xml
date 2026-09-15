@@ -121,4 +121,14 @@
     <dimen name="offline_stat_min_width">128dp</dimen>
     <dimen name="offline_stat_gap">12dp</dimen>
     <dimen name="offline_row_padding">20dp</dimen>
+
+    <!-- Layar masuk di tablet: kartu tidak melebar mengikuti layar. -->
+    <dimen name="login_screen_padding">32dp</dimen>
+    <dimen name="login_card_padding">28dp</dimen>
+    <dimen name="login_card_max_width">480dp</dimen>
+    <dimen name="login_logo_size">56dp</dimen>
+    <dimen name="login_field_min_height">56dp</dimen>
+    <dimen name="login_action_min_height">56dp</dimen>
+    <dimen name="login_accent_height">260dp</dimen>
+    <dimen name="login_pane_min_height">520dp</dimen>
 </resources>

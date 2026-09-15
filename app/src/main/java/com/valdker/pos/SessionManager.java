@@ -41,6 +41,23 @@ public class SessionManager {
     private static final String KEY_SHIFT_LOCAL_ID = "shift_local_id";
 
     private static final String KEY_SHOP_CODE = "shop_code";
+
+    /*
+     * AKTIVASI PERANGKAT
+     *
+     * Kunci-kunci ini sengaja TERPISAH dari KEY_SHOP_CODE di atas. Yang di
+     * atas adalah bagian dari sesi: ia ikut terhapus setiap kali pengguna
+     * keluar. Yang di bawah adalah sifat PERANGKAT - tablet ini melayani toko
+     * ini - dan justru harus bertahan melewati keluar-masuk pengguna, karena
+     * itulah yang membuat kode toko cukup diketik sekali seumur perangkat.
+     *
+     * clearAuth() tidak menyentuhnya. Satu-satunya yang menghapusnya adalah
+     * clearActivatedShop(), yang dipanggil hanya lewat tindakan sadar
+     * "Ganti toko" di layar masuk.
+     */
+    private static final String KEY_ACTIVATED_SHOP_CODE = "activated_shop_code";
+    private static final String KEY_ACTIVATED_SHOP_NAME = "activated_shop_name";
+    private static final String KEY_ACTIVATED_AT = "activated_at";
     private static final String KEY_SHOP_ID = "shop_id";
     private static final String KEY_FULL_NAME = "full_name";
     private static final String KEY_SHOP_NAME = "shop_name";
@@ -815,6 +832,48 @@ public class SessionManager {
         String u = url.trim();
         while (u.endsWith("/")) u = u.substring(0, u.length() - 1);
         prefs.edit().putString(KEY_BASE_URL, u).apply();
+    }
+
+    /**
+     * Mencatat bahwa perangkat ini sudah terikat pada sebuah toko.
+     *
+     * <p>Dipanggil setelah kode toko terbukti sah - hari ini pembuktian itu
+     * adalah login pertama yang berhasil; kalau backend kelak menyediakan
+     * endpoint aktivasi tersendiri, pemanggilnya berpindah ke sana dan
+     * kontrak kelas ini tidak berubah.
+     */
+    public void setActivatedShop(@Nullable String shopCode, @Nullable String shopName) {
+        String code = shopCode == null ? "" : shopCode.trim().toUpperCase(java.util.Locale.US);
+        if (code.isEmpty()) return;
+
+        prefs.edit()
+                .putString(KEY_ACTIVATED_SHOP_CODE, code)
+                .putString(KEY_ACTIVATED_SHOP_NAME, shopName == null ? "" : shopName.trim())
+                .putLong(KEY_ACTIVATED_AT, System.currentTimeMillis())
+                .apply();
+    }
+
+    @NonNull
+    public String getActivatedShopCode() {
+        return prefs.getString(KEY_ACTIVATED_SHOP_CODE, "");
+    }
+
+    @NonNull
+    public String getActivatedShopName() {
+        return prefs.getString(KEY_ACTIVATED_SHOP_NAME, "");
+    }
+
+    public boolean hasActivatedShop() {
+        return !getActivatedShopCode().trim().isEmpty();
+    }
+
+    /** Melepas ikatan perangkat dari tokonya; kode toko diminta lagi. */
+    public void clearActivatedShop() {
+        prefs.edit()
+                .remove(KEY_ACTIVATED_SHOP_CODE)
+                .remove(KEY_ACTIVATED_SHOP_NAME)
+                .remove(KEY_ACTIVATED_AT)
+                .apply();
     }
 
     public void clearBaseUrl() {

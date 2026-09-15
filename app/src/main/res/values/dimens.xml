@@ -281,4 +281,14 @@
     <dimen name="offline_stat_min_width">108dp</dimen>
     <dimen name="offline_stat_gap">10dp</dimen>
     <dimen name="offline_row_padding">16dp</dimen>
+
+    <!-- Layar masuk. -->
+    <dimen name="login_screen_padding">20dp</dimen>
+    <dimen name="login_card_padding">20dp</dimen>
+    <dimen name="login_card_max_width">440dp</dimen>
+    <dimen name="login_logo_size">48dp</dimen>
+    <dimen name="login_field_min_height">52dp</dimen>
+    <dimen name="login_action_min_height">52dp</dimen>
+    <dimen name="login_accent_height">188dp</dimen>
+    <dimen name="login_pane_min_height">0dp</dimen>
 </resources>

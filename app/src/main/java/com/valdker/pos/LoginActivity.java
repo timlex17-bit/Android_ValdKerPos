@@ -65,9 +65,12 @@ public class LoginActivity extends AppCompatActivity {
     private static final int MAX_PASSWORD_LENGTH = 128;
 
     private EditText etShopCode;
+    private View groupShopCode;
+    private View groupActiveShop;
+    private TextView tvActiveShop;
+    private View btnChangeShop;
     private EditText etUsername;
     private EditText etPassword;
-    private TextView btnTogglePwd;
     private Button btnLogin;
     private Button btnDemo;
 
@@ -76,8 +79,6 @@ public class LoginActivity extends AppCompatActivity {
     private View btnToggleAdvanced;
     private ImageView imgAdvancedChevron;
     private TextView tvServerOrigin;
-
-    private boolean pwdVisible = false;
     private boolean isLoginInProgress = false;
     private SessionManager sm;
 
@@ -120,9 +121,12 @@ public class LoginActivity extends AppCompatActivity {
 
     private void bindViews() {
         etShopCode = findViewById(R.id.etShopCode);
+        groupShopCode = findViewById(R.id.groupShopCode);
+        groupActiveShop = findViewById(R.id.groupActiveShop);
+        tvActiveShop = findViewById(R.id.tvActiveShop);
+        btnChangeShop = findViewById(R.id.btnChangeShop);
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
-        btnTogglePwd = findViewById(R.id.btnTogglePwd);
         btnLogin = findViewById(R.id.btnLogin);
         btnDemo = findViewById(R.id.btnDemo);
 
@@ -262,7 +266,7 @@ public class LoginActivity extends AppCompatActivity {
             if (BuildConfig.DEBUG) {
                 btnDemo.setVisibility(View.VISIBLE);
                 btnDemo.setOnClickListener(v -> {
-                    if (etShopCode != null) etShopCode.setText("WFOUR");
+                    if (etShopCode != null && !sm.hasActivatedShop()) etShopCode.setText("WFOUR");
                     if (etUsername != null) etUsername.setText("Rivaldo");
                     if (etPassword != null) etPassword.setText("admin123");
                 });
@@ -271,13 +275,63 @@ public class LoginActivity extends AppCompatActivity {
             }
         }
 
-        if (btnTogglePwd != null) {
-            btnTogglePwd.setOnClickListener(v -> togglePassword());
-        }
-
         if (btnLogin != null) {
             btnLogin.setOnClickListener(v -> doLogin());
         }
+
+        if (btnChangeShop != null) {
+            btnChangeShop.setOnClickListener(v -> confirmChangeShop());
+        }
+
+        applyActivationState();
+    }
+
+    /**
+     * Menyesuaikan layar dengan status aktivasi perangkat.
+     *
+     * <p>Perangkat yang sudah terikat pada sebuah toko tidak lagi menampilkan
+     * kolom kode toko sama sekali - kode itu tidak berubah sepanjang umur
+     * perangkat, jadi memintanya setiap pagi hanya menambah satu kolom yang
+     * bisa salah ketik. Sebagai gantinya toko aktifnya diperlihatkan, karena
+     * kasir tetap berhak tahu dia sedang masuk ke toko mana.
+     */
+    private void applyActivationState() {
+        boolean activated = sm.hasActivatedShop();
+
+        if (groupShopCode != null) {
+            groupShopCode.setVisibility(activated ? View.GONE : View.VISIBLE);
+        }
+        if (groupActiveShop != null) {
+            groupActiveShop.setVisibility(activated ? View.VISIBLE : View.GONE);
+        }
+        if (tvActiveShop != null && activated) {
+            String name = sm.getActivatedShopName();
+            String code = sm.getActivatedShopCode();
+            tvActiveShop.setText(name.isEmpty() ? code : name + " · " + code);
+        }
+    }
+
+    /**
+     * Melepas ikatan perangkat dari tokonya.
+     *
+     * <p>Selalu lewat konfirmasi: sekali dilepas, kasir harus tahu kode toko
+     * untuk bisa masuk lagi - dan kode itu justru hal yang tidak dihafal
+     * siapa pun setelah perangkat dipakai berbulan-bulan.
+     */
+    private void confirmChangeShop() {
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.login_change_shop_title)
+                .setMessage(R.string.login_change_shop_message)
+                .setNegativeButton(R.string.action_cancel, (d, w) -> d.dismiss())
+                .setPositiveButton(R.string.action_change, (d, w) -> {
+                    sm.clearActivatedShop();
+                    applyActivationState();
+                    if (etShopCode != null) {
+                        etShopCode.setText("");
+                        etShopCode.requestFocus();
+                    }
+                })
+                .show();
     }
 
     private void redirectBySavedSession() {
@@ -299,7 +353,12 @@ public class LoginActivity extends AppCompatActivity {
 
         clearInputErrors();
 
-        String shopCode = sanitizeShopCode(getText(etShopCode));
+        // Perangkat yang sudah diaktifkan memakai kode tokonya sendiri; kolom
+        // isiannya bahkan tidak tampil. Yang diketik tiap hari hanya nama
+        // pengguna dan sandi.
+        String shopCode = sm.hasActivatedShop()
+                ? sm.getActivatedShopCode()
+                : sanitizeShopCode(getText(etShopCode));
         String username = getText(etUsername);
         String password = etPassword.getText() != null ? etPassword.getText().toString() : "";
 
@@ -595,6 +654,13 @@ public class LoginActivity extends AppCompatActivity {
                     menuPermissions
             );
             sm.setTaxPercent(taxPercent);
+
+            // Login yang berhasil membuktikan kode tokonya sah - itulah
+            // "verifikasi sekali" yang dimaksud: sejak saat ini perangkat
+            // terikat pada toko tersebut dan layar masuk tidak pernah lagi
+            // menanyakan kodenya. Nama tokonya ikut disimpan supaya layar
+            // masuk bisa memperlihatkan toko mana, bukan sekadar kodenya.
+            sm.setActivatedShop(shopCode, shopName);
             new AuthCacheRepository(this).saveCurrentSessionFromLogin(response);
 
             CartManager cartManager = CartManager.getInstance(getApplicationContext());
@@ -650,23 +716,15 @@ public class LoginActivity extends AppCompatActivity {
         if (etPassword != null) etPassword.setEnabled(!loading);
     }
 
-    private void togglePassword() {
-        if (etPassword == null || btnTogglePwd == null) return;
+    /*
+     * togglePassword() dihapus. Sebelumnya ada TextView "Tampilkan/Sembunyikan"
+     * di sebelah kolom sandi beserta penanda pwdVisible dan dua string; kini
+     * TextInputLayout menyediakan ikon mata bawaan lewat
+     * app:endIconMode="password_toggle" - ikon yang sama dengan yang dikenal
+     * pengguna dari aplikasi lain, sudah punya contentDescription, dan tidak
+     * perlu dijaga sinkron dengan keadaan apa pun.
+     */
 
-        pwdVisible = !pwdVisible;
-
-        if (pwdVisible) {
-            etPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
-            btnTogglePwd.setText(getString(R.string.hide_password));
-        } else {
-            etPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
-            btnTogglePwd.setText(getString(R.string.show_password));
-        }
-
-        if (etPassword.getText() != null) {
-            etPassword.setSelection(etPassword.getText().length());
-        }
-    }
 
     @Nullable
     private JSONArray optJsonArrayFlexible(@Nullable JSONObject parent, @NonNull String key) {
@@ -762,6 +820,12 @@ public class LoginActivity extends AppCompatActivity {
             @NonNull String username,
             @NonNull String password
     ) {
+        if (sm.hasActivatedShop()) {
+            // Kolom kode toko tidak tampil; menandainya hanya akan menyorot
+            // tampilan yang tidak bisa dilihat siapa pun.
+            shopCode = "X";
+        }
+
         if (shopCode.isEmpty() && etShopCode != null) {
             etShopCode.setError(getString(R.string.msg_login_required_fields));
         }
