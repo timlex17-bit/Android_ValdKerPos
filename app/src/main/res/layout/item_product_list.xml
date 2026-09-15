@@ -171,7 +171,8 @@
 
                 <TextView
                     android:id="@+id/tvQty"
-                    android:layout_width="34dp"
+                    android:layout_width="wrap_content"
+                    android:minWidth="@dimen/row_qty_min_width"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:maxLines="1"

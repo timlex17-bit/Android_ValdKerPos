@@ -155,4 +155,95 @@
     <dimen name="category_bar_min_height">46dp</dimen>
     <dimen name="category_bar_margin">14dp</dimen>
     <dimen name="category_bar_padding">6dp</dimen>
+
+    <!--
+      ================== UKURAN KOMPONEN LAYAR KASIR ==================
+
+      Sebelum ini setiap layar kasir menuliskan ukurannya sendiri sebagai
+      angka mati di dalam berkas layout - 203 angka tersebar di 22 berkas,
+      dan angka yang sama untuk komponen yang sama sering berbeda antarberkas
+      (tombol keranjang 34dp di lanskap tetapi 40dp di potret, kolom cari
+      46dp di kasir retail tetapi 48dp di kasir restoran). Angka mati juga
+      tidak bisa ditelusuri: mengubah tinggi tombol aksi bengkel berarti
+      menyunting tiga berkas dan berharap tidak ada yang terlewat.
+
+      Sekarang setiap ukuran punya nama, dan nama itu punya nilai per ukuran
+      layar di bucket values-land/ dan values-sw600dp/. Menyetel ulang satu
+      komponen untuk semua tablet berarti mengubah satu baris di sini.
+
+      Kenapa nilainya TIDAK dilebih-lebihkan per ukuran tablet: dp sudah
+      satuan fisik. Tombol 48dp punya ukuran fisik yang sama di tablet 7 inci
+      maupun 13 inci, jadi memperbesarnya mengikuti layar justru membuat
+      jempol menempuh jarak lebih jauh tanpa manfaat. Yang memang harus
+      mengikuti layar adalah struktur - lebar panel, jumlah kolom, rasio
+      kartu - dan itu sudah diatur pos_side_panel_*, cart_pane_width,
+      product_card_min_width, serta rasio 4:3 pada kartu menu.
+
+      Yang diperbaiki di sini adalah sumbu yang selama ini terlewat: ISI.
+      Tinggi mati memotong teks begitu pemilik toko menaikkan ukuran huruf
+      sistem atau berpindah ke bahasa yang katanya lebih panjang. Karena itu
+      hampir semua layout_height berangka di layar kasir kini wrap_content
+      dengan minHeight token: pada ukuran huruf bawaan tampilannya sama
+      persis, tetapi ia tumbuh alih-alih memotong.
+    -->
+
+    <!-- Bilah kepala kasir (activity_main). -->
+    <dimen name="pos_header_logo_size">42dp</dimen>
+    <dimen name="pos_header_action_size">40dp</dimen>
+    <dimen name="pos_cart_badge_size">18dp</dimen>
+    <dimen name="pos_status_chip_min_height">38dp</dimen>
+    <dimen name="pos_search_icon_size">20dp</dimen>
+    <dimen name="pos_search_min_height">48dp</dimen>
+
+    <!-- Kepala dan kendali kasir retail (view_pos_topbar / view_pos_controls). -->
+    <dimen name="pos_avatar_size">36dp</dimen>
+    <dimen name="pos_draft_chip_min_width">40dp</dimen>
+
+    <!-- Daftar item kasir (view_pos_list) dan daftar menu (fragment_products). -->
+    <dimen name="pos_count_button_min_height">44dp</dimen>
+    <dimen name="pos_empty_state_min_height">180dp</dimen>
+    <dimen name="pos_empty_state_icon_size">48dp</dimen>
+    <dimen name="pos_progress_size">48dp</dimen>
+
+    <!-- Keranjang (fragment_cart, item_cart). -->
+    <dimen name="cart_empty_icon_size">52dp</dimen>
+    <dimen name="cart_primary_action_min_height">52dp</dimen>
+    <dimen name="cart_secondary_action_min_height">44dp</dimen>
+    <dimen name="cart_qty_min_width">36dp</dimen>
+    <dimen name="cart_remove_button_size">36dp</dimen>
+
+    <!-- Panel ringkasan kasir retail (view_pos_checkout). -->
+    <dimen name="pos_checkout_button_min_height">50dp</dimen>
+
+    <!-- Label jumlah pada baris/kartu produk. -->
+    <dimen name="row_qty_min_width">34dp</dimen>
+
+    <!-- Kasir bengkel (fragment_workshop_pos, item_workshop_cart_line). -->
+    <dimen name="workshop_avatar_size">36dp</dimen>
+    <dimen name="workshop_header_row_min_height">40dp</dimen>
+    <dimen name="workshop_draft_add_chip_size">32dp</dimen>
+    <dimen name="workshop_draft_chip_min_height">34dp</dimen>
+    <dimen name="workshop_summary_row_min_height">30dp</dimen>
+    <dimen name="workshop_summary_line_min_height">20dp</dimen>
+    <dimen name="workshop_customer_button_min_width">48dp</dimen>
+    <dimen name="workshop_customer_button_min_height">32dp</dimen>
+    <dimen name="workshop_status_chip_min_height">24dp</dimen>
+    <dimen name="workshop_stats_row_min_height">54dp</dimen>
+    <dimen name="workshop_checkout_row_min_height">48dp</dimen>
+    <dimen name="workshop_checkout_button_min_height">48dp</dimen>
+    <dimen name="workshop_action_button_min_height">42dp</dimen>
+    <dimen name="workshop_action_button_min_width">42dp</dimen>
+    <dimen name="workshop_stepper_button_size">38dp</dimen>
+    <dimen name="workshop_qty_min_width">40dp</dimen>
+    <dimen name="workshop_remove_button_size">36dp</dimen>
+
+    <!-- Popup pembayaran (dialog_native_checkout, item_split_payment). -->
+    <dimen name="checkout_amount_field_min_height">56dp</dimen>
+    <dimen name="checkout_field_min_height">52dp</dimen>
+    <dimen name="checkout_field_icon_size">18dp</dimen>
+    <dimen name="checkout_discount_mode_min_width">72dp</dimen>
+    <dimen name="checkout_add_split_min_height">40dp</dimen>
+    <dimen name="split_row_min_height">52dp</dimen>
+    <dimen name="split_check_icon_size">16dp</dimen>
+    <dimen name="split_remove_button_size">40dp</dimen>
 </resources>

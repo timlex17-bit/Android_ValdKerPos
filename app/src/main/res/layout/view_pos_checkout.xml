@@ -63,7 +63,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:minHeight="50dp"
+        android:minHeight="@dimen/pos_checkout_button_min_height"
         android:text="@string/action_checkout"
         app:icon="@drawable/ic_bag"
         app:iconGravity="textStart"

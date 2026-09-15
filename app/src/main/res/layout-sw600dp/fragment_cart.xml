@@ -192,8 +192,8 @@
                 tools:visibility="visible">
 
                 <ImageView
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
+                    android:layout_width="@dimen/cart_empty_icon_size"
+                    android:layout_height="@dimen/cart_empty_icon_size"
                     android:alpha="0.28"
                     android:contentDescription="@null"
                     android:src="@drawable/ic_shopping_cart"
@@ -280,7 +280,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:minHeight="54dp"
+                android:minHeight="@dimen/cart_primary_action_min_height"
                 android:text="@string/cart_continue_payment"
                 app:icon="@drawable/ic_bag"
                 app:iconGravity="textStart"
@@ -294,7 +294,7 @@
                 android:layout_marginTop="4dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
-                android:minHeight="44dp"
+                android:minHeight="@dimen/cart_secondary_action_min_height"
                 android:text="@string/cart_cancel_order"
                 android:textAllCaps="false"
                 android:textColor="@color/state_danger"

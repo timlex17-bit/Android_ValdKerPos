@@ -35,8 +35,8 @@
         android:paddingEnd="8dp">
 
         <ImageView
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="@dimen/pos_search_icon_size"
+            android:layout_height="@dimen/pos_search_icon_size"
             android:contentDescription="@null"
             android:src="@drawable/search_24"
             app:tint="@color/text_tertiary" />
@@ -53,7 +53,7 @@
             android:importantForAutofill="no"
             android:inputType="text"
             android:maxLines="1"
-            android:minHeight="46dp"
+            android:minHeight="@dimen/pos_search_min_height"
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
             android:textColor="@color/text_primary"
@@ -121,7 +121,7 @@
             style="@style/Widget.Valora.FilterChip"
             android:layout_marginStart="6dp"
             android:contentDescription="@string/cd_pos_open_drafts"
-            android:minWidth="40dp"
+            android:minWidth="@dimen/pos_draft_chip_min_width"
             android:text="@string/draft_add"
             android:textColor="@color/text_on_brand"
             android:textSize="15sp"

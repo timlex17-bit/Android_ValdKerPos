@@ -77,4 +77,32 @@
     <dimen name="category_chip_text">13sp</dimen>
     <dimen name="category_bar_min_height">50dp</dimen>
     <dimen name="category_bar_margin">16dp</dimen>
+
+    <!--
+      Tablet. Ukuran komponen sengaja sama dengan ponsel di sebagian besar
+      baris: dp sudah satuan fisik, jadi tombol 48dp tetap 48dp di tablet 7
+      maupun 13 inci. Yang berbeda hanyalah komponen yang memang berubah
+      peran di tablet - ikon keranjang kosong yang kini mengisi kolom penuh,
+      tombol bayar di kolom samping, dan kasir bengkel yang di tablet memakai
+      susunan dua panel sehingga barisnya lebih rapat.
+    -->
+    <dimen name="pos_header_logo_size">44dp</dimen>
+
+    <dimen name="cart_empty_icon_size">56dp</dimen>
+    <dimen name="cart_primary_action_min_height">54dp</dimen>
+
+    <dimen name="pos_checkout_button_min_height">46dp</dimen>
+
+    <dimen name="workshop_avatar_size">32dp</dimen>
+    <dimen name="workshop_header_row_min_height">34dp</dimen>
+    <dimen name="workshop_draft_add_chip_size">30dp</dimen>
+    <dimen name="workshop_draft_chip_min_height">30dp</dimen>
+    <dimen name="workshop_summary_row_min_height">28dp</dimen>
+    <dimen name="workshop_customer_button_min_width">42dp</dimen>
+    <dimen name="workshop_customer_button_min_height">28dp</dimen>
+    <dimen name="workshop_status_chip_min_height">22dp</dimen>
+    <dimen name="workshop_stats_row_min_height">48dp</dimen>
+    <dimen name="workshop_checkout_row_min_height">44dp</dimen>
+    <dimen name="workshop_checkout_button_min_height">44dp</dimen>
+    <dimen name="workshop_action_button_min_height">38dp</dimen>
 </resources>

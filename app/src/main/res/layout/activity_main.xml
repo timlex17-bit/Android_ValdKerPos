@@ -50,8 +50,8 @@
                 <!-- Shop Logo -->
                 <ImageView
                     android:id="@+id/imgLogo"
-                    android:layout_width="42dp"
-                    android:layout_height="42dp"
+                    android:layout_width="@dimen/pos_header_logo_size"
+                    android:layout_height="@dimen/pos_header_logo_size"
                     android:layout_marginEnd="12dp"
                     android:scaleType="centerCrop"
                     android:src="@drawable/bg_logo_circle"
@@ -124,8 +124,8 @@
                         android:paddingBottom="0dp">
 
                         <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
+                            android:layout_width="@dimen/pos_search_icon_size"
+                            android:layout_height="@dimen/pos_search_icon_size"
                             android:contentDescription="Search"
                             android:src="@drawable/search_24"
                             app:tint="@color/text_tertiary" />
@@ -141,7 +141,7 @@
                             android:imeOptions="actionSearch"
                             android:inputType="text"
                             android:maxLines="1"
-                            android:minHeight="48dp"
+                            android:minHeight="@dimen/pos_search_min_height"
                             android:paddingTop="12dp"
                             android:paddingBottom="12dp"
                             android:textColor="@color/text_primary"
@@ -153,14 +153,14 @@
 
                 <!-- Barcode Button -->
                 <FrameLayout
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="@dimen/pos_header_action_size"
+                    android:layout_height="@dimen/pos_header_action_size"
                     android:layout_marginStart="8dp">
 
                     <ImageButton
                         android:id="@+id/btnBarcode"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
+                        android:layout_width="@dimen/pos_header_action_size"
+                        android:layout_height="@dimen/pos_header_action_size"
                         android:background="@drawable/bg_chip"
                         android:src="@drawable/ic_barcode"
                         android:contentDescription="@string/cd_barcode_scan"
@@ -171,14 +171,14 @@
 
                 <!-- Cart Button + Badge -->
                 <FrameLayout
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="@dimen/pos_header_action_size"
+                    android:layout_height="@dimen/pos_header_action_size"
                     android:layout_marginStart="8dp">
 
                     <ImageButton
                         android:id="@+id/btnCart"
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
+                        android:layout_width="@dimen/pos_header_action_size"
+                        android:layout_height="@dimen/pos_header_action_size"
                         android:background="@drawable/bg_chip"
                         android:contentDescription="@string/label_cart"
                         android:scaleType="centerInside"
@@ -187,8 +187,8 @@
 
                     <TextView
                         android:id="@+id/tvCartBadge"
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
+                        android:layout_width="@dimen/pos_cart_badge_size"
+                        android:layout_height="@dimen/pos_cart_badge_size"
                         android:layout_gravity="top|end"
                         android:background="@drawable/bg_badge"
                         android:gravity="center"

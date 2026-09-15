@@ -73,8 +73,8 @@
 
                 <ImageView
                     android:id="@+id/imgLogo"
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
+                    android:layout_width="@dimen/pos_header_logo_size"
+                    android:layout_height="@dimen/pos_header_logo_size"
                     android:layout_marginEnd="12dp"
                     android:contentDescription="@string/cd_shop_logo"
                     android:scaleType="centerCrop"
@@ -135,8 +135,8 @@
                         android:paddingEnd="14dp">
 
                         <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
+                            android:layout_width="@dimen/pos_search_icon_size"
+                            android:layout_height="@dimen/pos_search_icon_size"
                             android:contentDescription="@null"
                             android:src="@drawable/search_24"
                             app:tint="@color/text_tertiary" />
@@ -153,7 +153,7 @@
                             android:importantForAutofill="no"
                             android:inputType="text"
                             android:maxLines="1"
-                            android:minHeight="48dp"
+                            android:minHeight="@dimen/pos_search_min_height"
                             android:paddingTop="12dp"
                             android:paddingBottom="12dp"
                             android:textColor="@color/text_primary"

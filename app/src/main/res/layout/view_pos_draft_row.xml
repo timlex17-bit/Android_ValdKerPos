@@ -71,7 +71,7 @@
         android:id="@+id/chipAddDraft"
         style="@style/Widget.Valora.FilterChip"
         android:layout_marginStart="6dp"
-        android:minWidth="40dp"
+        android:minWidth="@dimen/pos_draft_chip_min_width"
         android:text="@string/draft_add"
         android:textAlignment="center"
         android:textColor="@color/text_on_brand"

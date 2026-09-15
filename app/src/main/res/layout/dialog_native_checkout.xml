@@ -147,20 +147,20 @@
                         android:layout_gravity="top"
                         android:layout_marginStart="8dp"
                         android:background="@drawable/bg_dialog_input"
-                        android:minHeight="56dp">
+                        android:minHeight="@dimen/checkout_amount_field_min_height">
 
                         <Spinner
                             android:id="@+id/spDiscountMode"
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
                             android:background="@null"
-                            android:minWidth="72dp"
+                            android:minWidth="@dimen/checkout_discount_mode_min_width"
                             android:paddingStart="12dp"
                             android:paddingEnd="30dp" />
 
                         <ImageView
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
+                            android:layout_width="@dimen/checkout_field_icon_size"
+                            android:layout_height="@dimen/checkout_field_icon_size"
                             android:layout_gravity="center_vertical|end"
                             android:layout_marginEnd="8dp"
                             android:contentDescription="@null"
@@ -184,7 +184,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:background="@drawable/bg_dialog_input"
-                    android:minHeight="52dp">
+                    android:minHeight="@dimen/checkout_field_min_height">
 
                     <Spinner
                         android:id="@+id/spCustomer"
@@ -195,8 +195,8 @@
                         android:paddingEnd="34dp" />
 
                     <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
+                        android:layout_width="@dimen/checkout_field_icon_size"
+                        android:layout_height="@dimen/checkout_field_icon_size"
                         android:layout_gravity="center_vertical|end"
                         android:layout_marginEnd="10dp"
                         android:contentDescription="@null"
@@ -253,7 +253,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:background="@drawable/bg_dialog_input"
-                    android:minHeight="52dp">
+                    android:minHeight="@dimen/checkout_field_min_height">
 
                     <Spinner
                         android:id="@+id/spPaymentMethod"
@@ -264,8 +264,8 @@
                         android:paddingEnd="34dp" />
 
                     <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
+                        android:layout_width="@dimen/checkout_field_icon_size"
+                        android:layout_height="@dimen/checkout_field_icon_size"
                         android:layout_gravity="center_vertical|end"
                         android:layout_marginEnd="10dp"
                         android:contentDescription="@null"
@@ -337,7 +337,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
                         android:background="@drawable/bg_dialog_input"
-                        android:minHeight="52dp">
+                        android:minHeight="@dimen/checkout_field_min_height">
 
                         <Spinner
                             android:id="@+id/spBankAccount"
@@ -348,8 +348,8 @@
                             android:paddingEnd="34dp" />
 
                         <ImageView
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
+                            android:layout_width="@dimen/checkout_field_icon_size"
+                            android:layout_height="@dimen/checkout_field_icon_size"
                             android:layout_gravity="center_vertical|end"
                             android:layout_marginEnd="10dp"
                             android:contentDescription="@null"
@@ -442,7 +442,7 @@
                     android:layout_marginTop="4dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
-                    android:minHeight="40dp"
+                    android:minHeight="@dimen/checkout_add_split_min_height"
                     android:paddingStart="8dp"
                     android:paddingEnd="8dp"
                     android:text="@string/checkout_split_add"

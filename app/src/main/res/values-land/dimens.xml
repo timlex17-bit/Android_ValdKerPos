@@ -16,4 +16,27 @@
       400dp), jadi bilah atas dipendekkan agar isi layar tetap kebagian ruang.
     -->
     <dimen name="topbar_min_height">48dp</dimen>
+
+    <!--
+      Lanskap ponsel: tinggi layar kerap di bawah 400dp, jadi komponen kasir
+      dipendekkan. Nilai yang tidak disebut di sini sengaja mewarisi values/.
+      Tablet tidak terpengaruh: smallest-width mengalahkan orientasi dalam
+      urutan pemilihan sumber daya Android, jadi tablet dalam lanskap tetap
+      membaca values-sw600dp/.
+    -->
+    <dimen name="pos_header_logo_size">34dp</dimen>
+    <dimen name="pos_header_action_size">38dp</dimen>
+
+    <dimen name="workshop_avatar_size">32dp</dimen>
+    <dimen name="workshop_header_row_min_height">34dp</dimen>
+    <dimen name="workshop_draft_add_chip_size">30dp</dimen>
+    <dimen name="workshop_draft_chip_min_height">30dp</dimen>
+    <dimen name="workshop_summary_row_min_height">28dp</dimen>
+    <dimen name="workshop_customer_button_min_width">42dp</dimen>
+    <dimen name="workshop_customer_button_min_height">28dp</dimen>
+    <dimen name="workshop_status_chip_min_height">22dp</dimen>
+    <dimen name="workshop_stats_row_min_height">48dp</dimen>
+    <dimen name="workshop_checkout_row_min_height">44dp</dimen>
+    <dimen name="workshop_checkout_button_min_height">44dp</dimen>
+    <dimen name="workshop_action_button_min_height">38dp</dimen>
 </resources>
