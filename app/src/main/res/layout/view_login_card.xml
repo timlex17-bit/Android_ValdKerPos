@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Kartu formulir masuk: kode toko (sekali), nama pengguna, sandi, lanjutan.
+  Kartu formulir masuk: toko aktif, nama pengguna, sandi, lanjutan.
+
+  Tidak ada kolom kode toko di sini. Kode itu diisi sekali di
+  ShopActivationActivity sebelum layar masuk pernah tampil, jadi yang tersisa
+  untuk diketik tiap hari hanyalah dua hal yang memang berganti pemakainya.
 
   Satu berkas dipakai dua tata letak - ponsel satu kolom dan tablet dua panel -
   supaya tidak ada dua salinan formulir yang harus dijaga tetap mirip. Semua
@@ -51,48 +55,11 @@
             android:textStyle="bold" />
 
         <!--
-          Keadaan 1: perangkat belum diaktifkan. Diminta sekali,
-          lalu wadah ini tidak pernah tampil lagi di perangkat itu.
-        -->
-        <LinearLayout
-            android:id="@+id/groupShopCode"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Valora.TextField"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
-                android:hint="@string/login_shop_code">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etShopCode"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:autofillHints="organizationName"
-                    android:imeOptions="actionNext"
-                    android:inputType="textCapCharacters|textNoSuggestions"
-                    android:maxLines="1"
-                    android:minHeight="@dimen/login_field_min_height"
-                    android:textColor="@color/text_primary" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:lineSpacingExtra="2dp"
-                android:text="@string/login_shop_code_once"
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp" />
-        </LinearLayout>
-
-        <!--
-          Keadaan 2: perangkat sudah diaktifkan. Kode tokonya tetap
-          diperlihatkan - kasir berhak tahu dia sedang masuk ke
-          toko mana - tetapi tidak lagi bisa salah diketik.
+          Toko aktif. Kode tokonya tidak bisa diketik di layar ini sama
+          sekali - ia diisi sekali di ShopActivationActivity - tetapi tetap
+          diperlihatkan, karena kasir berhak tahu dia sedang masuk ke toko
+          mana sebelum mengetik sandinya. "Ganti" mengantar kembali ke layar
+          aktivasi, selalu lewat konfirmasi.
         -->
         <LinearLayout
             android:id="@+id/groupActiveShop"
@@ -107,7 +74,6 @@
             android:paddingTop="8dp"
             android:paddingEnd="8dp"
             android:paddingBottom="8dp"
-            android:visibility="gone"
             tools:visibility="visible">
 
             <LinearLayout

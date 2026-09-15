@@ -60,12 +60,9 @@ public class LoginActivity extends AppCompatActivity {
     private static final int TIMEOUT_MS = 20000;
     private static final int MAX_RETRIES = 0;
     private static final float BACKOFF_MULT = 1.0f;
-    private static final int MAX_SHOP_CODE_LENGTH = 24;
     private static final int MAX_USERNAME_LENGTH = 80;
     private static final int MAX_PASSWORD_LENGTH = 128;
 
-    private EditText etShopCode;
-    private View groupShopCode;
     private View groupActiveShop;
     private TextView tvActiveShop;
     private View btnChangeShop;
@@ -86,11 +83,25 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         applySavedLanguageCompat();
         super.onCreate(savedInstanceState);
+
+        sm = new SessionManager(this);
+
+        // Perangkat yang belum terikat pada sebuah toko tidak bisa masuk ke
+        // mana pun, jadi layar ini tidak perlu tampil dulu. Pemeriksaan
+        // ditaruh DI SINI, bukan di layar onboarding, supaya seluruh pintu
+        // masuk ke layar login - keluar, sesi kedaluwarsa, ganti toko -
+        // melewati aturan yang sama tanpa ada satu pun yang perlu diubah.
+        if (!sm.hasActivatedShop()) {
+            startActivity(new android.content.Intent(this, ShopActivationActivity.class)
+                    .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                            | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK));
+            finish();
+            return;
+        }
+
         protectLoginWindow();
         setContentView(R.layout.activity_login);
         setupSystemBars();
-
-        sm = new SessionManager(this);
 
         bindViews();
         setupAdvanced();
@@ -120,8 +131,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void bindViews() {
-        etShopCode = findViewById(R.id.etShopCode);
-        groupShopCode = findViewById(R.id.groupShopCode);
         groupActiveShop = findViewById(R.id.groupActiveShop);
         tvActiveShop = findViewById(R.id.tvActiveShop);
         btnChangeShop = findViewById(R.id.btnChangeShop);
@@ -145,16 +154,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void setupInputs() {
-        if (etShopCode != null) {
-            etShopCode.setFilters(new InputFilter[]{
-                    new InputFilter.AllCaps(),
-                    new InputFilter.LengthFilter(MAX_SHOP_CODE_LENGTH)
-            });
-            etShopCode.setInputType(InputType.TYPE_CLASS_TEXT
-                    | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
-                    | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-        }
-
         if (etUsername != null) {
             etUsername.setFilters(new InputFilter[]{new InputFilter.LengthFilter(MAX_USERNAME_LENGTH)});
             etUsername.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
@@ -266,7 +265,6 @@ public class LoginActivity extends AppCompatActivity {
             if (BuildConfig.DEBUG) {
                 btnDemo.setVisibility(View.VISIBLE);
                 btnDemo.setOnClickListener(v -> {
-                    if (etShopCode != null && !sm.hasActivatedShop()) etShopCode.setText("WFOUR");
                     if (etUsername != null) etUsername.setText("Rivaldo");
                     if (etPassword != null) etPassword.setText("admin123");
                 });
@@ -298,9 +296,6 @@ public class LoginActivity extends AppCompatActivity {
     private void applyActivationState() {
         boolean activated = sm.hasActivatedShop();
 
-        if (groupShopCode != null) {
-            groupShopCode.setVisibility(activated ? View.GONE : View.VISIBLE);
-        }
         if (groupActiveShop != null) {
             groupActiveShop.setVisibility(activated ? View.VISIBLE : View.GONE);
         }
@@ -325,11 +320,10 @@ public class LoginActivity extends AppCompatActivity {
                 .setNegativeButton(R.string.action_cancel, (d, w) -> d.dismiss())
                 .setPositiveButton(R.string.action_change, (d, w) -> {
                     sm.clearActivatedShop();
-                    applyActivationState();
-                    if (etShopCode != null) {
-                        etShopCode.setText("");
-                        etShopCode.requestFocus();
-                    }
+                    startActivity(new android.content.Intent(this, ShopActivationActivity.class)
+                            .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                                    | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK));
+                    finish();
                 })
                 .show();
     }
@@ -348,23 +342,21 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void doLogin() {
-        if (etShopCode == null || etUsername == null || etPassword == null) return;
+        if (etUsername == null || etPassword == null) return;
         if (isLoginInProgress) return;
 
         clearInputErrors();
 
-        // Perangkat yang sudah diaktifkan memakai kode tokonya sendiri; kolom
-        // isiannya bahkan tidak tampil. Yang diketik tiap hari hanya nama
-        // pengguna dan sandi.
-        String shopCode = sm.hasActivatedShop()
-                ? sm.getActivatedShopCode()
-                : sanitizeShopCode(getText(etShopCode));
+        // Kode toko tidak pernah diketik di layar ini: ia berasal dari
+        // aktivasi perangkat. Layar ini bahkan tidak tampil sebelum aktivasi
+        // selesai - lihat pemeriksaan di onCreate().
+        String shopCode = sm.getActivatedShopCode();
         String username = getText(etUsername);
         String password = etPassword.getText() != null ? etPassword.getText().toString() : "";
 
         if (shopCode.isEmpty() || username.isEmpty() || password.trim().isEmpty()) {
             Toast.makeText(this, getString(R.string.msg_login_required_fields), Toast.LENGTH_SHORT).show();
-            markRequiredFields(shopCode, username, password);
+            markRequiredFields(username, password);
             return;
         }
 
@@ -711,7 +703,6 @@ public class LoginActivity extends AppCompatActivity {
             btnDemo.setEnabled(!loading);
         }
 
-        if (etShopCode != null) etShopCode.setEnabled(!loading);
         if (etUsername != null) etUsername.setEnabled(!loading);
         if (etPassword != null) etPassword.setEnabled(!loading);
     }
@@ -802,33 +793,16 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     @NonNull
-    private String sanitizeShopCode(@Nullable String value) {
-        if (value == null) return "";
-        return value.trim()
-                .replaceAll("[^A-Za-z0-9_-]", "")
-                .toUpperCase(Locale.US);
-    }
 
     private void clearInputErrors() {
-        if (etShopCode != null) etShopCode.setError(null);
         if (etUsername != null) etUsername.setError(null);
         if (etPassword != null) etPassword.setError(null);
     }
 
     private void markRequiredFields(
-            @NonNull String shopCode,
             @NonNull String username,
             @NonNull String password
     ) {
-        if (sm.hasActivatedShop()) {
-            // Kolom kode toko tidak tampil; menandainya hanya akan menyorot
-            // tampilan yang tidak bisa dilihat siapa pun.
-            shopCode = "X";
-        }
-
-        if (shopCode.isEmpty() && etShopCode != null) {
-            etShopCode.setError(getString(R.string.msg_login_required_fields));
-        }
         if (username.isEmpty() && etUsername != null) {
             etUsername.setError(getString(R.string.msg_login_required_fields));
         }

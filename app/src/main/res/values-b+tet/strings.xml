@@ -1469,9 +1469,16 @@
 
     <!-- Layar masuk: aktivasi kode toko sekali seumur perangkat. -->
     <string name="login_logo_letter">V</string>
-    <string name="login_shop_code_once">Tama dala ida de’it. Aparellu ne’e sei kontinua ligadu ba loja.</string>
     <string name="login_active_shop">Loja ativu</string>
     <string name="login_change_shop_title">Troka loja?</string>
     <string name="login_change_shop_message">Aparellu ne’e sei husu kodigu loja fali iha tama oinmai.</string>
     <string name="login_server_url">Diresaun servidor</string>
+
+    <!-- Layar aktivasi perangkat (kode toko, sekali). -->
+    <string name="activation_subtitle">Prepara aparellu ne’e</string>
+    <string name="activation_step">Pasu 1 husi 2</string>
+    <string name="activation_title">Hatama kodigu loja</string>
+    <string name="activation_message">Husu kodigu loja ba na’in. Hatama dala ida de’it — aparellu ne’e sei kontinua ligadu ba loja ne’e, no pajina tuirmai husu de’it username no password.</string>
+    <string name="activation_continue">Kontinua</string>
+    <string name="activation_invalid">Hatama kodigu loja ne’ebe validu (menus karakter 3).</string>
 </resources>

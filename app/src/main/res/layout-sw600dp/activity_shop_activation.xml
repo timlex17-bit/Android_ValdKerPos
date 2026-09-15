@@ -1,26 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Layar masuk - tablet.
+  Layar aktivasi perangkat - tablet.
 
-  Dua panel: kiri identitas aplikasi, kanan formulir. Bukan demi hiasan -
-  pada tablet, formulir selebar layar membuat mata menyeberang 1200dp untuk
-  tiga kolom isian, dan kartu yang melebar sendiri terlihat seperti dialog
-  yang gagal menentukan ukurannya. Panel kiri mengisi ruang itu dengan hal
-  yang memang layak besar: nama dan sifat aplikasinya.
+  Susunannya sengaja kembar dengan layar masuk: dua panel, identitas di kiri
+  dan kartu di kanan, dengan aksen tegak yang sama. Keduanya dilihat berurutan
+  dalam hitungan detik, jadi perbedaan susunan apa pun akan terbaca seperti
+  berpindah aplikasi.
 
-  Formulirnya BUKAN salinan: view_login_card.xml yang sama dipakai varian
-  ponsel. Yang berbeda hanya tempat dan lebarnya - dan lebar itu diatur di
-  tag <include> di sini, karena atribut layout_* pada akar berkas yang
-  disertakan selalu kalah oleh tag include.
-
-  Semua id yang dibaca LoginActivity sama persis dengan varian ponsel, jadi
-  tidak ada satu baris Java pun yang perlu tahu varian mana yang dimuat.
+  Kartunya view_activation_card.xml yang sama dengan varian ponsel; yang
+  berbeda hanya tempat dan lebarnya.
 -->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/rootLogin"
+    android:id="@+id/rootActivation"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/app_bg">
@@ -118,14 +112,14 @@
                     android:layout_marginTop="8dp"
                     android:lineSpacingExtra="3dp"
                     android:maxLines="3"
-                    android:text="@string/login_subtitle"
+                    android:text="@string/activation_subtitle"
                     android:textColor="@color/text_secondary"
                     android:textSize="16sp" />
             </LinearLayout>
 
             <!-- ===== Panel kanan: formulir ===== -->
             <include
-                layout="@layout/view_login_card"
+                layout="@layout/view_activation_card"
                 android:layout_width="@dimen/login_card_max_width"
                 android:layout_height="wrap_content" />
 

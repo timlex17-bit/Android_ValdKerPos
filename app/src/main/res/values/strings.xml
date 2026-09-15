@@ -1480,9 +1480,16 @@
 
     <!-- Layar masuk: aktivasi kode toko sekali seumur perangkat. -->
     <string name="login_logo_letter">V</string>
-    <string name="login_shop_code_once">Entered once. This device stays linked to the store.</string>
     <string name="login_active_shop">Active store</string>
     <string name="login_change_shop_title">Change store?</string>
     <string name="login_change_shop_message">This device will ask for a store code again on the next sign-in.</string>
     <string name="login_server_url">Server address</string>
+
+    <!-- Layar aktivasi perangkat (kode toko, sekali). -->
+    <string name="activation_subtitle">Set up this device</string>
+    <string name="activation_step">Step 1 of 2</string>
+    <string name="activation_title">Enter your shop code</string>
+    <string name="activation_message">Ask the owner for the shop code. It is entered once — this device stays linked to that shop, and the next screens only ask for username and password.</string>
+    <string name="activation_continue">Continue</string>
+    <string name="activation_invalid">Enter a valid shop code (at least 3 characters).</string>
 </resources>

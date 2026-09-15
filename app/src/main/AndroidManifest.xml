@@ -58,6 +58,17 @@
             android:name=".LoginActivity"
             android:exported="false" />
 
+        <!--
+          Aktivasi perangkat: kode toko, sekali seumur pemasangan. Dibuka
+          LoginActivity ketika perangkat belum terikat pada sebuah toko.
+          windowSoftInputMode adjustResize supaya kolomnya tidak tertutup
+          papan ketik pada ponsel pendek.
+        -->
+        <activity
+            android:name=".ShopActivationActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
         <activity
             android:name=".ui.dashboard.HomeDashboardActivity"
             android:windowSoftInputMode="adjustPan"

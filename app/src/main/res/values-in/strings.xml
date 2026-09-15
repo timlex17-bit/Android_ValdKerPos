@@ -1495,9 +1495,16 @@
 
     <!-- Layar masuk: aktivasi kode toko sekali seumur perangkat. -->
     <string name="login_logo_letter">V</string>
-    <string name="login_shop_code_once">Diisi sekali saja. Perangkat ini tetap terhubung ke toko tersebut.</string>
     <string name="login_active_shop">Toko aktif</string>
     <string name="login_change_shop_title">Ganti toko?</string>
     <string name="login_change_shop_message">Perangkat ini akan meminta kode toko lagi pada masuk berikutnya.</string>
     <string name="login_server_url">Alamat server</string>
+
+    <!-- Layar aktivasi perangkat (kode toko, sekali). -->
+    <string name="activation_subtitle">Siapkan perangkat ini</string>
+    <string name="activation_step">Langkah 1 dari 2</string>
+    <string name="activation_title">Masukkan kode toko</string>
+    <string name="activation_message">Minta kode toko kepada pemilik. Cukup diisi sekali — perangkat ini tetap terhubung ke toko tersebut, dan halaman berikutnya hanya meminta username dan password.</string>
+    <string name="activation_continue">Lanjut</string>
+    <string name="activation_invalid">Masukkan kode toko yang sah (minimal 3 karakter).</string>
 </resources>
