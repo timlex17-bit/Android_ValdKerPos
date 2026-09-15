@@ -35,59 +35,77 @@
         android:elevation="2dp"
         android:orientation="vertical"
         android:paddingTop="12dp"
-        android:paddingBottom="4dp">
+        android:paddingBottom="12dp">
 
-        <LinearLayout
+        <!--
+          Digeser mendatar, bukan dibagi rata.
+
+          Empat kotak yang berbagi lebar layar memang selalu muat - tetapi
+          pada ponsel 320dp masing-masing tinggal sekitar 70dp, labelnya
+          terpotong, dan tidak ada cara melihat sisanya. Membagi rata hanya
+          memindahkan masalahnya ke dalam kotak.
+
+          clipToPadding false: padding 16dp di kiri dan kanan menjadi jarak
+          awal/akhir baris yang ikut tergulir, jadi kotak pertama dan terakhir
+          tidak pernah menempel tepi layar - dan tidak pernah terpotong.
+        -->
+        <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:baselineAligned="false"
-            android:orientation="horizontal"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp">
+            android:clipToPadding="false"
+            android:paddingStart="@dimen/offline_row_padding"
+            android:paddingEnd="@dimen/offline_row_padding"
+            android:scrollbars="none">
 
-            <include
-                android:id="@+id/statPending"
-                layout="@layout/view_offline_stat"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:baselineAligned="false"
+                android:orientation="horizontal">
 
-            <include
-                android:id="@+id/statFailed"
-                layout="@layout/view_offline_stat"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                <include
+                    android:id="@+id/statPending"
+                    layout="@layout/view_offline_stat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/offline_stat_gap" />
 
-            <include
-                android:id="@+id/statReview"
-                layout="@layout/view_offline_stat"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                <include
+                    android:id="@+id/statFailed"
+                    layout="@layout/view_offline_stat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/offline_stat_gap" />
 
-            <include
-                android:id="@+id/statSynced"
-                layout="@layout/view_offline_stat"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-        </LinearLayout>
+                <include
+                    android:id="@+id/statReview"
+                    layout="@layout/view_offline_stat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/offline_stat_gap" />
+
+                <include
+                    android:id="@+id/statSynced"
+                    layout="@layout/view_offline_stat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+        </HorizontalScrollView>
 
         <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="12dp"
             android:clipToPadding="false"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
+            android:paddingStart="@dimen/offline_row_padding"
+            android:paddingEnd="@dimen/offline_row_padding"
             android:scrollbars="none">
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/chipGroupFilters"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:chipSpacingHorizontal="6dp"
+                app:chipSpacingHorizontal="8dp"
                 app:singleLine="true"
                 app:singleSelection="true"
                 app:selectionRequired="true">
@@ -144,7 +162,7 @@
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
                 android:paddingStart="12dp"
-                android:paddingTop="10dp"
+                android:paddingTop="16dp"
                 android:paddingEnd="12dp"
                 android:paddingBottom="12dp"
                 android:scrollbars="vertical"

@@ -123,4 +123,9 @@
     <dimen name="offline_banner_icon">20dp</dimen>
     <dimen name="offline_banner_margin">14dp</dimen>
     <dimen name="offline_banner_text">13sp</dimen>
+
+    <!-- Pesanan Offline di tablet: kartu sedikit lebih lebar. -->
+    <dimen name="offline_stat_min_width">128dp</dimen>
+    <dimen name="offline_stat_gap">12dp</dimen>
+    <dimen name="offline_row_padding">20dp</dimen>
 </resources>
