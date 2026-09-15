@@ -18,10 +18,14 @@
     android:orientation="horizontal"
     android:paddingTop="8dp">
 
+    <!--
+      Tingginya match_parent supaya persis sejajar dengan kolom nominal di
+      sebelahnya; lihat catatan yang sama di dialog_native_checkout.xml.
+    -->
     <FrameLayout
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:layout_weight="3"
         android:background="@drawable/bg_dialog_input"
         android:minHeight="@dimen/split_row_min_height">
 
@@ -29,6 +33,7 @@
             android:id="@+id/spSplitMethod"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
             android:background="@null"
             android:paddingStart="10dp"
             android:paddingEnd="28dp" />
@@ -43,11 +48,18 @@
             app:tint="@color/text_tertiary" />
     </FrameLayout>
 
+    <!--
+      Bobot 3:2, bukan 1:1. Yang di kiri memuat nama metode - "Bank
+      Transfer", "Kartu Debit" - sementara yang di kanan hanya memuat angka.
+      Dengan lebar sama rata, pada dialog ponsel selebar 300dp kolom metode
+      tersisa sekitar 92dp dan namanya terpotong jadi "Bank Tr...", padahal
+      kolom angkanya menyisakan ruang kosong.
+    -->
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_weight="1"
+        android:layout_weight="2"
         android:hint="@string/checkout_discount_hint">
 
         <com.google.android.material.textfield.TextInputEditText

@@ -494,12 +494,17 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
             cardOrderDetails.setVisibility(needTable || needDelivery ? View.VISIBLE : View.GONE);
         }
 
+        // Layout isi Spinner milik aplikasi, bukan android.R.layout.simple_*.
+        // Layout sistem membawa ukuran huruf dan padding dari tema perangkat,
+        // sehingga isi Spinner di popup ini tampil lebih besar dan tidak
+        // sebaris dengan kolom Material tepat di sebelahnya. Lihat
+        // res/layout/item_field_spinner.xml.
         customerAdapter = new ArrayAdapter<>(
                 requireContext(),
-                android.R.layout.simple_spinner_item,
+                R.layout.item_field_spinner,
                 customerOptions
         );
-        customerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        customerAdapter.setDropDownViewResource(R.layout.item_field_spinner_dropdown);
         spCustomer.setAdapter(customerAdapter);
         int preselectedIndex = findPreselectedCustomerIndex();
         if (preselectedIndex >= 0) {
@@ -508,10 +513,10 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
 
         paymentAdapter = new ArrayAdapter<>(
                 requireContext(),
-                android.R.layout.simple_spinner_item,
+                R.layout.item_field_spinner,
                 paymentOptions
         );
-        paymentAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        paymentAdapter.setDropDownViewResource(R.layout.item_field_spinner_dropdown);
         spPaymentMethod.setAdapter(paymentAdapter);
 
         int defaultIndex = 0;
@@ -525,22 +530,22 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
 
         bankAdapter = new ArrayAdapter<>(
                 requireContext(),
-                android.R.layout.simple_spinner_item,
+                R.layout.item_field_spinner,
                 bankOptions
         );
-        bankAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        bankAdapter.setDropDownViewResource(R.layout.item_field_spinner_dropdown);
         spBankAccount.setAdapter(bankAdapter);
 
         if (spDiscountMode != null) {
             ArrayAdapter<String> discountModeAdapter = new ArrayAdapter<>(
                     requireContext(),
-                    android.R.layout.simple_spinner_item,
+                    R.layout.item_field_spinner,
                     new String[]{
                             getString(R.string.checkout_discount_mode_amount),
                             getString(R.string.checkout_discount_mode_percent)
                     }
             );
-            discountModeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            discountModeAdapter.setDropDownViewResource(R.layout.item_field_spinner_dropdown);
             spDiscountMode.setAdapter(discountModeAdapter);
         }
 
@@ -673,8 +678,8 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
 
                 Spinner sp = row.findViewById(R.id.spSplitMethod);
                 ArrayAdapter<PaymentMethodOption> rowAdapter = new ArrayAdapter<>(
-                        requireContext(), android.R.layout.simple_spinner_item, paymentOptions);
-                rowAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        requireContext(), R.layout.item_field_spinner, paymentOptions);
+                rowAdapter.setDropDownViewResource(R.layout.item_field_spinner_dropdown);
                 sp.setAdapter(rowAdapter);
 
                 EditText amount = row.findViewById(R.id.etSplitAmount);

@@ -85,7 +85,7 @@
                     android:layout_marginTop="4dp"
                     android:gravity="center"
                     android:textColor="@color/brand_on_tint"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/checkout_label_text"
                     android:visibility="gone"
                     tools:text="Subtotal $10.00  -  Tax 11% $1.10"
                     tools:visibility="visible" />
@@ -115,7 +115,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/checkout_discount_label"
                     android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/checkout_label_text"
                     android:textStyle="bold" />
 
                 <LinearLayout
@@ -141,18 +141,27 @@
                             android:maxLines="1" />
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <!--
+                      match_parent, bukan wrap_content: di LinearLayout
+                      mendatar yang tingginya wrap_content, anak ber-
+                      match_parent mendapat tinggi anak tertinggi - yaitu
+                      kolom nominal di sebelahnya. Itulah yang membuat kotak
+                      "$" ini benar-benar sejajar dengannya, bukan kira-kira
+                      sejajar lewat angka tinggi yang disamakan dengan tangan
+                      dan menyimpang begitu ukuran huruf sistem berubah.
+                    -->
                     <FrameLayout
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="top"
+                        android:layout_height="match_parent"
                         android:layout_marginStart="8dp"
                         android:background="@drawable/bg_dialog_input"
-                        android:minHeight="@dimen/checkout_amount_field_min_height">
+                        android:minHeight="@dimen/checkout_field_min_height">
 
                         <Spinner
                             android:id="@+id/spDiscountMode"
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
+                            android:layout_gravity="center_vertical"
                             android:background="@null"
                             android:minWidth="@dimen/checkout_discount_mode_min_width"
                             android:paddingStart="12dp"
@@ -176,7 +185,7 @@
                     android:layout_marginTop="12dp"
                     android:text="@string/label_customer"
                     android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/checkout_label_text"
                     android:textStyle="bold" />
 
                 <FrameLayout
@@ -190,6 +199,7 @@
                         android:id="@+id/spCustomer"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:layout_gravity="center_vertical"
                         android:background="@null"
                         android:paddingStart="12dp"
                         android:paddingEnd="34dp" />
@@ -217,7 +227,7 @@
                     android:paddingBottom="4dp"
                     android:text="@string/checkout_points_zero"
                     android:textColor="@color/brand_on_tint"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/checkout_label_text"
                     android:textStyle="bold" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -245,7 +255,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/label_payment_method"
                     android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/checkout_label_text"
                     android:textStyle="bold" />
 
                 <FrameLayout
@@ -259,6 +269,7 @@
                         android:id="@+id/spPaymentMethod"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:layout_gravity="center_vertical"
                         android:background="@null"
                         android:paddingStart="12dp"
                         android:paddingEnd="34dp" />
@@ -329,7 +340,7 @@
                         android:layout_marginTop="12dp"
                         android:text="@string/label_bank_account"
                         android:textColor="@color/text_secondary"
-                        android:textSize="12sp"
+                        android:textSize="@dimen/checkout_label_text"
                         android:textStyle="bold" />
 
                     <FrameLayout
@@ -343,6 +354,7 @@
                             android:id="@+id/spBankAccount"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
+                            android:layout_gravity="center_vertical"
                             android:background="@null"
                             android:paddingStart="12dp"
                             android:paddingEnd="34dp" />
@@ -416,7 +428,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/checkout_split_label"
                     android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/checkout_label_text"
                     android:textStyle="bold" />
 
                 <LinearLayout
@@ -431,7 +443,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/checkout_label_text"
                     tools:text="Remaining for Cash: $33.34" />
 
                 <com.google.android.material.button.MaterialButton
@@ -479,7 +491,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/checkout_section_order_details"
                     android:textColor="@color/text_secondary"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/checkout_label_text"
                     android:textStyle="bold" />
 
                 <com.google.android.material.textfield.TextInputLayout

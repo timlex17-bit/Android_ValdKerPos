@@ -250,7 +250,6 @@
     <dimen name="workshop_remove_button_size">36dp</dimen>
 
     <!-- Popup pembayaran (dialog_native_checkout, item_split_payment). -->
-    <dimen name="checkout_amount_field_min_height">56dp</dimen>
     <dimen name="checkout_field_min_height">52dp</dimen>
     <dimen name="checkout_field_icon_size">18dp</dimen>
     <dimen name="checkout_discount_mode_min_width">72dp</dimen>
@@ -269,4 +268,13 @@
     <dimen name="row_action_padding_h">16dp</dimen>
     <dimen name="row_action_gap">8dp</dimen>
     <dimen name="row_action_text">13sp</dimen>
+
+    <!--
+      Metrik teks popup pembayaran. Dibuat token karena popup ini memuat dua
+      keluarga widget - kolom Material dan kotak berisi Spinner - dan satu-
+      satunya cara keduanya terbaca sebagai satu formulir adalah kalau ukuran
+      hurufnya memang datang dari angka yang sama.
+    -->
+    <dimen name="checkout_label_text">12sp</dimen>
+    <dimen name="checkout_field_text">15sp</dimen>
 </resources>

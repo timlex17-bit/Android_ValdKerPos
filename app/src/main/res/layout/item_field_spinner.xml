@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Isi terpilih sebuah Spinner di dalam kotak isian dialog.
+
+  Sebelum ini setiap Spinner di popup pembayaran memakai
+  android.R.layout.simple_spinner_item - layout milik SISTEM. Ukuran huruf,
+  warna, dan paddingnya datang dari tema perangkat, bukan dari aplikasi ini.
+  Akibatnya "Walk-in Customer" dan "Cash" tampil lebih besar daripada kolom
+  isian di sebelahnya, tidak sejajar dengan labelnya, dan menempel ke sisi
+  atas kotaknya - sementara kolom "0.00" tepat di sebelahnya memakai metrik
+  Material. Dua keluarga widget untuk satu pekerjaan yang sama.
+
+  Sekarang isinya milik aplikasi: ukuran huruf dari @dimen/checkout_field_text
+  (ikut membesar di tablet), warna dari palet, dan tingginya match_parent
+  dengan gravity center_vertical supaya benar-benar duduk di tengah kotak,
+  berapa pun tinggi kotak itu.
+
+  maxLines satu dengan elipsis: nama pelanggan bisa panjang, dan yang boleh
+  terjadi adalah teksnya terpotong dengan titik-titik - bukan barisnya
+  menumpuk lalu mendorong tinggi kotak.
+-->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:ellipsize="end"
+    android:gravity="center_vertical"
+    android:maxLines="1"
+    android:textColor="@color/text_primary"
+    android:textSize="@dimen/checkout_field_text" />

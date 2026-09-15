@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Satu baris pada daftar yang terbuka saat Spinner ditekan.
+
+  Dipisah dari item_field_spinner.xml karena perannya berbeda: yang ini
+  disentuh, jadi tingginya mengikuti ambang sasaran sentuh (@dimen/touch_target_min)
+  dan punya padding kiri-kanan sendiri; yang satu lagi hanya menampilkan
+  pilihan terpilih di dalam kotak yang sudah punya padding.
+-->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:ellipsize="end"
+    android:gravity="center_vertical"
+    android:maxLines="1"
+    android:minHeight="@dimen/touch_target_min"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:textColor="@color/text_primary"
+    android:textSize="@dimen/checkout_field_text" />

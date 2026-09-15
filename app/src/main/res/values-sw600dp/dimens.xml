@@ -111,4 +111,8 @@
     <dimen name="row_action_padding_h">20dp</dimen>
     <dimen name="row_action_gap">10dp</dimen>
     <dimen name="row_action_text">14sp</dimen>
+
+    <!-- Popup pembayaran di tablet: huruf satu tingkat lebih besar. -->
+    <dimen name="checkout_label_text">13sp</dimen>
+    <dimen name="checkout_field_text">16sp</dimen>
 </resources>

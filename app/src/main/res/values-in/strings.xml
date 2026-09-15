@@ -1127,7 +1127,7 @@
     <string name="checkout_discount_mode_amount">$</string>
     <string name="checkout_discount_mode_percent">%</string>
     <string name="msg_discount_exceeds_subtotal">Diskon tidak boleh melebihi subtotal.</string>
-    <string name="checkout_split_label">Pembayaran terbagi</string>
+    <string name="checkout_split_label">Pembayaran Terbagi</string>
     <string name="checkout_split_add">+ Tambah pembayaran</string>
     <string name="checkout_split_remove">Hapus</string>
     <string name="checkout_split_remaining">Sisa untuk %1$s: %2$s</string>
@@ -1372,7 +1372,7 @@
     <string name="cd_product_image">Gambar produk</string>
     <string name="cd_cart_increase">Tambah jumlah</string>
     <string name="cd_cart_decrease">Kurangi jumlah</string>
-    <string name="checkout_section_order_details">Detail pesanan</string>
+    <string name="checkout_section_order_details">Detail Pesanan</string>
     <string name="checkout_section_payment">Pembayaran</string>
     <string name="checkout_section_discount">Diskon dan pelanggan</string>
     <string name="checkout_total_due">Total bayar</string>

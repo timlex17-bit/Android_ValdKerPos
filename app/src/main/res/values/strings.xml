@@ -1110,7 +1110,7 @@
     <string name="checkout_discount_mode_amount">$</string>
     <string name="checkout_discount_mode_percent">%</string>
     <string name="msg_discount_exceeds_subtotal">Discount cannot exceed the subtotal.</string>
-    <string name="checkout_split_label">Split payment</string>
+    <string name="checkout_split_label">Split Payment</string>
     <string name="checkout_split_add">+ Add payment</string>
     <string name="checkout_split_remove">Remove</string>
     <string name="checkout_split_remaining">Remaining for %1$s: %2$s</string>
@@ -1357,7 +1357,7 @@
     <string name="cd_product_image">Product image</string>
     <string name="cd_cart_increase">Increase quantity</string>
     <string name="cd_cart_decrease">Decrease quantity</string>
-    <string name="checkout_section_order_details">Order details</string>
+    <string name="checkout_section_order_details">Order Details</string>
     <string name="checkout_section_payment">Payment</string>
     <string name="checkout_section_discount">Discount and customer</string>
     <string name="checkout_total_due">Total due</string>

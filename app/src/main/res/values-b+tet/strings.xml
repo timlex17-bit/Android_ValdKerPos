@@ -1119,7 +1119,7 @@
     <string name="checkout_discount_mode_amount">$</string>
     <string name="checkout_discount_mode_percent">%</string>
     <string name="msg_discount_exceeds_subtotal">Diskontu labele liu subtotál.</string>
-    <string name="checkout_split_label">Pagamentu fahe</string>
+    <string name="checkout_split_label">Pagamentu Fahe</string>
     <string name="checkout_split_add">+ Aumenta pagamentu</string>
     <string name="checkout_split_remove">Hasai</string>
     <string name="checkout_split_remaining">Resta ba %1$s: %2$s</string>
@@ -1346,7 +1346,7 @@
     <string name="cd_product_image">Imajen produtu</string>
     <string name="cd_cart_increase">Aumenta kuantidade</string>
     <string name="cd_cart_decrease">Hamenus kuantidade</string>
-    <string name="checkout_section_order_details">Detallu orden</string>
+    <string name="checkout_section_order_details">Detallu Orden</string>
     <string name="checkout_section_payment">Pagamentu</string>
     <string name="checkout_section_discount">Deskontu no kliente</string>
     <string name="checkout_total_due">Total atu selu</string>
