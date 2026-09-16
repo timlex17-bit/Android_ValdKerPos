@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Latar layar masuk dan layar aktivasi.
+
+  Dipasang pada AKAR, bukan pada blok kepalanya saja, dan itulah yang
+  membereskan bilah status: apa pun yang tersisa di balik bilah status -
+  termasuk saat jendela digambar sampai tepi layar di Android 15+ - adalah
+  ungu merek, jadi jam dan ikon baterai yang putih selalu berdiri di atas
+  ungu. Sebelumnya tugas itu dipegang satu View strip yang digambar sebelum
+  pita aksen, sehingga pita muda itu menutupinya dan ikon putih hilang di
+  atas latar terang.
+
+  Gradasinya miring dan tipis dengan sengaja: dua nada ungu yang berdekatan
+  memberi kedalaman tanpa menjadi hiasan yang meminta perhatian di layar
+  yang tugasnya hanya meminta dua kolom isian.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="315"
+        android:endColor="@color/brand_primary_bright"
+        android:startColor="@color/brand_primary_dark"
+        android:type="linear" />
+</shape>

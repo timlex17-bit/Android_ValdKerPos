@@ -108,6 +108,25 @@ public final class SystemBars {
     }
 
     /**
+     * Menjauhkan isi dari bilah status tanpa mewarnai apa pun.
+     *
+     * <p>Dipakai layar yang LATARNYA sendiri sudah ungu sampai ke tepi atas -
+     * layar masuk dan layar aktivasi - sehingga tidak perlu View strip
+     * tersendiri: yang terlihat di balik bilah status adalah latar itu, dan
+     * tugas yang tersisa hanyalah menurunkan isinya supaya tidak tertimpa jam
+     * dan ikon baterai. Sisi kiri/kanan ikut ditambah karena pada mode lanskap
+     * takik kamera berada di salah satu tepi panjang.
+     *
+     * <p>Bedanya dengan {@link #padTopBar(View)} hanya niatnya: yang itu
+     * menumbuhkan bilah atas yang memang berwarna, yang ini sekadar memberi
+     * ruang. Perilakunya sengaja sama persis supaya tidak ada dua aturan
+     * berbeda tentang takik.
+     */
+    public static void padTop(@Nullable View view) {
+        padTopBar(view);
+    }
+
+    /**
      * Memberi tinggi setinggi bilah status pada sebuah View polos. Dipakai
      * layar yang bagian atasnya terang (login, onboarding) supaya strip di
      * belakang bilah status tetap ungu seperti layar lain.

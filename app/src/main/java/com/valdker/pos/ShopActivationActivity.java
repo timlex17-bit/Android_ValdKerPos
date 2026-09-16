@@ -100,8 +100,11 @@ public class ShopActivationActivity extends AppCompatActivity {
             return;
         }
 
+        // Latar layar ini ungu sampai ke tepi atas jendela, jadi yang di
+        // balik bilah status sudah berwarna benar; yang perlu diatur hanya
+        // ruangnya. Lihat catatan di activity_login.xml.
         SystemBars.apply(this);
-        SystemBars.fitStatusScrim(findViewById(R.id.statusBarScrim));
+        SystemBars.padTop(findViewById(R.id.content));
         SystemBars.padBottom(findViewById(R.id.scroll));
 
         bindViews();

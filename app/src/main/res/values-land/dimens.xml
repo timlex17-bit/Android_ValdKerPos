@@ -39,4 +39,21 @@
     <dimen name="workshop_checkout_row_min_height">44dp</dimen>
     <dimen name="workshop_checkout_button_min_height">44dp</dimen>
     <dimen name="workshop_action_button_min_height">44dp</dimen>
+
+    <!--
+      Layar masuk & aktivasi pada ponsel yang dimiringkan. Tinggi layar
+      tinggal sekitar 360dp dan papan ketik memakan separuhnya, jadi kepala
+      ungunya dipendekkan supaya kolom isian tetap kelihatan tanpa digulir.
+
+      Tablet TIDAK terkena berkas ini meski sedang mendatar: values-sw600dp
+      menang atas values-land dalam urutan pemilihan sumber daya Android.
+    -->
+    <dimen name="login_logo_size">40dp</dimen>
+    <dimen name="login_logo_text">19sp</dimen>
+    <dimen name="login_app_name_text">19sp</dimen>
+    <dimen name="login_hero_padding_top">10dp</dimen>
+    <dimen name="login_hero_padding_bottom">14dp</dimen>
+    <dimen name="login_sheet_radius">22dp</dimen>
+    <dimen name="login_sheet_padding_top">18dp</dimen>
+    <dimen name="login_sheet_padding_bottom">16dp</dimen>
 </resources>

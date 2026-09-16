@@ -17,6 +17,23 @@
     <color name="brand_primary_dark">#50039B</color>
     <color name="status_bar_brand">#6204BF</color>
 
+    <!--
+      Nada terang dari ungu merek, dipakai ujung gradasi di kepala layar
+      masuk dan aktivasi. Hanya untuk latar besar: kontrasnya terhadap putih
+      2,9:1, cukup untuk bidang warna tetapi tidak untuk teks kecil.
+    -->
+    <color name="brand_primary_bright">#8A34E0</color>
+
+    <!--
+      Putih transparan untuk isi yang berdiri DI ATAS ungu merek. Dipakai
+      teks pendukung dan kotak logo di kepala layar masuk. Ditulis sebagai
+      alpha, bukan sebagai ungu muda tetap, supaya ikut benar kalau nada
+      gradasinya kelak diubah.
+    -->
+    <color name="text_on_brand_soft">#B8FFFFFF</color>
+    <color name="brand_overlay_soft">#26FFFFFF</color>
+    <color name="brand_overlay_stroke">#47FFFFFF</color>
+
     <!-- Dipakai gaya dialog bersama; lihat values/styles_dialog.xml. -->
     <color name="valora_accent">@color/brand_primary</color>
     <color name="valora_ink">#0F172A</color>

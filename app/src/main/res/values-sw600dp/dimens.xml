@@ -135,13 +135,23 @@
     <dimen name="offline_stat_gap">12dp</dimen>
     <dimen name="offline_row_padding">20dp</dimen>
 
-    <!-- Layar masuk di tablet: kartu tidak melebar mengikuti layar. -->
+    <!--
+      Layar masuk & aktivasi di tablet: kepalanya lebih lapang dan hurufnya
+      lebih besar, sementara formulirnya tetap ditahan selebar 480dp.
+    -->
     <dimen name="login_screen_padding">32dp</dimen>
-    <dimen name="login_card_padding">28dp</dimen>
     <dimen name="login_card_max_width">480dp</dimen>
-    <dimen name="login_logo_size">56dp</dimen>
+    <dimen name="login_logo_size">60dp</dimen>
+    <dimen name="login_logo_radius">20dp</dimen>
+    <dimen name="login_logo_text">28sp</dimen>
+    <dimen name="login_app_name_text">30sp</dimen>
+    <dimen name="login_hero_subtitle_text">15sp</dimen>
+    <dimen name="login_hero_padding_top">26dp</dimen>
+    <dimen name="login_hero_padding_bottom">40dp</dimen>
+    <dimen name="login_sheet_radius">36dp</dimen>
+    <dimen name="login_sheet_padding_top">40dp</dimen>
+    <dimen name="login_sheet_padding_bottom">32dp</dimen>
+    <dimen name="login_title_text">24sp</dimen>
     <dimen name="login_field_min_height">56dp</dimen>
     <dimen name="login_action_min_height">56dp</dimen>
-    <dimen name="login_accent_height">260dp</dimen>
-    <dimen name="login_pane_min_height">520dp</dimen>
 </resources>

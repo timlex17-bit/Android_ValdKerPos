@@ -282,13 +282,32 @@
     <dimen name="offline_stat_gap">10dp</dimen>
     <dimen name="offline_row_padding">16dp</dimen>
 
-    <!-- Layar masuk. -->
+    <!--
+      Layar masuk & layar aktivasi.
+
+      Keduanya memakai satu tata letak yang sama untuk SEMUA ukuran layar -
+      kepala ungu di atas, lembar putih di bawahnya - dan yang berbeda antar
+      perangkat hanyalah angka-angka di bawah ini. Itu sebabnya tidak ada
+      lagi berkas layout terpisah untuk tablet yang harus dijaga tetap mirip
+      dengan varian ponsel.
+
+      login_card_max_width menahan formulir agar tidak ikut melebar: kolom
+      isian selebar 1200dp membuat mata menyeberang layar untuk dua baris
+      ketikan.
+    -->
     <dimen name="login_screen_padding">20dp</dimen>
-    <dimen name="login_card_padding">20dp</dimen>
     <dimen name="login_card_max_width">440dp</dimen>
     <dimen name="login_logo_size">48dp</dimen>
+    <dimen name="login_logo_radius">16dp</dimen>
+    <dimen name="login_logo_text">22sp</dimen>
+    <dimen name="login_app_name_text">22sp</dimen>
+    <dimen name="login_hero_subtitle_text">13sp</dimen>
+    <dimen name="login_hero_padding_top">18dp</dimen>
+    <dimen name="login_hero_padding_bottom">26dp</dimen>
+    <dimen name="login_sheet_radius">28dp</dimen>
+    <dimen name="login_sheet_padding_top">26dp</dimen>
+    <dimen name="login_sheet_padding_bottom">24dp</dimen>
+    <dimen name="login_title_text">20sp</dimen>
     <dimen name="login_field_min_height">52dp</dimen>
     <dimen name="login_action_min_height">52dp</dimen>
-    <dimen name="login_accent_height">188dp</dimen>
-    <dimen name="login_pane_min_height">0dp</dimen>
 </resources>

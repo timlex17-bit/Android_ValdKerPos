@@ -1,274 +1,267 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Kartu formulir masuk: toko aktif, nama pengguna, sandi, lanjutan.
+  Formulir masuk: toko aktif, nama pengguna, sandi, lanjutan.
 
   Tidak ada kolom kode toko di sini. Kode itu diisi sekali di
   ShopActivationActivity sebelum layar masuk pernah tampil, jadi yang tersisa
   untuk diketik tiap hari hanyalah dua hal yang memang berganti pemakainya.
 
-  Satu berkas dipakai dua tata letak - ponsel satu kolom dan tablet dua panel -
-  supaya tidak ada dua salinan formulir yang harus dijaga tetap mirip. Semua
-  id di dalamnya dibaca LoginActivity tanpa peduli varian mana yang dimuat.
+  AKARNYA BUKAN LAGI KARTU
 
-  Lebarnya TIDAK diatur di sini: layout pemanggil yang menentukannya lewat tag
-  <include>, karena atribut layout_* pada akar berkas yang disertakan memang
-  selalu kalah oleh tag include.
+  Dulu berkas ini membungkus dirinya dengan MaterialCardView bergaris tepi,
+  karena ia berdiri di atas latar abu-abu. Sekarang ia duduk di dalam lembar
+  putih milik activity_login.xml, jadi kartu di dalam kartu hanya menggambar
+  garis kedua yang tidak memisahkan apa pun. Yang tersisa di sini murni
+  isinya; permukaan, sudut membulat, dan jarak ke tepi layar adalah urusan
+  lembar itu.
+
+  Lebarnya juga TIDAK diatur di sini melainkan oleh tag <include> pemanggil,
+  karena atribut layout_* pada akar berkas yang disertakan selalu kalah oleh
+  tag include.
 -->
-<com.google.android.material.card.MaterialCardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/cardRight"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardBackgroundColor="@color/surface"
-    app:cardCornerRadius="@dimen/radius_surface"
-    app:cardElevation="0dp"
-    app:strokeColor="@color/stroke"
-    app:strokeWidth="1dp">
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:letterSpacing="0.04"
+        android:maxLines="1"
+        android:text="@string/login_welcome"
+        android:textColor="@color/brand_primary"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:text="@string/login_title"
+        android:textColor="@color/text_primary"
+        android:textSize="@dimen/login_title_text"
+        android:textStyle="bold" />
+
+    <!--
+      Toko aktif. Kode tokonya tidak bisa diketik di layar ini sama sekali -
+      ia diisi sekali di ShopActivationActivity - tetapi tetap diperlihatkan,
+      karena kasir berhak tahu dia sedang masuk ke toko mana sebelum
+      mengetik sandinya. "Ganti" mengantar kembali ke layar aktivasi, selalu
+      lewat konfirmasi.
+    -->
+    <LinearLayout
+        android:id="@+id/groupActiveShop"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:background="@drawable/bg_login_badge"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="14dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="8dp"
+        tools:visibility="visible">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:letterSpacing="0.06"
+                android:maxLines="1"
+                android:text="@string/login_active_shop"
+                android:textAllCaps="true"
+                android:textColor="@color/text_tertiary"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvActiveShop"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                tools:text="VALDKER" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnChangeShop"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:letterSpacing="0"
+            android:maxLines="1"
+            android:minWidth="0dp"
+            android:minHeight="@dimen/touch_target_min"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:text="@string/action_change"
+            android:textAllCaps="false"
+            android:textColor="@color/brand_primary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:cornerRadius="@dimen/radius_surface_sm"
+            app:rippleColor="@color/brand_tint" />
+    </LinearLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.Valora.TextField"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="@string/login_username">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etUsername"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints="username"
+            android:imeOptions="actionNext"
+            android:inputType="text"
+            android:maxLines="1"
+            android:minHeight="@dimen/login_field_min_height"
+            android:textColor="@color/text_primary" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilPassword"
+        style="@style/Widget.Valora.TextField"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:hint="@string/login_password"
+        app:endIconMode="password_toggle"
+        app:endIconTint="@color/icon_muted">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints="password"
+            android:imeOptions="actionDone"
+            android:inputType="textPassword"
+            android:maxLines="1"
+            android:minHeight="@dimen/login_field_min_height"
+            android:textColor="@color/text_primary" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnLogin"
+        style="@style/Widget.Valora.PrimaryButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:minHeight="@dimen/login_action_min_height"
+        android:text="@string/login_button"
+        android:textSize="15sp" />
+
+    <!--
+      Bagian lanjutan: alamat server. Tersembunyi karena hanya dipakai saat
+      memasang aplikasi ke server lain, dan kolom yang salah diisi di sini
+      membuat seluruh aplikasi gagal tanpa sebab yang jelas bagi kasir.
+    -->
+    <LinearLayout
+        android:id="@+id/btnToggleAdvanced"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:background="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:minHeight="@dimen/touch_target_min"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tvAdvancedLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@string/login_advanced"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/imgAdvancedChevron"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_arrow_down"
+            app:tint="@color/text_tertiary" />
+    </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/layoutAdvanced"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="@dimen/login_card_padding">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:text="@string/login_welcome"
-            android:textColor="@color/brand_primary"
-            android:textSize="12sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:text="@string/login_title"
-            android:textColor="@color/text_primary"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
-        <!--
-          Toko aktif. Kode tokonya tidak bisa diketik di layar ini sama
-          sekali - ia diisi sekali di ShopActivationActivity - tetapi tetap
-          diperlihatkan, karena kasir berhak tahu dia sedang masuk ke toko
-          mana sebelum mengetik sandinya. "Ganti" mengantar kembali ke layar
-          aktivasi, selalu lewat konfirmasi.
-        -->
-        <LinearLayout
-            android:id="@+id/groupActiveShop"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:background="@drawable/bg_login_badge"
-            android:baselineAligned="false"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="14dp"
-            android:paddingTop="8dp"
-            android:paddingEnd="8dp"
-            android:paddingBottom="8dp"
-            tools:visibility="visible">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:letterSpacing="0.06"
-                    android:maxLines="1"
-                    android:text="@string/login_active_shop"
-                    android:textAllCaps="true"
-                    android:textColor="@color/text_tertiary"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tvActiveShop"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:textColor="@color/text_primary"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    tools:text="VALDKER" />
-            </LinearLayout>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnChangeShop"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:letterSpacing="0"
-                android:maxLines="1"
-                android:minWidth="0dp"
-                android:minHeight="@dimen/touch_target_min"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
-                android:text="@string/action_change"
-                android:textAllCaps="false"
-                android:textColor="@color/brand_primary"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                app:cornerRadius="@dimen/radius_surface_sm"
-                app:rippleColor="@color/brand_tint" />
-        </LinearLayout>
+        android:visibility="gone"
+        tools:visibility="visible">
 
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.Valora.TextField"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:hint="@string/login_username">
+            android:layout_marginTop="8dp"
+            android:hint="@string/login_server_url">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etUsername"
+                android:id="@+id/etServerUrl"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:autofillHints="username"
-                android:imeOptions="actionNext"
-                android:inputType="text"
-                android:maxLines="1"
-                android:minHeight="@dimen/login_field_min_height"
-                android:textColor="@color/text_primary" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilPassword"
-            style="@style/Widget.Valora.TextField"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:hint="@string/login_password"
-            app:endIconMode="password_toggle"
-            app:endIconTint="@color/icon_muted">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etPassword"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:autofillHints="password"
                 android:imeOptions="actionDone"
-                android:inputType="textPassword"
+                android:inputType="textUri"
                 android:maxLines="1"
                 android:minHeight="@dimen/login_field_min_height"
                 android:textColor="@color/text_primary" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnLogin"
-            style="@style/Widget.Valora.PrimaryButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:minHeight="@dimen/login_action_min_height"
-            android:text="@string/login_button"
-            android:textSize="15sp" />
-
-        <!--
-          Bagian lanjutan: alamat server. Tersembunyi karena hanya
-          dipakai saat memasang aplikasi ke server lain, dan kolom
-          yang salah diisi di sini membuat seluruh aplikasi gagal
-          tanpa sebab yang jelas bagi kasir.
-        -->
-        <LinearLayout
-            android:id="@+id/btnToggleAdvanced"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:background="?attr/selectableItemBackground"
-            android:gravity="center_vertical"
-            android:minHeight="@dimen/touch_target_min"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/tvAdvancedLabel"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:text="@string/login_advanced"
-                android:textColor="@color/text_secondary"
-                android:textSize="13sp"
-                android:textStyle="bold" />
-
-            <ImageView
-                android:id="@+id/imgAdvancedChevron"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:contentDescription="@null"
-                android:src="@drawable/ic_arrow_down"
-                app:tint="@color/text_tertiary" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/layoutAdvanced"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone"
-            tools:visibility="visible">
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Valora.TextField"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:hint="@string/login_server_url">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etServerUrl"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:imeOptions="actionDone"
-                    android:inputType="textUri"
-                    android:maxLines="1"
-                    android:minHeight="@dimen/login_field_min_height"
-                    android:textColor="@color/text_primary" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <TextView
-                android:id="@+id/tvServerOrigin"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:ellipsize="end"
-                android:maxLines="2"
-                android:textColor="@color/text_tertiary"
-                android:textSize="12sp"
-                tools:text="https://api.valdker.web.id/api" />
-        </LinearLayout>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnDemo"
-            style="@style/Widget.Material3.Button.TextButton"
+        <TextView
+            android:id="@+id/tvServerOrigin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:minHeight="@dimen/touch_target_min"
-            android:text="@string/login_demo"
-            android:textAllCaps="false"
-            android:textColor="@color/text_secondary"
-            android:textSize="13sp"
-            android:visibility="gone"
-            tools:visibility="visible" />
-
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textColor="@color/text_tertiary"
+            android:textSize="12sp"
+            tools:text="https://api.valdker.web.id/api" />
     </LinearLayout>
-</com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnDemo"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:minHeight="@dimen/touch_target_min"
+        android:text="@string/login_demo"
+        android:textAllCaps="false"
+        android:textColor="@color/text_secondary"
+        android:textSize="13sp"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+</LinearLayout>

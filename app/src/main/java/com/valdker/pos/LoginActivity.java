@@ -112,14 +112,18 @@ public class LoginActivity extends AppCompatActivity {
 
     /**
      * Layar masuk memakai bilah status ungu yang sama dengan seluruh aplikasi.
-     * Sebelumnya ia tidak menyiapkan bilah sistem sama sekali, jadi warnanya
-     * bergantung pada tema - yang sejak targetSdk 36 diabaikan Android 15+ -
-     * dan strip di belakang bilah status menampilkan latar terang layar ini
-     * dengan ikon yang warnanya ditentukan layar sebelumnya.
+     *
+     * <p>Warnanya kini datang dari LATAR layar itu sendiri, yang ungu sampai
+     * ke tepi atas jendela, bukan dari sebuah View strip setinggi bilah
+     * status. Cara lama masih dipakai layar lain dan benar di sana, tetapi di
+     * sini strip itu digambar sebelum pita aksen muda dan tertutup olehnya -
+     * jam serta ikon baterai yang putih berdiri di atas lavender dan praktis
+     * hilang. Yang tersisa untuk diatur di sini hanyalah ruang: isi diturunkan
+     * agar tidak tertimpa bilah status, dan dijauhkan dari bilah navigasi.
      */
     private void setupSystemBars() {
         SystemBars.apply(this);
-        SystemBars.fitStatusScrim(findViewById(R.id.statusBarScrim));
+        SystemBars.padTop(findViewById(R.id.content));
         SystemBars.padBottom(findViewById(R.id.scroll));
     }
 

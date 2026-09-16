@@ -56,7 +56,8 @@
         <!-- ✅ NEW: HOME DASHBOARD -->
         <activity
             android:name=".LoginActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
         <!--
           Aktivasi perangkat: kode toko, sekali seumur pemasangan. Dibuka
