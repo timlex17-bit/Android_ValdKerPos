@@ -141,6 +141,14 @@ public class HomeDashboardActivity extends AppCompatActivity {
     /** Popup kabar data lokal; menggantikan kalimat panjang di tvSubtitle. */
     @Nullable
     private OfflineNotice offlineNotice;
+
+    /**
+     * Kabar kesegaran data dari pembacaan lokal terakhir, disimpan untuk
+     * dipakai NANTI - hanya kalau ternyata servernya memang tidak terjangkau.
+     * Pembacaan lokal sendiri tidak membuktikan apa pun tentang sambungan.
+     */
+    @Nullable
+    private ReportCacheRepository.CacheInfo lastLocalCacheInfo;
     private ImageView imgLogo;
 
     private TextView tvSumValue;
@@ -622,8 +630,10 @@ public class HomeDashboardActivity extends AppCompatActivity {
                     @Override
                     public void onLocal(@NonNull ReportRepository.ReportResponse response,
                                         @NonNull ReportCacheRepository.CacheInfo cacheInfo) {
+                        // Angkanya dipasang, tetapi TIDAK ada pemberitahuan
+                        // keadaan sambungan di sini - lihat announceOffline().
+                        lastLocalCacheInfo = cacheInfo;
                         applyDashboardSummaryResponse(response.raw);
-                        showDashboardCacheLabel(cacheInfo);
                     }
 
                     @Override
@@ -631,15 +641,12 @@ public class HomeDashboardActivity extends AppCompatActivity {
                                          @NonNull ReportCacheRepository.CacheInfo cacheInfo) {
                         logd("dashboard-summary response received");
                         applyDashboardSummaryResponse(response.raw);
-                        showDashboardCacheLabel(cacheInfo);
+                        announceOnline();
                     }
 
                     @Override
                     public void onNoInternet(boolean hasLocalData) {
-                        if (!hasLocalData) {
-                            setSummaryUnavailable();
-                            showDashboardMessage(ReportCacheRepository.NO_LOCAL_DASHBOARD_DATA_MESSAGE);
-                        }
+                        announceOffline(hasLocalData);
                     }
 
                     @Override
@@ -648,6 +655,18 @@ public class HomeDashboardActivity extends AppCompatActivity {
                         if (!hasLocalData) {
                             setSummaryUnavailable();
                         }
+
+                        // statusCode 0 berarti tidak ada respons sama sekali -
+                        // waktu habis, nama host tidak terpecahkan, sambungan
+                        // ditolak. Itu memang keadaan luring. Sebaliknya 401,
+                        // 403, atau 500 datang DARI server: servernya
+                        // terjangkau, jadi mengatakan "sedang luring" kepada
+                        // pengguna hanya menyesatkan.
+                        if (statusCode <= 0) {
+                            announceOffline(hasLocalData);
+                            return;
+                        }
+
                         if (notifyOnRemoteError && !hasLocalData) {
                             Toast.makeText(
                                     HomeDashboardActivity.this,
@@ -691,15 +710,37 @@ public class HomeDashboardActivity extends AppCompatActivity {
      * <p>Sekarang tvSubtitle tetap pada kalimat tetapnya, dan kabar ini
      * muncul sebagai popup yang harus ditutup sendiri - satu kali, saat
      * keadaan berubah menjadi luring.
+     *
+     * <p><b>Dan keadaan luring hanya boleh disimpulkan dari jaringan, bukan
+     * dari dibacanya cache.</b> Pemuatan dashboard selalu berjalan dua
+     * tahap: baris tersimpan dibacakan lebih dulu supaya angkanya langsung
+     * terlihat, lalu jawaban server menggantikannya. Tahap pertama itu
+     * SELALU membawa cached = true, bahkan ketika sambungan sempurna. Dulu
+     * tahap itu ikut mengumumkan keadaan, sehingga setiap kali layar ini
+     * kembali tampil - misalnya sepulang dari layar kasir - keadaannya
+     * berputar daring, luring, lalu daring lagi, dan popupnya muncul
+     * kembali menuntut satu ketukan padahal tidak ada yang benar-benar
+     * terjadi. Itulah yang diperbaiki: yang mengumumkan hanya onRemote
+     * (daring), onNoInternet, dan kegagalan yang sama sekali tanpa respons.
      */
-    private void showDashboardCacheLabel(@NonNull ReportCacheRepository.CacheInfo cacheInfo) {
+    private void announceOffline(boolean hasLocalData) {
         if (offlineNotice == null) return;
-        offlineNotice.setOffline(cacheInfo.cached, cacheInfo.dashboardLabel());
+
+        if (!hasLocalData) {
+            setSummaryUnavailable();
+            offlineNotice.setOffline(true, ReportCacheRepository.NO_LOCAL_DASHBOARD_DATA_MESSAGE);
+            return;
+        }
+
+        CharSequence label = lastLocalCacheInfo != null
+                ? lastLocalCacheInfo.dashboardLabel()
+                : null;
+        offlineNotice.setOffline(true, label);
     }
 
-    private void showDashboardMessage(@NonNull String message) {
+    private void announceOnline() {
         if (offlineNotice == null) return;
-        offlineNotice.setOffline(true, message);
+        offlineNotice.setOffline(false, null);
     }
 
     private double firstDouble(@NonNull JSONObject object, @NonNull String... keys) {
