@@ -69,14 +69,27 @@
     <dimen name="row_price_text">15sp</dimen>
     <dimen name="row_stepper_button">30dp</dimen>
     <dimen name="product_action_size">40dp</dimen>
-    <dimen name="category_chip_height">38dp</dimen>
-    <dimen name="category_chip_padding">12dp</dimen>
+    <!--
+      Bilah kategori kasir restoran di layar lebar sengaja lebih tinggi
+      daripada di ponsel. Di tablet bilah ini adalah tempat kasir memilih
+      kelompok menu puluhan kali per jam sambil berdiri, sering dengan satu
+      tangan memegang nampan, sementara ruang vertikalnya berlimpah - 18dp
+      tambahan di sini tidak terasa hilang dari daftar menu di atasnya,
+      tetapi menjadikan sasaran ketuknya jauh lebih mudah dikenai.
+
+      Ketiganya harus ikut berubah bersama-sama: tinggi bilah = tinggi chip
+      + dua kali jarak dalamnya (48 + 2x10 = 68), jadi mengubah satu saja
+      akan meninggalkan celah kosong atau memotong chipnya.
+    -->
+    <dimen name="category_chip_height">48dp</dimen>
+    <dimen name="category_chip_padding">14dp</dimen>
     <dimen name="category_chip_gap">8dp</dimen>
-    <dimen name="category_chip_icon_box">24dp</dimen>
-    <dimen name="category_chip_icon">18dp</dimen>
-    <dimen name="category_chip_text">13sp</dimen>
-    <dimen name="category_bar_min_height">50dp</dimen>
+    <dimen name="category_chip_icon_box">28dp</dimen>
+    <dimen name="category_chip_icon">20dp</dimen>
+    <dimen name="category_chip_text">14sp</dimen>
+    <dimen name="category_bar_min_height">68dp</dimen>
     <dimen name="category_bar_margin">16dp</dimen>
+    <dimen name="category_bar_padding">10dp</dimen>
 
     <!--
       Tablet. Ukuran komponen sengaja sama dengan ponsel di sebagian besar
