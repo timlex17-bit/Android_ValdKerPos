@@ -27,8 +27,12 @@ import org.junit.runner.RunWith;
  * biasa. Uji ini mengunci dua hal yang mudah hilang lagi tanpa disadari:
  *
  * <ol>
- *   <li>Chipnya tidak pernah lebih pendek daripada sasaran ketuk minimum
- *       Material, 48dp.</li>
+ *   <li>Chipnya tidak pernah lebih pendek daripada 40dp, tinggi chip
+ *       Material yang lazim untuk chip berisi ikon dan teks. Angka ini
+ *       adalah LANTAI, bukan sasaran: pemilik toko sempat mencoba 48dp dan
+ *       menilainya terlalu tinggi karena memakan daftar menu di atasnya,
+ *       jadi yang dijaga di sini hanyalah bahwa ia tidak pernah kembali
+ *       sependek 34dp - ukuran yang membuat ketukan sering meleset.</li>
  *   <li>Tinggi bilahnya tetap sama dengan tinggi chip ditambah dua kali jarak
  *       dalam RecyclerView-nya. Ketiga angka itu ada di tiga baris dimen yang
  *       terpisah, jadi mengubah satu saja - yang wajar dilakukan orang yang
@@ -46,21 +50,26 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class PosCategoryBarHeightTest {
 
-    /** Sasaran ketuk minimum yang disarankan Material. */
-    private static final int MIN_TOUCH_TARGET_DP = 48;
+    /**
+     * Lantai tinggi chip. Bukan sasaran ketuk 48dp yang disarankan Material -
+     * itu dinilai terlalu tinggi untuk bilah yang duduk tepat di bawah daftar
+     * menu - melainkan tinggi chip Material yang lazim untuk chip berisi ikon
+     * dan teks.
+     */
+    private static final int MIN_CHIP_DP = 40;
 
     /** smallestScreenWidthDp yang memilih values/ (ponsel) dan values-sw600dp/. */
     private static final int PHONE_SW_DP = 360;
     private static final int TABLET_SW_DP = 600;
 
     @Test
-    public void categoryChipIsAtLeastATouchTargetOnPhones() {
-        assertChipIsTouchTarget(PHONE_SW_DP);
+    public void categoryChipKeepsItsFloorOnPhones() {
+        assertChipKeepsItsFloor(PHONE_SW_DP);
     }
 
     @Test
-    public void categoryChipIsAtLeastATouchTargetOnWideScreens() {
-        assertChipIsTouchTarget(TABLET_SW_DP);
+    public void categoryChipKeepsItsFloorOnWideScreens() {
+        assertChipKeepsItsFloor(TABLET_SW_DP);
     }
 
     @Test
@@ -73,18 +82,18 @@ public class PosCategoryBarHeightTest {
         assertBarMatchesChip(TABLET_SW_DP);
     }
 
-    private void assertChipIsTouchTarget(int smallestWidthDp) {
+    private void assertChipKeepsItsFloor(int smallestWidthDp) {
         try (ActivityScenario<TestHostActivity> scenario =
                      ActivityScenario.launch(TestHostActivity.class)) {
             scenario.onActivity(activity -> {
                 Context ctx = configFor(activity, smallestWidthDp);
                 int chip = ctx.getResources().getDimensionPixelSize(R.dimen.category_chip_height);
-                int minimum = dpToPx(ctx, MIN_TOUCH_TARGET_DP);
+                int minimum = dpToPx(ctx, MIN_CHIP_DP);
 
                 if (chip < minimum) {
                     throw new AssertionError("Chip kategori pada sw" + smallestWidthDp
-                            + "dp setinggi " + chip + "px, di bawah sasaran ketuk minimum "
-                            + minimum + "px (" + MIN_TOUCH_TARGET_DP + "dp).");
+                            + "dp setinggi " + chip + "px, di bawah lantai "
+                            + minimum + "px (" + MIN_CHIP_DP + "dp).");
                 }
 
                 // Diukur sungguhan, bukan hanya angka dimennya: chip yang
@@ -100,7 +109,7 @@ public class PosCategoryBarHeightTest {
                 if (chipView.getMeasuredHeight() < minimum) {
                     throw new AssertionError("Chip kategori pada sw" + smallestWidthDp
                             + "dp terukur " + chipView.getMeasuredHeight()
-                            + "px, di bawah sasaran ketuk minimum " + minimum + "px.");
+                            + "px, di bawah lantai " + minimum + "px.");
                 }
             });
         }

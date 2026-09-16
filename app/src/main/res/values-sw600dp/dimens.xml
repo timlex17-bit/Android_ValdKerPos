@@ -70,24 +70,23 @@
     <dimen name="row_stepper_button">30dp</dimen>
     <dimen name="product_action_size">40dp</dimen>
     <!--
-      Bilah kategori kasir restoran di layar lebar, satu tingkat lebih besar
-      lagi daripada di ponsel. Ruang vertikal tablet berlimpah, jadi 10dp
-      tambahan tidak terasa hilang dari daftar menu di atasnya, sementara
-      chip 54dp nyaman ditekan dari jarak berdiri.
+      Bilah kategori kasir restoran di layar lebar: chip 44dp, bilah 64dp -
+      satu tingkat di atas ponsel, karena tablet dilihat dan ditekan dari
+      jarak berdiri yang lebih jauh, bukan karena ruangnya kebetulan ada.
 
       Seperti di ponsel, angkanya terikat: tinggi bilah = tinggi chip + dua
-      kali jarak dalam RecyclerView-nya (54 + 2x11 = 76). Dijaga oleh
+      kali jarak dalam RecyclerView-nya (44 + 2x10 = 64). Dijaga oleh
       PosCategoryBarHeightTest.
     -->
-    <dimen name="category_chip_height">54dp</dimen>
-    <dimen name="category_chip_padding">16dp</dimen>
+    <dimen name="category_chip_height">44dp</dimen>
+    <dimen name="category_chip_padding">14dp</dimen>
     <dimen name="category_chip_gap">8dp</dimen>
-    <dimen name="category_chip_icon_box">30dp</dimen>
-    <dimen name="category_chip_icon">22dp</dimen>
+    <dimen name="category_chip_icon_box">26dp</dimen>
+    <dimen name="category_chip_icon">18dp</dimen>
     <dimen name="category_chip_text">14sp</dimen>
-    <dimen name="category_bar_min_height">76dp</dimen>
+    <dimen name="category_bar_min_height">64dp</dimen>
     <dimen name="category_bar_margin">16dp</dimen>
-    <dimen name="category_bar_padding">11dp</dimen>
+    <dimen name="category_bar_padding">10dp</dimen>
 
     <!--
       Tablet. Ukuran komponen sengaja sama dengan ponsel di sebagian besar
