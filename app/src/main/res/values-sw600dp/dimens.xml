@@ -70,26 +70,24 @@
     <dimen name="row_stepper_button">30dp</dimen>
     <dimen name="product_action_size">40dp</dimen>
     <!--
-      Bilah kategori kasir restoran di layar lebar sengaja lebih tinggi
-      daripada di ponsel. Di tablet bilah ini adalah tempat kasir memilih
-      kelompok menu puluhan kali per jam sambil berdiri, sering dengan satu
-      tangan memegang nampan, sementara ruang vertikalnya berlimpah - 18dp
-      tambahan di sini tidak terasa hilang dari daftar menu di atasnya,
-      tetapi menjadikan sasaran ketuknya jauh lebih mudah dikenai.
+      Bilah kategori kasir restoran di layar lebar, satu tingkat lebih besar
+      lagi daripada di ponsel. Ruang vertikal tablet berlimpah, jadi 10dp
+      tambahan tidak terasa hilang dari daftar menu di atasnya, sementara
+      chip 54dp nyaman ditekan dari jarak berdiri.
 
-      Ketiganya harus ikut berubah bersama-sama: tinggi bilah = tinggi chip
-      + dua kali jarak dalamnya (48 + 2x10 = 68), jadi mengubah satu saja
-      akan meninggalkan celah kosong atau memotong chipnya.
+      Seperti di ponsel, angkanya terikat: tinggi bilah = tinggi chip + dua
+      kali jarak dalam RecyclerView-nya (54 + 2x11 = 76). Dijaga oleh
+      PosCategoryBarHeightTest.
     -->
-    <dimen name="category_chip_height">48dp</dimen>
-    <dimen name="category_chip_padding">14dp</dimen>
+    <dimen name="category_chip_height">54dp</dimen>
+    <dimen name="category_chip_padding">16dp</dimen>
     <dimen name="category_chip_gap">8dp</dimen>
-    <dimen name="category_chip_icon_box">28dp</dimen>
-    <dimen name="category_chip_icon">20dp</dimen>
+    <dimen name="category_chip_icon_box">30dp</dimen>
+    <dimen name="category_chip_icon">22dp</dimen>
     <dimen name="category_chip_text">14sp</dimen>
-    <dimen name="category_bar_min_height">68dp</dimen>
+    <dimen name="category_bar_min_height">76dp</dimen>
     <dimen name="category_bar_margin">16dp</dimen>
-    <dimen name="category_bar_padding">10dp</dimen>
+    <dimen name="category_bar_padding">11dp</dimen>
 
     <!--
       Tablet. Ukuran komponen sengaja sama dengan ponsel di sebagian besar

@@ -151,21 +151,30 @@
     <!-- Tombol tambah bundar di kartu menu restoran. -->
     <dimen name="product_action_size">36dp</dimen>
     <!--
-      Bilah kategori di dasar layar kasir. Dipendekkan: bilah ini duduk tepat
-      di bawah daftar menu, jadi setiap dp yang dipakainya diambil dari menu.
-      Chipnya dulu setinggi 44dp (52dp di tablet) dengan ikon 28dp di dalam
-      kotak - lebih besar daripada yang dibutuhkan untuk teks satu baris.
+      Bilah kategori di dasar layar kasir - hanya tampil untuk jenis usaha
+      restoran; retail dan bengkel menyembunyikannya.
+
+      Chipnya setinggi 48dp, yaitu sasaran ketuk minimum yang disarankan
+      Material. Sebelumnya 34dp: itu memang menyisakan lebih banyak ruang
+      untuk daftar menu di atasnya, tetapi bilah inilah yang ditekan kasir
+      restoran puluhan kali per jam, sering sambil berdiri dan membawa
+      sesuatu, dan 34dp membuat ketukan yang meleset menjadi hal biasa.
+
+      Ketiganya terikat: tinggi bilah = tinggi chip + dua kali jarak dalam
+      RecyclerView-nya (48 + 2x9 = 66). Mengubah salah satu saja akan
+      meninggalkan celah kosong atau memotong chipnya. Dijaga oleh
+      PosCategoryBarHeightTest.
     -->
-    <dimen name="category_chip_height">34dp</dimen>
+    <dimen name="category_chip_height">48dp</dimen>
     <dimen name="category_chip_min_width">0dp</dimen>
-    <dimen name="category_chip_padding">10dp</dimen>
+    <dimen name="category_chip_padding">12dp</dimen>
     <dimen name="category_chip_gap">6dp</dimen>
-    <dimen name="category_chip_icon_box">22dp</dimen>
-    <dimen name="category_chip_icon">16dp</dimen>
-    <dimen name="category_chip_text">12sp</dimen>
-    <dimen name="category_bar_min_height">46dp</dimen>
+    <dimen name="category_chip_icon_box">26dp</dimen>
+    <dimen name="category_chip_icon">18dp</dimen>
+    <dimen name="category_chip_text">13sp</dimen>
+    <dimen name="category_bar_min_height">66dp</dimen>
     <dimen name="category_bar_margin">14dp</dimen>
-    <dimen name="category_bar_padding">6dp</dimen>
+    <dimen name="category_bar_padding">9dp</dimen>
 
     <!--
       ================== UKURAN KOMPONEN LAYAR KASIR ==================
