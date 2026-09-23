@@ -338,4 +338,14 @@
     <dimen name="login_title_text">20sp</dimen>
     <dimen name="login_field_min_height">52dp</dimen>
     <dimen name="login_action_min_height">52dp</dimen>
+
+    <!--
+      Lebar maksimum harga di baris daftar produk.
+
+      Baris itu memuat gambar, nama, harga, dan kendali jumlah pada satu garis.
+      Tanpa batas ini harga melebar sesuai isinya dan mendorong tombol tambah
+      ke luar tepi layar pada ponsel 320dp dengan skala huruf besar - tombolnya
+      masih tergambar, tapi tidak bisa ditekan.
+    -->
+    <dimen name="row_price_max_width">96dp</dimen>
 </resources>

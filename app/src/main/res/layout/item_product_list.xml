@@ -116,10 +116,27 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
+            <!--
+              Harga mengalah, tombolnya tidak.
+
+              Kolom ini - harga berikut kendali jumlah - berukuran wrap_content
+              dan tidak berbobot, jadi ia mengambil lebar sesukanya dan kolom
+              nama di sebelah kiri yang menanggung sisanya. Selama harga pendek
+              susunan itu terlihat benar. Pada ponsel 320dp dengan skala huruf
+              1,5x dan harga enam digit, kolom ini melebar 47 piksel melewati
+              tepi kanan layar: tombol "+" masih tergambar, tapi separuhnya di
+              luar layar dan tidak bisa ditekan dengan pasti.
+
+              Yang dibatasi adalah HARGANYA, bukan kolomnya, karena hanya harga
+              yang boleh menyusut - ia sudah ellipsize, jadi paling banyak
+              kehilangan satu karakter, dan angka utuhnya tetap ada di detail
+              produk. Tombol tambah tidak punya bentuk yang lebih kecil.
+            -->
             <TextView
                 android:id="@+id/tvPrice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:maxWidth="@dimen/row_price_max_width"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textColor="@color/brand_primary"
