@@ -54,15 +54,7 @@ public class MoneyFormattingPolicyTest {
      */
     private static final List<String> ALLOWED = Arrays.asList(
             // Mendefinisikan bentuknya, jadi harus menyebutnya.
-            "money/Money.java",
-            // Menjelaskan bentuk baris struk di dalam dokumentasinya.
-            "print/ReceiptContent.java",
-            "print/ReceiptLayout.java",
-            "print/ReceiptBuilder.java",
-            // Menceritakan cacat yang sudah diperbaiki di dalam komentar.
-            "MainActivity.java",
-            "cart/CartManager.java",
-            "ui/reports/ReportsFragment.java"
+            "money/Money.java"
     );
 
     /** Nominal tertulis: $0.00, $ 0.00, $1,750, $10 - berikut variasinya. */
@@ -72,11 +64,48 @@ public class MoneyFormattingPolicyTest {
     @Test
     public void formatterProducesTheAgreedShape() {
         assertEquals("$0.00", Money.zero().format());
+        assertEquals("$0.00", Money.of("0").format());
         assertEquals("$1.00", Money.of("1").format());
+        assertEquals("$1.50", Money.of("1.5").format());
         assertEquals("$10.50", Money.of("10.5").format());
+        assertEquals("$100.00", Money.of("100").format());
         assertEquals("$1,000.00", Money.of("1000").format());
-        assertEquals("$1,250.50", Money.of("1250.50").format());
+        assertEquals("$1,250.50", Money.of("1250.5").format());
         assertEquals("$10,000.00", Money.of("10000").format());
+        assertEquals("$1,000,000.00", Money.of("1000000").format());
+    }
+
+    /**
+     * Nilai yang dikirim ke server tetap desimal polos.
+     *
+     * <p>Pemisah ribuan dan tanda dolar hanya untuk mata manusia. Kalau salah
+     * satu ikut terkirim, server menerima "$1,250.50" untuk sebuah kolom
+     * Decimal - dan yang gagal bukan tampilannya, melainkan transaksinya.
+     */
+    @Test
+    public void apiShapeStaysPlainDecimal() {
+        assertEquals("0.00", Money.zero().toPlainString());
+        assertEquals("1.50", Money.of("1.5").toPlainString());
+        assertEquals("1250.50", Money.of("1250.5").toPlainString());
+        assertEquals("1000000.00", Money.of("1000000").toPlainString());
+    }
+
+    /**
+     * Bentuk tampilan dan bentuk payload tidak boleh tertukar.
+     *
+     * <p>Keduanya berasal dari nilai yang sama, jadi perbedaannya harus datang
+     * dari metode yang dipanggil - bukan dari kebiasaan pemanggilnya.
+     */
+    @Test
+    public void displayAndPayloadNeverProduceTheSameString() {
+        for (String raw : new String[]{"0", "1", "1.5", "10.5", "1000", "1250.5",
+                "10000", "1000000"}) {
+            Money value = Money.of(raw);
+            if (value.format().equals(value.toPlainString())) {
+                fail("format() dan toPlainString() menghasilkan teks yang sama untuk "
+                        + raw + " - tanda dolarnya hilang dari salah satu");
+            }
+        }
     }
 
     @Test
@@ -117,7 +146,8 @@ public class MoneyFormattingPolicyTest {
             }
             if (allowed) continue;
 
-            Matcher m = Pattern.compile("\"([^\"\\n]*)\"").matcher(read(file));
+            Matcher m = Pattern.compile("\"([^\"\\n]*)\"")
+                    .matcher(stripComments(read(file)));
             while (m.find()) {
                 String value = m.group(1);
                 if (MONEY_LITERAL.matcher(value).find()) {
@@ -128,6 +158,39 @@ public class MoneyFormattingPolicyTest {
         }
         if (!problems.isEmpty()) {
             fail("Nominal ditulis tangan di kode:\n  " + String.join("\n  ", problems));
+        }
+    }
+
+    /**
+     * Tanda dolar tidak boleh dirangkai dengan nilai apa pun.
+     *
+     * <p>Aturan "jangan tulis nominal sebagai literal" tidak menangkap bentuk
+     * ini: {@code "$" + amount} tidak memuat satu pun angka, jadi ia lolos -
+     * padahal hasilnya persis cacat yang sama. Sebuah baris pengeluaran
+     * tergambar "$1250.5" dengan satu desimal dan tanpa pemisah ribuan, dan
+     * tidak ada yang bisa menunjuk sebabnya karena nilainya memang benar.
+     *
+     * <p>Simbolnya milik {@link Money#format()}. Kalau sebuah layar perlu
+     * menampilkan uang, ia memanggil format() - bukan menempelkan tanda dolar
+     * di depan apa pun yang kebetulan ada di tangannya.
+     */
+    @Test
+    public void noCodeGluesADollarSignToAValue() throws IOException {
+        Pattern glued = Pattern.compile("\"\\$\"\\s*\\+|\\+\\s*\"\\$\"");
+        List<String> problems = new ArrayList<>();
+
+        for (File file : javaFiles(resolve("src/main/java"))) {
+            if (file.getPath().replace('\\', '/').endsWith("money/Money.java")) continue;
+            Matcher m = glued.matcher(stripComments(read(file)));
+            while (m.find()) {
+                problems.add(file.getName() + ": " + m.group()
+                        + " - simbolnya milik Money.format(), bukan ditempel"
+                        + " di depan nilai mentah");
+            }
+        }
+
+        if (!problems.isEmpty()) {
+            fail("Tanda dolar dirangkai dengan nilai:\n  " + String.join("\n  ", problems));
         }
     }
 
@@ -156,6 +219,21 @@ public class MoneyFormattingPolicyTest {
             else if (f.getName().endsWith(".java")) out.add(f);
         }
         return out;
+    }
+
+    /**
+     * Membuang komentar sebelum mencari literal.
+     *
+     * <p>Komentar bukan kode. Tanpa ini, kalimat yang MENJELASKAN bentuk uang
+     * yang salah - "sementara layar lain menampilkan $0.00" - terbaca sebagai
+     * pelanggaran, sehingga satu-satunya cara membuat uji ini hijau adalah
+     * berhenti menulis penjelasan. Uji yang menghukum penjelasan akan
+     * menghasilkan kode tanpa penjelasan.
+     */
+    private String stripComments(String src) {
+        return src
+                .replaceAll("(?s)/\\*.*?\\*/", " ")
+                .replaceAll("(?m)//[^\\n]*", " ");
     }
 
     private String read(File f) throws IOException {

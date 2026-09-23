@@ -64,15 +64,82 @@ import java.util.Locale;
 @RunWith(AndroidJUnit4.class)
 public class AppLayoutResponsiveTest {
 
-    /** Ponsel tersempit, ponsel acuan, dan tablet tegak. */
-    private static final int[][] SCREENS = {{320, 568}, {360, 640}, {800, 1280}};
+    /**
+     * Lebar layar yang benar-benar beredar, dari ponsel tersempit yang masih
+     * dipakai sampai tablet besar.
+     *
+     * <p>320dp bukan angka bersejarah: ponsel kelas bawah baru pun masih
+     * mengirimnya, dan di negara tempat aplikasi ini dipakai justru perangkat
+     * itulah yang paling banyak. Layar yang hanya diuji pada 360dp akan lolos
+     * dengan selisih beberapa piksel yang habis di sana.
+     */
+    private static final int[][] SCREENS = {
+            {320, 568},   // ponsel kecil
+            {360, 640},   // ponsel acuan
+            {375, 812},   // ponsel menengah
+            {390, 844},   // ponsel masa kini
+            {414, 896},   // ponsel besar
+            {600, 960},   // tablet kecil / lipat terbuka
+            {720, 1280},  // tablet 8 inci
+            {800, 1280},  // tablet 10 inci
+            {1024, 768},  // tablet mendatar
+    };
 
-    private static final float[] FONT_SCALES = {1f, 1.3f};
-
+    /**
+     * Teks contoh sepanjang data sungguhan yang terburuk.
+     *
+     * <p>Panjangnya sengaja sedang, bukan ekstrem. Teks empat puluh karakter
+     * memang menemukan lebih banyak masalah, tetapi sebagian besar pada kolom
+     * yang tidak pernah memuat kalimat - jumlah item, hitungan, satuan - dan
+     * kegagalan di sana menuntut perbaikan pada hal yang tidak rusak. Yang
+     * ditekan sungguh-sungguh adalah kolom NOMINAL, lewat SAMPLE_MONEY:
+     * di sana angka terbesar memang bisa muncul kapan saja.
+     */
     private static final String SAMPLE = "Pelanggan Umum";
 
+    /**
+     * Nominal terbesar yang masih masuk akal untuk laporan bulanan sebuah toko.
+     *
+     * <p>Diisikan ke setiap kolom yang teksnya sudah berbentuk uang, supaya
+     * yang diuji adalah lebar sungguhan angka itu - bukan lebar "$0.00" yang
+     * kebetulan tertulis di layout.
+     */
+    private static final String SAMPLE_MONEY = "$1,000,000.00";
+
+    /** Bentuk nominal penuh: $0.00, $1,250.50 - bukan "$" sendirian. */
+    private static final java.util.regex.Pattern MONEY_SHAPE =
+            java.util.regex.Pattern.compile("\\$\\d[\\d,]*(\\.\\d{2})?");
+
     @Test
-    public void everyLayoutFitsTheNarrowestPhone() {
+    public void everyLayoutFitsAtDefaultFontScale() {
+        assertEveryLayoutFits(1f);
+    }
+
+    @Test
+    public void everyLayoutFitsAtSlightlyLargerFont() {
+        assertEveryLayoutFits(1.15f);
+    }
+
+    @Test
+    public void everyLayoutFitsAtLargeFont() {
+        assertEveryLayoutFits(1.3f);
+    }
+
+    @Test
+    public void everyLayoutFitsAtLargestCommonFont() {
+        assertEveryLayoutFits(1.5f);
+    }
+
+    /**
+     * Satu skala huruf per uji, bukan semuanya dalam satu putaran.
+     *
+     * <p>Sembilan lebar dikali empat skala berarti tiga puluh enam
+     * {@code Resources} hidup bersamaan, masing-masing dengan cache drawable
+     * dan teksnya sendiri; satu putaran gabungan menghabiskan heap dan berhenti
+     * dengan OutOfMemoryError sebelum sempat memeriksa apa pun. Dipecah begini,
+     * memorinya dilepas di antara uji dan yang dilaporkan tetap sama.
+     */
+    private void assertEveryLayoutFits(float fontScale) {
         List<String> problems = new ArrayList<>();
 
         try (ActivityScenario<TestHostActivity> scenario =
@@ -91,7 +158,7 @@ public class AppLayoutResponsiveTest {
 
                 FrameLayout parent = activity.container();
                 for (int[] screen : SCREENS) {
-                    for (float fontScale : FONT_SCALES) {
+                    {
                         Configuration config =
                                 new Configuration(activity.getResources().getConfiguration());
                         config.screenWidthDp = screen[0];
@@ -197,7 +264,24 @@ public class AppLayoutResponsiveTest {
         if (!(view instanceof TextView)) return;
         TextView text = (TextView) view;
         if (isIconOnlyButton(text)) return;
-        if (text.getText() == null || text.getText().length() == 0) text.setText(SAMPLE);
+
+        CharSequence current = text.getText();
+        if (current != null && current.length() > 0) {
+            // Kolom yang sudah BERBENTUK nominal diisi angka terbesar yang
+            // masuk akal: yang perlu diuji lebar sungguhannya, bukan lebar
+            // "$0.00" yang kebetulan tertulis di layout.
+            //
+            // Syaratnya bentuk penuh, bukan sekadar diawali "$". Layar
+            // onboarding memuat satu karakter "$" setinggi 54sp sebagai ikon
+            // hiasan di dalam kotak 156dp; menggantinya dengan nominal enam
+            // digit melaporkan kegagalan pada gambar yang tidak pernah memuat
+            // angka apa pun.
+            if (MONEY_SHAPE.matcher(current.toString().trim()).matches()) {
+                text.setText(SAMPLE_MONEY);
+            }
+            return;
+        }
+        text.setText(SAMPLE);
     }
 
     private boolean isIconOnlyButton(TextView view) {
