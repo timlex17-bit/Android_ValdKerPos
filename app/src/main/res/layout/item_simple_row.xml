@@ -27,7 +27,7 @@
             android:padding="6dp"
             android:scaleType="centerInside"
             android:src="@drawable/ic_store"
-            android:contentDescription="Category icon" />
+            android:contentDescription="@string/cd_category_icon" />
 
         <TextView
             android:id="@+id/tvTitle"

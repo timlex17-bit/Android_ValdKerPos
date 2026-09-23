@@ -48,6 +48,6 @@
             android:layout_marginTop="10dp"
             android:scaleType="centerCrop"
             android:visibility="gone"
-            android:contentDescription="Icon preview" />
+            android:contentDescription="@string/cd_icon_preview" />
     </LinearLayout>
 </ScrollView>

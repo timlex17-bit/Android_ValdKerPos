@@ -29,7 +29,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Back"
+                android:contentDescription="@string/cd_back"
                 android:padding="2dp"
                 android:src="@drawable/ic_arrow_back"
                 app:tint="@android:color/white" />
@@ -60,7 +60,7 @@
                     <ImageView
                         android:layout_width="20dp"
                         android:layout_height="20dp"
-                        android:contentDescription="Search"
+                        android:contentDescription="@string/cd_search"
                         android:src="@drawable/search_24"
                         app:tint="@color/text_tertiary" />
 
@@ -89,7 +89,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Refresh"
+                android:contentDescription="@string/cd_refresh"
                 android:padding="2dp"
                 android:src="@android:drawable/ic_popup_sync"
                 app:tint="@android:color/white" />

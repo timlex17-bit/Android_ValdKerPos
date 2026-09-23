@@ -91,7 +91,7 @@
                 android:layout_height="32dp"
                 android:layout_marginEnd="6dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Date range"
+                android:contentDescription="@string/cd_date_range"
                 android:padding="5dp"
                 android:src="@drawable/calendar_month_24"
                 app:tint="@android:color/white" />

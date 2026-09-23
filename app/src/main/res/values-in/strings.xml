@@ -1678,4 +1678,18 @@
     <string name="select_mechanic">Pilih mekanik</string>
     <string name="select_work_order">Pilih work order</string>
     <string name="select_booking">Pilih pemesanan</string>
+
+    <!-- Label yang dibacakan pembaca layar, dan dua hint pencarian.
+         Sebelumnya ditulis mati dalam bahasa Inggris: tidak pernah
+         terlihat di layar, jadi tidak pernah dilaporkan, padahal
+         justru pengguna yang paling bergantung padanya yang paling
+         tidak bisa memeriksanya sendiri. -->
+    <string name="cd_date_range">Rentang tanggal</string>
+    <string name="cd_icon_preview">Pratinjau ikon</string>
+    <string name="cd_menu_icon">Ikon menu</string>
+    <string name="cd_category_icon">Ikon kategori</string>
+    <string name="cd_remove">Hapus</string>
+    <string name="hint_search_inventory_count">Cari hitung stok</string>
+    <string name="hint_search_product_return">Cari retur produk</string>
+    <string name="hint_report_product">Produk / cari</string>
 </resources>

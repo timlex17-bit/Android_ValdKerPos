@@ -38,7 +38,7 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="Back"
+                    android:contentDescription="@string/cd_back"
                     android:padding="8dp"
                     android:src="@drawable/ic_arrow_back"
                     app:tint="@android:color/white" />
@@ -69,7 +69,7 @@
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
-                            android:contentDescription="Search"
+                            android:contentDescription="@string/cd_search"
                             android:src="@drawable/search_24"
                             app:tint="@color/text_tertiary" />
 
@@ -80,7 +80,7 @@
                             android:layout_marginStart="10dp"
                             android:layout_weight="1"
                             android:background="@android:color/transparent"
-                            android:hint="Inventory count..."
+                            android:hint="@string/hint_search_inventory_count"
                             android:imeOptions="actionSearch"
                             android:inputType="text"
                             android:maxLines="1"
@@ -99,7 +99,7 @@
                     android:layout_height="40dp"
                     android:layout_marginEnd="4dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="Date range"
+                    android:contentDescription="@string/cd_date_range"
                     android:padding="8dp"
                     android:src="@drawable/calendar_month_24"
                     app:tint="@android:color/white" />
@@ -109,7 +109,7 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="Refresh"
+                    android:contentDescription="@string/cd_refresh"
                     android:padding="8dp"
                     android:src="@android:drawable/ic_popup_sync"
                     app:tint="@android:color/white" />

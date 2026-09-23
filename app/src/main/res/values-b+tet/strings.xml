@@ -1652,4 +1652,18 @@
     <string name="select_mechanic">Hili mekaniku</string>
     <string name="select_work_order">Hili work order</string>
     <string name="select_booking">Hili rezerva</string>
+
+    <!-- Label yang dibacakan pembaca layar, dan dua hint pencarian.
+         Sebelumnya ditulis mati dalam bahasa Inggris: tidak pernah
+         terlihat di layar, jadi tidak pernah dilaporkan, padahal
+         justru pengguna yang paling bergantung padanya yang paling
+         tidak bisa memeriksanya sendiri. -->
+    <string name="cd_date_range">Períodu data</string>
+    <string name="cd_icon_preview">Previu ikone</string>
+    <string name="cd_menu_icon">Ikone menu</string>
+    <string name="cd_category_icon">Ikone kategoria</string>
+    <string name="cd_remove">Hasai</string>
+    <string name="hint_search_inventory_count">Buka konta stok</string>
+    <string name="hint_search_product_return">Buka devolusaun produtu</string>
+    <string name="hint_report_product">Produtu / buka</string>
 </resources>

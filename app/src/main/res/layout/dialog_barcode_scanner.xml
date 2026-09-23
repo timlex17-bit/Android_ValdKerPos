@@ -48,7 +48,7 @@
                 android:layout_height="40dp"
                 android:background="@android:color/transparent"
                 android:src="@android:drawable/ic_menu_close_clear_cancel"
-                android:contentDescription="Close" />
+                android:contentDescription="@string/cd_close" />
 
         </LinearLayout>
 
