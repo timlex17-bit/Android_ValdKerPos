@@ -1,10 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!--
-      Ikon peluncur sengaja tetap hijau: itu yang dicari pengguna di
-      layar utama ponselnya. Warna ini TIDAK ikut skema ungu aplikasi.
-      Perhatikan bahwa ikon adaptif memakai warna dari berkas INI,
-      bukan res/drawable/ic_launcher_background.xml yang tidak dirujuk.
+      Latar ikon peluncur. Nilainya sama dengan @color/brand_primary (#6204BF),
+      warna ungu yang dipakai bilah atas dan tombol utama aplikasi, sehingga
+      ikon di layar utama ponsel bersaudara dengan tampilan di dalamnya.
+
+      Ditulis sebagai angka, bukan @color/brand_primary, karena ikon adaptif
+      diproses aapt2 pada tahap yang tidak boleh bergantung pada rujukan warna
+      lain - rujukan di sini pernah membuat ikon tampil hitam di sebagian
+      peluncur.
+
+      Dua tempat harus berubah bersama-sama setiap kali warna ikon diganti:
+      berkas INI (dipakai ikon adaptif Android 8+, lewat
+      mipmap-anydpi-v26/ic_launcher.xml) dan bitmap di mipmap-*dpi/ (dipakai
+      Android 7, yang masih didukung karena minSdk 24). Mengubah salah satunya
+      saja membuat ikon berbeda warna tergantung versi Android.
+
+      Catatan: res/drawable/ic_launcher_background.xml adalah berkas lain yang
+      tidak dirujuk siapa pun.
     -->
-    <color name="ic_launcher_background">#22C55E</color>
+    <color name="ic_launcher_background">#6204BF</color>
 </resources>
