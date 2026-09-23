@@ -384,7 +384,8 @@ public class CategoriesFragment extends BaseFragment {
                             applyFilter();
                         });
                     } catch (Exception e) {
-                        Toast.makeText(ctx, "Parse error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(ctx, getString(R.string.msg_parse_error, e.getMessage()),
+                    Toast.LENGTH_LONG).show();
                     }
 
                     setLoading(false);

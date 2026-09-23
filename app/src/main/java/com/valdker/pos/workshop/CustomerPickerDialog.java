@@ -98,7 +98,7 @@ public class CustomerPickerDialog extends DialogFragment {
         });
 
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Select Customer")
+                .setTitle(R.string.title_select_customer)
                 .setNegativeButton(getString(R.string.action_close), null)
                 .setView(listView);
 
@@ -106,7 +106,7 @@ public class CustomerPickerDialog extends DialogFragment {
         boolean allowWalkIn = args == null || args.getBoolean(ARG_ALLOW_WALK_IN, true);
         boolean allowClear = args != null && args.getBoolean(ARG_ALLOW_CLEAR, false);
         if (allowWalkIn) {
-            builder.setNeutralButton("Walk-in", (d, which) -> {
+            builder.setNeutralButton(R.string.action_walk_in, (d, which) -> {
                 if (listener != null) {
                     listener.onSelected(new Customer(
                             0,
@@ -119,7 +119,7 @@ public class CustomerPickerDialog extends DialogFragment {
                 }
             });
         } else if (allowClear) {
-            builder.setNeutralButton("Clear", (d, which) -> {
+            builder.setNeutralButton(R.string.action_clear, (d, which) -> {
                 if (listener != null) {
                     listener.onSelected(new Customer(
                             0,

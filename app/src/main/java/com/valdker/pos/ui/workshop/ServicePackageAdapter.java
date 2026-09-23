@@ -1,5 +1,6 @@
 package com.valdker.pos.ui.workshop;
 
+import com.valdker.pos.money.Money;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -72,9 +73,15 @@ public class ServicePackageAdapter extends RecyclerView.Adapter<ServicePackageAd
     public void onBindViewHolder(@NonNull VH holder, int position) {
         ServicePackageResponse item = items.get(position);
         holder.name.setText(item.name);
-        holder.price.setText("Price: " + formatPrice(item.price));
-        holder.duration.setText("Duration: " + item.durationMinutes + " min");
-        holder.description.setText(item.description.isEmpty() ? "Description: -" : item.description);
+        holder.price.setText(holder.itemView.getContext().getString(
+                R.string.label_price_value, formatPrice(item.price)));
+        holder.duration.setText(holder.itemView.getContext().getString(
+                R.string.label_duration_minutes_value, item.durationMinutes));
+        holder.description.setText(item.description.isEmpty()
+                ? holder.itemView.getContext().getString(
+                        R.string.label_description_value,
+                        holder.itemView.getContext().getString(R.string.label_default_dash))
+                : item.description);
         holder.status.setText(item.isActive ? "Active" : "Inactive");
         holder.status.setTextColor(item.isActive ? 0xFF047857 : 0xFFB91C1C);
         holder.edit.setOnClickListener(v -> listener.onEdit(item));
@@ -88,7 +95,9 @@ public class ServicePackageAdapter extends RecyclerView.Adapter<ServicePackageAd
 
     @NonNull
     private static String formatPrice(@NonNull String price) {
-        return price.trim().isEmpty() ? "0.00" : price.trim();
+        // Tanpa Money di sini, harga paket tergambar "0.00" tanpa $
+        // sama sekali, sementara layar lain menampilkan "$0.00".
+        return Money.of(price.trim()).format();
     }
 
     static final class VH extends RecyclerView.ViewHolder {

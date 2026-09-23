@@ -165,7 +165,7 @@ public final class ReceiptBuilder {
     /** Satu-satunya tempat nominal jadi teks: lewat Money, tanpa %.2f. */
     @NonNull
     private static String money(@NonNull Money amount) {
-        return "$" + amount.orZeroIfNegative().toPlainString();
+        return amount.orZeroIfNegative().format();
     }
 
     @NonNull

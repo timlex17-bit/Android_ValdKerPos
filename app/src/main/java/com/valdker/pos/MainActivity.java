@@ -1414,7 +1414,9 @@ public class MainActivity extends AppCompatActivity
                 mainHandler.post(() -> {
                     if (!isActivityAlive()) return;
                     applyDraftSnapshot(result.snapshot, true);
-                    Toast.makeText(MainActivity.this, "Draft " + result.draftName + " aktif", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this,
+                            getString(R.string.msg_draft_active, result.draftName),
+                            Toast.LENGTH_SHORT).show();
                 });
             } catch (Exception e) {
                 Log.e(TAG, "Failed to create main POS draft", e);
@@ -2258,7 +2260,7 @@ public class MainActivity extends AppCompatActivity
         if (!isActivityAlive()) return;
 
         androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(this)
-                .setMessage("Transaction saved, but receipt failed to print. Retry print?")
+                .setMessage(R.string.msg_receipt_print_failed_retry)
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(getString(R.string.action_retry), null)
                 .show();

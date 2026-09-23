@@ -50,9 +50,9 @@ public class OrdersAdapter extends RecyclerView.Adapter<OrdersAdapter.VH> {
 
         String inv = o.getInvoiceNumber();
         if (inv == null || inv.trim().isEmpty()) {
-            h.tvOrderId.setText("Order #" + o.getId());
+            h.tvOrderId.setText(h.itemView.getContext().getString(R.string.label_order_number, String.valueOf(o.getId())));
         } else {
-            h.tvOrderId.setText("Invoice: " + inv);
+            h.tvOrderId.setText(h.itemView.getContext().getString(R.string.label_invoice_value, inv));
         }
         h.tvPayment.setText(safeCap(o.getPaymentMethod()));
         h.tvTotal.setText(usd.format(o.getTotal()));

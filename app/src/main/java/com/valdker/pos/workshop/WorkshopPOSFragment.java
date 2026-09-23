@@ -569,7 +569,9 @@ public class WorkshopPOSFragment extends Fragment
                 mainHandler.post(() -> {
                     if (!isAdded()) return;
                     applyDraftSnapshot(result.snapshot, true);
-                    Toast.makeText(requireContext(), "Draft " + result.draftName + " aktif", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(),
+                        getString(R.string.msg_draft_active, result.draftName),
+                        Toast.LENGTH_SHORT).show();
                 });
             } catch (Exception e) {
                 Log.e(TAG, "Failed to create workshop draft", e);
@@ -1159,7 +1161,9 @@ public class WorkshopPOSFragment extends Fragment
             return false;
         }
         if (!canAccessWorkshopModule(moduleKey)) {
-            Toast.makeText(requireContext(), "Anda tidak punya akses ke module " + label + ".", Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(),
+                    getString(R.string.msg_no_module_access, label),
+                    Toast.LENGTH_LONG).show();
             return false;
         }
         return true;
@@ -1242,7 +1246,8 @@ public class WorkshopPOSFragment extends Fragment
             if (hostActions != null) {
                 hostActions.openOfflineOrdersFromUserMenu();
             } else {
-                Toast.makeText(requireContext(), "Offline Orders unavailable", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), getString(R.string.msg_module_unavailable,
+                    getString(R.string.menu_offline_orders)), Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -1251,7 +1256,8 @@ public class WorkshopPOSFragment extends Fragment
             if (hostActions != null) {
                 hostActions.openPrivacyPolicyFromUserMenu();
             } else {
-                Toast.makeText(requireContext(), "Privacy Policy unavailable", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), getString(R.string.msg_module_unavailable,
+                    getString(R.string.menu_privacy_policy)), Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -1260,7 +1266,8 @@ public class WorkshopPOSFragment extends Fragment
             if (hostActions != null) {
                 hostActions.requestCloseShiftFromUserMenu();
             } else {
-                Toast.makeText(requireContext(), "Close Shift unavailable", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), getString(R.string.msg_module_unavailable,
+                    getString(R.string.action_close_shift)), Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -1269,7 +1276,8 @@ public class WorkshopPOSFragment extends Fragment
             if (hostActions != null) {
                 hostActions.requestLogoutFromUserMenu();
             } else {
-                Toast.makeText(requireContext(), "Logout unavailable", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), getString(R.string.msg_module_unavailable,
+                    getString(R.string.logout)), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -1289,7 +1297,7 @@ public class WorkshopPOSFragment extends Fragment
                     int stock = result.getInt(BUNDLE_KEY_ITEM_STOCK, 0);
 
                     if (itemId <= 0 || TextUtils.isEmpty(itemName)) {
-                        Toast.makeText(requireContext(), "Item workshop tidak valid", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), R.string.msg_workshop_item_invalid, Toast.LENGTH_SHORT).show();
                         return;
                     }
 
@@ -1319,7 +1327,7 @@ public class WorkshopPOSFragment extends Fragment
         }
 
         if (productsLoading) {
-            Toast.makeText(requireContext(), "Sedang memuat item...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_loading, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -1465,7 +1473,8 @@ public class WorkshopPOSFragment extends Fragment
                     break;
             }
 
-            Toast.makeText(requireContext(), "Belum ada data " + label, Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(),
+                    getString(R.string.msg_no_data_for, label), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -1504,7 +1513,7 @@ public class WorkshopPOSFragment extends Fragment
                     try {
                         itemId = Integer.parseInt(selected.id);
                     } catch (Exception e) {
-                        Toast.makeText(requireContext(), "ID item tidak valid", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), R.string.msg_item_id_invalid, Toast.LENGTH_SHORT).show();
                         return;
                     }
 
@@ -1544,7 +1553,7 @@ public class WorkshopPOSFragment extends Fragment
         if (WorkshopCartItem.TYPE_PART.equals(normalizedType)
                 || WorkshopCartItem.TYPE_PRODUCT.equals(normalizedType)) {
             if (stock <= 0) {
-                Toast.makeText(requireContext(), "Stock item kosong", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), R.string.msg_item_stock_empty, Toast.LENGTH_SHORT).show();
                 return;
             }
         }
@@ -1558,7 +1567,7 @@ public class WorkshopPOSFragment extends Fragment
                     || WorkshopCartItem.TYPE_PRODUCT.equals(normalizedType))
                     && stock > 0
                     && nextQty > stock) {
-                Toast.makeText(requireContext(), "Qty melebihi stock tersedia", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), R.string.msg_quantity_exceeds_available_stock, Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -2335,8 +2344,8 @@ public class WorkshopPOSFragment extends Fragment
                 if (!isAdded()) return;
                 loading.dismiss();
                 new AlertDialog.Builder(requireContext())
-                        .setTitle("Work Order")
-                        .setMessage("Gagal memuat work order: " + message)
+                        .setTitle(R.string.title_work_order)
+                        .setMessage(getString(R.string.msg_work_order_load_failed, message))
                         .setPositiveButton(getString(R.string.action_create), (d, w) -> openCreateWorkOrderDialog())
                         .setNegativeButton(android.R.string.cancel, null)
                         .show();
@@ -2358,7 +2367,7 @@ public class WorkshopPOSFragment extends Fragment
         container.addView(diagnosis);
 
         AlertDialog dialog = new AlertDialog.Builder(requireContext())
-                .setTitle("Create Work Order")
+                .setTitle(R.string.title_create_work_order)
                 .setView(container)
                 .setPositiveButton(getString(R.string.action_create), null)
                 .setNegativeButton(getString(R.string.action_cancel), null)
@@ -2383,7 +2392,7 @@ public class WorkshopPOSFragment extends Fragment
                 putNullableLong(payload, "mechanic", selectedMechanicId);
 
                 dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setText("Saving...");
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setText(R.string.msg_loading);
                 workshopModuleApi.create("api/workshop/work-orders/", payload, new WorkshopModuleApi.ObjectCallback() {
                     @Override
                     public void onSuccess(@NonNull JSONObject response) {
@@ -2412,7 +2421,7 @@ public class WorkshopPOSFragment extends Fragment
     private void openServicePackagePicker() {
         if (!ensureWorkshopModule(ModuleRegistry.SERVICE_PACKAGES, getString(R.string.menu_service_packages))) return;
         if (servicePackageRepository == null) {
-            Toast.makeText(requireContext(), "Service package repository belum siap", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_service_package_repo_not_ready, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -2443,7 +2452,7 @@ public class WorkshopPOSFragment extends Fragment
                 }
 
                 new AlertDialog.Builder(requireContext())
-                        .setTitle("Pilih Package")
+                        .setTitle(R.string.title_select_package)
                         .setItems(labels, (dialog, which) -> addServicePackageToCart(active.get(which)))
                         .setNegativeButton(getString(R.string.action_cancel), null)
                         .show();
@@ -2555,7 +2564,7 @@ public class WorkshopPOSFragment extends Fragment
 
         Long vehicleCustomerId = relationId(row, "customer", "customer_id");
         if (selectedCustomerId != null && vehicleCustomerId != null && !selectedCustomerId.equals(vehicleCustomerId)) {
-            Toast.makeText(requireContext(), "Vehicle ini milik customer berbeda.", Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(), R.string.msg_vehicle_other_customer, Toast.LENGTH_LONG).show();
         }
 
         header.vehicleTypeCode = selectedVehicleType;
@@ -2948,12 +2957,12 @@ public class WorkshopPOSFragment extends Fragment
 
     private void handleCheckout() {
         if (checkoutSubmitting) {
-            Toast.makeText(requireContext(), "Checkout sedang diproses...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_order_submitting, Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (cartItems.isEmpty()) {
-            Toast.makeText(requireContext(), "Workspace masih kosong", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_cart_empty, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -2967,12 +2976,12 @@ public class WorkshopPOSFragment extends Fragment
         }
 
         if (checkoutConfigLoading) {
-            Toast.makeText(requireContext(), "Sedang memuat metode pembayaran...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_loading, Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (sessionManager == null) {
-            Toast.makeText(requireContext(), "Session belum siap", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.error_session_expired, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -3169,7 +3178,7 @@ public class WorkshopPOSFragment extends Fragment
 
     private void handleCheckoutBank(@NonNull NativeCheckoutDialogFragment.BankCheckoutResult result) {
         if (orderRepository == null || sessionManager == null) {
-            Toast.makeText(requireContext(), "Order repository belum siap", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_order_repo_not_ready, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -3859,7 +3868,7 @@ public class WorkshopPOSFragment extends Fragment
         if (!isAdded()) return;
 
         AlertDialog dialog = new AlertDialog.Builder(requireContext())
-                .setMessage("Transaction saved, but receipt failed to print. Retry print?")
+                .setMessage(R.string.msg_receipt_print_failed_retry)
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(getString(R.string.action_retry), null)
                 .show();

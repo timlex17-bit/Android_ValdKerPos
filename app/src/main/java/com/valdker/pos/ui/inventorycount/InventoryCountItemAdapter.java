@@ -33,10 +33,10 @@ public class InventoryCountItemAdapter extends RecyclerView.Adapter<InventoryCou
     public void onBindViewHolder(@NonNull VH h, int position) {
         InventoryCountItem it = list.get(position);
 
-        h.tvProduct.setText("Product #" + it.product);
-        h.tvSystem.setText("System: " + it.system_stock);
-        h.tvCounted.setText("Counted: " + it.counted_stock);
-        h.tvDiff.setText("Diff: " + it.difference);
+        h.tvProduct.setText(h.itemView.getContext().getString(R.string.label_product_number, String.valueOf(it.product)));
+        h.tvSystem.setText(h.itemView.getContext().getString(R.string.label_system_value, String.valueOf(it.system_stock)));
+        h.tvCounted.setText(h.itemView.getContext().getString(R.string.label_counted_value, String.valueOf(it.counted_stock)));
+        h.tvDiff.setText(h.itemView.getContext().getString(R.string.label_diff_value, String.valueOf(it.difference)));
     }
 
     @Override

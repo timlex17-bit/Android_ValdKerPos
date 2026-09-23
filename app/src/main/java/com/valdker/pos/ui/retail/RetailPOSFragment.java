@@ -497,7 +497,9 @@ public class RetailPOSFragment extends Fragment {
                 mainHandler.post(() -> {
                     if (!isAdded()) return;
                     applyDraftSnapshot(result.snapshot, true);
-                    Toast.makeText(requireContext(), "Draft " + result.draftName + " aktif", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(),
+                        getString(R.string.msg_draft_active, result.draftName),
+                        Toast.LENGTH_SHORT).show();
                 });
             } catch (Exception e) {
                 Log.e(TAG, "Failed to create retail draft", e);
@@ -650,8 +652,8 @@ public class RetailPOSFragment extends Fragment {
         }
 
         new AlertDialog.Builder(requireContext())
-                .setTitle("Hapus semua item?")
-                .setMessage("Semua produk dalam draft aktif akan dihapus.")
+                .setTitle(R.string.msg_confirm_clear_draft_title)
+                .setMessage(R.string.msg_confirm_clear_draft_body)
                 .setNegativeButton(getString(R.string.action_cancel), null)
                 .setPositiveButton(getString(R.string.action_delete), (dialog, which) -> clearActiveDraftItems())
                 .show();
@@ -671,7 +673,7 @@ public class RetailPOSFragment extends Fragment {
                 mainHandler.post(() -> {
                     if (!isAdded()) return;
                     applyDraftSnapshot(snapshot, true);
-                    Toast.makeText(requireContext(), "Draft dikosongkan", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), R.string.msg_draft_cleared, Toast.LENGTH_SHORT).show();
                 });
             } catch (Exception e) {
                 Log.e(TAG, "Failed to clear retail draft items", e);
@@ -701,7 +703,7 @@ public class RetailPOSFragment extends Fragment {
                 mainHandler.post(() -> {
                     if (!isAdded()) return;
                     applyDraftSnapshot(result.snapshot, true);
-                    Toast.makeText(requireContext(), "Draft ditutup", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), R.string.msg_draft_closed, Toast.LENGTH_SHORT).show();
                 });
             } catch (Exception e) {
                 Log.e(TAG, "Failed to close empty retail draft", e);

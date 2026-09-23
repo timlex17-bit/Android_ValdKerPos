@@ -1,5 +1,6 @@
 package com.valdker.pos.ui.purchases;
 
+import com.valdker.pos.money.Money;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,8 +57,10 @@ public class PurchaseListAdapter extends RecyclerView.Adapter<PurchaseListAdapte
         h.tvSub.setText(supplier);
         h.tvDate.setText(date);
 
-        h.tvItems.setText("Items: " + formatQtyPlain(p.totalItems));
-        h.tvTotalCost.setText("Total Cost: $" + formatMoney(p.totalCost));
+        h.tvItems.setText(h.itemView.getContext().getString(
+                R.string.label_items_value, formatQtyPlain(p.totalItems)));
+        h.tvTotalCost.setText(h.itemView.getContext().getString(
+                R.string.label_total_cost_value, formatMoney(p.totalCost)));
     }
 
     @Override
@@ -67,7 +70,7 @@ public class PurchaseListAdapter extends RecyclerView.Adapter<PurchaseListAdapte
 
     @NonNull
     private String formatMoney(String raw) {
-        if (raw == null || raw.trim().isEmpty()) return "0.00";
+        if (raw == null || raw.trim().isEmpty()) return Money.zero().format();
         try {
             String clean = raw.replace("$", "").replace(",", "").trim();
             double value = Double.parseDouble(clean);

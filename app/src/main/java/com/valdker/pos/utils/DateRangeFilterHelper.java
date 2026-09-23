@@ -3,6 +3,7 @@ package com.valdker.pos.utils;
 import android.app.DatePickerDialog;
 import android.graphics.Color;
 import android.widget.ImageView;
+import com.valdker.pos.R;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -77,14 +78,14 @@ public class DateRangeFilterHelper {
                             initialEnd.get(Calendar.MONTH),
                             initialEnd.get(Calendar.DAY_OF_MONTH)
                     );
-                    endDialog.setTitle("Select end date");
+                    endDialog.setTitle(fragment.getString(R.string.title_select_end_date));
                     endDialog.show();
                 },
                 initialStart.get(Calendar.YEAR),
                 initialStart.get(Calendar.MONTH),
                 initialStart.get(Calendar.DAY_OF_MONTH)
         );
-        startDialog.setTitle("Select start date");
+        startDialog.setTitle(fragment.getString(R.string.title_select_start_date));
         startDialog.show();
     }
 
@@ -117,7 +118,7 @@ public class DateRangeFilterHelper {
         onChanged.run();
 
         if (hadFilter && fragment.isAdded()) {
-            Toast.makeText(fragment.requireContext(), "Date range cleared", Toast.LENGTH_SHORT).show();
+            Toast.makeText(fragment.requireContext(), R.string.msg_date_range_cleared, Toast.LENGTH_SHORT).show();
         }
     }
 

@@ -316,7 +316,7 @@ public class InventoryCountFormDialog extends DialogFragment {
         String note = etNote.getText() != null ? etNote.getText().toString().trim() : "";
 
         if (TextUtils.isEmpty(title)) {
-            etTitle.setError("Required");
+            etTitle.setError(getString(R.string.error_required));
             etTitle.requestFocus();
             return null;
         }
@@ -350,7 +350,7 @@ public class InventoryCountFormDialog extends DialogFragment {
         }
 
         if (items.length() == 0) {
-            Toast.makeText(requireContext(), "Add at least 1 item", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_add_at_least_one_item, Toast.LENGTH_SHORT).show();
             return null;
         }
 
@@ -382,7 +382,7 @@ public class InventoryCountFormDialog extends DialogFragment {
             public void onSuccess(@NonNull InventoryCount created) {
                 if (!isAdded()) return;
                 setLoading(false);
-                Toast.makeText(requireContext(), "Saved", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), R.string.msg_save_success, Toast.LENGTH_SHORT).show();
                 if (onSavedListener != null) onSavedListener.run();
                 dismissAllowingStateLoss();
             }
@@ -400,7 +400,7 @@ public class InventoryCountFormDialog extends DialogFragment {
         if (isSubmitting) return;
 
         if (editId <= 0) {
-            Toast.makeText(requireContext(), "Invalid item", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_item_invalid, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -414,7 +414,7 @@ public class InventoryCountFormDialog extends DialogFragment {
             public void onSuccess(@NonNull InventoryCount updated) {
                 if (!isAdded()) return;
                 setLoading(false);
-                Toast.makeText(requireContext(), "Updated", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), R.string.msg_update_success, Toast.LENGTH_SHORT).show();
                 if (onSavedListener != null) onSavedListener.run();
                 dismissAllowingStateLoss();
             }

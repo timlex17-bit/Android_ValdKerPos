@@ -38,7 +38,7 @@ public class ShiftOpenDialogFragment extends DialogFragment {
         AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
                 .setView(v)
                 .setCancelable(false)
-                .setPositiveButton("Open Shift", null)
+                .setPositiveButton(R.string.action_open_shift, null)
                 .create();
 
         dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(btn -> {

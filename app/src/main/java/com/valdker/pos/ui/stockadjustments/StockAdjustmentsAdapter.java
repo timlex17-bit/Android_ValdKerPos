@@ -47,12 +47,12 @@ public class StockAdjustmentsAdapter extends RecyclerView.Adapter<StockAdjustmen
         String byName = safe(it.adjusted_by_name);
 
         h.tvTitle.setText(!"-".equals(productName) ? productName : "Product #" + it.product);
-        h.tvReason.setText("Reason: " + safe(it.reason));
+        h.tvReason.setText(h.itemView.getContext().getString(R.string.label_reason_value, safe(it.reason)));
         h.tvDate.setText(formatIso(it.adjusted_at));
 
         int d = it.diff();
         String sign = d > 0 ? "+" : "";
-        h.tvDiff.setText("Diff: " + sign + d);
+        h.tvDiff.setText(h.itemView.getContext().getString(R.string.label_diff_value, sign + d));
 
         if (d > 0) {
             h.tvDiff.setTextColor(Color.parseColor("#6204BF"));
@@ -62,8 +62,12 @@ public class StockAdjustmentsAdapter extends RecyclerView.Adapter<StockAdjustmen
             h.tvDiff.setTextColor(Color.parseColor("#374151"));
         }
 
-        h.tvFromTo.setText("Stock: " + it.old_stock + " → " + it.new_stock);
-        h.tvBy.setText("By: " + (!"-".equals(byName) ? byName : "User #" + it.adjusted_by));
+        h.tvFromTo.setText(h.itemView.getContext().getString(R.string.label_stock_range, it.old_stock, it.new_stock));
+        String who = !"-".equals(byName)
+                ? byName
+                : h.itemView.getContext().getString(
+                        R.string.label_user_number, String.valueOf(it.adjusted_by));
+        h.tvBy.setText(h.itemView.getContext().getString(R.string.label_by_value, who));
 
         h.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onClick(it);

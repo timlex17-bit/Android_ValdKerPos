@@ -275,13 +275,13 @@ public class PurchaseAddDialog extends androidx.fragment.app.DialogFragment {
 
     private void onAddDraftItem() {
         if (products.isEmpty()) {
-            Toast.makeText(requireContext(), "Products not loaded.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_product_data_loading, Toast.LENGTH_SHORT).show();
             return;
         }
 
         ProductLite p = getSelectedProductOrNull();
         if (p == null || p.id <= 0) {
-            Toast.makeText(requireContext(), "Select a product.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_select_product, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -289,7 +289,7 @@ public class PurchaseAddDialog extends androidx.fragment.app.DialogFragment {
         String costStr = (etCost.getText() != null) ? etCost.getText().toString().trim() : "";
 
         if (TextUtils.isEmpty(qtyStr)) {
-            etQty.setError("Qty required");
+            etQty.setError(getString(R.string.msg_quantity_required));
             etQty.requestFocus();
             return;
         }
@@ -298,19 +298,19 @@ public class PurchaseAddDialog extends androidx.fragment.app.DialogFragment {
         try {
             qty = Integer.parseInt(qtyStr);
         } catch (Exception e) {
-            etQty.setError("Invalid qty");
+            etQty.setError(getString(R.string.msg_invalid_quantity_format));
             etQty.requestFocus();
             return;
         }
 
         if (qty <= 0) {
-            etQty.setError("Qty must be > 0");
+            etQty.setError(getString(R.string.msg_quantity_greater_than_zero));
             etQty.requestFocus();
             return;
         }
 
         if (TextUtils.isEmpty(costStr)) {
-            etCost.setError("Cost price required");
+            etCost.setError(getString(R.string.msg_cost_price_required));
             etCost.requestFocus();
             return;
         }
@@ -373,13 +373,13 @@ public class PurchaseAddDialog extends androidx.fragment.app.DialogFragment {
 
     private void onSave() {
         if (drafts.isEmpty()) {
-            Toast.makeText(requireContext(), "Add at least one item.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_add_at_least_one_item, Toast.LENGTH_SHORT).show();
             return;
         }
 
         String token = new SessionManager(requireContext()).getToken();
         if (token == null || token.trim().isEmpty()) {
-            Toast.makeText(requireContext(), "Session expired. Please login again.", Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(), R.string.error_session_expired, Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -427,7 +427,7 @@ public class PurchaseAddDialog extends androidx.fragment.app.DialogFragment {
                 public void onSuccess(@NonNull JSONObject response) {
                     if (!isAdded()) return;
                     showLoading(false);
-                    Toast.makeText(requireContext(), "Purchase saved.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), R.string.msg_purchase_saved, Toast.LENGTH_SHORT).show();
                     dismissAllowingStateLoss();
                     if (listener != null) listener.onSaved();
                 }
@@ -442,7 +442,9 @@ public class PurchaseAddDialog extends androidx.fragment.app.DialogFragment {
             });
 
         } catch (Exception e) {
-            Toast.makeText(requireContext(), "Build payload error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(),
+                    getString(R.string.msg_build_payload_failed, e.getMessage()),
+                    Toast.LENGTH_LONG).show();
         }
     }
 

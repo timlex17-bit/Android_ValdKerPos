@@ -124,7 +124,7 @@ public class ProductReturnAddDialog extends DialogFragment {
 
         TextView tvTitle = v.findViewById(R.id.tvTitleProductReturnAdd);
         if (tvTitle != null) {
-            tvTitle.setText("Product Return");
+            tvTitle.setText(R.string.title_product_return);
         }
 
         androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
@@ -185,11 +185,12 @@ public class ProductReturnAddDialog extends DialogFragment {
         }
 
         if (tvCustomerAuto != null) {
-            tvCustomerAuto.setText("Customer: -");
+            tvCustomerAuto.setText(getString(R.string.label_customer_value,
+                getString(R.string.label_default_dash)));
         }
 
         if (tvManualHint != null) {
-            tvManualHint.setText("Manual return does not require invoice or customer.");
+            tvManualHint.setText(R.string.msg_manual_return_no_invoice);
         }
     }
 
@@ -241,9 +242,9 @@ public class ProductReturnAddDialog extends DialogFragment {
 
         if (tvPreviewEmpty != null && returnItems.isEmpty()) {
             if (currentMode == ReturnMode.BY_INVOICE) {
-                tvPreviewEmpty.setText("No return items yet. Add items from invoice.");
+                tvPreviewEmpty.setText(R.string.msg_no_return_items_invoice);
             } else {
-                tvPreviewEmpty.setText("No return items yet. Add products manually.");
+                tvPreviewEmpty.setText(R.string.msg_no_return_items_manual);
             }
         }
     }
@@ -370,7 +371,7 @@ public class ProductReturnAddDialog extends DialogFragment {
     }
 
     private void loadOrderDetail(int orderId) {
-        if (tvCustomerAuto != null) tvCustomerAuto.setText("Customer: Loading...");
+        if (tvCustomerAuto != null) tvCustomerAuto.setText(R.string.msg_loading);
         if (etUnitPrice != null) etUnitPrice.setText("");
         if (etQty != null) etQty.setText("");
 
@@ -389,7 +390,7 @@ public class ProductReturnAddDialog extends DialogFragment {
                         ? currentCustomerName
                         : "Guest";
                 if (tvCustomerAuto != null) {
-                    tvCustomerAuto.setText("Customer: " + custLabel);
+                    tvCustomerAuto.setText(getString(R.string.label_customer_value, custLabel));
                 }
 
                 invoiceItems.clear();
@@ -401,7 +402,7 @@ public class ProductReturnAddDialog extends DialogFragment {
                     updateUnitPriceFromSelectedInvoiceItem();
                 } else if (etUnitPrice != null) {
                     etUnitPrice.setText("");
-                    Toast.makeText(requireContext(), "This invoice has no items.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), R.string.msg_invoice_has_no_items, Toast.LENGTH_SHORT).show();
                 }
 
                 enrichInvoiceItemNames();
@@ -414,7 +415,8 @@ public class ProductReturnAddDialog extends DialogFragment {
                 currentCustomerId = null;
                 currentCustomerName = null;
 
-                if (tvCustomerAuto != null) tvCustomerAuto.setText("Customer: -");
+                if (tvCustomerAuto != null) tvCustomerAuto.setText(getString(R.string.label_customer_value,
+                getString(R.string.label_default_dash)));
                 if (etUnitPrice != null) etUnitPrice.setText("");
 
                 ErrorHandler.handleApiError(requireContext(), message);
@@ -489,7 +491,7 @@ public class ProductReturnAddDialog extends DialogFragment {
     private void addInvoiceReturnItem() {
         Object sel = spOrderItem != null ? spOrderItem.getSelectedItem() : null;
         if (!(sel instanceof OrderItemLite)) {
-            Toast.makeText(requireContext(), "Invoice item is empty.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_invoice_item_empty, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -497,7 +499,7 @@ public class ProductReturnAddDialog extends DialogFragment {
 
         String qtyStr = etQty != null ? etQty.getText().toString().trim() : "";
         if (TextUtils.isEmpty(qtyStr)) {
-            Toast.makeText(requireContext(), "Qty is required.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_quantity_required, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -505,24 +507,24 @@ public class ProductReturnAddDialog extends DialogFragment {
         try {
             addQty = Integer.parseInt(qtyStr);
         } catch (Exception e) {
-            Toast.makeText(requireContext(), "Invalid qty.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_invalid_quantity_format, Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (addQty <= 0) {
-            Toast.makeText(requireContext(), "Qty must be greater than 0.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_quantity_greater_than_zero, Toast.LENGTH_SHORT).show();
             return;
         }
 
         String priceStr = (invIt.price != null) ? invIt.price.trim() : "";
         if (TextUtils.isEmpty(priceStr)) {
-            Toast.makeText(requireContext(), "Invoice price is missing.", Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(), R.string.msg_invoice_price_missing, Toast.LENGTH_LONG).show();
             return;
         }
 
         String normalized = priceStr.replace(",", ".");
         if (!isValidNonNegativeDecimal(normalized)) {
-            Toast.makeText(requireContext(), "Invalid invoice price.", Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(), R.string.msg_invoice_price_invalid, Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -564,7 +566,7 @@ public class ProductReturnAddDialog extends DialogFragment {
     private void addManualReturnItem() {
         Object sel = spManualProduct != null ? spManualProduct.getSelectedItem() : null;
         if (!(sel instanceof ProductLite)) {
-            Toast.makeText(requireContext(), "Product is required.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_product_required, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -574,12 +576,12 @@ public class ProductReturnAddDialog extends DialogFragment {
         String unitPriceStr = etManualUnitPrice != null ? etManualUnitPrice.getText().toString().trim() : "";
 
         if (TextUtils.isEmpty(qtyStr)) {
-            Toast.makeText(requireContext(), "Qty is required.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_quantity_required, Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (TextUtils.isEmpty(unitPriceStr)) {
-            Toast.makeText(requireContext(), "Unit price is required.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_unit_price_required, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -587,18 +589,18 @@ public class ProductReturnAddDialog extends DialogFragment {
         try {
             qty = Integer.parseInt(qtyStr);
         } catch (Exception e) {
-            Toast.makeText(requireContext(), "Invalid qty.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_invalid_quantity_format, Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (qty <= 0) {
-            Toast.makeText(requireContext(), "Qty must be greater than 0.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_quantity_greater_than_zero, Toast.LENGTH_SHORT).show();
             return;
         }
 
         String normalizedPrice = unitPriceStr.replace(",", ".");
         if (!isValidNonNegativeDecimal(normalizedPrice)) {
-            Toast.makeText(requireContext(), "Invalid unit price.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_unit_price_invalid, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -708,15 +710,15 @@ public class ProductReturnAddDialog extends DialogFragment {
                 : "Enter new qty";
 
         new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Edit Qty")
+                .setTitle(R.string.title_edit_qty)
                 .setMessage(msg)
                 .setView(input)
                 .setNegativeButton(getString(R.string.action_cancel), (d, w) -> {
                 })
-                .setPositiveButton("Update", (d, w) -> {
+                .setPositiveButton(R.string.action_update, (d, w) -> {
                     String s = input.getText().toString().trim();
                     if (TextUtils.isEmpty(s)) {
-                        Toast.makeText(requireContext(), "Qty is required.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), R.string.msg_quantity_required, Toast.LENGTH_SHORT).show();
                         return;
                     }
 
@@ -724,12 +726,12 @@ public class ProductReturnAddDialog extends DialogFragment {
                     try {
                         newQty = Integer.parseInt(s);
                     } catch (Exception e) {
-                        Toast.makeText(requireContext(), "Invalid qty.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), R.string.msg_invalid_quantity_format, Toast.LENGTH_SHORT).show();
                         return;
                     }
 
                     if (newQty <= 0) {
-                        Toast.makeText(requireContext(), "Qty must be greater than 0.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), R.string.msg_quantity_greater_than_zero, Toast.LENGTH_SHORT).show();
                         return;
                     }
 
@@ -764,7 +766,7 @@ public class ProductReturnAddDialog extends DialogFragment {
 
     private void submit() {
         if (returnItems.isEmpty()) {
-            Toast.makeText(requireContext(), "Add at least 1 return item.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_add_at_least_one_item, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -776,7 +778,7 @@ public class ProductReturnAddDialog extends DialogFragment {
                     : null;
 
             if (order == null) {
-                Toast.makeText(requireContext(), "Invoice is required in invoice mode.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), R.string.msg_invoice_required_in_invoice_mode, Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -793,7 +795,7 @@ public class ProductReturnAddDialog extends DialogFragment {
                         @Override
                         public void onSuccess(@NonNull ProductReturn created) {
                             if (!isAdded()) return;
-                            Toast.makeText(requireContext(), "Return created.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(requireContext(), R.string.msg_return_created, Toast.LENGTH_SHORT).show();
                             dismiss();
                             if (callback != null) callback.onCreated();
                         }
@@ -819,7 +821,7 @@ public class ProductReturnAddDialog extends DialogFragment {
                     @Override
                     public void onSuccess(@NonNull ProductReturn created) {
                         if (!isAdded()) return;
-                        Toast.makeText(requireContext(), "Manual return created.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), R.string.msg_manual_return_created, Toast.LENGTH_SHORT).show();
                         dismiss();
                         if (callback != null) callback.onCreated();
                     }

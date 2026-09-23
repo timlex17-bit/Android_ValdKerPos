@@ -566,7 +566,7 @@ public class InventoryCountsFragment extends BaseFragment {
 
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(getString(R.string.action_delete))
-                .setMessage("Delete \"" + safeText(item.title) + "\"?")
+                .setMessage(getString(R.string.msg_delete_named_confirm, safeText(item.title)))
                 .setNegativeButton(getString(R.string.action_cancel), null)
                 .setPositiveButton(getString(R.string.action_delete), (d, w) -> {
                     if (!isAdded()) return;

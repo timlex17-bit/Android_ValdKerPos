@@ -130,10 +130,11 @@ public class InventoryCountAdapter extends RecyclerView.Adapter<InventoryCountAd
             }
         }
 
-        h.tvBy.setText("By: " + byName);
+        h.tvBy.setText(h.itemView.getContext().getString(R.string.label_by_value, byName));
 
         int itemsCount = (it.items != null) ? it.items.size() : 0;
-        h.tvItems.setText(itemsCount + " item(s)");
+        h.tvItems.setText(h.itemView.getContext().getString(
+                R.string.label_items_count_value, itemsCount));
 
         int totalDiff = 0;
         if (it.items != null) {
@@ -141,7 +142,8 @@ public class InventoryCountAdapter extends RecyclerView.Adapter<InventoryCountAd
                 totalDiff += it.items.get(i).difference;
             }
         }
-        h.tvDiff.setText("Diff: " + totalDiff);
+        h.tvDiff.setText(h.itemView.getContext().getString(
+                R.string.label_diff_value, String.valueOf(totalDiff)));
         applyDiffStyle(h.tvDiff, totalDiff);
 
         applyStatusBadge(h.tvStatusBadge, it.status);
@@ -165,8 +167,8 @@ public class InventoryCountAdapter extends RecyclerView.Adapter<InventoryCountAd
             if (locked) {
                 new MaterialAlertDialogBuilder(v.getContext())
                         .setTitle(title)
-                        .setMessage("This stock count is locked (" + st + ").\nEditing is not allowed.")
-                        .setPositiveButton("OK", null)
+                        .setMessage(v.getContext().getString(R.string.msg_stock_count_locked, st))
+                        .setPositiveButton(R.string.action_ok, null)
                         .show();
                 return true;
             }

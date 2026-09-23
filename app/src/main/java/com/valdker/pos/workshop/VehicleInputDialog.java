@@ -63,7 +63,7 @@ public class VehicleInputDialog extends DialogFragment {
 
         return new MaterialAlertDialogBuilder(requireContext())
 
-                .setTitle("Vehicle Info")
+                .setTitle(R.string.title_vehicle_info)
 
                 .setView(v)
 

@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
+import com.valdker.pos.R;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -125,14 +126,14 @@ public final class ErrorHandler {
         Runnable action = () -> {
             FragmentActivity activity = findFragmentActivity(context);
             if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
-                Toast.makeText(context, "Waktu perangkat tidak sesuai", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, R.string.msg_device_clock_wrong_short, Toast.LENGTH_LONG).show();
                 return;
             }
 
             new android.app.AlertDialog.Builder(activity)
-                    .setTitle("Waktu Perangkat Tidak Sesuai")
-                    .setMessage("Tanggal atau waktu HP/tablet tidak sesuai dengan server. Aktifkan tanggal & waktu otomatis di pengaturan perangkat, lalu coba lagi.")
-                    .setPositiveButton("OK", null)
+                    .setTitle(R.string.msg_device_clock_wrong_title)
+                    .setMessage(R.string.msg_device_clock_wrong_body)
+                    .setPositiveButton(R.string.action_ok, null)
                     .setCancelable(false)
                     .show();
         };

@@ -47,9 +47,9 @@ public class PurchaseItemDraftAdapter extends RecyclerView.Adapter<PurchaseItemD
         double total = d.qty * unitCost;
 
         h.tvName.setText(d.productName);
-        h.tvQty.setText("Qty: " + d.qty);
-        h.tvCost.setText("Unit: $" + formatMoneyValue(unitCost));
-        h.tvTotal.setText("Total: $" + formatMoneyValue(total));
+        h.tvQty.setText(h.itemView.getContext().getString(R.string.label_qty_value, String.valueOf(d.qty)));
+        h.tvCost.setText(h.itemView.getContext().getString(R.string.label_unit_price_value, formatMoneyValue(unitCost)));
+        h.tvTotal.setText(h.itemView.getContext().getString(R.string.label_total_value, formatMoneyValue(total)));
 
         String expText;
         if (d.expiredDate != null && !d.expiredDate.trim().isEmpty()) {
@@ -57,7 +57,7 @@ public class PurchaseItemDraftAdapter extends RecyclerView.Adapter<PurchaseItemD
         } else {
             expText = NO_EXPIRED_DATE;
         }
-        h.tvExp.setText("Exp: " + expText);
+        h.tvExp.setText(h.itemView.getContext().getString(R.string.label_expiry_value, expText));
 
         h.btnRemove.setOnClickListener(v -> listener.onRemove(pos));
     }
@@ -79,7 +79,7 @@ public class PurchaseItemDraftAdapter extends RecyclerView.Adapter<PurchaseItemD
      */
     @NonNull
     private String formatMoneyValue(double value) {
-        return Money.ofDouble(value).toPlainString();
+        return Money.ofDouble(value).format();
     }
 
     @Override

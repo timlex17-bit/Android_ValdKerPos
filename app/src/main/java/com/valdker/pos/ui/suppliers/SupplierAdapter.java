@@ -42,8 +42,10 @@ public class SupplierAdapter extends RecyclerView.Adapter<SupplierAdapter.VH> {
         Supplier s = data.get(position);
 
         h.tvName.setText(s.name);
-        h.tvContact.setText("Contact: " + s.contactPerson);
-        h.tvCell.setText("Cell: " + s.cell);
+        h.tvContact.setText(h.itemView.getContext().getString(
+                R.string.label_contact_value, s.contactPerson));
+        h.tvCell.setText(h.itemView.getContext().getString(
+                R.string.label_cell_value, s.cell));
 
         String meta = "";
         if (s.email != null && !s.email.trim().isEmpty()) meta += s.email.trim();

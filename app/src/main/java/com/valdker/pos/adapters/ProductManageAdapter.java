@@ -1,5 +1,6 @@
 package com.valdker.pos.adapters;
 
+import com.valdker.pos.money.Money;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -52,7 +53,9 @@ public class ProductManageAdapter extends RecyclerView.Adapter<ProductManageAdap
         Product p = data.get(position);
 
         h.tvName.setText(p.name);
-        h.tvMeta.setText("Stock: " + p.stock + " • " + usd.format(p.price));
+        h.tvMeta.setText(h.itemView.getContext().getString(
+                R.string.label_stock_and_price_value,
+                String.valueOf(p.stock), Money.ofDouble(p.price).format()));
 
         // ✅ FIX: benar-benar load image dari URL
         String url = p.imageUrl;

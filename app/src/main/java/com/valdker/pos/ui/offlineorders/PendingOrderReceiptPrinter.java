@@ -357,7 +357,7 @@ final class PendingOrderReceiptPrinter {
 
     @NonNull
     private static String formatMoney(double value) {
-        return "$" + Money.ofDouble(value).orZeroIfNegative().toPlainString();
+        return Money.ofDouble(value).orZeroIfNegative().format();
     }
 
     private static double optDouble(@Nullable JSONObject object, @NonNull String key) {

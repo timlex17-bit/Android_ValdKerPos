@@ -87,7 +87,7 @@ public class StockAdjustmentDetailActivity extends AppCompatActivity {
                 if (!productName.isEmpty()) {
                     tvTitle.setText(productName);
                 } else {
-                    tvTitle.setText("Product #" + product);
+                    tvTitle.setText(getString(R.string.label_product_number, String.valueOf(product)));
                 }
 
                 tvDate.setText(formatIso(o.optString("adjusted_at", "")));
@@ -109,7 +109,7 @@ public class StockAdjustmentDetailActivity extends AppCompatActivity {
                 if (!adjustedByName.isEmpty()) {
                     tvBy.setText(adjustedByName);
                 } else {
-                    tvBy.setText("User #" + adjustedBy);
+                    tvBy.setText(getString(R.string.label_user_number, String.valueOf(adjustedBy)));
                 }
 
                 String note = o.optString("note");
@@ -118,7 +118,7 @@ public class StockAdjustmentDetailActivity extends AppCompatActivity {
                 tvMeta.setVisibility(View.GONE);
 
             } catch (Exception e) {
-                tvNote.setText("Parse error: " + e.getMessage());
+                tvNote.setText(getString(R.string.msg_parse_error, e.getMessage()));
             }
         }
     }

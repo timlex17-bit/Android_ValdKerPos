@@ -150,7 +150,7 @@ public class WorkshopWorkspaceAdapter extends RecyclerView.Adapter<RecyclerView.
          * dengan yang dipakai keranjang dan struk.
          */
         private String formatMoney(double value) {
-            return "$" + Money.ofDouble(value).toPlainString();
+            return Money.ofDouble(value).format();
         }
     }
 }

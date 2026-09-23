@@ -50,20 +50,20 @@ public class ProductReturnAdapter extends RecyclerView.Adapter<ProductReturnAdap
         if (!inv.isEmpty()) {
             h.tvTitle.setText(inv);
         } else if (it.order != null) {
-            h.tvTitle.setText("Order #" + it.order);
+            h.tvTitle.setText(h.itemView.getContext().getString(R.string.label_order_number, String.valueOf(it.order)));
         } else {
-            h.tvTitle.setText("Return #" + it.id);
+            h.tvTitle.setText(h.itemView.getContext().getString(R.string.label_return_number, String.valueOf(it.id)));
         }
 
         // ✅ Customer name
         String customerName = (it.customer != null && it.customer.name != null && !it.customer.name.trim().isEmpty())
                 ? it.customer.name
                 : "-";
-        h.tvCustomer.setText("Customer: " + customerName);
+        h.tvCustomer.setText(h.itemView.getContext().getString(R.string.label_customer_value, customerName));
 
         // ✅ Returned by display name
         String returnedByName = (it.returnedBy != null) ? it.returnedBy.bestName() : "-";
-        h.tvReturnedBy.setText("Returned by: " + returnedByName);
+        h.tvReturnedBy.setText(h.itemView.getContext().getString(R.string.detail_field_returned_by, returnedByName));
 
         // ✅ Note (only show if not empty)
         String note = (it.note == null) ? "" : it.note.trim();
@@ -71,16 +71,18 @@ public class ProductReturnAdapter extends RecyclerView.Adapter<ProductReturnAdap
             h.tvNote.setVisibility(View.GONE);
         } else {
             h.tvNote.setVisibility(View.VISIBLE);
-            h.tvNote.setText("Note: " + note);
+            h.tvNote.setText(h.itemView.getContext().getString(R.string.label_note_value, note));
         }
 
         // ✅ Items summary
-        h.tvItems.setText("Items: " + it.itemsCount()
-                + " • Qty: " + trimZero(it.totalQty())
-                + " • Total: " + formatMoney(it.totalAmount()));
+        h.tvItems.setText(h.itemView.getContext().getString(
+                R.string.label_return_items_summary,
+                String.valueOf(it.itemsCount()),
+                trimZero(it.totalQty()),
+                formatMoney(it.totalAmount())));
 
         // ✅ Date
-        h.tvDate.setText("Returned: " + formatIso(it.returnedAt));
+        h.tvDate.setText(h.itemView.getContext().getString(R.string.label_returned_value, formatIso(it.returnedAt)));
 
         // ✅ Expand / collapse state
         boolean expanded = expandedStates.get(it.id, false);

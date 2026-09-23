@@ -105,7 +105,7 @@ public class BarcodeScannerDialogFragment extends DialogFragment {
                 deliveringResult = true;
 
                 if (tvLast != null) {
-                    tvLast.setText("Last: " + code);
+                    tvLast.setText(getString(R.string.label_last_scan_value, code));
                 }
 
                 beep();

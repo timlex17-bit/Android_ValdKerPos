@@ -798,7 +798,7 @@ public class ReportsFragment extends BaseFragment {
         if (TextUtils.isEmpty(raw)) return Money.zero().format();
         Money parsed = Money.of(raw);
         if (parsed.isZero() && !isZeroText(raw)) return raw;
-        return "$" + parsed.toPlainString();
+        return parsed.format();
     }
 
     /** Membedakan "nol sungguhan" dari teks yang gagal diurai. */

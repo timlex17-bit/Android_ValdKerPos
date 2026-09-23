@@ -269,7 +269,7 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
 
     private void showFormDialog(@Nullable WorkshopRow row) {
         if (!supportsCrud()) {
-            Toast.makeText(this, "Create form is not configured for this module.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.msg_create_form_not_configured, Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -289,7 +289,7 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
                 JSONObject payload = buildPayload(view);
                 if (payload == null) return;
                 positive.setEnabled(false);
-                positive.setText("Saving...");
+                positive.setText(R.string.msg_loading);
                 if (isEdit) {
                     update(row.id, payload, dialog);
                 } else {
@@ -703,7 +703,8 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
                                 Toast.LENGTH_LONG).show();
                         if (input != null) input.performClick();
                     } else if (!field.relationLabel.isEmpty()) {
-                        Toast.makeText(this, "Please select " + field.relationLabel + " first.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, getString(R.string.msg_select_required, field.relationLabel),
+                    Toast.LENGTH_LONG).show();
                     } else if (input != null) {
                         input.setError(getString(R.string.error_required));
                         input.requestFocus();
@@ -722,7 +723,7 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
                     case FormField.KIND_DECIMAL:
                         BigDecimal decimal = new BigDecimal(value);
                         if (decimal.compareTo(BigDecimal.ZERO) < 0) {
-                            if (input != null) input.setError("Value cannot be negative");
+                            if (input != null) input.setError(getString(R.string.msg_quantity_must_be_non_negative));
                             return null;
                         }
                         payload.put(field.key, decimal.toPlainString());
@@ -733,7 +734,7 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
                 }
             } catch (NumberFormatException ex) {
                 if (input != null) {
-                    input.setError("Invalid number");
+                    input.setError(getString(R.string.msg_invalid_number_format));
                     input.requestFocus();
                 }
                 return null;
@@ -858,12 +859,12 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
 
     private void confirmDelete(@NonNull WorkshopRow row) {
         if (row.id <= 0) {
-            Toast.makeText(this, "Cannot delete item without a valid id.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.msg_cannot_delete_without_id, Toast.LENGTH_LONG).show();
             return;
         }
         new MaterialAlertDialogBuilder(this)
-                .setTitle("Delete " + screenTitle())
-                .setMessage("Delete \"" + row.title + "\"?")
+                .setTitle(getString(R.string.title_delete_named, screenTitle()))
+                .setMessage(getString(R.string.msg_delete_named_confirm, row.title))
                 .setPositiveButton(getString(R.string.action_delete), (dialog, which) -> delete(row))
                 .setNegativeButton(getString(R.string.action_cancel), null)
                 .show();

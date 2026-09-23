@@ -257,7 +257,8 @@ public class CartFragment extends Fragment
                     @Override
                     public void onTypeChanged(@NonNull CartItem item, @NonNull String orderType) {
                         if (!isOrderTypeAllowed(orderType)) {
-                            Toast.makeText(requireContext(), "Order type not allowed for this shop.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(requireContext(), R.string.msg_order_type_not_allowed,
+                    Toast.LENGTH_SHORT).show();
                             return;
                         }
                         cart.setOrderType(item.productId, item.itemType, orderType);
@@ -435,7 +436,7 @@ public class CartFragment extends Fragment
         if (btnCancelOrder != null) btnCancelOrder.setEnabled(false);
         if (btnContinuePayment != null) btnContinuePayment.setEnabled(false);
 
-        Toast.makeText(requireContext(), "Order cancelled", Toast.LENGTH_SHORT).show();
+        Toast.makeText(requireContext(), R.string.msg_order_cancelled, Toast.LENGTH_SHORT).show();
 
         finishActiveDraftAndClearCart();
 
@@ -485,7 +486,7 @@ public class CartFragment extends Fragment
 
         List<CartItem> cartItems = cart.getItems();
         if (cartItems == null || cartItems.isEmpty()) {
-            Toast.makeText(requireContext(), "Cart is empty", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_cart_empty, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -714,7 +715,7 @@ public class CartFragment extends Fragment
 
         final List<CartItem> snapshot = new ArrayList<>(cart.getItems());
         if (snapshot.isEmpty()) {
-            Toast.makeText(requireContext(), "Cart is empty", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_cart_empty, Toast.LENGTH_SHORT).show();
             if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
             return;
         }
@@ -744,13 +745,13 @@ public class CartFragment extends Fragment
                         enableTableNumber));
 
         if (freeTextTableRequired && tableFinal.isEmpty()) {
-            Toast.makeText(requireContext(), "Table number is required for dine-in.", Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(), R.string.msg_table_number_required, Toast.LENGTH_LONG).show();
             if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
             return;
         }
 
         if (hasDelivery && enableDelivery && addrFinal.isEmpty()) {
-            Toast.makeText(requireContext(), "Delivery address is required for delivery.", Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(), R.string.msg_delivery_address_required, Toast.LENGTH_LONG).show();
             if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
             return;
         }
@@ -887,7 +888,7 @@ public class CartFragment extends Fragment
             }
 
             if (itemsArr.length() == 0) {
-                Toast.makeText(requireContext(), "Checkout failed: items empty.", Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), R.string.msg_cart_empty, Toast.LENGTH_LONG).show();
                 Log.e(TAG, "Checkout aborted because itemsArr is empty. snapshot size=" + snapshot.size());
                 if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
                 return;
@@ -930,7 +931,9 @@ public class CartFragment extends Fragment
             Log.d(TAG, "Checkout payload = " + payload.toString());
 
         } catch (Exception e) {
-            Toast.makeText(requireContext(), "Failed to build payload: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(),
+                    getString(R.string.msg_build_payload_failed, e.getMessage()),
+                    Toast.LENGTH_LONG).show();
             if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
             return;
         }
@@ -1018,7 +1021,7 @@ public class CartFragment extends Fragment
                 mainHandler.post(() -> {
                     Context toastContext = getContext();
                     if (toastContext != null) {
-                        Toast.makeText(toastContext, "Checkout success", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(toastContext, R.string.msg_checkout_success, Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -1214,7 +1217,7 @@ public class CartFragment extends Fragment
             Log.w(TAG, "PRINTER: Bluetooth permission not granted -> skip auto print");
             if (showPreconditionToast) {
                 mainHandler.post(() ->
-                        Toast.makeText(appCtx, "Bluetooth permission has not been allowed. Print canceled.", Toast.LENGTH_LONG).show()
+                        Toast.makeText(appCtx, R.string.msg_bluetooth_permission_required, Toast.LENGTH_LONG).show()
                 );
             }
             if (callback != null) {
@@ -1228,7 +1231,7 @@ public class CartFragment extends Fragment
             Log.w(TAG, "PRINTER: no printer selected -> skip auto print");
             if (showPreconditionToast) {
                 mainHandler.post(() ->
-                        Toast.makeText(appCtx, "The printer isn't selected. Select it first in Settings > Printer.", Toast.LENGTH_LONG).show()
+                        Toast.makeText(appCtx, R.string.msg_printer_not_selected, Toast.LENGTH_LONG).show()
                 );
             }
             if (callback != null) {
@@ -1350,7 +1353,7 @@ public class CartFragment extends Fragment
         }
 
         androidx.appcompat.app.AlertDialog dialog = new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
-                .setMessage("Transaction saved, but receipt failed to print. Retry print?")
+                .setMessage(R.string.msg_receipt_print_failed_retry)
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(getString(R.string.action_retry), null)
                 .show();

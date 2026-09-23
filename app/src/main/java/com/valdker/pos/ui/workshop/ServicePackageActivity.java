@@ -93,9 +93,9 @@ public class ServicePackageActivity extends AppCompatActivity implements Service
         fabAdd = findViewById(R.id.fabAdd);
 
         if (btnBack != null) btnBack.setOnClickListener(v -> finish());
-        if (tvTitle != null) tvTitle.setText("Service Packages");
+        if (tvTitle != null) tvTitle.setText(R.string.title_service_packages);
         if (tvSubtitle != null) tvSubtitle.setVisibility(View.VISIBLE);
-        if (tvSubtitle != null) tvSubtitle.setText("Workshop service package catalog");
+        if (tvSubtitle != null) tvSubtitle.setText(R.string.msg_service_packages_subtitle);
     }
 
     private void setupViews() {
@@ -171,7 +171,7 @@ public class ServicePackageActivity extends AppCompatActivity implements Service
         progressBar.setVisibility(View.GONE);
         recyclerView.setVisibility(View.GONE);
         tvError.setVisibility(View.GONE);
-        tvEmpty.setText("No service packages found");
+        tvEmpty.setText(R.string.msg_no_service_packages);
         tvEmpty.setVisibility(View.VISIBLE);
     }
 
@@ -191,8 +191,8 @@ public class ServicePackageActivity extends AppCompatActivity implements Service
     @Override
     public void onDelete(@NonNull ServicePackageResponse item) {
         new MaterialAlertDialogBuilder(this)
-                .setTitle("Delete Service Package")
-                .setMessage("Delete \"" + item.name + "\"?")
+                .setTitle(R.string.title_delete_service_package)
+                .setMessage(getString(R.string.msg_delete_named_confirm, item.name))
                 .setPositiveButton(getString(R.string.action_delete), (dialog, which) -> deleteServicePackage(item))
                 .setNegativeButton(getString(R.string.action_cancel), null)
                 .show();
@@ -243,7 +243,7 @@ public class ServicePackageActivity extends AppCompatActivity implements Service
                 return;
             }
             if (!isValidPrice(price)) {
-                etPrice.setError("Invalid price");
+                etPrice.setError(getString(R.string.error_invalid_price));
                 etPrice.requestFocus();
                 return;
             }
@@ -273,7 +273,7 @@ public class ServicePackageActivity extends AppCompatActivity implements Service
             public void onSuccess(@NonNull ServicePackageResponse item) {
                 Log.i(TAG, "Service package created id=" + item.id);
                 dialog.dismiss();
-                Toast.makeText(ServicePackageActivity.this, "Service package created", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ServicePackageActivity.this, R.string.msg_service_package_created, Toast.LENGTH_SHORT).show();
                 loadServicePackages();
             }
 
@@ -292,7 +292,7 @@ public class ServicePackageActivity extends AppCompatActivity implements Service
             public void onSuccess(@NonNull ServicePackageResponse item) {
                 Log.i(TAG, "Service package updated id=" + item.id);
                 dialog.dismiss();
-                Toast.makeText(ServicePackageActivity.this, "Service package updated", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ServicePackageActivity.this, R.string.msg_service_package_updated, Toast.LENGTH_SHORT).show();
                 loadServicePackages();
             }
 
@@ -310,7 +310,7 @@ public class ServicePackageActivity extends AppCompatActivity implements Service
             @Override
             public void onSuccess() {
                 Log.i(TAG, "Service package deleted id=" + item.id);
-                Toast.makeText(ServicePackageActivity.this, "Service package deleted", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ServicePackageActivity.this, R.string.msg_service_package_deleted, Toast.LENGTH_SHORT).show();
                 loadServicePackages();
             }
 

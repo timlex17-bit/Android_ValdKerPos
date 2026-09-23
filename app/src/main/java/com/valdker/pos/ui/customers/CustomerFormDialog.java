@@ -112,13 +112,13 @@ public class CustomerFormDialog extends DialogFragment {
                 String address = emptyToNull(getTrimmed(etAddress));
 
                 if (TextUtils.isEmpty(name)) {
-                    etName.setError("Name required");
+                    etName.setError(getString(R.string.error_name_required));
                     etName.requestFocus();
                     return;
                 }
 
                 if (TextUtils.isEmpty(cell)) {
-                    etCell.setError("Cell required");
+                    etCell.setError(getString(R.string.msg_cell_required));
                     etCell.requestFocus();
                     return;
                 }

@@ -337,14 +337,14 @@ public class OrdersFragment extends BaseFragment {
                             initialEnd.get(Calendar.MONTH),
                             initialEnd.get(Calendar.DAY_OF_MONTH)
                     );
-                    endDialog.setTitle("Select end date");
+                    endDialog.setTitle(getString(R.string.title_select_end_date));
                     endDialog.show();
                 },
                 initialStart.get(Calendar.YEAR),
                 initialStart.get(Calendar.MONTH),
                 initialStart.get(Calendar.DAY_OF_MONTH)
         );
-        startDialog.setTitle("Select start date");
+        startDialog.setTitle(getString(R.string.title_select_start_date));
         startDialog.show();
     }
 
@@ -378,7 +378,7 @@ public class OrdersFragment extends BaseFragment {
         applyFilter();
 
         if (hadFilter && isAdded()) {
-            Toast.makeText(requireContext(), "Date range cleared", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_date_range_cleared, Toast.LENGTH_SHORT).show();
         }
     }
 

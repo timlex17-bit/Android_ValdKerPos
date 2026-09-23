@@ -497,8 +497,8 @@ public class ProductReturnsFragment extends BaseFragment {
         if (layoutEmpty == null || tvEmpty == null || tvEmptySub == null) return;
 
         if (data.isEmpty()) {
-            tvEmpty.setText("No product returns yet.");
-            tvEmptySub.setText("Tap + to create a new product return.");
+            tvEmpty.setText(R.string.msg_no_product_returns);
+            tvEmptySub.setText(R.string.msg_product_returns_empty_hint);
             layoutEmpty.setVisibility(View.VISIBLE);
         } else {
             layoutEmpty.setVisibility(View.GONE);

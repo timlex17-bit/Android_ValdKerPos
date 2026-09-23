@@ -92,9 +92,9 @@ public class MechanicListActivity extends AppCompatActivity implements MechanicA
         fabAdd = findViewById(R.id.fabAdd);
 
         if (btnBack != null) btnBack.setOnClickListener(v -> finish());
-        if (tvTitle != null) tvTitle.setText("Mechanics");
+        if (tvTitle != null) tvTitle.setText(R.string.title_mechanics);
         if (tvSubtitle != null) tvSubtitle.setVisibility(View.VISIBLE);
-        if (tvSubtitle != null) tvSubtitle.setText("Workshop mechanic directory");
+        if (tvSubtitle != null) tvSubtitle.setText(R.string.msg_mechanics_subtitle);
     }
 
     private void setupViews() {
@@ -170,7 +170,7 @@ public class MechanicListActivity extends AppCompatActivity implements MechanicA
         progressBar.setVisibility(View.GONE);
         recyclerView.setVisibility(View.GONE);
         tvError.setVisibility(View.GONE);
-        tvEmpty.setText("No mechanics found");
+        tvEmpty.setText(R.string.msg_no_mechanics);
         tvEmpty.setVisibility(View.VISIBLE);
     }
 
@@ -190,8 +190,8 @@ public class MechanicListActivity extends AppCompatActivity implements MechanicA
     @Override
     public void onDelete(@NonNull MechanicResponse mechanic) {
         new MaterialAlertDialogBuilder(this)
-                .setTitle("Delete Mechanic")
-                .setMessage("Delete \"" + mechanic.name + "\"?")
+                .setTitle(R.string.title_delete_mechanic)
+                .setMessage(getString(R.string.msg_delete_named_confirm, mechanic.name))
                 .setPositiveButton(getString(R.string.action_delete), (dialog, which) -> deleteMechanic(mechanic))
                 .setNegativeButton(getString(R.string.action_cancel), null)
                 .show();
@@ -251,7 +251,7 @@ public class MechanicListActivity extends AppCompatActivity implements MechanicA
             public void onSuccess(@NonNull MechanicResponse mechanic) {
                 Log.i(TAG, "Mechanic created id=" + mechanic.id);
                 dialog.dismiss();
-                Toast.makeText(MechanicListActivity.this, "Mechanic created", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MechanicListActivity.this, R.string.msg_mechanic_created, Toast.LENGTH_SHORT).show();
                 loadMechanics();
             }
 
@@ -270,7 +270,7 @@ public class MechanicListActivity extends AppCompatActivity implements MechanicA
             public void onSuccess(@NonNull MechanicResponse mechanic) {
                 Log.i(TAG, "Mechanic updated id=" + mechanic.id);
                 dialog.dismiss();
-                Toast.makeText(MechanicListActivity.this, "Mechanic updated", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MechanicListActivity.this, R.string.msg_mechanic_updated, Toast.LENGTH_SHORT).show();
                 loadMechanics();
             }
 
@@ -288,7 +288,7 @@ public class MechanicListActivity extends AppCompatActivity implements MechanicA
             @Override
             public void onSuccess() {
                 Log.i(TAG, "Mechanic deleted id=" + mechanic.id);
-                Toast.makeText(MechanicListActivity.this, "Mechanic deleted", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MechanicListActivity.this, R.string.msg_mechanic_deleted, Toast.LENGTH_SHORT).show();
                 loadMechanics();
             }
 

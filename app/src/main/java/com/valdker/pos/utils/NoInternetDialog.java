@@ -29,9 +29,9 @@ public class NoInternetDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         return new AlertDialog.Builder(requireContext())
-                .setTitle("No internet connection.")
+                .setTitle(R.string.msg_no_internet)
                 .setIcon(android.R.drawable.stat_notify_error)
-                .setMessage("Please check your connection and try again.")
+                .setMessage(R.string.msg_try_again)
                 .setPositiveButton(getString(R.string.action_retry), (dialog, which) -> {
                     if (retryCallback != null) {
                         retryCallback.run();

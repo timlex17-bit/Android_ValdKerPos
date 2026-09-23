@@ -216,7 +216,8 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
                             filterBankAccounts(etSearchBank.getText() != null ? etSearchBank.getText().toString() : "");
                         });
                     } catch (Exception e) {
-                        Toast.makeText(this, "Parse error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, getString(R.string.msg_parse_error, e.getMessage()),
+                    Toast.LENGTH_LONG).show();
                     }
                 },
                 error -> {

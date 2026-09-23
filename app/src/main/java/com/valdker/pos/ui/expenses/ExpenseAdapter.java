@@ -1,5 +1,6 @@
 package com.valdker.pos.ui.expenses;
 
+import com.valdker.pos.money.Money;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,7 +47,7 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.VH> {
 
         h.tvName.setText(e.name);
         h.tvMeta.setText((e.date != null ? e.date : "") + " " + (e.time != null ? e.time : ""));
-        h.tvAmount.setText("$" + (e.amount != null ? e.amount : "0.00"));
+        h.tvAmount.setText(Money.of(e.amount).format());
 
         h.btnEdit.setOnClickListener(v -> listener.onEdit(e));
         h.btnDelete.setOnClickListener(v -> listener.onDelete(e));

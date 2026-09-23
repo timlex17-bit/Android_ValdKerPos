@@ -194,7 +194,7 @@ public class StockAdjustmentFormDialog extends DialogFragment {
         try {
             int pIndex = spProduct.getSelectedItemPosition();
             if (pIndex < 0 || productsJson == null || productsJson.length() == 0) {
-                Toast.makeText(requireContext(), "Product must be selected", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), R.string.msg_product_required, Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -207,7 +207,7 @@ public class StockAdjustmentFormDialog extends DialogFragment {
             String note = etNote.getText().toString().trim();
 
             if (TextUtils.isEmpty(sNew)) {
-                Toast.makeText(requireContext(), "New stock must be filled in", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), R.string.msg_new_stock_required, Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -228,7 +228,7 @@ public class StockAdjustmentFormDialog extends DialogFragment {
                         new StockAdjustmentRepository.ObjectCallback() {
                             @Override
                             public void onSuccess(StockAdjustment obj) {
-                                Toast.makeText(requireContext(), "Saved", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(requireContext(), R.string.msg_save_success, Toast.LENGTH_SHORT).show();
                                 if (callback != null) callback.onDone();
                                 dismiss();
                             }
@@ -247,7 +247,7 @@ public class StockAdjustmentFormDialog extends DialogFragment {
                         new StockAdjustmentRepository.ObjectCallback() {
                             @Override
                             public void onSuccess(StockAdjustment obj) {
-                                Toast.makeText(requireContext(), "Updated", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(requireContext(), R.string.msg_update_success, Toast.LENGTH_SHORT).show();
                                 if (callback != null) callback.onDone();
                                 dismiss();
                             }
@@ -261,7 +261,7 @@ public class StockAdjustmentFormDialog extends DialogFragment {
             }
 
         } catch (Exception e) {
-            Toast.makeText(requireContext(), "Invalid input", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), R.string.msg_form_invalid, Toast.LENGTH_SHORT).show();
         }
     }
 }
