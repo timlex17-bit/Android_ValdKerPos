@@ -34,13 +34,12 @@ public class LayoutInflationTest {
             R.layout.view_topbar,
             R.layout.view_offline_stat,
             R.layout.view_draft_chip,
-            R.layout.view_pos_draft_row,
             R.layout.view_pos_category_bar,
 
             // POS kasir
             R.layout.view_pos_topbar,
-            R.layout.view_pos_controls,
             R.layout.view_pos_list,
+            R.layout.view_pos_bon_row,
             R.layout.view_pos_checkout,
             R.layout.fragment_retail_pos,
             R.layout.fragment_workshop_pos,
