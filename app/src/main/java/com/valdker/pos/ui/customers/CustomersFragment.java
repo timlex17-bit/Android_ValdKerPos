@@ -389,7 +389,7 @@ public class CustomersFragment extends BaseFragment {
 
         String token = session != null ? session.getToken() : null;
         if (token == null || token.trim().isEmpty()) {
-            toast("Token empty");
+            toast(getString(R.string.error_session_expired));
             return;
         }
         if (!NetworkUtils.isNetworkAvailable(requireContext())) {
@@ -406,7 +406,7 @@ public class CustomersFragment extends BaseFragment {
                 if (!isAdded()) return;
 
                 isDeleteRunning = false;
-                toast("Deleted");
+                toast(getString(R.string.msg_delete_success));
 
                 for (int i = 0; i < items.size(); i++) {
                     if (items.get(i).id == c.id) {

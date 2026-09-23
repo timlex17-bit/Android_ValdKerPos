@@ -143,7 +143,7 @@ public class SupplierFormDialog extends DialogFragment {
                 SessionManager session = new SessionManager(requireContext());
                 String token = session.getToken();
                 if (TextUtils.isEmpty(token)) {
-                    toast("Session expired. Please login again.");
+                    toast(getString(R.string.error_session_expired));
                     return;
                 }
 

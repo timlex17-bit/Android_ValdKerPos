@@ -286,7 +286,7 @@ public class ProductReturnsFragment extends BaseFragment {
         }
 
         if (ordersLite.isEmpty() || customersLite.isEmpty() || productsLite.isEmpty()) {
-            toast("Loading spinner data...");
+            toast(getString(R.string.msg_loading));
             preloadLiteData();
             return;
         }

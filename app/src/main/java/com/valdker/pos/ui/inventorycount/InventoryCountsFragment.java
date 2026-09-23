@@ -167,7 +167,7 @@ public class InventoryCountsFragment extends BaseFragment {
                     if (!isAdded()) return;
 
                     if (productsJson == null || productsJson.length() == 0) {
-                        toast("Loading products...");
+                        toast(getString(R.string.msg_loading));
                         loadProducts(true, item);
                         return;
                     }
@@ -238,7 +238,7 @@ public class InventoryCountsFragment extends BaseFragment {
             }
 
             if (productsJson == null || productsJson.length() == 0) {
-                toast("Loading products...");
+                toast(getString(R.string.msg_loading));
                 loadProducts(true, null);
                 return;
             }
@@ -420,7 +420,7 @@ public class InventoryCountsFragment extends BaseFragment {
                     setFabEnabled(true);
 
                     if (productsJson == null || productsJson.length() == 0) {
-                        toast("Products are empty");
+                        toast(getString(R.string.msg_no_data));
                         return;
                     }
 
@@ -584,7 +584,7 @@ public class InventoryCountsFragment extends BaseFragment {
                                     isDeleteRunning = false;
                                     if (!isAdded()) return;
 
-                                    toast("Deleted");
+                                    toast(getString(R.string.msg_delete_success));
                                     setFabEnabled(true);
                                     loadCounts();
                                 }

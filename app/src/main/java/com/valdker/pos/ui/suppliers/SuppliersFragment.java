@@ -426,7 +426,7 @@ public class SuppliersFragment extends BaseFragment {
 
         String token = session != null ? session.getToken() : null;
         if (token == null || token.trim().isEmpty()) {
-            toast("Token empty");
+            toast(getString(R.string.error_session_expired));
             return;
         }
         if (!NetworkUtils.isNetworkAvailable(requireContext())) {
@@ -443,7 +443,7 @@ public class SuppliersFragment extends BaseFragment {
                 isDeleteRunning = false;
                 if (!isAdded()) return;
 
-                toast("Deleted");
+                toast(getString(R.string.msg_delete_success));
 
                 removeItemById(s.id, allItems);
                 removeItemById(s.id, items);

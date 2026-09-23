@@ -402,14 +402,14 @@ public class ReportsFragment extends BaseFragment {
         if (!isAdded() || isLoading) return;
 
         if (TextUtils.isEmpty(session.getToken())) {
-            showState("No token. Please login again.");
+            showState(getString(R.string.error_session_expired));
             return;
         }
 
         String start = text(etStart);
         String end = text(etEnd);
         if (!isValidDate(start) || !isValidDate(end)) {
-            showState("Date must be YYYY-MM-DD.");
+            showState(getString(R.string.msg_date_format_ymd));
             return;
         }
 
@@ -492,7 +492,7 @@ public class ReportsFragment extends BaseFragment {
         if (adapter != null) adapter.submit(rows, businessType, reportType);
 
         if (rows.isEmpty()) {
-            showState("No report data for this filter.");
+            showState(getString(R.string.msg_no_report_for_filter));
         } else {
             hideState();
         }

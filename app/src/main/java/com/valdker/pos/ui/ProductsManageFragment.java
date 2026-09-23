@@ -489,7 +489,7 @@ public class ProductsManageFragment extends BaseFragment {
 
         String token = session != null ? session.getToken() : null;
         if (token == null || token.trim().isEmpty()) {
-            toast("Token is missing");
+            toast(getString(R.string.error_session_expired));
             return;
         }
         if (!NetworkUtils.isNetworkAvailable(requireContext())) {
@@ -528,7 +528,7 @@ public class ProductsManageFragment extends BaseFragment {
                 if (!isAdded()) return;
 
                 if (statusCode == 404) {
-                    toast("Already deleted");
+                    toast(getString(R.string.msg_already_deleted));
 
                     removeItemById(p.id, allItems);
                     removeItemById(p.id, items);

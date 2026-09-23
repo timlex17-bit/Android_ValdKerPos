@@ -255,7 +255,7 @@ public class ProductFormDialog extends DialogFragment {
         String token = session.getToken();
 
         if (token == null || token.trim().isEmpty()) {
-            toast("Token empty. Please login again.");
+            toast(getString(R.string.error_session_expired));
         } else {
             progress.setVisibility(View.VISIBLE);
 
@@ -360,22 +360,22 @@ public class ProductFormDialog extends DialogFragment {
                         String sell = getText(etSell);
                         String weight = getText(etWeight);
 
-                        if (name.isEmpty()) { toast("Name required"); return; }
-                        if (code.isEmpty()) { toast("Code required"); return; }
-                        if (spCategory.getSelectedItem() == null) { toast("Category required"); return; }
-                        if (!isEdit && stockStr.isEmpty()) { toast("Stock required"); return; }
-                        if (buy.isEmpty()) { toast("Buy price required"); return; }
-                        if (sell.isEmpty()) { toast("Sell price required"); return; }
-                        if (weight.isEmpty()) { toast("Weight required"); return; }
-                        if (spUnit.getSelectedItem() == null) { toast("Unit required"); return; }
-                        if (spSupplier.getSelectedItem() == null) { toast("Supplier required"); return; }
+                        if (name.isEmpty()) { toast(getString(R.string.error_name_required)); return; }
+                        if (code.isEmpty()) { toast(getString(R.string.msg_code_required)); return; }
+                        if (spCategory.getSelectedItem() == null) { toast(getString(R.string.msg_form_invalid)); return; }
+                        if (!isEdit && stockStr.isEmpty()) { toast(getString(R.string.msg_stock_required)); return; }
+                        if (buy.isEmpty()) { toast(getString(R.string.msg_buy_price_required)); return; }
+                        if (sell.isEmpty()) { toast(getString(R.string.msg_sell_price_required)); return; }
+                        if (weight.isEmpty()) { toast(getString(R.string.msg_weight_required)); return; }
+                        if (spUnit.getSelectedItem() == null) { toast(getString(R.string.msg_unit_required)); return; }
+                        if (spSupplier.getSelectedItem() == null) { toast(getString(R.string.msg_select_supplier)); return; }
 
                         int stock = 0;
                         if (!isEdit) {
                             try {
                                 stock = Integer.parseInt(stockStr);
                             } catch (Exception e) {
-                                toast("Stock must be number");
+                                toast(getString(R.string.msg_invalid_number_format));
                                 return;
                             }
                         } else {
@@ -413,7 +413,7 @@ public class ProductFormDialog extends DialogFragment {
                         String token2 = session2.getToken();
 
                         if (token2 == null || token2.trim().isEmpty()) {
-                            toast("Token empty");
+                            toast(getString(R.string.error_session_expired));
                             return;
                         }
 
@@ -430,7 +430,7 @@ public class ProductFormDialog extends DialogFragment {
                             } catch (Exception e) {
                                 progress.setVisibility(View.GONE);
                                 dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setEnabled(true);
-                                toast("Invalid product ID");
+                                toast(getString(R.string.msg_invalid_product_id));
                                 return;
                             }
 

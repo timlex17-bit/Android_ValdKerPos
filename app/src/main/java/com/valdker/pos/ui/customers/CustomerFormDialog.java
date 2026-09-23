@@ -126,7 +126,7 @@ public class CustomerFormDialog extends DialogFragment {
                 SessionManager session = new SessionManager(requireContext());
                 String token = session.getToken();
                 if (TextUtils.isEmpty(token)) {
-                    toast("Session expired. Please login again.");
+                    toast(getString(R.string.error_session_expired));
                     return;
                 }
 
@@ -158,7 +158,7 @@ public class CustomerFormDialog extends DialogFragment {
                     int id = args.getInt(ARG_ID, 0);
                     if (id <= 0) {
                         setSavingState(progress, positiveButton, false);
-                        toast("Invalid customer ID");
+                        toast(getString(R.string.msg_invalid_customer_id));
                         return;
                     }
 

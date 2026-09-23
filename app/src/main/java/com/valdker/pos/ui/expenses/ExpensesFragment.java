@@ -1,5 +1,6 @@
 package com.valdker.pos.ui.expenses;
 
+import com.valdker.pos.money.MoneyField;
 import androidx.appcompat.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
@@ -194,7 +195,7 @@ public class ExpensesFragment extends BaseFragment {
                 adapter.submit(new ArrayList<>());
             }
             setEmpty(true);
-            toast("No token. Please login again.");
+            toast(getString(R.string.error_session_expired));
             return;
         }
 
@@ -405,12 +406,12 @@ public class ExpensesFragment extends BaseFragment {
             positiveBtn.setOnClickListener(v -> {
                 String name = etName.getText().toString().trim();
                 String note = etNote.getText().toString().trim();
-                String amount = etAmount.getText().toString().trim();
+                String amount = MoneyField.plain(etAmount);
                 String date = etDate.getText().toString().trim();
                 String time = etTime.getText().toString().trim();
 
                 if (TextUtils.isEmpty(name) || TextUtils.isEmpty(amount) || TextUtils.isEmpty(date) || TextUtils.isEmpty(time)) {
-                    toast("Name, Amount, Date, Time are required.");
+                    toast(getString(R.string.msg_name_amount_date_time_required));
                     return;
                 }
 
@@ -423,7 +424,7 @@ public class ExpensesFragment extends BaseFragment {
 
                 String token = session != null ? session.getToken() : null;
                 if (TextUtils.isEmpty(token)) {
-                    toast("No token. Please login again.");
+                    toast(getString(R.string.error_session_expired));
                     return;
                 }
 
@@ -503,7 +504,7 @@ public class ExpensesFragment extends BaseFragment {
 
         String token = session != null ? session.getToken() : null;
         if (TextUtils.isEmpty(token)) {
-            toast("No token. Please login again.");
+            toast(getString(R.string.error_session_expired));
             return;
         }
 

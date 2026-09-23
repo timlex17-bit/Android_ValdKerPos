@@ -312,7 +312,7 @@ public class StockAdjustmentsFragment extends BaseFragment {
         lastFabClickTime = now;
 
         if (!productsLoaded || productsJson == null || productsJson.length() == 0) {
-            toast("Product list not loaded yet");
+            toast(getString(R.string.msg_product_data_loading));
             if (!isLoadingProducts) {
                 loadProducts();
             }
@@ -447,7 +447,7 @@ public class StockAdjustmentsFragment extends BaseFragment {
                     }
 
                     if (!productsLoaded) {
-                        toast("Products are empty");
+                        toast(getString(R.string.msg_no_data));
                     }
                 },
                 error -> {

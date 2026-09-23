@@ -529,7 +529,7 @@ public class RetailPOSFragment extends Fragment {
             productAdapter.setData(scannedProducts);
         }
         if (scannedProducts.isEmpty()) {
-            showEmptyState("Scan barcode to add product");
+            showEmptyState(getString(R.string.msg_scan_barcode_to_add));
         } else {
             hideEmptyState();
         }
@@ -685,7 +685,7 @@ public class RetailPOSFragment extends Fragment {
         PosDraftRepository repository = posDraftRepository;
         long draftId = activeDraftId;
         if (repository == null || draftId <= 0L) {
-            toast("Draft masih kosong");
+            toast(getString(R.string.msg_cart_empty));
             return;
         }
 
@@ -695,7 +695,7 @@ public class RetailPOSFragment extends Fragment {
                         repository.closeActiveDraftIfPossible(POS_TYPE_RETAIL, draftId);
                 if (!result.closed) {
                     mainHandler.post(() -> {
-                        if (isAdded()) toast("Draft masih kosong");
+                        if (isAdded()) toast(getString(R.string.msg_cart_empty));
                     });
                     return;
                 }
@@ -736,7 +736,7 @@ public class RetailPOSFragment extends Fragment {
             productAdapter.setData(scannedProducts);
         }
         if (scannedProducts.isEmpty()) {
-            showEmptyState("Scan barcode to add product");
+            showEmptyState(getString(R.string.msg_scan_barcode_to_add));
         } else {
             hideEmptyState();
         }
@@ -1037,7 +1037,7 @@ public class RetailPOSFragment extends Fragment {
 
         if (matches.isEmpty()) {
             Log.i(TAG, "SCANNER: product not found");
-            toast("Product not found");
+            toast(getString(R.string.msg_data_not_found));
             return;
         }
 
@@ -1091,7 +1091,7 @@ public class RetailPOSFragment extends Fragment {
     private void lookupBarcodeFromRoom(@NonNull String barcode) {
         if (masterDataRepository == null) {
             Log.i(TAG, "SCANNER: product not found");
-            toast("Product not found");
+            toast(getString(R.string.msg_data_not_found));
             if (etSearchHint != null) etSearchHint.requestFocus();
             return;
         }
@@ -1104,7 +1104,7 @@ public class RetailPOSFragment extends Fragment {
                 if (allProducts.isEmpty()) {
                     showNoLocalDataNoticeOnce();
                 } else {
-                    toast("Product not found");
+                    toast(getString(R.string.msg_data_not_found));
                 }
                 if (etSearchHint != null) etSearchHint.requestFocus();
                 return;
@@ -1113,7 +1113,7 @@ public class RetailPOSFragment extends Fragment {
             RetailProductItem item = toRetailProductItem(product);
             if (item.id <= 0 || !item.active) {
                 Log.i(TAG, "SCANNER: product not found");
-                toast("Product not found");
+                toast(getString(R.string.msg_data_not_found));
                 if (etSearchHint != null) etSearchHint.requestFocus();
                 return;
             }
@@ -1173,7 +1173,7 @@ public class RetailPOSFragment extends Fragment {
         } else {
             int newQty = getScannedQty(productId) + 1;
             if (exceedsAvailableStock(existing, newQty)) {
-                toast("Stok tidak cukup");
+                toast(getString(R.string.msg_quantity_exceeds_available_stock));
                 return getScannedQty(productId);
             }
             scannedQtyMap.put(productId, newQty);
@@ -1198,7 +1198,7 @@ public class RetailPOSFragment extends Fragment {
 
         int nextQty = getScannedQty(item.id) + 1;
         if (exceedsAvailableStock(item, nextQty)) {
-            toast("Stok tidak cukup");
+            toast(getString(R.string.msg_quantity_exceeds_available_stock));
             return;
         }
 
@@ -1321,7 +1321,7 @@ public class RetailPOSFragment extends Fragment {
         final String token = session.getToken();
         if (TextUtils.isEmpty(token)) {
             showLoading(false);
-            showEmptyState("Token missing");
+            showEmptyState(getString(R.string.error_session_expired));
             return;
         }
 
@@ -1361,7 +1361,7 @@ public class RetailPOSFragment extends Fragment {
                 if (!isAdded()) return;
                 showLoading(false);
                 if (allProducts.isEmpty()) {
-                    showEmptyState("Failed to load products");
+                    showEmptyState(getString(R.string.msg_product_data_loading));
                 }
             }
         });
@@ -1379,7 +1379,7 @@ public class RetailPOSFragment extends Fragment {
         hydrateScannedProductsFromCatalog();
 
         if (scannedProducts.isEmpty()) {
-            showEmptyState("Scan barcode to add product");
+            showEmptyState(getString(R.string.msg_scan_barcode_to_add));
         } else {
             hideEmptyState();
         }
