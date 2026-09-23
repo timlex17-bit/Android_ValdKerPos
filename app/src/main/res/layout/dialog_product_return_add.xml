@@ -189,7 +189,10 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
-                            android:hint="@string/field_unit_price">
+                            android:hint="@string/field_unit_price"
+                        app:prefixText="@string/money_prefix"
+                        app:prefixTextColor="@color/text_secondary"
+                        app:expandedHintEnabled="false">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etUnitPrice"
@@ -283,7 +286,10 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
-                            android:hint="@string/field_unit_price">
+                            android:hint="@string/field_unit_price"
+                        app:prefixText="@string/money_prefix"
+                        app:prefixTextColor="@color/text_secondary"
+                        app:expandedHintEnabled="false">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etManualUnitPrice"

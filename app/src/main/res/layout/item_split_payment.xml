@@ -60,7 +60,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_weight="2"
-        android:hint="@string/checkout_discount_hint">
+        android:hint="@string/checkout_discount_hint"
+                        app:prefixText="@string/money_prefix"
+                        app:prefixTextColor="@color/text_secondary"
+                        app:expandedHintEnabled="false">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etSplitAmount"

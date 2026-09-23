@@ -235,7 +235,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:hint="@string/field_buy_price">
+                        android:hint="@string/field_buy_price"
+                        app:prefixText="@string/money_prefix"
+                        app:prefixTextColor="@color/text_secondary"
+                        app:expandedHintEnabled="false">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etProdBuy"
@@ -250,7 +253,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:hint="@string/field_sell_price">
+                        android:hint="@string/field_sell_price"
+                        app:prefixText="@string/money_prefix"
+                        app:prefixTextColor="@color/text_secondary"
+                        app:expandedHintEnabled="false">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etProdSell"

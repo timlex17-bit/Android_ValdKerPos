@@ -1797,4 +1797,33 @@
     <string name="msg_device_clock_wrong_body">The date or time on this device does not match the server. Turn on automatic date and time, then try again.</string>
     <string name="msg_device_clock_wrong_short">Device clock is out of sync</string>
     <string name="menu_privacy_policy">Privacy policy</string>
+
+    <!-- Tanda mata uang di kolom isian. Tidak diterjemahkan: simbol,
+         bukan kata. Ditulis sebagai sumber daya supaya kalau toko
+         suatu saat memakai mata uang lain, yang diubah satu tempat. -->
+    <string name="money_prefix" translatable="false">$</string>
+    <string name="percent_suffix" translatable="false">%</string>
+
+    <!-- Teks yang lolos dari pemindaian sebelumnya karena berkasnya
+         memanggil helper toast() sendiri, bukan Toast.makeText(). -->
+    <string name="msg_code_required">Code is required</string>
+    <string name="msg_stock_required">Stock is required</string>
+    <string name="msg_buy_price_required">Buy price is required</string>
+    <string name="msg_sell_price_required">Sell price is required</string>
+    <string name="msg_weight_required">Weight is required</string>
+    <string name="msg_invalid_product_id">Invalid product id</string>
+    <string name="msg_invalid_customer_id">Invalid customer id</string>
+    <string name="msg_already_deleted">This data was already deleted</string>
+    <string name="msg_name_amount_date_time_required">Name, amount, date, and time are required.</string>
+    <string name="msg_date_format_ymd">The date must be written as YYYY-MM-DD.</string>
+    <string name="msg_scan_barcode_to_add">Scan a barcode to add a product</string>
+    <string name="msg_no_report_for_filter">No report data for this filter.</string>
+    <string name="msg_load_categories_failed">Failed to load categories: %1$s</string>
+    <string name="msg_load_units_failed">Failed to load units: %1$s</string>
+    <string name="msg_load_suppliers_failed">Failed to load suppliers: %1$s</string>
+    <string name="msg_load_report_failed">Failed to load the report: %1$s</string>
+    <string name="msg_create_failed_detail">Create failed: %1$s</string>
+    <string name="msg_update_failed_detail">Update failed: %1$s</string>
+    <string name="msg_deleted_named">Deleted: %1$s</string>
+    <string name="msg_found_count">Found %1$s</string>
 </resources>

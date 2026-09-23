@@ -33,21 +33,36 @@
             android:textColor="@color/text_primary"
             android:textColorHint="@color/text_tertiary" />
 
-        <EditText
-            style="@style/Widget.Valora.EditText"
-            android:id="@+id/etPrice"
+        <!-- Kotak isian uang: "$" menetap di dalam kotak, di luar teks yang diedit. -->
+        <LinearLayout
+            style="@style/Widget.Valora.MoneyFieldBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="52dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_dialog_input"
-            android:hint="@string/field_price_required"
-            android:inputType="numberDecimal"
-            android:maxLines="1"
-            android:paddingStart="14dp"
-            android:paddingEnd="14dp"
-            android:textColor="@color/text_primary"
-            android:textColorHint="@color/text_tertiary" />
+            android:layout_marginTop="12dp">
+
+            <TextView
+                style="@style/TextAppearance.Valora.MoneyPrefix"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:importantForAccessibility="no"
+                android:text="@string/money_prefix" />
+
+            <EditText
+                style="@style/Widget.Valora.EditText.Money"
+                android:id="@+id/etPrice"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:minHeight="52dp"
+                android:background="@drawable/bg_dialog_input"
+                android:hint="@string/field_price_required"
+                android:inputType="numberDecimal"
+                android:maxLines="1"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_tertiary" />
+        </LinearLayout>
 
         <EditText
             style="@style/Widget.Valora.EditText"

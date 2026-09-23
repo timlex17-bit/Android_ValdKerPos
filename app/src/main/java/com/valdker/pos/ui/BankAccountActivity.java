@@ -1,5 +1,6 @@
 package com.valdker.pos.ui;
 
+import com.valdker.pos.money.MoneyField;
 import androidx.appcompat.app.AlertDialog;
 import android.app.Dialog;
 import android.graphics.Color;
@@ -458,7 +459,7 @@ public class BankAccountActivity extends AppCompatActivity implements BankAccoun
             String accountNumber = etAccountNumber.getText().toString().trim();
             String accountHolder = etAccountHolder.getText().toString().trim();
             String accountType = spinnerAccountType.getSelectedItem().toString();
-            String openingBalance = etOpeningBalance.getText().toString().trim();
+            String openingBalance = MoneyField.plain(etOpeningBalance);
             boolean isActive = switchActive.isChecked();
             String note = etNote.getText().toString().trim();
 

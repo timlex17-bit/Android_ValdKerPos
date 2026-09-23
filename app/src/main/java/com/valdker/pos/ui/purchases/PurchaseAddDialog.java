@@ -1,5 +1,6 @@
 package com.valdker.pos.ui.purchases;
 
+import com.valdker.pos.money.MoneyField;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -286,7 +287,7 @@ public class PurchaseAddDialog extends androidx.fragment.app.DialogFragment {
         }
 
         String qtyStr = (etQty.getText() != null) ? etQty.getText().toString().trim() : "";
-        String costStr = (etCost.getText() != null) ? etCost.getText().toString().trim() : "";
+        String costStr = MoneyField.isBlank(etCost) ? "" : MoneyField.plain(etCost);
 
         if (TextUtils.isEmpty(qtyStr)) {
             etQty.setError(getString(R.string.msg_quantity_required));

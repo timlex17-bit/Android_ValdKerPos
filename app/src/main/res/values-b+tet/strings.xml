@@ -1785,4 +1785,33 @@
     <string name="msg_device_clock_wrong_body">Data ka oras iha aparellu ne\'e la hanesan ho servidór. Hamoris data no oras automátiku, depois koko fila fali.</string>
     <string name="msg_device_clock_wrong_short">Oras aparellu la hanesan</string>
     <string name="menu_privacy_policy">Polítika privasidade</string>
+
+    <!-- Tanda mata uang di kolom isian. Tidak diterjemahkan: simbol,
+         bukan kata. Ditulis sebagai sumber daya supaya kalau toko
+         suatu saat memakai mata uang lain, yang diubah satu tempat. -->
+    <string name="money_prefix" translatable="false">$</string>
+    <string name="percent_suffix" translatable="false">%</string>
+
+    <!-- Teks yang lolos dari pemindaian sebelumnya karena berkasnya
+         memanggil helper toast() sendiri, bukan Toast.makeText(). -->
+    <string name="msg_code_required">Kódigu presiza</string>
+    <string name="msg_stock_required">Stok presiza</string>
+    <string name="msg_buy_price_required">Presu sosa presiza</string>
+    <string name="msg_sell_price_required">Presu fa\'an presiza</string>
+    <string name="msg_weight_required">Todan presiza</string>
+    <string name="msg_invalid_product_id">ID produtu la valida</string>
+    <string name="msg_invalid_customer_id">ID kliente la valida</string>
+    <string name="msg_already_deleted">Dadus ne\'e hasai tiha ona</string>
+    <string name="msg_name_amount_date_time_required">Naran, montante, data, no oras presiza hotu.</string>
+    <string name="msg_date_format_ymd">Data tenke hakerek nudar YYYY-MM-DD.</string>
+    <string name="msg_scan_barcode_to_add">Skaneia barcode atu aumenta produtu</string>
+    <string name="msg_no_report_for_filter">La iha dadus relatóriu ba filtru ne\'e.</string>
+    <string name="msg_load_categories_failed">La konsege karga kategoria: %1$s</string>
+    <string name="msg_load_units_failed">La konsege karga unidade: %1$s</string>
+    <string name="msg_load_suppliers_failed">La konsege karga fornesedór: %1$s</string>
+    <string name="msg_load_report_failed">La konsege karga relatóriu: %1$s</string>
+    <string name="msg_create_failed_detail">La konsege kria: %1$s</string>
+    <string name="msg_update_failed_detail">La konsege atualiza: %1$s</string>
+    <string name="msg_deleted_named">Hasai ona: %1$s</string>
+    <string name="msg_found_count">Hetan %1$s</string>
 </resources>

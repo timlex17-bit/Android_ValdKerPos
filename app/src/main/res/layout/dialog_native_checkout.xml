@@ -130,7 +130,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:hint="@string/checkout_discount_hint">
+                        android:hint="@string/checkout_discount_hint"
+                        app:expandedHintEnabled="false">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etDiscountValue"
@@ -298,7 +299,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
-                        android:hint="@string/hint_cash_received">
+                        android:hint="@string/hint_cash_received"
+                        app:prefixText="@string/money_prefix"
+                        app:prefixTextColor="@color/text_secondary"
+                        app:expandedHintEnabled="false">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etCashReceived"
@@ -536,7 +540,10 @@
                     android:layout_marginTop="8dp"
                     android:hint="@string/hint_delivery_fee"
                     android:visibility="gone"
-                    tools:visibility="visible">
+                    tools:visibility="visible"
+                        app:prefixText="@string/money_prefix"
+                        app:prefixTextColor="@color/text_secondary"
+                        app:expandedHintEnabled="false">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etDeliveryFee"

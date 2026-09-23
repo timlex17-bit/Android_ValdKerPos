@@ -42,14 +42,29 @@
             android:textStyle="bold"
             android:paddingBottom="6dp" />
 
-        <EditText
-            style="@style/Widget.Valora.EditText"
-            android:id="@+id/etClosingCash"
+        <!-- Kotak isian uang: "$" menetap di dalam kotak, di luar teks yang diedit. -->
+        <LinearLayout
+            style="@style/Widget.Valora.MoneyFieldBox"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/shift_close_cash_hint"
-            android:inputType="numberDecimal"
-            android:padding="12dp" />
+            android:layout_height="wrap_content">
+
+            <TextView
+                style="@style/TextAppearance.Valora.MoneyPrefix"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:importantForAccessibility="no"
+                android:text="@string/money_prefix" />
+
+            <EditText
+                style="@style/Widget.Valora.EditText.Money"
+                android:id="@+id/etClosingCash"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:hint="@string/shift_close_cash_hint"
+                android:inputType="numberDecimal"
+                android:padding="12dp" />
+        </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"

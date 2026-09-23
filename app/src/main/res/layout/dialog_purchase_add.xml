@@ -268,7 +268,10 @@
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
                                     android:layout_marginStart="10dp"
-                                    android:hint="@string/field_cost_price">
+                                    android:hint="@string/field_cost_price"
+                        app:prefixText="@string/money_prefix"
+                        app:prefixTextColor="@color/text_secondary"
+                        app:expandedHintEnabled="false">
 
                                     <com.google.android.material.textfield.TextInputEditText
                                         android:id="@+id/etCost"

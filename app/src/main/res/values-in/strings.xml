@@ -1811,4 +1811,33 @@
     <string name="msg_device_clock_wrong_body">Tanggal atau waktu di perangkat ini tidak sesuai dengan server. Aktifkan tanggal dan waktu otomatis, lalu coba lagi.</string>
     <string name="msg_device_clock_wrong_short">Jam perangkat tidak sesuai</string>
     <string name="menu_privacy_policy">Kebijakan privasi</string>
+
+    <!-- Tanda mata uang di kolom isian. Tidak diterjemahkan: simbol,
+         bukan kata. Ditulis sebagai sumber daya supaya kalau toko
+         suatu saat memakai mata uang lain, yang diubah satu tempat. -->
+    <string name="money_prefix" translatable="false">$</string>
+    <string name="percent_suffix" translatable="false">%</string>
+
+    <!-- Teks yang lolos dari pemindaian sebelumnya karena berkasnya
+         memanggil helper toast() sendiri, bukan Toast.makeText(). -->
+    <string name="msg_code_required">Kode wajib diisi</string>
+    <string name="msg_stock_required">Stok wajib diisi</string>
+    <string name="msg_buy_price_required">Harga beli wajib diisi</string>
+    <string name="msg_sell_price_required">Harga jual wajib diisi</string>
+    <string name="msg_weight_required">Berat wajib diisi</string>
+    <string name="msg_invalid_product_id">ID produk tidak sah</string>
+    <string name="msg_invalid_customer_id">ID pelanggan tidak sah</string>
+    <string name="msg_already_deleted">Data ini sudah dihapus</string>
+    <string name="msg_name_amount_date_time_required">Nama, jumlah, tanggal, dan waktu wajib diisi.</string>
+    <string name="msg_date_format_ymd">Tanggal harus ditulis YYYY-MM-DD.</string>
+    <string name="msg_scan_barcode_to_add">Pindai barcode untuk menambah produk</string>
+    <string name="msg_no_report_for_filter">Tidak ada data laporan untuk saringan ini.</string>
+    <string name="msg_load_categories_failed">Gagal memuat kategori: %1$s</string>
+    <string name="msg_load_units_failed">Gagal memuat satuan: %1$s</string>
+    <string name="msg_load_suppliers_failed">Gagal memuat pemasok: %1$s</string>
+    <string name="msg_load_report_failed">Gagal memuat laporan: %1$s</string>
+    <string name="msg_create_failed_detail">Gagal membuat: %1$s</string>
+    <string name="msg_update_failed_detail">Gagal memperbarui: %1$s</string>
+    <string name="msg_deleted_named">Dihapus: %1$s</string>
+    <string name="msg_found_count">Ditemukan %1$s</string>
 </resources>

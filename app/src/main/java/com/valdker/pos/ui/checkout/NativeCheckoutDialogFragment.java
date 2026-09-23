@@ -662,6 +662,7 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
             spDiscountMode.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
+                    applyDiscountAffix();
                     updateTotals.run();
                 }
 
@@ -669,6 +670,7 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
                 public void onNothingSelected(AdapterView<?> parent) {
                 }
             });
+            applyDiscountAffix();
         }
 
         if (btnAddSplit != null && containerSplit != null) {
@@ -1018,6 +1020,27 @@ public class NativeCheckoutDialogFragment extends DialogFragment {
             if (!Money.of(safe(amount.getText())).isPositive()) return true;
         }
         return false;
+    }
+
+    /**
+     * Menyesuaikan tanda pada kolom diskon dengan mode yang dipilih.
+     *
+     * <p>Kolom diskon satu-satunya kolom uang di aplikasi ini yang TIDAK boleh
+     * memakai "$" mati. Nilainya berarti dolar atau persen tergantung pemilih
+     * di sebelahnya, dan tanda dolar yang menetap akan berbohong begitu
+     * pengguna memilih persen: "$ 10" untuk potongan sepuluh persen.
+     *
+     * <p>Karena itu "$" dipasang sebagai PREFIKS saat mode nominal dan "%"
+     * sebagai SUFIKS saat mode persen - masing-masing di sisi tempat orang
+     * memang menuliskannya. Keduanya di luar teks yang diedit, jadi nilai yang
+     * terbaca tetap angka polos.
+     */
+    private void applyDiscountAffix() {
+        if (tilDiscountValue == null) return;
+
+        boolean percent = isPercentDiscountMode();
+        tilDiscountValue.setPrefixText(percent ? null : getString(R.string.money_prefix));
+        tilDiscountValue.setSuffixText(percent ? getString(R.string.percent_suffix) : null);
     }
 
     private boolean isPercentDiscountMode() {

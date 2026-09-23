@@ -1,5 +1,6 @@
 package com.valdker.pos.ui.productreturns;
 
+import com.valdker.pos.money.MoneyField;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.text.InputType;
@@ -573,7 +574,8 @@ public class ProductReturnAddDialog extends DialogFragment {
         ProductLite p = (ProductLite) sel;
 
         String qtyStr = etManualQty != null ? etManualQty.getText().toString().trim() : "";
-        String unitPriceStr = etManualUnitPrice != null ? etManualUnitPrice.getText().toString().trim() : "";
+        String unitPriceStr = MoneyField.isBlank(etManualUnitPrice)
+                ? "" : MoneyField.plain(etManualUnitPrice);
 
         if (TextUtils.isEmpty(qtyStr)) {
             Toast.makeText(requireContext(), R.string.msg_quantity_required, Toast.LENGTH_SHORT).show();

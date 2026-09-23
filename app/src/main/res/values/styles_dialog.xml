@@ -217,4 +217,42 @@
         <item name="android:textSize">12sp</item>
         <item name="android:textStyle">bold</item>
     </style>
+
+    <!--
+      Kolom isian UANG yang tidak memakai TextInputLayout.
+
+      Kotaknya pindah dari EditText ke wadah ini, sehingga tanda "$" berdiri DI
+      DALAM kotak yang sama dengan angkanya - bukan melayang di sebelahnya.
+      EditText-nya sendiri jadi bening dan kehilangan pias kirinya, karena
+      pias itu kini milik wadah.
+
+      Yang penting: "$" bukan bagian dari teks yang diedit. Pengguna tidak
+      pernah mengetiknya, tidak bisa menghapusnya, dan - ini yang menentukan -
+      ia tidak pernah ikut terbaca getText(), jadi payload API tetap "1250.50".
+    -->
+    <style name="Widget.Valora.MoneyFieldBox" parent="">
+        <item name="android:background">@drawable/bg_dialog_input</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:minHeight">@dimen/touch_target_min</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+    </style>
+
+    <!-- Tanda "$" di dalam kotak isian uang. -->
+    <style name="TextAppearance.Valora.MoneyPrefix" parent="">
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:layout_marginEnd">6dp</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <!-- EditText di dalam kotak uang: kotaknya milik wadah, bukan miliknya. -->
+    <style name="Widget.Valora.EditText.Money" parent="Widget.Valora.EditText">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:paddingStart">0dp</item>
+        <item name="android:paddingEnd">0dp</item>
+        <item name="android:inputType">numberDecimal</item>
+    </style>
 </resources>
