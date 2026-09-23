@@ -1071,9 +1071,6 @@
     <string name="menu_offline_orders_desc">Haree no koko fila fali fila sinkronizasaun</string>
     <string name="msg_opening_cash_required">Osan hahu obrigatoriu.</string>
     <string name="msg_invalid_money_amount">Hatama montante osan ne\'ebe validu.</string>
-    <string name="draft_a_preview">A - 3</string>
-    <string name="draft_b_preview">B - 12</string>
-    <string name="draft_walkin_preview">Kliente direta - 1</string>
     <string name="draft_add">+</string>
     <string name="owner_chat_title">Owner Chat</string>
     <string name="owner_chat_subtitle">Husu kona-ba venda, stock, despeza, pagamentu, no relatoriu</string>
@@ -1088,6 +1085,7 @@
     <string name="owner_chat_server_error">Server iha problema. Koko fali depois.</string>
     <string name="owner_chat_unable_contact">La bele kontaktu Owner Chat.</string>
     <string name="owner_chat_response_unreadable">Deskulpa, hau la komprende resposta.</string>
+    <string name="owner_chat_structured_data_empty">La iha dadus ba períodu ida ne\'e.</string>
     <string name="owner_chat_question_not_processed">Ita nia pergunta la bele prosesu. Koko fali.</string>
     <string name="owner_chat_link_cannot_open">Link ida ne e la bele loke.</string>
     <string name="label_vehicle_type">Tipu Veíkulu</string>
@@ -1484,4 +1482,174 @@
     <string name="activation_not_found">La hetan kodigu loja ne’e. Konfirma fali ho na’in.</string>
     <string name="activation_shop_inactive">Loja ne’e la aktivu. Kontaktu na’in ka suporta.</string>
     <string name="activation_rate_limited">Koko barak liu ona. Hein minutu ida, depois koko fali.</string>
+
+    <!-- Modul bengkel: pemilih relasi, pilihan status, dan baris daftar -->
+    <string name="picker_loading">Foti hela...</string>
+    <string name="picker_empty">Seidauk iha dadus. Kria uluk iha ninia menu rasik.</string>
+    <string name="picker_unreadable">Lista ne’e la bele lee.</string>
+    <string name="picker_failed">La konsege foti lista: %1$s</string>
+    <string name="workshop_pick_customer">Hili kliente</string>
+    <string name="workshop_pick_vehicle">Hili kareta</string>
+    <string name="workshop_pick_mechanic">Hili mekaniku</string>
+    <string name="workshop_pick_work_order">Hili work order</string>
+    <string name="workshop_pick_none">Husik mamuk</string>
+    <string name="workshop_pick_required">Hili %1$s uluk.</string>
+    <string name="workshop_field_tap_to_pick">Tuku atu hili</string>
+    <string name="workshop_field_tap_to_set">Tuku atu prienxe</string>
+    <string name="workshop_label_customer">Kliente</string>
+    <string name="workshop_label_vehicle">Kareta</string>
+    <string name="workshop_label_mechanic">Mekaniku</string>
+    <string name="workshop_label_work_order">Work order</string>
+    <string name="workshop_label_vehicle_type">Tipu kareta</string>
+    <string name="workshop_label_status">Estadu</string>
+    <string name="workshop_label_booking_date">Data booking</string>
+    <string name="workshop_label_booking_time">Oras booking</string>
+    <string name="workshop_label_service_date">Data servisu</string>
+    <string name="workshop_type_car">Karreta</string>
+    <string name="workshop_type_motorcycle">Motorizada</string>
+    <string name="workshop_status_open">Loke</string>
+    <string name="workshop_status_in_progress">Halo hela</string>
+    <string name="workshop_status_done">Remata</string>
+    <string name="workshop_status_cancelled">Kansela</string>
+    <string name="workshop_status_pending">Hein</string>
+    <string name="workshop_status_confirmed">Konfirma</string>
+    <string name="workshop_row_unnamed">Dadus #%1$d</string>
+    <string name="workshop_vehicle_no_owner">La iha na’in</string>
+    <string name="workshop_work_order_short">WO #%1$d</string>
+
+
+    <!-- Owner Chat: keadaan galat asisten AI -->
+    <string name="owner_chat_rate_limited">Pedidu barak liu. Hein uitoan depois koko fali.</string>
+    <string name="owner_chat_conversation_expired">Konversa uluk nian la iha ona. Haruka fali ita-nia pergunta atu hahu konversa foun.</string>
+
+
+    <!-- Kasir bengkel: paket servis - kazu pakote tuan ne'ebe hela iha
+         drafu, no kazu pakote ne'ebe seidauk sinkroniza ba product_id -->
+    <string name="workshop_service_package_title">Pakote ida ne\'e seidauk bele fa\'an</string>
+    <string name="workshop_service_package_unsupported">Item karrinya ne\'e hela husi drafu tuan antes pakote servisu bele liga ba produtu ne\'ebe bele fa\'an. Orden ne\'ebe iha \"%1$s\" sei hetan rejeisaun. Hasai no hatama fali pakote husi lista hili.</string>
+    <string name="workshop_service_package_remove">Hasai husi karrinya</string>
+    <string name="workshop_service_package_missing_product">\"%1$s\" seidauk iha produtu ne\'ebe bele fa\'an, entaun seidauk bele tama karrinya. Husu owner/admin loke no rai pakote ida ne\'e dala ida iha pajina Pakote Servisu, ka kontaktu suporte se ida ne\'e kontinua akontese.</string>
+    <string name="workshop_service_package_inactive">\"%1$s\" la ativu ona no la bele fa\'an.</string>
+
+
+    <!-- Laporan: judul, kartu ringkasan, dan penyaring -->
+    <string name="report_title_sales">Relatoriu Vendas</string>
+    <string name="report_title_daily">Rezumu Loron-loron</string>
+    <string name="report_title_payments">Relatoriu Pagamentu</string>
+    <string name="report_title_shifts">Relatoriu Shift</string>
+    <string name="report_title_items_retail">Relatoriu Produtu</string>
+    <string name="report_title_items_restaurant">Relatoriu Menu</string>
+    <string name="report_title_items_workshop">Relatoriu Servisu &amp; Sobresalente</string>
+    <string name="business_type_retail">Loja retalhu</string>
+    <string name="business_type_restaurant">Restaurante</string>
+    <string name="business_type_workshop">Oficina</string>
+    <string name="report_subtitle">%1$s - %2$s</string>
+    <string name="report_card_total_revenue">Reseita Totál</string>
+    <string name="report_card_net_sales">Vendas Líquida</string>
+    <string name="report_card_gross_profit">Lukru Brutu</string>
+    <string name="report_card_margin">Marjen Lukru</string>
+    <string name="report_card_product_sold">Sasán Fa\'an Tiha</string>
+    <string name="report_card_orders">Total Pedidu</string>
+    <string name="report_card_discount">Total Diskontu</string>
+    <string name="report_card_service_revenue">Reseita Servisu</string>
+    <string name="report_card_sparepart_revenue">Reseita Sobresalente</string>
+    <string name="report_card_menu_revenue">Reseita Menu</string>
+    <string name="report_card_service_jobs">Servisu Halo Tiha</string>
+    <string name="report_card_dine_in_revenue">Reseita Han iha Ne\'e</string>
+    <string name="report_card_takeaway_revenue">Reseita Lori Ba</string>
+    <string name="report_card_delivery_revenue">Reseita Entrega</string>
+    <string name="report_card_delivery_fee">Taxa Entrega</string>
+    <string name="report_card_total_received">Total Simu</string>
+    <string name="report_card_shift_count">Total Shift</string>
+    <string name="report_card_total_sales">Total Vendas</string>
+    <string name="report_card_revenue">Reseita</string>
+    <string name="report_card_expenses">Despeza</string>
+    <string name="report_card_net_profit">Lukru Líquidu</string>
+    <string name="report_card_average_order">Média Pedidu</string>
+    <string name="report_no_summary">Servidor la haruka rezumu ba filtru ne\'e.</string>
+    <string name="report_breakdown_by_method">Tuir metodu pagamentu</string>
+    <string name="report_filter_product">Produtu</string>
+    <string name="report_filter_category">Kategoria</string>
+    <string name="report_filter_payment">Metodu pagamentu</string>
+    <string name="report_filter_all">Hotu</string>
+    <string name="report_filter_tap_to_pick">Tuku atu hili</string>
+    <string name="report_pick_product">Hili produtu</string>
+    <string name="report_pick_category">Hili kategoria</string>
+    <string name="report_pick_payment">Hili metodu pagamentu</string>
+    <string name="report_payment_split">Pagamentu fahe</string>
+    <string name="report_payment_unpaid">Seidauk selu</string>
+
+
+    <!-- Laporan: label chip pemilih jenis laporan -->
+    <string name="report_chip_daily">Loron</string>
+    <string name="report_chip_sales">Vendas</string>
+    <string name="report_chip_payments">Pagamentu</string>
+    <string name="report_chip_shifts">Shift</string>
+    <string name="report_chip_items">Sasan</string>
+
+
+    <string name="report_chip_items_restaurant">Menu</string>
+    <string name="report_chip_items_workshop">Servisu</string>
+
+
+    <!-- Kasir Modernist: lencana tipe, checkout, keadaan kosong -->
+    <string name="cd_scan_barcode">Skaneia barcode</string>
+    <string name="pos_type_retail">Retail</string>
+    <string name="pos_type_restaurant">Restaurante</string>
+    <string name="pos_type_workshop">Bengkel</string>
+    <string name="pos_total_items">Total · %1$s item</string>
+    <string name="pos_pay">Pagamentu</string>
+    <string name="pos_draft_label">Bon</string>
+    <string name="pos_locked_note">Tipu negósiu husi konta ne\'e</string>
+
+
+    <!-- Kasir: label tiga sel strip aksi, berbeda per jenis usaha -->
+    <string name="pos_quick_scan">Skaneia</string>
+    <string name="pos_quick_open_product">Buka produtu</string>
+    <string name="pos_quick_return">Retornu</string>
+    <string name="pos_quick_table">Meza</string>
+    <string name="pos_quick_takeaway">Take-away</string>
+    <string name="pos_quick_delivery">Delivery</string>
+    <string name="pos_quick_work_order">Work order</string>
+    <string name="pos_quick_booking">Rezerva</string>
+    <string name="pos_quick_history">Istória</string>
+
+
+    <string name="pos_section_lines">Item sira</string>
+    <string name="pos_search_hint">Produtu ka barcode</string>
+
+
+    <!-- Lembar Troka: nomor langkah -->
+    <string name="sheet_step_customer">1 · Kliente</string>
+    <string name="sheet_step_vehicle">2 · Veikulu</string>
+    <string name="sheet_step_mechanic">3 · Mekaniku &amp; work order</string>
+
+
+    <string name="pos_total_label">Total pagamentu</string>
+    <string name="pos_count_items">%1$s item</string>
+
+
+    <!-- Label layar yang sebelumnya ditulis mati di dalam layout.
+         Dipindah ke sini saat audit i18n; ketiga bahasa diisi sekaligus,
+         bukan Inggris dulu lalu sisanya menyusul - kunci yang lahir hanya
+         dalam satu bahasa cenderung tetap begitu. -->
+    <string name="label_adjusted_by">Ajusta husi</string>
+    <string name="label_returned_by">Devolve husi</string>
+    <string name="label_report">Relatóriu</string>
+    <string name="label_filters">Filtru sira</string>
+    <string name="label_signed_in_as">Tama nudar</string>
+    <string name="label_coming_soon">Sei mai lalais</string>
+    <string name="badge_return">DEVOLUSAUN</string>
+    <string name="action_go">Hahú</string>
+    <string name="customers_empty_hint">Hanehan + atu aumenta kliente foun.</string>
+
+    <!-- Pesan yang sebelumnya ditulis mati, dan bahasanya tercampur:
+         satu keadaan yang sama muncul dalam Inggris, Indonesia, dan Tetun
+         sekaligus tergantung berkas mana yang menampilkannya. -->
+    <string name="error_session_expired">Ita-nia sesaun remata ona. Favor tama fali.</string>
+    <string name="error_no_menu_access">Ita la iha asesu ba menu ida ne’e.</string>
+    <string name="select_vehicle">Hili kareta</string>
+    <string name="select_mechanic">Hili mekaniku</string>
+    <string name="select_work_order">Hili work order</string>
+    <string name="select_booking">Hili rezerva</string>
 </resources>

@@ -13,6 +13,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -42,8 +43,16 @@ public class OwnerChatActivity extends AppCompatActivity {
 
     private OwnerChatRepository repo;
     private SessionManager session;
+    /**
+     * Id percakapan dari server, bilangan bulat sesuai kontrak asisten.
+     *
+     * <p>Hanya hidup selama layar ini terbuka - tidak disimpan ke disk, dan
+     * tidak ada basis data baru untuknya. Endpoint lama tidak pernah
+     * mengembalikan field ini, jadi sebelumnya nilainya selalu null dan setiap
+     * pesan memulai percakapan dari nol.
+     */
     @Nullable
-    private String conversationId;
+    private Integer conversationId;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -192,12 +201,18 @@ public class OwnerChatActivity extends AppCompatActivity {
             public void onSuccess(OwnerChatResponse res) {
                 runOnUiThread(() -> {
                     setLoading(false);
-                    if (res != null && !TextUtils.isEmpty(res.conversationId)) {
+                    if (res == null) {
+                        addBotMessage(getString(R.string.owner_chat_response_unreadable));
+                        return;
+                    }
+
+                    if (res.conversationId != null) {
                         conversationId = res.conversationId;
                     }
 
-                    if (res != null && !TextUtils.isEmpty(res.replyText)) {
-                        addBotMessage(res.replyText, res.links);
+                    if (res.hasReplyText()) {
+                        StructuredDataView businessData = StructuredDataMapper.map(res.structuredDataRaw);
+                        addBotMessage(res.replyText, res.links, businessData);
                     } else {
                         addBotMessage(getString(R.string.owner_chat_response_unreadable));
                     }
@@ -205,9 +220,16 @@ public class OwnerChatActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onError(String error) {
+            public void onError(@NonNull AssistantError kind, @NonNull String error) {
                 runOnUiThread(() -> {
                     setLoading(false);
+                    // Sebuah id percakapan yang sudah tidak dikenal server akan
+                    // membuat setiap pesan berikutnya gagal dengan galat yang
+                    // sama; melupakannya membuat kiriman selanjutnya memulai
+                    // percakapan baru dengan sendirinya.
+                    if (kind.shouldForgetConversation()) {
+                        conversationId = null;
+                    }
                     addBotMessage(TextUtils.isEmpty(error)
                             ? getString(R.string.owner_chat_unable_contact)
                             : error);
@@ -267,7 +289,13 @@ public class OwnerChatActivity extends AppCompatActivity {
     }
 
     private void addBotMessage(String text, @Nullable List<OwnerChatResponse.Link> links) {
-        data.add(OwnerChatMessage.bot(text, links));
+        addBotMessage(text, links, null);
+    }
+
+    private void addBotMessage(String text,
+                                @Nullable List<OwnerChatResponse.Link> links,
+                                @Nullable StructuredDataView businessData) {
+        data.add(OwnerChatMessage.bot(text, links, businessData));
         adapter.notifyItemInserted(data.size() - 1);
         updateSuggestionVisibility();
         scrollToEnd();

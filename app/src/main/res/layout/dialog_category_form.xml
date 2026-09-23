@@ -1,38 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<!--
+  Dibungkus ScrollView agar isinya tetap terjangkau di layar pendek.
+
+  Di lanskap ponsel tinggi yang tersisa untuk sebuah dialog bisa di bawah
+  300dp; tanpa pembungkus ini kolom terakhir dan tombolnya berada di luar
+  layar dan tidak ada cara menggulirnya. fillViewport dibiarkan false supaya
+  dialog pendek tetap membungkus isinya alih-alih memuai.
+-->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:fillViewport="false"
+    android:scrollbars="none">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etCategoryName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/field_name_required" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnPickIcon"
+    <LinearLayout
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:layout_marginTop="12dp"
-        android:text="@string/field_choose_icon"
-        android:textAllCaps="false"
-        style="@style/Widget.Valora.Dialog.Button.Outlined" />
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <ImageView
-        android:id="@+id/imgIconPreview"
-        android:layout_width="96dp"
-        android:layout_height="96dp"
-        android:layout_marginTop="10dp"
-        android:scaleType="centerCrop"
-        android:visibility="gone"
-        android:contentDescription="Icon preview" />
-</LinearLayout>
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etCategoryName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/field_name_required" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnPickIcon"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:layout_marginTop="12dp"
+            android:text="@string/field_choose_icon"
+            android:textAllCaps="false"
+            style="@style/Widget.Valora.Dialog.Button.Outlined" />
+
+        <ImageView
+            android:id="@+id/imgIconPreview"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:layout_marginTop="10dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            android:contentDescription="Icon preview" />
+    </LinearLayout>
+</ScrollView>

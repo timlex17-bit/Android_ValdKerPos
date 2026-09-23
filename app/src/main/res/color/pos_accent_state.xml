@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Warna latar tombol utama Material. Keadaan mati harus terlihat SEBELUM
+  ditekan: tombol bayar pada keranjang kosong berwarna abu, bukan ungu pucat,
+  supaya kasir tidak menekannya dan menunggu sesuatu terjadi.
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/pos_disabled_bg" android:state_enabled="false" />
+    <item android:color="@color/pos_accent_pressed" android:state_pressed="true" />
+    <item android:color="@color/pos_accent" />
+</selector>

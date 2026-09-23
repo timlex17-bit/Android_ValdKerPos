@@ -1,6 +1,7 @@
 package com.valdker.pos.ui.customers;
 
 import android.content.Context;
+import com.valdker.pos.R;
 
 import androidx.annotation.NonNull;
 
@@ -17,8 +18,8 @@ public class ConfirmDeleteDialog {
         new MaterialAlertDialogBuilder(ctx)
                 .setTitle(title)
                 .setMessage(message)
-                .setNegativeButton("Cancel", (d, w) -> d.dismiss())
-                .setPositiveButton("Delete", (d, w) -> yes.onYes())
+                .setNegativeButton(ctx.getString(R.string.action_cancel), (d, w) -> d.dismiss())
+                .setPositiveButton(ctx.getString(R.string.action_delete), (d, w) -> yes.onYes())
                 .show();
     }
 }

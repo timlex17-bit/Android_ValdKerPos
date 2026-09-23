@@ -45,6 +45,71 @@ public class PosDraftRepository {
         return ensureSnapshot(posType, includeItems);
     }
 
+    /**
+     * Membuang bon yang kosong dan tidak sedang aktif, lalu mengembalikan
+     * keadaan terbaru.
+     *
+     * <p>Bon kosong tidak menyimpan apa pun - tidak ada baris barang, tidak ada
+     * pelanggan, tidak ada catatan - tapi chip-nya tetap muncul di baris bon
+     * selamanya. Kasir yang sekali menekan "+" lalu berpindah bon akan
+     * meninggalkan "B - 0" di sana, dan sesudah beberapa hari baris bonnya
+     * penuh oleh bon yang tidak pernah berisi apa-apa. Membuangnya tidak
+     * menghilangkan data siapa pun, karena memang tidak ada datanya.
+     *
+     * <p>Tiga hal dilindungi dan tidak pernah dibuang:
+     *
+     * <ul>
+     *   <li>bon yang sedang AKTIF - itulah bon yang sedang diisi kasir;
+     *   <li>bon yang sudah punya MEJA - di kasir restoran bon adalah bill per
+     *       meja, dan bill tanpa pesanan justru berarti sesuatu: mejanya sudah
+     *       dibuka, pesanannya belum masuk;
+     *   <li>bon yang sudah punya PELAYAN, dengan alasan yang sama.
+     * </ul>
+     *
+     * <p>Tanpa dua perlindungan terakhir, membuka kasir restoran akan menutup
+     * sendiri setiap meja yang tamunya belum memesan - kehilangan yang nyata,
+     * bukan sekadar chip yang hilang.
+     *
+     * <p>Sengaja BUKAN dipanggil dari dalam {@link #loadSnapshot}: hanya
+     * pembacaan PERTAMA saat layar dibuka yang boleh membersihkan. Sesudah itu
+     * bon kosong yang baru saja ditekan kasir jelas masih dipakai.
+     */
+    @NonNull
+    public PosDraftSnapshot pruneEmptyInactiveDrafts(@NonNull String posType) {
+        List<PosDraftEntity> drafts = dao.getAllDrafts(posType);
+        if (drafts == null || drafts.size() <= 1) {
+            return ensureSnapshot(posType, true);
+        }
+
+        PosDraftEntity active = dao.getActiveDraft(posType);
+        long activeId = active != null ? active.id : 0L;
+
+        List<Long> ids = new ArrayList<>();
+        for (PosDraftEntity draft : drafts) {
+            if (draft != null) ids.add(draft.id);
+        }
+
+        Map<Long, Integer> counts = new HashMap<>();
+        List<PosDraftItemCount> rows = dao.getItemCountsByDrafts(ids);
+        if (rows != null) {
+            for (PosDraftItemCount row : rows) {
+                if (row != null) counts.put(row.draftId, row.totalQuantity);
+            }
+        }
+
+        for (PosDraftEntity draft : drafts) {
+            if (draft == null || draft.id == activeId) continue;
+            if (draft.tableId != null || draft.tableName != null) continue;
+            if (draft.waiterId != null || draft.waiterName != null) continue;
+            Integer count = counts.get(draft.id);
+            if (count == null || count <= 0) {
+                dao.deleteDraftWithItems(draft.id);
+            }
+        }
+
+        return ensureSnapshot(posType, true);
+    }
+
     @NonNull
     public PosDraftSnapshot activateDraft(@NonNull String posType,
                                           long draftId,

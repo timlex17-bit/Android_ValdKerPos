@@ -155,7 +155,7 @@ public class ReportResultAdapter extends RecyclerView.Adapter<ReportResultAdapte
      */
     @NonNull
     private static String money(@Nullable String raw) {
-        if (TextUtils.isEmpty(raw) || "-".equals(raw)) return "$0.00";
+        if (TextUtils.isEmpty(raw) || "-".equals(raw)) return Money.zero().format();
         Money parsed = Money.of(raw);
         if (parsed.isZero() && !isZeroText(raw)) return raw;
         return "$" + parsed.toPlainString();

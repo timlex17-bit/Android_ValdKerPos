@@ -180,9 +180,6 @@ public class MainActivity extends AppCompatActivity
     private CategoryAdapter categoryAdapter;
     private final List<Category> categoryList = new ArrayList<>();
 
-    private Chip chipDraftA;
-    private Chip chipDraftB;
-    private Chip chipDraftC;
     private Chip chipAddDraft;
     private ChipGroup chipGroupDrafts;
     @Nullable
@@ -605,9 +602,6 @@ public class MainActivity extends AppCompatActivity
 
         imgLogo = findViewById(R.id.imgLogo);
         tvShopAddress = findViewById(R.id.tvShopAddress);
-        chipDraftA = findViewById(R.id.chipDraftA);
-        chipDraftB = findViewById(R.id.chipDraftB);
-        chipDraftC = findViewById(R.id.chipDraftC);
         chipAddDraft = findViewById(R.id.chipAddDraft);
         chipGroupDrafts = findViewById(R.id.chipGroupDrafts);
 
@@ -686,11 +680,13 @@ public class MainActivity extends AppCompatActivity
         final int rootStartRight = root.getPaddingRight();
         final int rootStartBottom = root.getPaddingBottom();
 
-        final ViewGroup.MarginLayoutParams headerLp =
-                nativeHeader.getLayoutParams() instanceof ViewGroup.MarginLayoutParams
-                        ? (ViewGroup.MarginLayoutParams) nativeHeader.getLayoutParams()
-                        : null;
-        final int headerStartTopMargin = headerLp != null ? headerLp.topMargin : 0;
+        // Kepala ungu TIDAK lagi didorong ke bawah sejauh tinggi bilah status.
+        // Dorongan itu yang membuat ungunya berhenti tepat di bawah jam dan
+        // baterai, dengan statusBarScrim bertinta gelap terlihat di atasnya -
+        // sementara kasir retail ungunya sampai ke tepi layar. Sekarang
+        // ketiganya memakai pola yang sama: strip setinggi bilah status
+        // digambar DI DALAM kepala ungu, lewat posHeaderScrim.
+        SystemBars.fitStatusScrim(findViewById(R.id.posHeaderScrim));
 
         final int fragmentStartBottomPadding =
                 fragmentContainer != null ? fragmentContainer.getPaddingBottom() : 0;
@@ -720,11 +716,6 @@ public class MainActivity extends AppCompatActivity
                     rootStartRight,
                     rootStartBottom
             );
-
-            if (headerLp != null) {
-                headerLp.topMargin = headerStartTopMargin + statusBars.top;
-                nativeHeader.setLayoutParams(headerLp);
-            }
 
             if (statusBarScrim != null) {
                 ViewGroup.LayoutParams scrimLp = statusBarScrim.getLayoutParams();
@@ -770,7 +761,6 @@ public class MainActivity extends AppCompatActivity
             if (BuildConfig.DEBUG) {
                 Log.d(TAG, "POS_INSETS: statusTop=" + statusBars.top
                         + " navBottom=" + navigationBars.bottom
-                        + " headerTopMargin=" + (headerStartTopMargin + statusBars.top)
                         + " rootPaddingTop=" + rootStartTop
                         + " bottomBarMargin=" + (bottomBarStartBottomMargin + navigationBars.bottom));
             }
@@ -822,6 +812,7 @@ public class MainActivity extends AppCompatActivity
      */
     private void applyBusinessTypeUi() {
         View nativeHeader = findViewById(R.id.nativeHeader);
+        View bonRow = findViewById(R.id.posBonRow);
         View bottomCategoryBar = findViewById(R.id.bottomCategoryBar);
         View btnBarcodeView = findViewById(R.id.btnBarcode);
         View btnCartView = findViewById(R.id.btnCart);
@@ -838,6 +829,9 @@ public class MainActivity extends AppCompatActivity
 
         if (isWorkshopBusiness() || isRetailBusiness()) {
             if (nativeHeader != null) nativeHeader.setVisibility(View.GONE);
+            // Baris bon restoran ikut disembunyikan: kasir retail dan bengkel
+            // membawa baris bon-nya sendiri di dalam layar masing-masing.
+            if (bonRow != null) bonRow.setVisibility(View.GONE);
             if (bottomCategoryBar != null) bottomCategoryBar.setVisibility(View.GONE);
             if (btnBarcodeView != null) btnBarcodeView.setVisibility(View.GONE);
             if (btnCartView != null) btnCartView.setVisibility(View.GONE);
@@ -860,7 +854,16 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        if (nativeHeader != null) nativeHeader.setVisibility(View.VISIBLE);
+        if (bonRow != null) bonRow.setVisibility(View.VISIBLE);
+        if (nativeHeader != null) {
+            // Lencana tipe terkunci (gembok + "Restaurant") dan strip tiga
+            // kartu aksi cepat sengaja TIDAK dipasang lagi. Lencananya hanya
+            // mengulang satu hal yang tidak pernah berubah - satu login
+            // terikat pada satu jenis usaha. Kartu aksi cepatnya tidak pernah
+            // punya listener sama sekali, jadi menekan Meza, Take-away, atau
+            // Delivery benar-benar tidak melakukan apa-apa.
+            nativeHeader.setVisibility(View.VISIBLE);
+        }
         if (bottomCategoryBar != null) bottomCategoryBar.setVisibility(View.VISIBLE);
         if (btnBarcodeView != null) btnBarcodeView.setVisibility(enableBarcodeScan ? View.VISIBLE : View.GONE);
         if (btnCartView != null) btnCartView.setVisibility(View.VISIBLE);
@@ -868,7 +871,11 @@ public class MainActivity extends AppCompatActivity
         if (searchView != null) searchView.setVisibility(View.VISIBLE);
 
         lp.topToTop = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET;
-        lp.topToBottom = R.id.nativeHeader;
+        // Isi kasir mulai di bawah BARIS BON, bukan di bawah kepala. Karena
+        // ConstraintLayout menggambar sesuai urutan XML, menautkannya ke
+        // kepala membuat grid produk menimpa baris bon - tertutup rapat,
+        // tanpa satu pun peringatan.
+        lp.topToBottom = R.id.posBonRow;
 
         lp.bottomToBottom = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET;
         lp.bottomToTop = R.id.bottomCategoryBar;
@@ -1208,30 +1215,58 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Memasang tombol "+" bill baru. Hanya itu.
+     *
+     * <p>Chip bill-nya sendiri tidak ada di layout dan tidak dibuat di sini:
+     * seluruhnya dibangun {@link #renderDraftChips()} dari isi basis data.
+     *
+     * <p>Sebelumnya view_pos_draft_row.xml memuat tiga chip tetap berisi
+     * "A - 3", "B - 12", dan "Walk-in - 1" sebagai android:text - bukan
+     * tools:text, jadi benar-benar tergambar di perangkat sampai pembacaan
+     * basis data selesai. Kasir membuka aplikasi dan melihat tiga bill yang
+     * tidak pernah ia buka.
+     */
     private void setupDraftChips() {
-        if (chipDraftA == null && chipDraftB == null && chipDraftC == null && chipAddDraft == null) {
-            return;
-        }
+        if (chipAddDraft == null) return;
 
-        if (chipDraftA != null) {
-            chipDraftA.setOnClickListener(v -> activateDraftByName("A"));
-        }
-        if (chipDraftB != null) {
-            chipDraftB.setOnClickListener(v -> activateDraftByName("B"));
-        }
-        if (chipDraftC != null) {
-            chipDraftC.setOnClickListener(v -> activateDraftByName("C"));
-        }
-        if (chipAddDraft != null) {
-            styleAddDraftChip(chipAddDraft);
-            chipAddDraft.setText("+");
-            chipAddDraft.setOnClickListener(v -> createAndActivateDraft());
-        }
+        styleAddDraftChip(chipAddDraft);
+        chipAddDraft.setText("+");
+        chipAddDraft.setOnClickListener(v -> createAndActivateDraft());
+    }
+
+    /**
+     * Pembacaan pertama: bill kosong yang tersisa dari sesi sebelumnya dibuang
+     * lebih dulu, baru daftarnya ditampilkan.
+     *
+     * <p>Bill yang sudah punya meja atau pelayan TIDAK ikut dibuang meski
+     * belum ada pesanannya - lihat
+     * {@link PosDraftRepository#pruneEmptyInactiveDrafts(String)}. Di kasir
+     * restoran bill semacam itu berarti mejanya sudah dibuka dan tamunya
+     * belum memesan, dan menutupnya sendiri adalah kehilangan yang nyata.
+     */
+    private void loadDraftsAfterPruning() {
+        PosDraftRepository repository = posDraftRepository;
+        if (repository == null) return;
+
+        draftExecutor.execute(() -> {
+            try {
+                PosDraftSnapshot snapshot =
+                        repository.pruneEmptyInactiveDrafts(POS_TYPE_RESTAURANT);
+                mainHandler.post(() -> {
+                    if (!isActivityAlive()) return;
+                    applyDraftSnapshot(snapshot, true);
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to prune empty restaurant drafts", e);
+                loadDraftsFromRoom(true, null);
+            }
+        });
     }
 
     private void initDraftStorage() {
         posDraftRepository = new PosDraftRepository(this);
-        loadDraftsFromRoom(true, null);
+        loadDraftsAfterPruning();
     }
 
     private void loadDraftsFromRoom(boolean loadItems, @Nullable String toastMessage) {
@@ -1286,9 +1321,11 @@ public class MainActivity extends AppCompatActivity
             if (draft == null) continue;
 
             Chip chip = createDraftChip();
-            if (i == 0) chip.setId(R.id.chipDraftA);
-            else if (i == 1) chip.setId(R.id.chipDraftB);
-            else if (i == 2) chip.setId(R.id.chipDraftC);
+            // Id dibangkitkan, bukan dipetakan ke chipDraftA/B/C seperti
+            // dulu. Pemetaan itu hanya menjangkau tiga bill pertama, sehingga
+            // bill keempat dan seterusnya tidak punya id sama sekali -
+            // padahal ChipGroup memakai id untuk melacak mana yang terpilih.
+            chip.setId(View.generateViewId());
 
             boolean active = draft.id == activeDraftId;
             int count = draftItemCounts.containsKey(draft.id) ? draftItemCounts.get(draft.id) : 0;
@@ -2223,7 +2260,7 @@ public class MainActivity extends AppCompatActivity
         androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                 .setMessage("Transaction saved, but receipt failed to print. Retry print?")
                 .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton("Retry", null)
+                .setPositiveButton(getString(R.string.action_retry), null)
                 .show();
         dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
             v.setEnabled(false);

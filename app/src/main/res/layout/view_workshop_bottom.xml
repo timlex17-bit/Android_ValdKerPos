@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  4c - Lembar bawah kasir bengkel: strip tambah berwarna, total, tombol bayar.
+
+  DIPECAH JADI KOMPONEN AGAR LANSKAP TIDAK PERLU SALINAN
+
+  Kasir bengkel dulu satu berkas sepanjang 700 baris, dan varian lanskap serta
+  tabletnya adalah SALINAN penuh berkas itu. Salinan-salinan itu berhenti ikut
+  diperbarui tanpa menimbulkan galat apa pun: selama berbulan-bulan, memutar
+  perangkat menampilkan desain dari dua generasi sebelumnya. Sekarang tiga
+  bloknya berdiri sebagai berkas sendiri, sehingga varian lanskap cukup
+  menyusun ulang <include> yang sama - bukan menyalin isinya.
+
+  Di potret ia bilah melintang di dasar layar. Di lanskap ia kolom di sisi
+  kanan, karena tinggi layar yang tersisa di sana tidak cukup untuk menaruhnya
+  di bawah daftar tanpa menggencet daftarnya sampai tinggal satu baris.
+
+  Lembar putihnya membentang penuh ke tepi wadahnya dan piasnya tetap
+  pos_space_4 di semua ukuran layar - TIDAK mengikuti pos_gutter. Gutter hanya
+  masuk akal untuk blok yang membentang selebar layar; di lanskap lembar ini
+  menjadi kolom selebar 260dp, dan gutter tablet sebesar 160dp di tiap sisi
+  akan membuat isinya berlebar nol. Tidak ada kelompok sumber daya yang bisa
+  memisahkan kedua keadaan itu - lebar-tersedia mengalahkan orientasi, jadi
+  keduanya selalu membaca angka yang sama.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/workshopContent"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!--
+      Lembar putihnya sengaja membentang penuh ke tepi layar, sama seperti
+      header ungu; yang dipias hanya ISINYA. Kalau lembarnya sendiri yang
+      dipias, yang terlihat di tablet adalah slab putih melayang dengan
+      latar lavender di kiri dan kanannya namun menempel rata di tepi
+      bawah - tepi yang sebagian menempel dan sebagian tidak.
+    -->
+    <LinearLayout
+        android:id="@+id/layoutBottomPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_pos_bottom_sheet"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/pos_space_4"
+        android:paddingTop="@dimen/pos_space_3"
+        android:paddingEnd="@dimen/pos_space_4"
+        android:paddingBottom="@dimen/pos_space_3">
+
+        <!-- Strip tambah berwarna: tiap tombol sewarna jenis yang ditambahkannya. -->
+        <LinearLayout
+            android:id="@+id/layoutWorkshopActions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/pos_space_3"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/btnAddPackage"
+                style="@style/Widget.Pos.AddCell"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_pos_add_accent">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_pos_package"
+                    app:tint="@color/pos_accent" />
+
+                <TextView
+                    style="@style/TextAppearance.Pos.AddCell"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="@string/label_package"
+                    android:textColor="@color/pos_accent" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/btnAddService"
+                style="@style/Widget.Pos.AddCell"
+                android:layout_width="0dp"
+                android:layout_marginStart="@dimen/pos_space_2"
+                android:layout_weight="1"
+                android:background="@drawable/bg_pos_add_blue">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_pos_wrench"
+                    app:tint="@color/pos_blue" />
+
+                <TextView
+                    style="@style/TextAppearance.Pos.AddCell"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="@string/label_service"
+                    android:textColor="@color/pos_blue" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/btnAddPart"
+                style="@style/Widget.Pos.AddCell"
+                android:layout_width="0dp"
+                android:layout_marginStart="@dimen/pos_space_2"
+                android:layout_weight="1"
+                android:background="@drawable/bg_pos_add_orange">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_pos_cog"
+                    app:tint="@color/pos_orange_mid" />
+
+                <TextView
+                    style="@style/TextAppearance.Pos.AddCell"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="@string/label_part"
+                    android:textColor="@color/pos_orange_mid" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/btnAddProduct"
+                style="@style/Widget.Pos.AddCell"
+                android:layout_width="0dp"
+                android:layout_marginStart="@dimen/pos_space_2"
+                android:layout_weight="1"
+                android:background="@drawable/bg_pos_add_green">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_pos_shopping_bag"
+                    app:tint="@color/pos_green" />
+
+                <TextView
+                    style="@style/TextAppearance.Pos.AddCell"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="@string/label_product"
+                    android:textColor="@color/pos_green" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layoutCheckoutSummary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:gravity="bottom"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/TextAppearance.Pos.Label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/pos_total_label"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/txtGrandTotal"
+                    style="@style/TextAppearance.Pos.Display"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:maxLines="1"
+                    android:text="@string/amount_zero_usd"
+                    tools:text="$70.00" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCheckout"
+            style="@style/Widget.Pos.MaterialPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/pos_space_3"
+            android:text="@string/pos_pay"
+            app:icon="@drawable/ic_pos_wallet"
+            app:iconGravity="textStart"
+            app:iconTint="@color/pos_on_accent" />
+    </LinearLayout>
+</LinearLayout>

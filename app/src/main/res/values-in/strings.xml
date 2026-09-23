@@ -1079,9 +1079,6 @@
     <string name="menu_offline_orders_desc">Tinjau dan ulangi antrean sinkronisasi</string>
     <string name="msg_opening_cash_required">Kas awal wajib diisi.</string>
     <string name="msg_invalid_money_amount">Masukkan jumlah uang yang valid.</string>
-    <string name="draft_a_preview">A - 3</string>
-    <string name="draft_b_preview">B - 12</string>
-    <string name="draft_walkin_preview">Pelanggan langsung - 1</string>
     <string name="draft_add">+</string>
     <string name="owner_chat_title">Owner Chat</string>
     <string name="owner_chat_subtitle">Tanya tentang penjualan, stok, pengeluaran, pembayaran, dan laporan</string>
@@ -1096,6 +1093,7 @@
     <string name="owner_chat_server_error">Server bermasalah. Coba lagi nanti.</string>
     <string name="owner_chat_unable_contact">Tidak dapat menghubungi Owner Chat.</string>
     <string name="owner_chat_response_unreadable">Maaf, respons tidak dapat dipahami.</string>
+    <string name="owner_chat_structured_data_empty">Tidak ada data untuk periode ini.</string>
     <string name="owner_chat_question_not_processed">Pertanyaan Anda tidak dapat diproses. Coba lagi.</string>
     <string name="owner_chat_link_cannot_open">Link ini tidak dapat dibuka.</string>
     <string name="label_vehicle_type">Jenis Kendaraan</string>
@@ -1510,4 +1508,174 @@
     <string name="activation_not_found">Kode toko tidak ditemukan. Cek lagi dengan pemilik.</string>
     <string name="activation_shop_inactive">Toko ini sedang tidak aktif. Hubungi pemilik atau dukungan.</string>
     <string name="activation_rate_limited">Terlalu banyak percobaan. Tunggu satu menit, lalu coba lagi.</string>
+
+    <!-- Modul bengkel: pemilih relasi, pilihan status, dan baris daftar -->
+    <string name="picker_loading">Memuat...</string>
+    <string name="picker_empty">Belum ada datanya. Buat dulu di menunya sendiri.</string>
+    <string name="picker_unreadable">Daftarnya tidak bisa dibaca.</string>
+    <string name="picker_failed">Gagal memuat daftar: %1$s</string>
+    <string name="workshop_pick_customer">Pilih pelanggan</string>
+    <string name="workshop_pick_vehicle">Pilih kendaraan</string>
+    <string name="workshop_pick_mechanic">Pilih mekanik</string>
+    <string name="workshop_pick_work_order">Pilih work order</string>
+    <string name="workshop_pick_none">Kosongkan</string>
+    <string name="workshop_pick_required">Pilih %1$s dulu.</string>
+    <string name="workshop_field_tap_to_pick">Ketuk untuk memilih</string>
+    <string name="workshop_field_tap_to_set">Ketuk untuk mengisi</string>
+    <string name="workshop_label_customer">Pelanggan</string>
+    <string name="workshop_label_vehicle">Kendaraan</string>
+    <string name="workshop_label_mechanic">Mekanik</string>
+    <string name="workshop_label_work_order">Work order</string>
+    <string name="workshop_label_vehicle_type">Jenis kendaraan</string>
+    <string name="workshop_label_status">Status</string>
+    <string name="workshop_label_booking_date">Tanggal booking</string>
+    <string name="workshop_label_booking_time">Jam booking</string>
+    <string name="workshop_label_service_date">Tanggal servis</string>
+    <string name="workshop_type_car">Mobil</string>
+    <string name="workshop_type_motorcycle">Motor</string>
+    <string name="workshop_status_open">Terbuka</string>
+    <string name="workshop_status_in_progress">Dikerjakan</string>
+    <string name="workshop_status_done">Selesai</string>
+    <string name="workshop_status_cancelled">Dibatalkan</string>
+    <string name="workshop_status_pending">Menunggu</string>
+    <string name="workshop_status_confirmed">Dikonfirmasi</string>
+    <string name="workshop_row_unnamed">Data #%1$d</string>
+    <string name="workshop_vehicle_no_owner">Tanpa pemilik</string>
+    <string name="workshop_work_order_short">WO #%1$d</string>
+
+
+    <!-- Owner Chat: keadaan galat asisten AI -->
+    <string name="owner_chat_rate_limited">Terlalu banyak permintaan. Tunggu sebentar lalu coba lagi.</string>
+    <string name="owner_chat_conversation_expired">Percakapan sebelumnya sudah tidak ada. Kirim ulang pertanyaan Anda untuk memulai percakapan baru.</string>
+
+
+    <!-- Kasir bengkel: paket servis - kasus paket lama yang tersangkut di
+         draf, dan kasus paket yang belum tersinkron ke sebuah product_id -->
+    <string name="workshop_service_package_title">Paket ini belum bisa dijual</string>
+    <string name="workshop_service_package_unsupported">Item keranjang ini peninggalan draf lama dari sebelum paket servis bisa ditautkan ke produk yang bisa dijual. Order yang memuat \"%1$s\" akan ditolak. Hapus lalu tambahkan lagi paketnya dari daftar pilihan.</string>
+    <string name="workshop_service_package_remove">Hapus dari keranjang</string>
+    <string name="workshop_service_package_missing_product">\"%1$s\" belum punya produk yang bisa dijual, jadi belum bisa ditambahkan ke keranjang. Minta owner/admin membuka lalu menyimpan paket ini sekali di layar Paket Servis, atau hubungi support bila ini terus terjadi.</string>
+    <string name="workshop_service_package_inactive">\"%1$s\" sudah tidak aktif dan tidak bisa dijual.</string>
+
+
+    <!-- Laporan: judul, kartu ringkasan, dan penyaring -->
+    <string name="report_title_sales">Laporan Penjualan</string>
+    <string name="report_title_daily">Ringkasan Harian</string>
+    <string name="report_title_payments">Laporan Pembayaran</string>
+    <string name="report_title_shifts">Laporan Shift</string>
+    <string name="report_title_items_retail">Laporan Produk</string>
+    <string name="report_title_items_restaurant">Laporan Menu</string>
+    <string name="report_title_items_workshop">Laporan Jasa &amp; Suku Cadang</string>
+    <string name="business_type_retail">Toko ritel</string>
+    <string name="business_type_restaurant">Restoran</string>
+    <string name="business_type_workshop">Bengkel</string>
+    <string name="report_subtitle">%1$s - %2$s</string>
+    <string name="report_card_total_revenue">Total Pendapatan</string>
+    <string name="report_card_net_sales">Penjualan Bersih</string>
+    <string name="report_card_gross_profit">Laba Kotor</string>
+    <string name="report_card_margin">Margin Laba</string>
+    <string name="report_card_product_sold">Barang Terjual</string>
+    <string name="report_card_orders">Jumlah Pesanan</string>
+    <string name="report_card_discount">Total Diskon</string>
+    <string name="report_card_service_revenue">Pendapatan Jasa</string>
+    <string name="report_card_sparepart_revenue">Pendapatan Suku Cadang</string>
+    <string name="report_card_menu_revenue">Pendapatan Menu</string>
+    <string name="report_card_service_jobs">Pekerjaan Servis</string>
+    <string name="report_card_dine_in_revenue">Pendapatan Makan di Tempat</string>
+    <string name="report_card_takeaway_revenue">Pendapatan Bawa Pulang</string>
+    <string name="report_card_delivery_revenue">Pendapatan Pesan Antar</string>
+    <string name="report_card_delivery_fee">Biaya Pengiriman</string>
+    <string name="report_card_total_received">Total Diterima</string>
+    <string name="report_card_shift_count">Jumlah Shift</string>
+    <string name="report_card_total_sales">Total Penjualan</string>
+    <string name="report_card_revenue">Pendapatan</string>
+    <string name="report_card_expenses">Pengeluaran</string>
+    <string name="report_card_net_profit">Laba Bersih</string>
+    <string name="report_card_average_order">Rata-rata per Pesanan</string>
+    <string name="report_no_summary">Server tidak mengirim ringkasan untuk penyaring ini.</string>
+    <string name="report_breakdown_by_method">Per metode pembayaran</string>
+    <string name="report_filter_product">Produk</string>
+    <string name="report_filter_category">Kategori</string>
+    <string name="report_filter_payment">Metode pembayaran</string>
+    <string name="report_filter_all">Semua</string>
+    <string name="report_filter_tap_to_pick">Ketuk untuk memilih</string>
+    <string name="report_pick_product">Pilih produk</string>
+    <string name="report_pick_category">Pilih kategori</string>
+    <string name="report_pick_payment">Pilih metode pembayaran</string>
+    <string name="report_payment_split">Pembayaran terbagi</string>
+    <string name="report_payment_unpaid">Belum dibayar</string>
+
+
+    <!-- Laporan: label chip pemilih jenis laporan -->
+    <string name="report_chip_daily">Harian</string>
+    <string name="report_chip_sales">Penjualan</string>
+    <string name="report_chip_payments">Pembayaran</string>
+    <string name="report_chip_shifts">Shift</string>
+    <string name="report_chip_items">Barang</string>
+
+
+    <string name="report_chip_items_restaurant">Menu</string>
+    <string name="report_chip_items_workshop">Jasa</string>
+
+
+    <!-- Kasir Modernist: lencana tipe, checkout, keadaan kosong -->
+    <string name="cd_scan_barcode">Pindai barcode</string>
+    <string name="pos_type_retail">Retail</string>
+    <string name="pos_type_restaurant">Restoran</string>
+    <string name="pos_type_workshop">Bengkel</string>
+    <string name="pos_total_items">Total · %1$s item</string>
+    <string name="pos_pay">Bayar</string>
+    <string name="pos_draft_label">Bon</string>
+    <string name="pos_locked_note">Jenis usaha dari akun ini</string>
+
+
+    <!-- Kasir: label tiga sel strip aksi, berbeda per jenis usaha -->
+    <string name="pos_quick_scan">Pindai</string>
+    <string name="pos_quick_open_product">Buka produk</string>
+    <string name="pos_quick_return">Retur</string>
+    <string name="pos_quick_table">Meja</string>
+    <string name="pos_quick_takeaway">Bawa pulang</string>
+    <string name="pos_quick_delivery">Pesan antar</string>
+    <string name="pos_quick_work_order">Work order</string>
+    <string name="pos_quick_booking">Booking</string>
+    <string name="pos_quick_history">Riwayat</string>
+
+
+    <string name="pos_section_lines">Item</string>
+    <string name="pos_search_hint">Produk atau barcode</string>
+
+
+    <!-- Lembar Troka: nomor langkah -->
+    <string name="sheet_step_customer">1 · Pelanggan</string>
+    <string name="sheet_step_vehicle">2 · Kendaraan</string>
+    <string name="sheet_step_mechanic">3 · Mekanik &amp; work order</string>
+
+
+    <string name="pos_total_label">Total pembayaran</string>
+    <string name="pos_count_items">%1$s item</string>
+
+
+    <!-- Label layar yang sebelumnya ditulis mati di dalam layout.
+         Dipindah ke sini saat audit i18n; ketiga bahasa diisi sekaligus,
+         bukan Inggris dulu lalu sisanya menyusul - kunci yang lahir hanya
+         dalam satu bahasa cenderung tetap begitu. -->
+    <string name="label_adjusted_by">Disesuaikan oleh</string>
+    <string name="label_returned_by">Diretur oleh</string>
+    <string name="label_report">Laporan</string>
+    <string name="label_filters">Saringan</string>
+    <string name="label_signed_in_as">Masuk sebagai</string>
+    <string name="label_coming_soon">Segera hadir</string>
+    <string name="badge_return">RETUR</string>
+    <string name="action_go">Mulai</string>
+    <string name="customers_empty_hint">Ketuk + untuk menambah pelanggan baru.</string>
+
+    <!-- Pesan yang sebelumnya ditulis mati, dan bahasanya tercampur:
+         satu keadaan yang sama muncul dalam Inggris, Indonesia, dan Tetun
+         sekaligus tergantung berkas mana yang menampilkannya. -->
+    <string name="error_session_expired">Sesi Anda sudah berakhir. Silakan masuk lagi.</string>
+    <string name="error_no_menu_access">Anda tidak punya akses ke menu ini.</string>
+    <string name="select_vehicle">Pilih kendaraan</string>
+    <string name="select_mechanic">Pilih mekanik</string>
+    <string name="select_work_order">Pilih work order</string>
+    <string name="select_booking">Pilih pemesanan</string>
 </resources>

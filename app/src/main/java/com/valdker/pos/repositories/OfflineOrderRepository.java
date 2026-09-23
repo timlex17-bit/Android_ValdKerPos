@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
+import com.valdker.pos.R;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -301,7 +302,7 @@ public class OfflineOrderRepository {
     public void syncPendingOrders(@Nullable String token, @Nullable SyncCallback callback) {
         String cleanToken = safe(token);
         if (cleanToken.isEmpty()) {
-            postSyncError(callback, "Token is missing. Please login again.");
+            postSyncError(callback, appContext.getString(R.string.error_session_expired));
             return;
         }
         if (!NetworkUtils.isNetworkAvailable(appContext)) {
@@ -353,7 +354,7 @@ public class OfflineOrderRepository {
             return;
         }
         if (cleanToken.isEmpty()) {
-            postSyncError(callback, "Token is missing. Please login again.");
+            postSyncError(callback, appContext.getString(R.string.error_session_expired));
             return;
         }
         if (!NetworkUtils.isNetworkAvailable(appContext)) {

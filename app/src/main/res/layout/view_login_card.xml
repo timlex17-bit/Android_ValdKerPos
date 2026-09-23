@@ -166,6 +166,54 @@
             android:textColor="@color/text_primary" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!--
+      3d - Lencana jenis usaha terkunci.
+
+      Jenis usaha ditentukan akun, bukan dipilih kasir, dan itu sudah diketahui
+      pada tahap ini: POST /api/shops/activate/ mengembalikan business_type
+      ketika kode toko diterima. Menyebutkannya di sini menjawab pertanyaan
+      yang selama ini baru terjawab setelah login berhasil - "ini kasir apa?" -
+      dan sekaligus menjelaskan kenapa tidak ada pilihan mode di mana pun.
+
+      Disembunyikan sampai PosTypeBadge mengisinya. Perangkat yang aktivasinya
+      dilakukan sebelum perubahan ini belum menyimpan tipe apa pun, dan lencana
+      kosong lebih baik daripada lencana yang menebak "Retail".
+    -->
+    <LinearLayout
+        android:id="@+id/groupLockedType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <TextView
+            android:id="@+id/tvPosTypeBadge"
+            style="@style/TextAppearance.Pos.Badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_pos_pill_accent"
+            android:drawablePadding="5dp"
+            android:paddingStart="10dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="6dp"
+            app:drawableStartCompat="@drawable/ic_pos_lock"
+            tools:text="Retail" />
+
+        <TextView
+            style="@style/TextAppearance.Pos.Meta"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:text="@string/pos_locked_note"
+            android:textSize="11.5sp" />
+    </LinearLayout>
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnLogin"
         style="@style/Widget.Valora.PrimaryButton"

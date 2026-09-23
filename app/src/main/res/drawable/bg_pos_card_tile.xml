@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kartu aksi cepat dan kartu produk. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/pos_card" />
+    <corners android:radius="@dimen/pos_radius_tile" />
+</shape>

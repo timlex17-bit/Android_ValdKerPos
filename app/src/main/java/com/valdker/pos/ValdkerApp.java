@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.os.LocaleListCompat;
 
 import com.valdker.pos.network.ApiConfig;
+import com.valdker.pos.ui.common.ScreenOrientation;
 
 public class ValdkerApp extends Application {
 
@@ -24,6 +25,11 @@ public class ValdkerApp extends Application {
         Log.i(TAG, "base URL aktif = " + ApiConfig.describe(new SessionManager(this)));
 
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
+        // Ponsel dikunci tegak, tablet dibiarkan berputar. Dipasang di sini
+        // supaya berlaku untuk seluruh Activity - termasuk yang ditulis nanti -
+        // tanpa satu baris pun yang perlu disalin ke masing-masing.
+        ScreenOrientation.install(this);
 
         SharedPreferences prefs = getSharedPreferences("app_settings", MODE_PRIVATE);
         String languageCode = prefs.getString("app_language", "tet");

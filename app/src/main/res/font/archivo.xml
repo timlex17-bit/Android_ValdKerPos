@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Archivo, tipografi sistem desain Modernist.
+
+  Dibundel sebagai berkas, bukan diambil lewat Downloadable Fonts. Kasir harus
+  tetap terbaca ketika toko sedang luring atau Google Play Services tidak ada
+  di perangkat - dua keadaan yang biasa terjadi pada perangkat POS murah - dan
+  font yang diambil dari jaringan akan jatuh ke huruf sistem persis pada saat
+  itu, membuat tata letak bergeser di depan pelanggan.
+
+  Empat berat, karena desainnya memakai keempatnya: 400 untuk teks biasa, 600
+  untuk label kecil berhuruf besar, 700 untuk nama barang dan angka, 800 untuk
+  judul dan total. Keempatnya instance statis asli dari Google Fonts (OFL),
+  bukan satu berkas yang ditebalkan sintetis - penebalan sintetis merusak jarak
+  huruf pada angka, dan angka adalah yang paling sering dibaca di layar kasir.
+-->
+<font-family xmlns:android="http://schemas.android.com/apk/res/android">
+    <font
+        android:font="@font/archivo_regular"
+        android:fontStyle="normal"
+        android:fontWeight="400" />
+    <font
+        android:font="@font/archivo_semibold"
+        android:fontStyle="normal"
+        android:fontWeight="600" />
+    <font
+        android:font="@font/archivo_bold"
+        android:fontStyle="normal"
+        android:fontWeight="700" />
+    <font
+        android:font="@font/archivo_extrabold"
+        android:fontStyle="normal"
+        android:fontWeight="800" />
+</font-family>

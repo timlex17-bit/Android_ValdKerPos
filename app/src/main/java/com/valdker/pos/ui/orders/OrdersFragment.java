@@ -202,7 +202,7 @@ public class OrdersFragment extends BaseFragment {
 
             Toast.makeText(
                     requireContext(),
-                    "Token la existe. Favor Login fali.",
+                    getString(R.string.error_session_expired),
                     Toast.LENGTH_LONG
             ).show();
             return;

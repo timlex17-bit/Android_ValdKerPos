@@ -55,7 +55,7 @@
       Tetap SATU nilai untuk semua ukuran layar. Radius adalah ciri bentuk,
       bukan ukuran: popup yang sama harus terlihat sama di ponsel dan tablet,
       dan yang menyesuaikan diri terhadap layar adalah lebarnya
-      (@dimen/dialog_min_width) - bukan lengkung sudutnya.
+      (@dimen/dialog_min_width_minor) - bukan lengkung sudutnya.
     -->
     <dimen name="radius_dialog">12dp</dimen>
 
@@ -123,7 +123,25 @@
       memakai sekitar 520dp dari layar 1280dp, sehingga popup pembayaran
       dengan lima kartu bagian harus digulir padahal ruangnya berlimpah.
     -->
-    <dimen name="dialog_min_width">300dp</dimen>
+    <!--
+      Lebar minimum jendela dialog, dinyatakan sebagai PERSENTASE layar, bukan
+      angka dp tetap.
+
+      Sebelumnya satu nilai 300dp dipakai untuk kedua sumbu. Pada ponsel 360dp
+      itu hanya 83% lebar layar - lebih sempit daripada bawaan AppCompat
+      sendiri (95%) - sehingga setiap dialog formulir terasa kurus dan isinya
+      berdesakan, sementara satu-satunya dialog yang terasa lapang adalah
+      "Select Customer & Vehicle" yang memaksa lebarnya sendiri lewat kode.
+      Sekarang aturannya satu dan berlaku untuk semua dialog.
+
+      Dua sumbu, bukan satu, karena keduanya menjawab pertanyaan yang berbeda:
+      MINOR dipakai ketika sisi pendek layar yang mendatar (potret), MAJOR
+      ketika sisi panjangnya (lanskap). Memberi lanskap persentase yang sama
+      seperti potret menghasilkan dialog selebar layar penuh dengan satu kolom
+      isian membentang sendirian di tengahnya.
+    -->
+    <item name="dialog_min_width_minor" type="dimen">94%</item>
+    <item name="dialog_min_width_major" type="dimen">78%</item>
 
     <!--
       Radius kartu, diambil dari kasir bengkel - satu-satunya layar yang sudah
@@ -216,7 +234,7 @@
     <dimen name="pos_search_icon_size">20dp</dimen>
     <dimen name="pos_search_min_height">48dp</dimen>
 
-    <!-- Kendali kasir retail (view_pos_controls / view_pos_draft_row). -->
+    <!-- Kendali kasir (view_pos_bon_row). -->
     <dimen name="pos_draft_chip_min_width">40dp</dimen>
 
     <!-- Daftar item kasir (view_pos_list) dan daftar menu (fragment_products). -->

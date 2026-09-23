@@ -106,13 +106,18 @@ public class MechanicListActivity extends AppCompatActivity implements MechanicA
 
     private void loadMechanics() {
         loading = true;
-        showLoading();
+        // Pemintal hanya untuk pemuatan pertama. Kembali dari layar lain juga
+        // memicu pemuatan ulang; menyembunyikan daftarnya di situ membuat layar
+        // berkedip kosong lalu kembali dari baris teratas.
+        if (adapter == null || adapter.getItemCount() == 0) {
+            showLoading();
+        }
         repository.fetchMechanics(new MechanicRepository.ListCallback() {
             @Override
             public void onSuccess(@NonNull List<MechanicResponse> mechanics) {
                 loading = false;
                 Log.i(TAG, "Mechanics API success. count=" + mechanics.size());
-                adapter.submit(mechanics);
+                submitKeepingScroll(mechanics);
                 if (mechanics.isEmpty()) {
                     showEmpty();
                 } else {
@@ -128,6 +133,22 @@ public class MechanicListActivity extends AppCompatActivity implements MechanicA
                 showError(message);
             }
         });
+    }
+
+    /**
+     * Menaruh data baru tanpa memindahkan daftar: posisi gulir disimpan dan
+     * dipasang kembali, dan kalau isinya sama persis tidak ada pemberitahuan
+     * sama sekali.
+     */
+    private void submitKeepingScroll(@NonNull List<MechanicResponse> items) {
+        android.os.Parcelable scroll = null;
+        if (recyclerView != null && recyclerView.getLayoutManager() != null) {
+            scroll = recyclerView.getLayoutManager().onSaveInstanceState();
+        }
+        if (!adapter.submit(items)) return;
+        if (scroll != null && recyclerView.getLayoutManager() != null) {
+            recyclerView.getLayoutManager().onRestoreInstanceState(scroll);
+        }
     }
 
     private void showLoading() {

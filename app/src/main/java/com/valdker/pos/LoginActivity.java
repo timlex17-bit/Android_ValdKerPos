@@ -9,6 +9,7 @@ import android.text.InputType;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
@@ -141,6 +142,16 @@ public class LoginActivity extends AppCompatActivity {
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
+
+        // Lencana jenis usaha terkunci. Isinya dari sesi, yang mendapatkannya
+        // dari respons aktivasi kode toko - jadi kasir tahu ia akan masuk ke
+        // kasir apa SEBELUM menekan Masuk. Baris ini tetap tersembunyi pada
+        // perangkat yang aktivasinya dilakukan sebelum tipe itu disimpan.
+        View lockedTypeRow = findViewById(R.id.groupLockedType);
+        if (lockedTypeRow != null && !TextUtils.isEmpty(sm.getShopBusinessType())) {
+            com.valdker.pos.ui.common.PosTypeBadge.apply(lockedTypeRow, sm);
+            lockedTypeRow.setVisibility(View.VISIBLE);
+        }
         btnDemo = findViewById(R.id.btnDemo);
 
         etServerUrl = findViewById(R.id.etServerUrl);

@@ -494,7 +494,7 @@ public class CartFragment extends Fragment
         final String token = sm.getToken();
 
         if (token == null || token.trim().isEmpty()) {
-            Toast.makeText(requireContext(), "Token is missing. Please login again.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), getString(R.string.error_session_expired), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -695,7 +695,7 @@ public class CartFragment extends Fragment
         final String token = sm.getToken();
 
         if (token == null || token.trim().isEmpty()) {
-            Toast.makeText(requireContext(), "Token is missing. Please login again.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), getString(R.string.error_session_expired), Toast.LENGTH_SHORT).show();
             if (btnContinuePayment != null) btnContinuePayment.setEnabled(true);
             return;
         }
@@ -1352,7 +1352,7 @@ public class CartFragment extends Fragment
         androidx.appcompat.app.AlertDialog dialog = new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
                 .setMessage("Transaction saved, but receipt failed to print. Retry print?")
                 .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton("Retry", null)
+                .setPositiveButton(getString(R.string.action_retry), null)
                 .show();
         dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
             v.setEnabled(false);

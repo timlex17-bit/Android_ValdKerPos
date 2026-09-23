@@ -488,8 +488,8 @@ public class ExpensesFragment extends BaseFragment {
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Delete Expense")
                 .setMessage("Delete \"" + safeText(e.name) + "\"?")
-                .setNegativeButton("Cancel", null)
-                .setPositiveButton("Delete", (d, w) -> doDelete(e))
+                .setNegativeButton(getString(R.string.action_cancel), null)
+                .setPositiveButton(getString(R.string.action_delete), (d, w) -> doDelete(e))
                 .show();
     }
 

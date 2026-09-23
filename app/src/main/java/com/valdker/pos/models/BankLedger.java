@@ -1,6 +1,7 @@
 package com.valdker.pos.models;
 
 import org.json.JSONObject;
+import com.valdker.pos.money.Money;
 
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -111,7 +112,7 @@ public class BankLedger {
             return NumberFormat.getCurrencyInstance(Locale.US).format(value);
         } catch (Exception e) {
             String value = safe(raw);
-            return value.isEmpty() ? "$0.00" : value;
+            return value.isEmpty() ? Money.zero().format() : value;
         }
     }
 

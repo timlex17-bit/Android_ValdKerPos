@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  4b - Kepala kasir restoran, implementasi 4.
+
+  Blok ungu melengkung yang memuat identitas toko, lencana tipe terkunci, dan
+  kotak pencarian sekaligus. Hanya terlihat pada jenis usaha restoran:
+  MainActivity.applyBusinessTypeUi() menyembunyikannya untuk retail dan
+  bengkel, yang membawa kepalanya sendiri.
+
+  SATU BERKAS UNTUK SEMUA UKURAN LAYAR
+
+  Kepala ini dulu ditulis ulang di dalam setiap varian activity_main - ponsel,
+  lanskap, dan tablet. Akibatnya bisa diduga: pembaruan desain hanya masuk ke
+  varian ponsel, dan tablet tetap menampilkan kepala lama berbulan-bulan tanpa
+  ada yang menyadari, karena tidak ada galat apa pun yang timbul dari salinan
+  yang tertinggal. Sekarang ketiganya menyertakan berkas ini, sehingga satu
+  perubahan di sini sampai ke semuanya.
+
+  Yang BOLEH berbeda antar varian hanyalah susunan kolom di bawah kepala, dan
+  itu memang ditulis terpisah di masing-masing activity_main.
+
+  Semua id dipertahankan - imgLogo, tvBrand, tvShopAddress, tvPosTypeBadge,
+  cardSearch, tvSearchHint, btnBarcode, btnCart, tvCartBadge diikat
+  MainActivity, sebagian dengan pemeriksaan null.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nativeHeader"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_pos_header"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/pos_space_4">
+
+    <!--
+      Strip di belakang bilah status. Tingginya nol di layout dan ditumbuhkan
+      SystemBars.fitStatusScrim(); di Android 15+ warna bilah status yang
+      disetel lewat setStatusBarColor diabaikan, jadi warnanya harus datang
+      dari tata letak. Transparan di sini karena blok di belakangnya sudah
+      ungu - satu warna, bukan dua lapis ungu yang bisa berbeda tipis.
+
+      Sebelumnya strip ini tidak ada sama sekali. Sebagai gantinya MainActivity
+      MENDORONG seluruh kepala ke bawah sejauh tinggi bilah status, dan yang
+      tersisa di belakang bilah status adalah statusBarScrim milik
+      activity_main yang berwarna tinta gelap. Hasilnya kepala ungu restoran
+      berhenti tepat di bawah jam dan baterai, sementara kasir retail - yang
+      memakai pola strip-di-dalam seperti sekarang - ungunya sampai ke tepi
+      atas layar.
+    -->
+    <View
+        android:id="@+id/posHeaderScrim"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@android:color/transparent" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/pos_space_4"
+        android:paddingTop="@dimen/pos_gap_sm"
+        android:paddingEnd="@dimen/pos_space_4">
+
+        <ImageView
+            android:id="@+id/imgLogo"
+            android:layout_width="@dimen/pos_header_tile"
+            android:layout_height="@dimen/pos_header_tile"
+            android:background="@drawable/bg_pos_header_tile"
+            android:contentDescription="@string/cd_shop_logo"
+            android:padding="@dimen/pos_gap_sm"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_pos_store"
+            app:tint="@color/pos_on_accent" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/pos_space_3"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:baselineAligned="false"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvBrand"
+                    style="@style/TextAppearance.Pos.Mode"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    tools:text="Restaurant" />
+
+                <TextView
+                    android:id="@+id/tvPosTypeBadge"
+                    style="@style/TextAppearance.Pos.Badge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/pos_space_2"
+                    android:background="@drawable/bg_pos_pill_header"
+                    android:drawablePadding="3dp"
+                    android:paddingStart="6dp"
+                    android:paddingTop="3dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="3dp"
+                    android:textColor="@color/pos_on_accent"
+                    android:visibility="gone"
+                    app:drawableStartCompat="@drawable/ic_pos_lock"
+                    app:drawableTint="@color/pos_on_accent"
+                    tools:text="Restaurant"
+                    tools:visibility="visible" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvShopAddress"
+                style="@style/TextAppearance.Pos.HeaderMeta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                tools:text="Comoro Perundis / Kasa 01" />
+        </LinearLayout>
+
+        <!-- Keranjang; lencana angka menumpang di pojoknya. -->
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/pos_space_2">
+
+            <ImageButton
+                android:id="@+id/btnCart"
+                style="@style/Widget.Pos.HeaderButton"
+                android:contentDescription="@string/action_checkout"
+                android:src="@drawable/ic_pos_basket" />
+
+            <TextView
+                android:id="@+id/tvCartBadge"
+                style="@style/TextAppearance.Pos.Badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|end"
+                android:background="@drawable/bg_pos_pill_green"
+                android:gravity="center"
+                android:minWidth="18dp"
+                android:paddingStart="5dp"
+                android:paddingTop="2dp"
+                android:paddingEnd="5dp"
+                android:paddingBottom="2dp"
+                android:textColor="@color/pos_green_deep"
+                android:visibility="gone"
+                tools:text="3"
+                tools:visibility="visible" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <!-- Pencarian + pindai, di dalam header. -->
+    <LinearLayout
+        android:id="@+id/cardSearch"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/pos_search_height"
+        android:layout_marginStart="@dimen/pos_space_4"
+        android:layout_marginTop="@dimen/pos_gap"
+        android:layout_marginEnd="@dimen/pos_space_4"
+        android:background="@drawable/bg_pos_field"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/pos_gap"
+        android:paddingEnd="6dp">
+
+        <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_search"
+            app:tint="@color/pos_faint" />
+
+        <TextView
+            android:id="@+id/tvSearchHint"
+            style="@style/TextAppearance.Pos.Body"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/pos_gap_sm"
+            android:layout_weight="1"
+            android:maxLines="1"
+            android:text="@string/pos_search_hint"
+            android:textSize="14sp" />
+
+        <ImageButton
+            android:id="@+id/btnBarcode"
+            android:layout_width="@dimen/pos_scan_button"
+            android:layout_height="@dimen/pos_scan_button"
+            android:background="@drawable/bg_pos_scan_button"
+            android:contentDescription="@string/cd_scan_barcode"
+            android:padding="9dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_barcode"
+            app:tint="@color/pos_accent" />
+    </LinearLayout>
+
+</LinearLayout>

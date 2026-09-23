@@ -330,7 +330,7 @@ public class ProductsFragment extends Fragment {
         String token = session.getToken();
 
         if (token == null || token.trim().isEmpty()) {
-            safeToast("Token is missing. Please login again.");
+            safeToast(getString(R.string.error_session_expired));
             showEmpty("Token is missing");
             stopRefreshing();
             return;

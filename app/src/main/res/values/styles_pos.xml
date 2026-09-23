@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Gaya layar kasir - implementasi 4, "modern & berwarna".
+
+  Struktur turn 3 tidak berubah: urutan bloknya tetap header -> aksi cepat ->
+  bon -> konteks/kategori -> item -> total. Yang berganti bahasa visualnya -
+  header ungu dengan pencarian di dalamnya, sudut membulat, dan ikon berwarna
+  per jenis barang.
+
+  Archivo tetap dipakai, dengan berat dirujuk lewat berkas font langsung
+  (@font/archivo_bold) dan bukan lewat android:textFontWeight: atribut itu
+  baru ada di API 28 sementara minSdk aplikasi ini 24, dan pada Android 7 ia
+  diabaikan diam-diam sehingga seluruh hierarki teks runtuh ke berat 400.
+-->
+<resources>
+
+    <!-- ══════════════ Tipografi ══════════════ -->
+
+    <!-- Total besar di bilah bayar. -->
+    <style name="TextAppearance.Pos.Display" parent="">
+        <item name="android:fontFamily">@font/archivo_extrabold</item>
+        <item name="android:textSize">@dimen/pos_text_display</item>
+        <item name="android:textColor">@color/pos_ink</item>
+        <item name="android:letterSpacing">-0.02</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <style name="TextAppearance.Pos.Title" parent="">
+        <item name="android:fontFamily">@font/archivo_extrabold</item>
+        <item name="android:textSize">@dimen/pos_text_title</item>
+        <item name="android:textColor">@color/pos_ink</item>
+        <item name="android:letterSpacing">-0.01</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <!--
+      Nama jenis usaha di header. TIDAK huruf besar semua: di atas ungu,
+      huruf besar berjarak lebar terbaca seperti label sistem, padahal di sini
+      ia judul layar.
+    -->
+    <style name="TextAppearance.Pos.Mode" parent="">
+        <item name="android:fontFamily">@font/archivo_extrabold</item>
+        <item name="android:textSize">@dimen/pos_text_mode</item>
+        <item name="android:textColor">@color/pos_on_accent</item>
+        <item name="android:letterSpacing">-0.01</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <!-- Baris kedua di dalam header ungu. -->
+    <style name="TextAppearance.Pos.HeaderMeta" parent="">
+        <item name="android:fontFamily">@font/archivo_semibold</item>
+        <item name="android:textSize">@dimen/pos_text_body</item>
+        <item name="android:textColor">@color/pos_header_meta</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <!-- Nama barang, judul kelompok, nama produk. -->
+    <style name="TextAppearance.Pos.Item" parent="">
+        <item name="android:fontFamily">@font/archivo_bold</item>
+        <item name="android:textSize">@dimen/pos_text_item</item>
+        <item name="android:textColor">@color/pos_ink</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <style name="TextAppearance.Pos.Meta" parent="">
+        <item name="android:fontFamily">@font/archivo_semibold</item>
+        <item name="android:textSize">@dimen/pos_text_meta</item>
+        <item name="android:textColor">@color/pos_faint</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <style name="TextAppearance.Pos.Body" parent="">
+        <item name="android:fontFamily">@font/archivo_semibold</item>
+        <item name="android:textSize">@dimen/pos_text_body</item>
+        <item name="android:textColor">@color/pos_muted</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <!--
+      Label kecil di atas nilai. Huruf biasa, bukan huruf besar berjarak
+      lebar: di tampilan berkartu, huruf besar membuat setiap label berteriak
+      sekeras nilainya.
+    -->
+    <style name="TextAppearance.Pos.Label" parent="">
+        <item name="android:fontFamily">@font/archivo_semibold</item>
+        <item name="android:textSize">@dimen/pos_text_label</item>
+        <item name="android:textColor">@color/pos_muted</item>
+        <item name="android:gravity">start</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <!-- Nama aksi pada kartu aksi cepat. -->
+    <style name="TextAppearance.Pos.Action" parent="">
+        <item name="android:fontFamily">@font/archivo_bold</item>
+        <item name="android:textSize">@dimen/pos_text_body</item>
+        <item name="android:textColor">@color/pos_ink</item>
+        <item name="android:gravity">start</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <!-- Lencana: tipe terkunci, jumlah baris, jumlah item. -->
+    <style name="TextAppearance.Pos.Badge" parent="">
+        <item name="android:fontFamily">@font/archivo_bold</item>
+        <item name="android:textSize">@dimen/pos_text_badge</item>
+        <item name="android:textColor">@color/pos_accent_deep</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <style name="TextAppearance.Pos.Numeric" parent="">
+        <item name="android:fontFamily">@font/archivo_extrabold</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/pos_ink</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <!--
+      Label strip tambah: Pakote / Servisu / Peca / Produtu.
+
+      Ukurannya tetap, dan itu disengaja. autoSize sempat dicoba supaya kata
+      terpanjang muat di kolom samping yang sempit, tapi autoSize tidak
+      bekerja andal pada TextView yang tingginya wrap_content: alih-alih
+      mengecilkan hurufnya, ia membiarkan barisnya terpotong - keadaan yang
+      justru lebih buruk daripada kata yang melipat. Yang diperbaiki adalah
+      lebar kolomnya, lewat pos_workshop_panel_width.
+    -->
+    <style name="TextAppearance.Pos.AddCell" parent="">
+        <item name="android:fontFamily">@font/archivo_bold</item>
+        <item name="android:textSize">@dimen/pos_text_meta</item>
+        <item name="android:gravity">center</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <!-- ══════════════ Komponen ══════════════ -->
+
+    <!--
+      Ubin ikon. Latar pucatnya datang dari background per warna
+      (bg_pos_tile_blue dan kawan-kawan) dan isinya diwarnai penuh lewat
+      app:tint di layout - satu ubin butuh DUA warna yang berpasangan tetap,
+      dan tint saja hanya mengatur satu.
+    -->
+    <style name="Widget.Pos.Tile" parent="">
+        <item name="android:layout_width">@dimen/pos_group_tile</item>
+        <item name="android:layout_height">@dimen/pos_group_tile</item>
+        <item name="android:scaleType">centerInside</item>
+        <item name="android:padding">10dp</item>
+    </style>
+
+    <style name="Widget.Pos.Tile.Small">
+        <item name="android:layout_width">@dimen/pos_dot_tile</item>
+        <item name="android:layout_height">@dimen/pos_dot_tile</item>
+        <item name="android:padding">5dp</item>
+    </style>
+
+    <style name="Widget.Pos.Tile.Quick">
+        <item name="android:layout_width">@dimen/pos_quick_tile</item>
+        <item name="android:layout_height">@dimen/pos_quick_tile</item>
+        <item name="android:padding">9dp</item>
+    </style>
+
+    <!-- Tombol ikon putih di header ungu. -->
+    <style name="Widget.Pos.HeaderButton" parent="">
+        <item name="android:layout_width">@dimen/pos_header_tile</item>
+        <item name="android:layout_height">@dimen/pos_header_tile</item>
+        <item name="android:background">@drawable/bg_pos_header_button</item>
+        <item name="android:scaleType">centerInside</item>
+        <item name="android:padding">11dp</item>
+        <item name="tint">@color/pos_accent</item>
+    </style>
+
+    <!-- Kartu aksi cepat: ikon berwarna di atas, nama di bawah, rata kiri. -->
+    <style name="Widget.Pos.QuickCard" parent="">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">@dimen/pos_touch_min</item>
+        <item name="android:background">@drawable/bg_pos_ghost_card</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:padding">@dimen/pos_space_3</item>
+    </style>
+
+    <!--
+      Sel aksi cepat versi teks saja, dipakai tata letak yang tidak memuat
+      ikon. Tingginya wrap_content dengan minHeight, BUKAN tinggi mati:
+      label seperti "Buka produtu" membungkus jadi dua baris, dan pada skala
+      huruf sistem 1.3 tinggi mati memotong baris keduanya tanpa jejak -
+      persis yang dijaga PosTextScalingTest.
+    -->
+    <style name="Widget.Pos.ActionCell" parent="">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">@dimen/pos_touch_min</item>
+        <item name="android:background">@drawable/bg_pos_ghost_card</item>
+        <item name="android:paddingStart">@dimen/pos_space_3</item>
+        <item name="android:paddingTop">@dimen/pos_space_2</item>
+        <item name="android:paddingEnd">@dimen/pos_space_3</item>
+        <item name="android:paddingBottom">@dimen/pos_space_2</item>
+    </style>
+
+    <!-- Tombol tambah berwarna di kasir bengkel. -->
+    <style name="Widget.Pos.AddCell" parent="">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">@dimen/pos_touch_min</item>
+        <item name="android:gravity">center</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:paddingStart">@dimen/pos_space_1</item>
+        <item name="android:paddingTop">@dimen/pos_gap_sm</item>
+        <item name="android:paddingEnd">@dimen/pos_space_1</item>
+        <item name="android:paddingBottom">@dimen/pos_gap_sm</item>
+    </style>
+
+    <!-- Tombol +/- pada baris keranjang. -->
+    <style name="Widget.Pos.StepperButton" parent="">
+        <item name="android:layout_width">@dimen/pos_stepper_button</item>
+        <item name="android:layout_height">@dimen/pos_stepper_button</item>
+        <item name="android:scaleType">centerInside</item>
+        <item name="android:padding">7dp</item>
+    </style>
+
+    <!-- Tombol utama penuh lebar: bayar, masuk, simpan. -->
+    <style name="Widget.Pos.MaterialPrimary" parent="Widget.MaterialComponents.Button">
+        <item name="cornerRadius">@dimen/pos_radius_field</item>
+        <item name="backgroundTint">@color/pos_accent_state</item>
+        <item name="android:textColor">@color/pos_on_accent</item>
+        <item name="android:fontFamily">@font/archivo_bold</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:minHeight">@dimen/pos_pay_height</item>
+        <item name="android:gravity">start|center_vertical</item>
+        <item name="android:paddingStart">@dimen/pos_space_4</item>
+        <item name="android:paddingEnd">@dimen/pos_space_4</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="iconPadding">10dp</item>
+        <item name="rippleColor">#33FFFFFF</item>
+        <item name="elevation">0dp</item>
+    </style>
+
+    <!-- Tombol sekunder berbingkai (Troka). -->
+    <style name="Widget.Pos.OutlinedButton" parent="Widget.MaterialComponents.Button">
+        <item name="cornerRadius">@dimen/pos_radius_pill</item>
+        <item name="backgroundTint">@color/pos_card</item>
+        <item name="android:textColor">@color/pos_accent</item>
+        <item name="iconTint">@color/pos_accent</item>
+        <item name="iconSize">14dp</item>
+        <item name="iconPadding">5dp</item>
+        <item name="android:fontFamily">@font/archivo_bold</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">@dimen/pos_chip_height</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="elevation">0dp</item>
+        <item name="rippleColor">@color/pos_accent_tint</item>
+    </style>
+
+    <!-- Chip bon. -->
+    <style name="Widget.Pos.DraftChip" parent="Widget.Valora.FilterChip">
+        <item name="chipCornerRadius">@dimen/pos_radius_pill</item>
+        <item name="chipStrokeWidth">0dp</item>
+        <item name="chipBackgroundColor">@color/pos_draft_chip_bg</item>
+        <item name="android:textColor">@color/pos_draft_chip_text</item>
+        <item name="android:fontFamily">@font/archivo_bold</item>
+        <item name="android:textSize">12.5sp</item>
+        <item name="chipMinHeight">@dimen/pos_chip_height</item>
+        <item name="android:minHeight">@dimen/pos_chip_height</item>
+    </style>
+
+    <!-- Garis pemisah antar baris DI DALAM kartu kelompok. -->
+    <style name="Widget.Pos.Hairline" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/pos_hairline</item>
+        <item name="android:background">@color/pos_divider</item>
+    </style>
+</resources>

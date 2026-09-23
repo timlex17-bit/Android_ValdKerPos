@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Daftar item bon yang sedang berjalan.
+  Daftar isi kasir - implementasi 4.
 
-  Bagian ini yang dulu paling kacau: judul bagian dan tombol "kosongkan" ada
-  di dalam kartu pada potret tapi mengambang di luar kartu pada lanskap,
-  keadaan kosongnya dikomentari sehingga tvEmptyState selalu null dan pesan
-  "belum ada item" tidak pernah muncul, dan tombol kosongkan hanyalah TextView
-  berisi karakter "x" tanpa label - tidak terbaca pembaca layar dan mudah
-  tertekan tanpa sengaja.
+  KARTU HANYA DI SINI
+
+  Kelompok isi adalah satu-satunya tempat kartu dipakai. Layar tidak dibungkus
+  kartu berlapis: header punya bentuknya sendiri, aksi cepat punya kartunya
+  sendiri, dan di antara keduanya tidak ada pembungkus tambahan. Kartu yang
+  membungkus kartu hanya menggambar garis kedua yang tidak memisahkan apa pun.
+
+  Kepala kelompok memakai ubin ikon berwarna kecil - warna yang sama dengan
+  jenis barang di dalamnya - lalu judul, lalu lencana jumlah baris. Di kasir
+  bengkel yang keranjangnya memuat servis, suku cadang, dan produk sekaligus,
+  ubin warna itulah yang memberi tahu mata di mana satu kelompok berakhir.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -15,9 +20,16 @@
     android:id="@+id/posListSection"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_marginStart="@dimen/pos_space_4"
+    android:layout_marginEnd="@dimen/pos_space_4"
+    android:background="@drawable/bg_pos_card"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/pos_space_3"
+    android:paddingEnd="@dimen/pos_space_3"
+    android:paddingBottom="@dimen/pos_space_2">
 
-    <!-- ===== Kepala bagian ===== -->
+    <!-- ══════ Kepala kelompok ══════ -->
+
     <LinearLayout
         android:id="@+id/layoutRetailContentHeader"
         android:layout_width="match_parent"
@@ -25,76 +37,88 @@
         android:baselineAligned="false"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="14dp"
-        android:paddingTop="10dp"
-        android:paddingEnd="8dp"
-        android:paddingBottom="8dp">
+        android:paddingTop="@dimen/pos_gap_sm"
+        android:paddingBottom="@dimen/pos_space_2">
+
+        <ImageView
+            android:id="@+id/imgSectionTile"
+            style="@style/Widget.Pos.Tile.Small"
+            android:background="@drawable/bg_pos_tile_blue"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_pos_package"
+            app:tint="@color/pos_blue" />
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/pos_space_2"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:paddingEnd="8dp">
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/txtSectionTitle"
+                style="@style/TextAppearance.Pos.Item"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:text="@string/pos_scanned_items"
-                android:textColor="@color/text_primary"
-                android:textSize="15sp"
-                android:textStyle="bold" />
+                android:text="@string/pos_section_lines"
+                tools:text="Item scan ona" />
 
+            <!-- Dipakai kasir bengkel untuk menyebut kendaraan yang dikerjakan. -->
             <TextView
                 android:id="@+id/txtSectionSubtitle"
+                style="@style/TextAppearance.Pos.Meta"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:text="@string/pos_items_after_barcode"
-                android:textColor="@color/text_secondary"
-                android:textSize="11sp" />
+                android:visibility="gone"
+                tools:text="B 1234 TL"
+                tools:visibility="visible" />
         </LinearLayout>
 
         <!--
-          Tombol kosongkan bon. Kini tombol sungguhan dengan label teks, ikon,
-          dan area sentuh 44dp - bukan lagi karakter "x" berukuran 20sp yang
-          berdiri sendiri.
+          Jumlah baris, sekaligus tombol kosongkan bon.
+
+          Dua hal yang sempat membuatnya tidak terlihat sama sekali di ponsel:
+          teksnya tidak pernah diisi saat berjalan - hanya ada tools:text yang
+          cuma tampil di pratinjau Android Studio - sehingga yang tergambar
+          adalah pil abu-abu KOSONG; dan tidak ada satu pun tanda bahwa ia
+          bisa ditekan. Di tablet jumlahnya masih terbaca lewat panel samping,
+          jadi yang kehilangan keterangan justru ponsel.
+
+          Sekarang teksnya diisi RetailPOSFragment.updateSummary(), jadi pil
+          itu benar-benar menunjukkan "3 item" alih-alih kosong. Tempatnya
+          tidak dipindah: memindahkan aksi menghapus ke tempat baru adalah
+          cara kehilangan keranjang yang sudah diisi.
+
+          Tidak ada ikon silang di ujungnya. Sempat dicoba sebagai compound
+          drawable, dan hasilnya ikon yang MEMAKAN lebar tapi tidak pernah
+          tergambar - baik lewat app:drawableEndCompat maupun
+          android:drawableEnd pada MaterialTextView. Atribut yang menyisakan
+          ruang kosong tanpa menggambar apa pun lebih buruk daripada tidak ada
+          ikonnya; keterangan aksinya dipasang lewat contentDescription.
         -->
-        <com.google.android.material.button.MaterialButton
+        <TextView
             android:id="@+id/txtItemCount"
-            style="@style/Widget.Material3.Button.TextButton"
+            style="@style/TextAppearance.Pos.Badge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="@string/action_clear_draft_items"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:minHeight="@dimen/pos_count_button_min_height"
-            android:minWidth="0dp"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
-            android:text="@string/pos_clear_draft"
-            android:textAllCaps="false"
-            android:textColor="@color/state_danger"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            app:cornerRadius="@dimen/radius_surface_sm"
-            app:icon="@drawable/ic_remove"
-            app:iconPadding="4dp"
-            app:iconSize="16dp"
-            app:iconTint="@color/state_danger" />
+            android:layout_marginStart="@dimen/pos_space_2"
+            android:background="@drawable/bg_pos_chip_neutral"
+            android:gravity="center"
+            android:minHeight="26dp"
+            android:paddingStart="@dimen/pos_space_2"
+            android:paddingEnd="@dimen/pos_space_2"
+            android:text="@string/pos_zero_item"
+            android:textColor="@color/pos_muted"
+            tools:text="2 item" />
     </LinearLayout>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/stroke_soft" />
+    <!-- ══════ Isi ══════ -->
 
-    <!-- ===== Isi ===== -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -105,78 +129,73 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:overScrollMode="ifContentScrolls"
-            android:paddingStart="10dp"
-            android:paddingTop="10dp"
-            android:paddingEnd="10dp"
-            android:paddingBottom="14dp"
-            android:scrollbars="vertical"
-            tools:itemCount="4"
-            tools:listitem="@layout/item_product_list" />
+            android:paddingBottom="@dimen/pos_space_2"
+            android:scrollbars="none" />
 
-        <!--
-          Keadaan kosong. Di layout lama blok ini dikomentari, jadi
-          findViewById(R.id.tvEmptyState) selalu mengembalikan null dan seluruh
-          jalur showEmptyState()/hideEmptyState() di fragment tidak melakukan
-          apa pun - kasir hanya melihat daerah putih kosong tanpa penjelasan.
-        -->
+        <ProgressBar
+            android:id="@+id/progressProducts"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:indeterminateTint="@color/pos_accent"
+            android:visibility="gone" />
+
         <ScrollView
             android:id="@+id/emptyStateScroll"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fillViewport="true"
+            android:scrollbars="none"
             android:visibility="gone"
-            tools:visibility="gone">
+            tools:visibility="visible">
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:gravity="center"
-                android:minHeight="@dimen/pos_empty_state_min_height"
                 android:orientation="vertical"
-                android:paddingStart="28dp"
-                android:paddingTop="20dp"
-                android:paddingEnd="28dp"
-                android:paddingBottom="20dp">
+                android:paddingStart="@dimen/pos_space_4"
+                android:paddingTop="@dimen/pos_space_3"
+                android:paddingEnd="@dimen/pos_space_4"
+                android:paddingBottom="@dimen/pos_space_3">
 
+                <!--
+                  Ukurannya sengaja kecil. Kartu ini mendapat sisa tinggi
+                  layar setelah kepala, aksi cepat, bon, dan bilah bayar -
+                  pada ponsel 360dp itu sekitar 150dp - dan keadaan kosong
+                  yang lebih tinggi dari itu akan terpotong justru pada
+                  kalimat yang memberi tahu kasir apa yang harus dilakukan.
+                -->
                 <ImageView
-                    android:layout_width="@dimen/pos_empty_state_icon_size"
-                    android:layout_height="@dimen/pos_empty_state_icon_size"
-                    android:alpha="0.3"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/bg_pos_tile_accent_lg"
                     android:contentDescription="@null"
-                    android:src="@drawable/ic_barcode"
-                    app:tint="@color/text_secondary" />
+                    android:padding="13dp"
+                    android:src="@drawable/ic_pos_basket"
+                    app:tint="@color/pos_accent" />
 
                 <TextView
+                    style="@style/TextAppearance.Pos.Title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="@dimen/pos_gap_sm"
                     android:gravity="center"
                     android:text="@string/pos_empty_title"
-                    android:textColor="@color/text_primary"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
+                    android:textSize="15sp" />
 
                 <TextView
                     android:id="@+id/tvEmptyState"
+                    style="@style/TextAppearance.Pos.Body"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
+                    android:layout_marginTop="4dp"
                     android:gravity="center"
-                    android:lineSpacingExtra="2dp"
-                    android:text="@string/pos_empty_message"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="13sp" />
+                    android:maxLines="3"
+                    android:ellipsize="end"
+                    tools:text="Skaneia barcode ka buka produtu atu hahu konta." />
             </LinearLayout>
         </ScrollView>
-
-        <ProgressBar
-            android:id="@+id/progressProducts"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:indeterminateTint="@color/brand_primary"
-            android:visibility="gone" />
     </FrameLayout>
 
 </LinearLayout>

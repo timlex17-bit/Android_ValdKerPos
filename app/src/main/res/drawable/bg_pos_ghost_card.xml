@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kartu yang bisa ditekan: aksi cepat, kartu produk, baris pemilih. -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="@color/pos_neutral_200">
+    <item android:id="@android:id/mask">
+        <shape android:shape="rectangle">
+            <solid android:color="#FFFFFFFF" />
+            <corners android:radius="@dimen/pos_radius_tile" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/pos_card" />
+            <corners android:radius="@dimen/pos_radius_tile" />
+        </shape>
+    </item>
+</ripple>

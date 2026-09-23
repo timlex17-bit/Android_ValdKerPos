@@ -28,10 +28,36 @@ public class MechanicAdapter extends RecyclerView.Adapter<MechanicAdapter.VH> {
         this.listener = listener;
     }
 
-    public void submit(@NonNull List<MechanicResponse> next) {
+    /**
+     * @return true kalau isinya benar-benar berubah.
+     *
+     * <p>Daftar ini dimuat ulang setiap {@code onResume()}, jadi kembali dari
+     * layar lain biasanya menghasilkan isi yang sama persis. Tanpa penjagaan
+     * ini, {@code notifyDataSetChanged()} tetap dipanggil dan posisi gulir
+     * terlempar kembali ke baris teratas.
+     */
+    public boolean submit(@NonNull List<MechanicResponse> next) {
+        if (sameContent(next)) return false;
         items.clear();
         items.addAll(next);
         notifyDataSetChanged();
+        return true;
+    }
+
+    private boolean sameContent(@NonNull List<MechanicResponse> next) {
+        if (items.size() != next.size()) return false;
+        for (int i = 0; i < items.size(); i++) {
+            MechanicResponse a = items.get(i);
+            MechanicResponse b = next.get(i);
+            if (a.id != b.id
+                    || !a.name.equals(b.name)
+                    || !a.phone.equals(b.phone)
+                    || !a.specialty.equals(b.specialty)
+                    || a.isActive != b.isActive) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @NonNull

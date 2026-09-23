@@ -138,12 +138,11 @@
         <item name="dialogCornerRadius">@dimen/radius_dialog</item>
 
         <!--
-          Lebar minimum jendela; nilainya berbeda antara ponsel dan tablet.
-          Tanpa ini dialog di tablet tetap selebar dialog ponsel dan isinya
-          harus digulir walau layarnya lapang.
+          Lebar minimum jendela. Satu aturan untuk SEMUA dialog aplikasi -
+          lihat @dimen/dialog_min_width_minor untuk alasan angkanya.
         -->
-        <item name="android:windowMinWidthMinor">@dimen/dialog_min_width</item>
-        <item name="android:windowMinWidthMajor">@dimen/dialog_min_width</item>
+        <item name="android:windowMinWidthMinor">@dimen/dialog_min_width_minor</item>
+        <item name="android:windowMinWidthMajor">@dimen/dialog_min_width_major</item>
     </style>
 
     <!--
@@ -155,6 +154,15 @@
     <style name="ThemeOverlay.Valora.Dialog.Alert"
         parent="ThemeOverlay.Material3.Dialog.Alert">
         <item name="colorPrimary">@color/valora_accent</item>
+        <!--
+          Aturan lebar yang sama seperti dialog Material di atas. Tanpa dua
+          baris ini, dialog yang dibangun AlertDialog.Builder memakai lebar
+          bawaan platform dan tampil lebih sempit daripada tetangganya yang
+          dibangun MaterialAlertDialogBuilder - dua popup dari layar yang sama
+          dengan lebar berbeda.
+        -->
+        <item name="android:windowMinWidthMinor">@dimen/dialog_min_width_minor</item>
+        <item name="android:windowMinWidthMajor">@dimen/dialog_min_width_major</item>
         <item name="dialogCornerRadius">@dimen/radius_dialog</item>
         <item name="android:dialogCornerRadius" tools:targetApi="p">@dimen/radius_dialog</item>
         <item name="buttonBarPositiveButtonStyle">

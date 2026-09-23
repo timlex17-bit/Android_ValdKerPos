@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -91,7 +92,7 @@
                             android:id="@+id/tvTitle"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Sales Report"
+                            tools:text="Sales Report"
                             android:textColor="@color/text_primary"
                             android:textSize="20sp"
                             android:textStyle="bold" />
@@ -101,7 +102,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
-                            android:text="Dynamic report based on your shop business type."
+                            tools:text="Dynamic report based on your shop business type."
                             android:textColor="@color/text_secondary"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -126,7 +127,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Report"
+                            android:text="@string/label_report"
                             android:textColor="@color/text_primary"
                             android:textSize="13sp"
                             android:textStyle="bold" />
@@ -143,7 +144,7 @@
                                 style="@style/Widget.MaterialComponents.Chip.Choice"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Daily Summary" />
+                                android:text="@string/report_chip_daily" />
 
                             <com.google.android.material.chip.Chip
                                 android:id="@+id/chipSales"
@@ -151,28 +152,28 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:checked="true"
-                                android:text="Sales" />
+                                android:text="@string/report_chip_sales" />
 
                             <com.google.android.material.chip.Chip
                                 android:id="@+id/chipPayments"
                                 style="@style/Widget.MaterialComponents.Chip.Choice"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Payments" />
+                                android:text="@string/report_chip_payments" />
 
                             <com.google.android.material.chip.Chip
                                 android:id="@+id/chipShifts"
                                 style="@style/Widget.MaterialComponents.Chip.Choice"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Shifts" />
+                                android:text="@string/report_chip_shifts" />
 
                             <com.google.android.material.chip.Chip
                                 android:id="@+id/chipItems"
                                 style="@style/Widget.MaterialComponents.Chip.Choice"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Products / Items" />
+                                android:text="@string/report_chip_items" />
                         </com.google.android.material.chip.ChipGroup>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -196,7 +197,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Filters"
+                            android:text="@string/label_filters"
                             android:textColor="@color/text_primary"
                             android:textSize="13sp"
                             android:textStyle="bold" />
@@ -301,7 +302,7 @@
                                 android:minHeight="50dp"
                                 android:layout_marginStart="10dp"
                                 android:enabled="false"
-                                android:text="Export"
+                                tools:text="Export"
                                 android:textAllCaps="false"
                                 android:visibility="gone" />
                         </LinearLayout>
@@ -354,7 +355,7 @@
                             android:id="@+id/tvListTitle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Sales"
+                            tools:text="Sales"
                             android:textColor="@color/text_primary"
                             android:textSize="13sp"
                             android:textStyle="bold" />

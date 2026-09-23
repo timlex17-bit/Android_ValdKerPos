@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView
+    xmlns:tools="http://schemas.android.com/tools"
     style="@style/Widget.Valora.ItemCard" xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -22,7 +23,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Ganti Oli"
+                tools:text="Ganti Oli"
                 android:textColor="@color/text_primary"
                 android:textSize="15sp"
                 android:textStyle="bold" />
@@ -36,7 +37,7 @@
                 android:paddingTop="4dp"
                 android:paddingRight="8dp"
                 android:paddingBottom="4dp"
-                android:text="SERVICE"
+                tools:text="SERVICE"
                 android:textColor="#4338CA"
                 android:textSize="11sp"
                 android:textStyle="bold" />
@@ -47,7 +48,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Qty 1 × $5.00"
+            tools:text="Qty 1 × $5.00"
             android:textColor="@color/text_secondary"
             android:textSize="13sp" />
 
@@ -108,7 +109,7 @@
                 android:layout_marginStart="12dp"
                 android:layout_weight="1"
                 android:gravity="end"
-                android:text="$5.00"
+                tools:text="$5.00"
                 android:textColor="@color/text_primary"
                 android:textSize="15sp"
                 android:textStyle="bold" />

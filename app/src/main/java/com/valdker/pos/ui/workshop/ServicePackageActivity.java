@@ -107,13 +107,18 @@ public class ServicePackageActivity extends AppCompatActivity implements Service
 
     private void loadServicePackages() {
         loading = true;
-        showLoading();
+        // Pemintal hanya untuk pemuatan pertama. Kembali dari layar lain juga
+        // memicu pemuatan ulang; menyembunyikan daftarnya di situ membuat layar
+        // berkedip kosong lalu kembali dari baris teratas.
+        if (adapter == null || adapter.getItemCount() == 0) {
+            showLoading();
+        }
         repository.fetchServicePackages(new ServicePackageRepository.ListCallback() {
             @Override
             public void onSuccess(@NonNull List<ServicePackageResponse> packages) {
                 loading = false;
                 Log.i(TAG, "Service Packages API success. count=" + packages.size());
-                adapter.submit(packages);
+                submitKeepingScroll(packages);
                 if (packages.isEmpty()) {
                     showEmpty();
                 } else {
@@ -129,6 +134,22 @@ public class ServicePackageActivity extends AppCompatActivity implements Service
                 showError(message);
             }
         });
+    }
+
+    /**
+     * Menaruh data baru tanpa memindahkan daftar: posisi gulir disimpan dan
+     * dipasang kembali, dan kalau isinya sama persis tidak ada pemberitahuan
+     * sama sekali.
+     */
+    private void submitKeepingScroll(@NonNull List<ServicePackageResponse> items) {
+        android.os.Parcelable scroll = null;
+        if (recyclerView != null && recyclerView.getLayoutManager() != null) {
+            scroll = recyclerView.getLayoutManager().onSaveInstanceState();
+        }
+        if (!adapter.submit(items)) return;
+        if (scroll != null && recyclerView.getLayoutManager() != null) {
+            recyclerView.getLayoutManager().onRestoreInstanceState(scroll);
+        }
     }
 
     private void showLoading() {

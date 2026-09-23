@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView
+    xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/cardRoot"
@@ -41,7 +42,7 @@
                     android:id="@+id/tvTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="INV000000000013"
+                    tools:text="INV000000000013"
                     android:textColor="@color/text_primary"
                     android:textSize="15sp"
                     android:textStyle="bold" />
@@ -51,7 +52,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
-                    android:text="05/03/2026 23:13"
+                    tools:text="05/03/2026 23:13"
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp" />
             </LinearLayout>
@@ -73,7 +74,7 @@
                     android:paddingTop="5dp"
                     android:paddingEnd="10dp"
                     android:paddingBottom="5dp"
-                    android:text="RETURN"
+                    android:text="@string/badge_return"
                     android:textAllCaps="true"
                     android:textColor="#FFFFFF"
                     android:textSize="11sp"
@@ -97,7 +98,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Items: 1 • Qty: 2 • Total: $4.00"
+            tools:text="Items: 1 • Qty: 2 • Total: $4.00"
             android:textColor="@color/text_secondary"
             android:textSize="11sp"
             android:textStyle="bold" />
@@ -131,7 +132,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Customer"
+                        android:text="@string/label_customer"
                         android:textColor="@color/text_tertiary"
                         android:textSize="11sp"
                         android:textStyle="bold" />
@@ -155,7 +156,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Returned by"
+                        android:text="@string/label_returned_by"
                         android:textColor="@color/text_tertiary"
                         android:textSize="11sp"
                         android:textStyle="bold" />
@@ -165,7 +166,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="Rivaldo"
+                        tools:text="Rivaldo"
                         android:textColor="@color/icon_muted"
                         android:textSize="12sp" />
                 </LinearLayout>
@@ -180,7 +181,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Note"
+                    android:text="@string/label_note"
                     android:textColor="@color/text_tertiary"
                     android:textSize="11sp"
                     android:textStyle="bold" />
@@ -190,7 +191,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Damage"
+                    tools:text="Damage"
                     android:textColor="@color/icon_muted"
                     android:textSize="12sp" />
             </LinearLayout>

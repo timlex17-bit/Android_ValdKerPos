@@ -17,6 +17,7 @@ import com.valdker.pos.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -117,17 +118,20 @@ public class OwnerChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         final TextView tv;
         final TextView time;
         final LinearLayout linksContainer;
+        final LinearLayout dataContainer;
 
         BotVH(@NonNull View itemView) {
             super(itemView);
             tv = itemView.findViewById(R.id.tvText);
             time = itemView.findViewById(R.id.tvTime);
             linksContainer = itemView.findViewById(R.id.linksContainer);
+            dataContainer = itemView.findViewById(R.id.dataContainer);
         }
 
         void bind(@NonNull OwnerChatMessage msg, @NonNull String timeText) {
             tv.setText(msg.text);
             time.setText(timeText);
+            bindStructuredData(msg);
             if (linksContainer == null) return;
 
             linksContainer.removeAllViews();
@@ -149,6 +153,63 @@ public class OwnerChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 row.setOnClickListener(v -> openSafeUrl(link.url));
                 linksContainer.addView(row);
             }
+        }
+
+        /**
+         * Renders {@link OwnerChatMessage#businessData} - metric/value pairs
+         * for scalar fields, a titled section per list-valued field. Nothing
+         * is ever rendered for {@code NONE} (a plain conversational answer)
+         * or {@code UNSUPPORTED} (a shape this screen doesn't know how to
+         * show) - the text answer alone stands on its own for both. An
+         * explicit empty-state line covers the case where structured_data
+         * was present but carried nothing displayable, so a business
+         * question that genuinely has no data for the period reads as "no
+         * data found", never as a silently missing section.
+         */
+        private void bindStructuredData(@NonNull OwnerChatMessage msg) {
+            if (dataContainer == null) return;
+
+            dataContainer.removeAllViews();
+            StructuredDataView data = msg.businessData;
+
+            if (data == null
+                    || data.category == StructuredDataView.Category.NONE
+                    || data.category == StructuredDataView.Category.UNSUPPORTED) {
+                dataContainer.setVisibility(View.GONE);
+                return;
+            }
+
+            LayoutInflater inflater = LayoutInflater.from(itemView.getContext());
+
+            if (!data.hasDisplayableData()) {
+                View empty = inflater.inflate(R.layout.item_owner_chat_table_row, dataContainer, false);
+                ((TextView) empty).setText(R.string.owner_chat_structured_data_empty);
+                dataContainer.addView(empty);
+                dataContainer.setVisibility(View.VISIBLE);
+                return;
+            }
+
+            for (StructuredDataView.Metric metric : data.metrics) {
+                View row = inflater.inflate(R.layout.item_owner_chat_metric_row, dataContainer, false);
+                ((TextView) row.findViewById(R.id.tvMetricLabel)).setText(metric.label);
+                ((TextView) row.findViewById(R.id.tvMetricValue)).setText(metric.value);
+                dataContainer.addView(row);
+            }
+
+            for (StructuredDataView.Table table : data.tables) {
+                if (!TextUtils.isEmpty(table.title)) {
+                    View header = inflater.inflate(R.layout.item_owner_chat_table_header, dataContainer, false);
+                    ((TextView) header).setText(table.title);
+                    dataContainer.addView(header);
+                }
+                for (LinkedHashMap<String, String> row : table.rows) {
+                    View rowView = inflater.inflate(R.layout.item_owner_chat_table_row, dataContainer, false);
+                    ((TextView) rowView).setText(TextUtils.join(" · ", row.values()));
+                    dataContainer.addView(rowView);
+                }
+            }
+
+            dataContainer.setVisibility(View.VISIBLE);
         }
 
         private void openSafeUrl(@NonNull String rawUrl) {

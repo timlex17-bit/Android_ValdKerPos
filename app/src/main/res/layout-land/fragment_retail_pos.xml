@@ -1,28 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  POS kasir (retail) - lanskap.
+  4a - Kasir retail, ponsel yang dimiringkan.
 
-  Memakai <include> yang sama persis dengan potret, hanya disusun dua kolom:
-  daftar item di kiri, ringkasan dan tombol checkout menempel di kanan supaya
-  keduanya terlihat bersamaan pada layar yang pendek.
+  Memakai <include> yang sama persis dengan potret; yang berbeda hanya
+  susunannya.
 
-  Versi lanskap sebelumnya adalah salinan terpisah yang sudah menyimpang:
-  seluruh chip bon (chipDraftA/B/C, chipGroupDrafts, chipAddDraft) tidak ada
-  di sana, jadi memutar perangkat membuat daftar bon terbuka hilang, dan
-  setiap penyesuaian di potret harus disalin tangan ke sini.
+  MENGAPA AKSI CEPAT ADA DI DALAM KOLOM KIRI
+
+  Dalam lanskap tinggi layar ponsel tinggal sekitar 360dp. Susunan potret -
+  bilah atas, aksi cepat, bon, daftar, lalu bilah bayar, semuanya bertumpuk -
+  menghabiskan sekitar 250dp hanya untuk blok tetapnya, dan pada skala huruf
+  1,3x lebih dari itu. Sisanya tidak cukup bahkan untuk bilah bayar: karena
+  bilah itu setinggi isinya, LinearLayout mengukurnya dengan AT_MOST sebesar
+  sisa ruang, sehingga tombol bayarnya ikut tergencet sampai hurufnya
+  terpotong - tanpa galat apa pun. Kasir yang mendapati tombol bayarnya
+  terpotong tidak bisa menyelesaikan transaksi sama sekali.
+
+  Karena itu di sini hanya BILAH ATAS yang membentang penuh, dan sisa layar
+  dibagi dua. Aksi cepat dan bon tetap berada di atas daftar - urutan bacanya
+  tidak berubah - tapi keduanya kini di dalam kolom kiri, sehingga kolom
+  kanan mendapat seluruh tinggi yang tersisa dan bilah bayar selalu utuh.
+
+  Tablet TIDAK memakai berkas ini meski sedang mendatar - smallest-width
+  menang atas orientasi dalam urutan pemilihan sumber daya Android, jadi
+  tablet mendatar tetap membaca layout-sw600dp/.
+
+  Ukuran komponennya dipendekkan lewat values-land/dimens.xml, bukan lewat
+  angka mati di sini, supaya satu-satunya yang berbeda antara berkas ini dan
+  versi potret benar-benar hanya susunan kolomnya.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/rootRetailPos"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/app_bg"
+    android:background="@color/pos_ground"
     android:orientation="vertical">
 
     <include layout="@layout/view_pos_topbar" />
-
-    <include layout="@layout/view_pos_controls" />
-
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -31,25 +46,57 @@
         android:baselineAligned="false"
         android:orientation="horizontal">
 
-        <com.google.android.material.card.MaterialCardView
+        <!-- ══════ Kolom kiri: aksi cepat, bon, lalu daftar ══════ -->
 
-            style="@style/Widget.Valora.PanelCard"
-            android:id="@+id/cardRetailWorkspace"
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="10dp"
-            android:layout_weight="1">
-
-            <include layout="@layout/view_pos_list" />
-        </com.google.android.material.card.MaterialCardView>
+            android:layout_weight="1"
+            android:orientation="vertical">
 
         <!--
-          Kolom kanan. Lebarnya dibatasi min/max supaya pada ponsel lanskap
-          sempit ia tidak memakan ruang daftar, dan pada tablet tidak
-          melebar jadi kolom kosong.
+          Baris bon saja - TANPA tiga kartu aksi cepat.
+
+          Kartu "Skaneia", "Buka produtu", dan "Retornu" dihapus dari kasir
+          retail karena ketiganya tidak pernah punya perilaku apa pun: tidak ada
+          satu pun pemasang listener untuk posQuickCard1/2/3 di seluruh kode, jadi
+          menekannya tidak melakukan apa-apa. Kontrol yang terlihat bisa ditekan
+          akan dicoba, dan kasir yang menekannya lalu tidak terjadi apa-apa akan
+          menyimpulkan aplikasinya rusak - itu lebih buruk daripada tidak ada
+          tombolnya sama sekali. Memindai barcode sudah punya tombolnya sendiri di
+          dalam kepala ungu, dan mencari produk sudah punya kolom cari di sana.
+
+        -->
+            <include
+                layout="@layout/view_pos_bon_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/pos_space_4"
+                android:layout_marginTop="@dimen/pos_space_4"
+                android:layout_marginEnd="@dimen/pos_space_4" />
+
+            <!--
+              Daftar isi. Tanpa pembungkus kartu apa pun: view_pos_list sudah
+              menggambar kartunya sendiri berikut jaraknya. Versi sebelumnya
+              membungkusnya lagi dengan MaterialCardView, sehingga yang
+              terlihat adalah kartu di dalam kartu - dua tepi membulat
+              bertumpuk yang tidak memisahkan apa pun.
+            -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="@dimen/pos_gap"
+                android:layout_marginBottom="@dimen/pos_gap"
+                android:layout_weight="1">
+
+                <include layout="@layout/view_pos_list" />
+            </FrameLayout>
+        </LinearLayout>
+
+        <!--
+          Kolom kanan: total dan tombol bayar, didorong ke dasar layar.
+          Lebarnya dibatasi min supaya pada ponsel lanskap sempit ia tidak
+          memakan ruang daftar.
         -->
         <LinearLayout
             android:layout_width="@dimen/pos_side_panel_width"

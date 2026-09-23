@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView
+    xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/cardRoot"
@@ -32,7 +33,7 @@
                     android:id="@+id/tvBankTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="BNCTL - Main Account"
+                    tools:text="BNCTL - Main Account"
                     android:textColor="@color/valora_ink"
                     android:textSize="17sp"
                     android:textStyle="bold" />
@@ -74,7 +75,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="14dp"
-            android:text="Account Number: 123456"
+            tools:text="Account Number: 123456"
             android:textColor="@color/text_secondary"
             android:textSize="14sp" />
 
@@ -83,7 +84,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:text="Account Holder: Wfour Mart"
+            tools:text="Account Holder: Wfour Mart"
             android:textColor="@color/text_secondary"
             android:textSize="14sp" />
 
@@ -92,7 +93,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:text="Type: BANK"
+            tools:text="Type: BANK"
             android:textColor="@color/text_secondary"
             android:textSize="14sp" />
 
@@ -101,7 +102,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:text="Opening: $0.00"
+            tools:text="Opening: $0.00"
             android:textColor="#475569"
             android:textSize="13sp" />
 
@@ -110,7 +111,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Current Balance: $30.00"
+            tools:text="Current Balance: $30.00"
             android:textColor="#6E09D3"
             android:textSize="15sp"
             android:textStyle="bold" />
@@ -120,7 +121,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Note: -"
+            tools:text="Note: -"
             android:textColor="@color/text_secondary"
             android:textSize="13sp" />
 

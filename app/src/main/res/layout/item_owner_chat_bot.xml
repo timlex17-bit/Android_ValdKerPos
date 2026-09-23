@@ -57,6 +57,15 @@
             tools:text="Penjualan hari ini $482.50 dari 37 transaksi, naik 12% dibanding kemarin." />
 
         <LinearLayout
+            android:id="@+id/dataContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+        <LinearLayout
             android:id="@+id/linksContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -1076,9 +1076,6 @@
     <string name="sample_bank_ledger_invoice">Invoice: INV-0001</string>
     <string name="sample_bank_ledger_description">Description: Payment from sale</string>
     <string name="sample_bank_ledger_date">Date: 21 May 2026 10:00</string>
-    <string name="draft_a_preview">&#9679; A &#8226; 3</string>
-    <string name="draft_b_preview">B &#8226; 12</string>
-    <string name="draft_walkin_preview">Walk-in &#8226; 1</string>
     <string name="draft_add">+</string>
     <string name="owner_chat_title">Owner Chat</string>
     <string name="owner_chat_subtitle">Ask about sales, stock, expenses, payments, and reports</string>
@@ -1093,6 +1090,7 @@
     <string name="owner_chat_server_error">Server error. Please try again later.</string>
     <string name="owner_chat_unable_contact">Unable to contact Owner Chat.</string>
     <string name="owner_chat_response_unreadable">Sorry, I could not understand the response.</string>
+    <string name="owner_chat_structured_data_empty">No data found for this period.</string>
     <string name="owner_chat_question_not_processed">Your question could not be processed. Please try again.</string>
     <string name="owner_chat_link_cannot_open">This link cannot be opened.</string>
     <string name="label_vehicle_type">Vehicle Type</string>
@@ -1495,4 +1493,175 @@
     <string name="activation_not_found">Shop code not found. Check it with the owner.</string>
     <string name="activation_shop_inactive">This shop is not active. Contact the owner or support.</string>
     <string name="activation_rate_limited">Too many attempts. Wait a minute, then try again.</string>
+
+    <!-- Modul bengkel: pemilih relasi, pilihan status, dan baris daftar -->
+    <string name="picker_loading">Loading...</string>
+    <string name="picker_empty">No data yet. Create one in its own menu first.</string>
+    <string name="picker_unreadable">The list could not be read.</string>
+    <string name="picker_failed">Could not load the list: %1$s</string>
+    <string name="workshop_pick_customer">Pick customer</string>
+    <string name="workshop_pick_vehicle">Pick vehicle</string>
+    <string name="workshop_pick_mechanic">Pick mechanic</string>
+    <string name="workshop_pick_work_order">Pick work order</string>
+    <string name="workshop_pick_none">Leave empty</string>
+    <string name="workshop_pick_required">Pick %1$s first.</string>
+    <string name="workshop_field_tap_to_pick">Tap to pick</string>
+    <string name="workshop_field_tap_to_set">Tap to set</string>
+    <string name="workshop_label_customer">Customer</string>
+    <string name="workshop_label_vehicle">Vehicle</string>
+    <string name="workshop_label_mechanic">Mechanic</string>
+    <string name="workshop_label_work_order">Work order</string>
+    <string name="workshop_label_vehicle_type">Vehicle type</string>
+    <string name="workshop_label_status">Status</string>
+    <string name="workshop_label_booking_date">Booking date</string>
+    <string name="workshop_label_booking_time">Booking time</string>
+    <string name="workshop_label_service_date">Service date</string>
+    <string name="workshop_type_car">Car</string>
+    <string name="workshop_type_motorcycle">Motorcycle</string>
+    <string name="workshop_status_open">Open</string>
+    <string name="workshop_status_in_progress">In progress</string>
+    <string name="workshop_status_done">Done</string>
+    <string name="workshop_status_cancelled">Cancelled</string>
+    <string name="workshop_status_pending">Pending</string>
+    <string name="workshop_status_confirmed">Confirmed</string>
+    <string name="workshop_row_unnamed">Record #%1$d</string>
+    <string name="workshop_vehicle_no_owner">No owner</string>
+    <string name="workshop_work_order_short">WO #%1$d</string>
+
+
+    <!-- Owner Chat: keadaan galat asisten AI -->
+    <string name="owner_chat_rate_limited">Too many requests. Please wait a moment and try again.</string>
+    <string name="owner_chat_conversation_expired">The previous conversation is no longer available. Send your question again to start a new one.</string>
+
+
+    <!-- Kasir bengkel: paket servis - kasus paket lama yang tersangkut di
+         draf sebelum backend punya relasi ke Product, dan kasus paket
+         yang belum tersinkron ke sebuah product_id -->
+    <string name="workshop_service_package_title">This package cannot be sold yet</string>
+    <string name="workshop_service_package_unsupported">This cart item is a leftover from an old draft saved before service packages could be linked to a sellable product. An order containing \"%1$s\" will be rejected. Remove it and add the package again from the picker.</string>
+    <string name="workshop_service_package_remove">Remove from cart</string>
+    <string name="workshop_service_package_missing_product">\"%1$s\" doesn\'t have a sellable product linked yet, so it can\'t be added to the cart. Ask an owner/admin to open and save this package once in the Service Packages screen, or contact support if this keeps happening.</string>
+    <string name="workshop_service_package_inactive">\"%1$s\" is no longer active and cannot be sold.</string>
+
+
+    <!-- Laporan: judul, kartu ringkasan, dan penyaring -->
+    <string name="report_title_sales">Sales Report</string>
+    <string name="report_title_daily">Daily Summary</string>
+    <string name="report_title_payments">Payment Report</string>
+    <string name="report_title_shifts">Shift Report</string>
+    <string name="report_title_items_retail">Product Report</string>
+    <string name="report_title_items_restaurant">Menu Item Report</string>
+    <string name="report_title_items_workshop">Service &amp; Sparepart Report</string>
+    <string name="business_type_retail">Retail shop</string>
+    <string name="business_type_restaurant">Restaurant</string>
+    <string name="business_type_workshop">Workshop</string>
+    <string name="report_subtitle">%1$s - %2$s</string>
+    <string name="report_card_total_revenue">Total Revenue</string>
+    <string name="report_card_net_sales">Net Sales</string>
+    <string name="report_card_gross_profit">Gross Profit</string>
+    <string name="report_card_margin">Profit Margin</string>
+    <string name="report_card_product_sold">Items Sold</string>
+    <string name="report_card_orders">Orders</string>
+    <string name="report_card_discount">Total Discount</string>
+    <string name="report_card_service_revenue">Service Revenue</string>
+    <string name="report_card_sparepart_revenue">Sparepart Revenue</string>
+    <string name="report_card_menu_revenue">Menu Revenue</string>
+    <string name="report_card_service_jobs">Service Jobs</string>
+    <string name="report_card_dine_in_revenue">Dine-in Revenue</string>
+    <string name="report_card_takeaway_revenue">Takeaway Revenue</string>
+    <string name="report_card_delivery_revenue">Delivery Revenue</string>
+    <string name="report_card_delivery_fee">Delivery Fees</string>
+    <string name="report_card_total_received">Total Received</string>
+    <string name="report_card_shift_count">Shifts</string>
+    <string name="report_card_total_sales">Total Sales</string>
+    <string name="report_card_revenue">Revenue</string>
+    <string name="report_card_expenses">Expenses</string>
+    <string name="report_card_net_profit">Net Profit</string>
+    <string name="report_card_average_order">Average Order</string>
+    <string name="report_no_summary">The server sent no summary for this filter.</string>
+    <string name="report_breakdown_by_method">By payment method</string>
+    <string name="report_filter_product">Product</string>
+    <string name="report_filter_category">Category</string>
+    <string name="report_filter_payment">Payment method</string>
+    <string name="report_filter_all">All</string>
+    <string name="report_filter_tap_to_pick">Tap to choose</string>
+    <string name="report_pick_product">Choose product</string>
+    <string name="report_pick_category">Choose category</string>
+    <string name="report_pick_payment">Choose payment method</string>
+    <string name="report_payment_split">Split payment</string>
+    <string name="report_payment_unpaid">Unpaid</string>
+
+
+    <!-- Laporan: label chip pemilih jenis laporan -->
+    <string name="report_chip_daily">Daily</string>
+    <string name="report_chip_sales">Sales</string>
+    <string name="report_chip_payments">Payments</string>
+    <string name="report_chip_shifts">Shifts</string>
+    <string name="report_chip_items">Items</string>
+
+
+    <string name="report_chip_items_restaurant">Menu</string>
+    <string name="report_chip_items_workshop">Service</string>
+
+
+    <!-- Kasir Modernist: lencana tipe, checkout, keadaan kosong -->
+    <string name="cd_scan_barcode">Scan barcode</string>
+    <string name="pos_type_retail">Retail</string>
+    <string name="pos_type_restaurant">Restaurant</string>
+    <string name="pos_type_workshop">Bengkel</string>
+    <string name="pos_total_items">Total · %1$s item</string>
+    <string name="pos_pay">Pagamentu</string>
+    <string name="pos_draft_label">Bon</string>
+    <string name="pos_locked_note">Business type from this account</string>
+
+
+    <!-- Kasir: label tiga sel strip aksi, berbeda per jenis usaha -->
+    <string name="pos_quick_scan">Scan</string>
+    <string name="pos_quick_open_product">Open product</string>
+    <string name="pos_quick_return">Return</string>
+    <string name="pos_quick_table">Table</string>
+    <string name="pos_quick_takeaway">Take-away</string>
+    <string name="pos_quick_delivery">Delivery</string>
+    <string name="pos_quick_work_order">Work order</string>
+    <string name="pos_quick_booking">Booking</string>
+    <string name="pos_quick_history">History</string>
+
+
+    <string name="pos_section_lines">Items</string>
+    <string name="pos_search_hint">Product or barcode</string>
+
+
+    <!-- Lembar Troka: nomor langkah -->
+    <string name="sheet_step_customer">1 · Customer</string>
+    <string name="sheet_step_vehicle">2 · Vehicle</string>
+    <string name="sheet_step_mechanic">3 · Mechanic &amp; work order</string>
+
+
+    <string name="pos_total_label">Total payment</string>
+    <string name="pos_count_items">%1$s item</string>
+
+
+    <!-- Label layar yang sebelumnya ditulis mati di dalam layout.
+         Dipindah ke sini saat audit i18n; ketiga bahasa diisi sekaligus,
+         bukan Inggris dulu lalu sisanya menyusul - kunci yang lahir hanya
+         dalam satu bahasa cenderung tetap begitu. -->
+    <string name="label_adjusted_by">Adjusted by</string>
+    <string name="label_returned_by">Returned by</string>
+    <string name="label_report">Report</string>
+    <string name="label_filters">Filters</string>
+    <string name="label_signed_in_as">Signed in as</string>
+    <string name="label_coming_soon">Coming soon</string>
+    <string name="badge_return">RETURN</string>
+    <string name="action_go">Go</string>
+    <string name="customers_empty_hint">Tap + to create a new customer.</string>
+
+    <!-- Pesan yang sebelumnya ditulis mati, dan bahasanya tercampur:
+         satu keadaan yang sama muncul dalam Inggris, Indonesia, dan Tetun
+         sekaligus tergantung berkas mana yang menampilkannya. -->
+    <string name="error_session_expired">Your session has ended. Please sign in again.</string>
+    <string name="error_no_menu_access">You do not have access to this menu.</string>
+    <string name="select_vehicle">Select vehicle</string>
+    <string name="select_mechanic">Select mechanic</string>
+    <string name="select_work_order">Select work order</string>
+    <string name="select_booking">Select booking</string>
 </resources>

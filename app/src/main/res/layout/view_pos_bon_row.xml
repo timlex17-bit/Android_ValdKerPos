@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Baris bon - implementasi 4.
+
+  Label "Bon", daftar bon terbuka yang bisa digulir mendatar, lalu chip "+"
+  yang berdiri DI LUAR area gulir supaya tetap terjangkau ketika bonnya sudah
+  banyak.
+
+  TIDAK ADA CHIP CONTOH DI BERKAS INI
+
+  Sebelumnya di sini tertulis tiga chip tetap - A, B, dan Walk-in - lengkap
+  dengan angka contoh, dan kode kasir menimpanya dengan label palsu "A - 3",
+  "B - 12", "Walk-in - 1" sebelum data sungguhan selesai dibaca. Akibatnya
+  kasir membuka aplikasi dan melihat bon yang tidak pernah ia buat. Yang
+  terlihat sebagai "B - 0" atau "C - 0" pun bukan bon yang berisi apa-apa,
+  hanya sisa kerangka itu.
+
+  Sekarang chip bon HANYA dibuat dari isi basis data. Layar yang baru dibuka
+  menampilkan satu bon aktif dan chip "+", dan bon berikutnya muncul ketika
+  kasir benar-benar menekan "+".
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/posBonRow"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:baselineAligned="false"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+
+    <TextView
+        style="@style/TextAppearance.Pos.Label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/pos_space_2"
+        android:fontFamily="@font/archivo_bold"
+        android:text="@string/pos_draft_label"
+        android:textSize="12sp" />
+
+    <HorizontalScrollView
+        android:id="@+id/draftChipScroll"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupDrafts"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:chipSpacingHorizontal="@dimen/pos_space_2"
+            app:singleLine="true"
+            app:singleSelection="true" />
+    </HorizontalScrollView>
+
+    <!--
+      Bon baru. Garis putus-putus, bukan penuh: ia bukan bon yang ada,
+      melainkan tempat kosong untuk bon berikutnya - dan garis putus-putus
+      adalah cara tercepat menyatakan itu tanpa teks.
+    -->
+    <com.google.android.material.chip.Chip
+        android:id="@+id/chipAddDraft"
+        style="@style/Widget.Pos.DraftChip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/pos_space_2"
+        android:background="@drawable/bg_pos_add_draft"
+        android:text="+"
+        android:textColor="@color/pos_accent"
+        app:chipBackgroundColor="@android:color/transparent"
+        app:chipStrokeWidth="0dp"
+        tools:ignore="HardcodedText" />
+
+</LinearLayout>

@@ -97,8 +97,8 @@ public class SupplierFormDialog extends DialogFragment {
 
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext())
                 .setView(v)
-                .setNegativeButton("Cancel", (d, w) -> dismiss())
-                .setPositiveButton("Save", null);
+                .setNegativeButton(getString(R.string.action_cancel), (d, w) -> dismiss())
+                .setPositiveButton(getString(R.string.action_save), null);
 
         AlertDialog dialog = builder.create();
         dialog.setOnShowListener(dlg -> {

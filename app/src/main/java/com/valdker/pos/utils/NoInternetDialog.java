@@ -32,12 +32,12 @@ public class NoInternetDialog extends DialogFragment {
                 .setTitle("No internet connection.")
                 .setIcon(android.R.drawable.stat_notify_error)
                 .setMessage("Please check your connection and try again.")
-                .setPositiveButton("Retry", (dialog, which) -> {
+                .setPositiveButton(getString(R.string.action_retry), (dialog, which) -> {
                     if (retryCallback != null) {
                         retryCallback.run();
                     }
                 })
-                .setNegativeButton("Close", null)
+                .setNegativeButton(getString(R.string.action_close), null)
                 .create();
     }
 }

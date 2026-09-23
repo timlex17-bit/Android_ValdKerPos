@@ -102,9 +102,6 @@ public class RetailPOSFragment extends Fragment {
     private TextView tvShopAddress;
     private ImageButton btnHeaderBarcode;
     private EditText etSearchHint;
-    private Chip chipDraftA;
-    private Chip chipDraftB;
-    private Chip chipDraftC;
     private Chip chipAddDraft;
     private ChipGroup chipGroupDrafts;
 
@@ -299,9 +296,6 @@ public class RetailPOSFragment extends Fragment {
         tvShopAddress = root.findViewById(R.id.tvShopAddress);
         btnHeaderBarcode = root.findViewById(R.id.btnHeaderBarcode);
         etSearchHint = root.findViewById(R.id.tvSearchHint);
-        chipDraftA = root.findViewById(R.id.chipDraftA);
-        chipDraftB = root.findViewById(R.id.chipDraftB);
-        chipDraftC = root.findViewById(R.id.chipDraftC);
         chipAddDraft = root.findViewById(R.id.chipAddDraft);
         chipGroupDrafts = root.findViewById(R.id.chipGroupDrafts);
 
@@ -316,35 +310,79 @@ public class RetailPOSFragment extends Fragment {
         posSummaryTotals = root.findViewById(R.id.posSummaryTotals);
         txtSectionSubtitle = root.findViewById(R.id.txtSectionSubtitle);
         btnCheckout = root.findViewById(R.id.btnCheckout);
+
+        // Lencana tipe (gembok + "Retail") dan strip tiga kartu aksi cepat
+        // sengaja TIDAK dipasang di kasir retail.
+        //
+        // Lencananya hanya mengulang satu hal yang tidak pernah berubah -
+        // satu login terikat pada satu jenis usaha - dan mengulanginya di
+        // setiap layar transaksi tidak menambah apa pun selain satu benda
+        // lagi di kepala. Ketiga kartu aksi cepat lebih jauh lagi: tidak ada
+        // satu pun listener terpasang untuk posQuickCard1/2/3 di seluruh
+        // kode, jadi menekannya benar-benar tidak melakukan apa-apa - dan
+        // kontrol yang terlihat bisa ditekan akan dicoba, lalu disimpulkan
+        // rusak.
+        //
+        // Keduanya masih terpasang di kasir bengkel dan restoran, yang
+        // layout-nya memang masih menyertakannya.
     }
 
+    /**
+     * Memasang tombol "+" bon baru. Hanya itu.
+     *
+     * <p>Chip bon-nya sendiri tidak ada di layout dan tidak dibuat di sini:
+     * seluruhnya dibangun {@link #renderDraftChips()} dari isi basis data,
+     * sesudah pembacaannya selesai.
+     *
+     * <p>Sebelumnya di sini terpasang tiga chip tetap berikut label contoh
+     * "A - 3", "B - 12", dan "Walk-in - 1" - sisa kerangka rancangan yang
+     * ikut terkirim ke pengguna. Kasir membuka aplikasi dan melihat bon yang
+     * tidak pernah ia buat, menekannya, lalu menemukan keranjang kosong.
+     */
     private void setupDraftChips() {
-        if (chipDraftA == null && chipDraftB == null && chipDraftC == null && chipAddDraft == null) {
-            return;
-        }
+        if (chipAddDraft == null) return;
 
-        if (chipDraftA != null) {
-            chipDraftA.setOnClickListener(v -> setActiveDraftChip(chipDraftA, "Draft A aktif", true));
-        }
-        if (chipDraftB != null) {
-            chipDraftB.setOnClickListener(v -> setActiveDraftChip(chipDraftB, "Draft B aktif", true));
-        }
-        if (chipDraftC != null) {
-            chipDraftC.setOnClickListener(v -> setActiveDraftChip(chipDraftC, "Draft Walk-in aktif", true));
-        }
-        if (chipAddDraft != null) {
-            styleAddDraftChip(chipAddDraft);
-            chipAddDraft.setText("+");
-            chipAddDraft.setOnClickListener(v -> createAndActivateDraft());
-        }
-
-        setActiveDraftChip(chipDraftA, "", false);
+        styleAddDraftChip(chipAddDraft);
+        chipAddDraft.setText("+");
+        chipAddDraft.setOnClickListener(v -> createAndActivateDraft());
     }
 
     private void initDraftStorage() {
         if (!isAdded()) return;
         posDraftRepository = new PosDraftRepository(requireContext());
-        loadDraftsFromRoom(true, null);
+        loadDraftsAfterPruning();
+    }
+
+    /**
+     * Pembacaan pertama: bon kosong yang tersisa dari sesi sebelumnya dibuang
+     * lebih dulu, baru daftarnya ditampilkan.
+     *
+     * <p>Tanpa ini, satu kali tekan "+" yang tidak jadi dipakai meninggalkan
+     * "B - 0" di baris bon untuk selamanya, dan sesudah beberapa hari kasir
+     * membuka aplikasi ke barisan bon kosong yang tidak satu pun berisi
+     * apa-apa. Yang tersisa sesudah pembersihan adalah bon aktif dan bon yang
+     * benar-benar ada isinya - selebihnya muncul ketika kasir menekan "+".
+     *
+     * <p>Hanya di pembacaan pertama. Sesudah layar terbuka, bon kosong yang
+     * baru saja dibuat kasir jelas masih dipakai, jadi membuangnya di tengah
+     * jalan justru akan menghapus bon yang sedang disiapkan.
+     */
+    private void loadDraftsAfterPruning() {
+        PosDraftRepository repository = posDraftRepository;
+        if (repository == null) return;
+
+        draftExecutor.execute(() -> {
+            try {
+                PosDraftSnapshot snapshot = repository.pruneEmptyInactiveDrafts(POS_TYPE_RETAIL);
+                mainHandler.post(() -> {
+                    if (!isAdded()) return;
+                    applyDraftSnapshot(snapshot, true);
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to prune empty retail drafts", e);
+                loadDraftsFromRoom(true, null);
+            }
+        });
     }
 
     private void loadDraftsFromRoom(boolean loadItems, @Nullable String toastMessage) {
@@ -382,19 +420,18 @@ public class RetailPOSFragment extends Fragment {
     }
 
     private void renderDraftChips() {
-        if (chipGroupDrafts == null) {
-            PosDraftEntity active = findActiveDraft();
-            setActiveDraftChip(chipDraftForName(active != null ? active.name : "A"), "", false);
-            return;
-        }
+        if (chipGroupDrafts == null) return;
 
         chipGroupDrafts.removeAllViews();
         for (int i = 0; i < posDrafts.size(); i++) {
             PosDraftEntity draft = posDrafts.get(i);
             Chip chip = createDraftChip();
-            if (i == 0) chip.setId(R.id.chipDraftA);
-            else if (i == 1) chip.setId(R.id.chipDraftB);
-            else if (i == 2) chip.setId(R.id.chipDraftC);
+
+            // Id dibangkitkan, bukan dipetakan ke chipDraftA/B/C seperti dulu.
+            // Pemetaan itu hanya menjangkau tiga bon pertama, sehingga bon
+            // keempat dan seterusnya tidak punya id sama sekali - padahal
+            // ChipGroup memakai id untuk melacak mana yang sedang terpilih.
+            chip.setId(View.generateViewId());
 
             boolean active = draft.id == activeDraftId;
             int count = draftItemCounts.containsKey(draft.id) ? draftItemCounts.get(draft.id) : 0;
@@ -430,14 +467,6 @@ public class RetailPOSFragment extends Fragment {
             if (draft != null && draft.id == activeDraftId) return draft;
         }
         return null;
-    }
-
-    @Nullable
-    private Chip chipDraftForName(@NonNull String name) {
-        if ("A".equalsIgnoreCase(name)) return chipDraftA;
-        if ("B".equalsIgnoreCase(name)) return chipDraftB;
-        if ("C".equalsIgnoreCase(name) || name.toLowerCase(Locale.US).contains("walk")) return chipDraftC;
-        return chipDraftA;
     }
 
     private void activateDraft(long draftId, @NonNull String toastMessage) {
@@ -623,8 +652,8 @@ public class RetailPOSFragment extends Fragment {
         new AlertDialog.Builder(requireContext())
                 .setTitle("Hapus semua item?")
                 .setMessage("Semua produk dalam draft aktif akan dihapus.")
-                .setNegativeButton("Batal", null)
-                .setPositiveButton("Hapus", (dialog, which) -> clearActiveDraftItems())
+                .setNegativeButton(getString(R.string.action_cancel), null)
+                .setPositiveButton(getString(R.string.action_delete), (dialog, which) -> clearActiveDraftItems())
                 .show();
     }
 
@@ -737,29 +766,6 @@ public class RetailPOSFragment extends Fragment {
                 Log.e(TAG, "Failed to delete retail draft item", e);
             }
         });
-    }
-
-    private void setActiveDraftChip(@Nullable Chip activeChip,
-                                    @NonNull String toastMessage,
-                                    boolean showToast) {
-        setDraftChipState(chipDraftA, activeChip == chipDraftA, "A \u2022 3");
-        setDraftChipState(chipDraftB, activeChip == chipDraftB, "B \u2022 12");
-        setDraftChipState(chipDraftC, activeChip == chipDraftC, "Walk-in \u2022 1");
-
-        if (showToast && isAdded() && !TextUtils.isEmpty(toastMessage)) {
-            Toast.makeText(requireContext(), toastMessage, Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void setDraftChipState(@Nullable Chip chip, boolean active, @NonNull String label) {
-        if (chip == null) return;
-
-        chip.setChecked(active);
-        chip.setText(active ? "\u25CF " + label : label);
-        chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor(active ? "#EBD9FD" : "#FFFFFF")));
-        chip.setChipStrokeColor(ColorStateList.valueOf(Color.parseColor(active ? "#BB80F4" : "#E2E8F0")));
-        chip.setTextColor(Color.parseColor(active ? "#3C0375" : "#334155"));
-        chip.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
     }
 
     private void styleAddDraftChip(@NonNull Chip chip) {
@@ -947,9 +953,9 @@ public class RetailPOSFragment extends Fragment {
         final String token = session != null ? session.getToken() : null;
 
         if (token == null || token.trim().isEmpty()) {
-            if (tvBrand != null) tvBrand.setText("Retail POS");
+            if (tvBrand != null) tvBrand.setText(getString(R.string.pos_default_shop_name));
             if (tvShopAddress != null) tvShopAddress.setText("—");
-            ShopAvatar.apply(imgLogo, "Retail POS", null);
+            ShopAvatar.apply(imgLogo, getString(R.string.pos_default_shop_name), null);
             return;
         }
 
@@ -960,7 +966,7 @@ public class RetailPOSFragment extends Fragment {
 
                 String name = (shop.name != null && !shop.name.trim().isEmpty())
                         ? shop.name.trim()
-                        : "Retail POS";
+                        : getString(R.string.pos_default_shop_name);
 
                 String address = (shop.address != null && !shop.address.trim().isEmpty())
                         ? shop.address.trim()
@@ -975,17 +981,17 @@ public class RetailPOSFragment extends Fragment {
             @Override
             public void onEmpty() {
                 if (!isAdded()) return;
-                if (tvBrand != null) tvBrand.setText("Retail POS");
+                if (tvBrand != null) tvBrand.setText(getString(R.string.pos_default_shop_name));
                 if (tvShopAddress != null) tvShopAddress.setText("—");
-                ShopAvatar.apply(imgLogo, "Retail POS", null);
+                ShopAvatar.apply(imgLogo, getString(R.string.pos_default_shop_name), null);
             }
 
             @Override
             public void onError(String message) {
                 if (!isAdded()) return;
-                if (tvBrand != null) tvBrand.setText("Retail POS");
+                if (tvBrand != null) tvBrand.setText(getString(R.string.pos_default_shop_name));
                 if (tvShopAddress != null) tvShopAddress.setText("—");
-                ShopAvatar.apply(imgLogo, "Retail POS", null);
+                ShopAvatar.apply(imgLogo, getString(R.string.pos_default_shop_name), null);
             }
         });
     }
@@ -1477,6 +1483,16 @@ public class RetailPOSFragment extends Fragment {
         double total = getGrandTotalAmount();
 
         if (txtItemCount != null) {
+            // Teksnya diisi DI SINI, dan sebelumnya tidak pernah diisi sama
+            // sekali: layout hanya memuat tools:text, yang cuma tampil di
+            // pratinjau Android Studio. Akibatnya tombol kosongkan tergambar
+            // sebagai pil abu-abu tanpa tulisan apa pun - di ponsel praktis
+            // tidak terlihat, dan di tablet tertolong panel samping yang
+            // kebetulan menampilkan jumlahnya di tempat lain.
+            txtItemCount.setText(getString(R.string.pos_count_items,
+                    String.valueOf(itemCount)));
+            txtItemCount.setContentDescription(getString(R.string.pos_clear_draft));
+
             // Tombol kosongkan hanya masuk akal saat ada yang bisa dikosongkan.
             // Sebelumnya ia selalu enabled dan hanya diredupkan dengan alpha,
             // jadi menekannya saat bon kosong tetap membuka dialog konfirmasi.

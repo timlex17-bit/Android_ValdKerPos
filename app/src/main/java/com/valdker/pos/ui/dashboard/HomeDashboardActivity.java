@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import com.valdker.pos.ui.common.OfflineNotice;
 import com.valdker.pos.utils.Toast;
+import com.valdker.pos.money.Money;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -123,6 +124,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
     private ReportCacheRepository reportCacheRepository;
 
     private RecyclerView rvDashboard;
+    private DashboardAdapter dashboardAdapter;
     private BottomNavigationView bottomNav;
     private View fragmentContainer;
 
@@ -348,9 +350,24 @@ public class HomeDashboardActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Dipanggil ulang di setiap {@code onResume()} karena daftar modul ikut
+     * hak akses yang baru dibaca. Adapternya hanya dibuat sekali; sesudah itu
+     * isinya diperbarui di tempat, supaya posisi gulir daftar modul bertahan
+     * ketika pengguna kembali dari salah satu modul.
+     */
     private void attachDashboardAdapter() {
         if (rvDashboard == null) return;
-        rvDashboard.setAdapter(new DashboardAdapter(buildMenu(), this::handleMenuClick));
+        List<DashboardItem> menu = buildMenu();
+        if (dashboardAdapter == null) {
+            dashboardAdapter = new DashboardAdapter(menu, this::handleMenuClick);
+            rvDashboard.setAdapter(dashboardAdapter);
+            return;
+        }
+        if (rvDashboard.getAdapter() != dashboardAdapter) {
+            rvDashboard.setAdapter(dashboardAdapter);
+        }
+        dashboardAdapter.submit(menu);
     }
 
     private void setupDashboardGrid() {
@@ -573,7 +590,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
                             }
 
                             if (openShift == null) {
-                                if (tvSumValue != null) tvSumValue.setText("$ 0.00");
+                                if (tvSumValue != null) tvSumValue.setText(Money.zero().format());
                                 return;
                             }
 
@@ -996,7 +1013,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
 
     private boolean ensureMenuAccess(@NonNull String menuKey) {
         if (canAccessMenuStrict(menuKey)) return true;
-        Toast.makeText(this, "Anda tidak punya akses ke menu ini.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.error_no_menu_access), Toast.LENGTH_SHORT).show();
         return false;
     }
 

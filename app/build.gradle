@@ -126,4 +126,8 @@ dependencies {
     testImplementation 'org.json:json:20231013'
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
+    // Server tiruan di dalam perangkat untuk menguji jalur jaringan Owner Chat
+    // apa adanya - path, header, dan badan permintaan - tanpa menyentuh server
+    // sungguhan dan tanpa satu pun panggilan OpenAI. Hanya untuk uji.
+    androidTestImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'
 }

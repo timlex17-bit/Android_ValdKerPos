@@ -2,11 +2,24 @@
 <resources>
     <dimen name="cart_drawer_max_width">420dp</dimen>
     <dimen name="dialog_card_max_width">640dp</dimen>
-    <dimen name="dialog_checkout_max_height">560dp</dimen>
-    <dimen name="dialog_scroll_max_height">420dp</dimen>
-    <dimen name="dialog_list_height">180dp</dimen>
+    <!--
+      Tinggi isi dialog pada ponsel yang dimiringkan.
+
+      Ketiga angka ini sebelumnya sama atau hampir sama dengan nilai potret -
+      420dp untuk area gulir, 560dp untuk checkout - padahal SELURUH layar
+      dalam lanskap hanya sekitar 360dp. Karena dipakai sebagai layout_height
+      mati (bukan maxHeight; ScrollView tidak punya atribut itu), badan
+      dialognya sendiri sudah lebih tinggi daripada layar, sehingga judul dan
+      tombolnya terdorong keluar dan tidak ada cara mencapainya.
+
+      Sekarang disisakan ruang untuk judul dan bilah tombol: sekitar 200dp
+      untuk badan yang bergulir, dan daftar di dalamnya lebih pendek lagi.
+    -->
+    <dimen name="dialog_checkout_max_height">250dp</dimen>
+    <dimen name="dialog_scroll_max_height">200dp</dimen>
+    <dimen name="dialog_list_height">120dp</dimen>
     <dimen name="scanner_card_max_width">480dp</dimen>
-    <dimen name="scanner_card_max_height">460dp</dimen>
+    <dimen name="scanner_card_max_height">300dp</dimen>
     <dimen name="scanner_frame_size">200dp</dimen>
     <dimen name="report_chart_height">240dp</dimen>
     <dimen name="product_card_image_height">210dp</dimen>

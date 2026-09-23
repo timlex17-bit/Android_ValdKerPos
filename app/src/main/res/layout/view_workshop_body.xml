@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  4c - Badan kasir bengkel: aksi cepat, bon, tiga kartu total berwarna, dan
+  kartu kelompok isi.
+
+  DIPECAH JADI KOMPONEN AGAR LANSKAP TIDAK PERLU SALINAN
+
+  Kasir bengkel dulu satu berkas sepanjang 700 baris, dan varian lanskap serta
+  tabletnya adalah SALINAN penuh berkas itu. Salinan-salinan itu berhenti ikut
+  diperbarui tanpa menimbulkan galat apa pun: selama berbulan-bulan, memutar
+  perangkat menampilkan desain dari dua generasi sebelumnya. Sekarang tiga
+  bloknya berdiri sebagai berkas sendiri, sehingga varian lanskap cukup
+  menyusun ulang <include> yang sama - bukan menyalin isinya.
+
+  Dipakai sebagai isi NestedScrollView oleh kedua varian. Tingginya sengaja
+  wrap_content ditambah bobot pada kartu isinya, supaya kartu itu memanjang
+  mengisi sisa tinggi layar tanpa pernah menyusut sampai nol.
+
+  WARNA SEBAGAI PENANDA
+
+  Kasir bengkel adalah alasan utama warna dipakai sebagai penanda. Keranjangnya
+  satu-satunya yang bercampur tiga jenis barang dengan aturan pajak dan stok
+  berbeda, dan pemilik bengkel membaca nota campuran itu puluhan kali sehari.
+  Biru untuk servis, oranye untuk suku cadang, hijau untuk produk - dan warna
+  yang sama dipakai di kartu total, tombol tambah, dan ubin ikon tiap baris.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!-- ══════════ Baris bon ══════════ -->
+
+    <!--
+      Baris bon. Tiga kartu aksi cepat yang dulu berdiri di atasnya - Work
+      order, Rezerva, Istoria - sudah dihapus: tidak ada satu pun listener
+      terpasang untuk posQuickCard1/2/3 di seluruh kode, jadi ketiganya
+      benar-benar tidak melakukan apa-apa ketika ditekan. Kontrol yang
+      terlihat bisa ditekan akan dicoba, dan kasir yang menekannya lalu tidak
+      menemukan apa pun akan menyimpulkan aplikasinya rusak.
+
+      Ketiganya bukan jalan satu-satunya menuju fungsi itu: work order,
+      rezerva, dan istoria semuanya punya menunya sendiri.
+    -->
+    <include
+        layout="@layout/view_pos_bon_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/pos_space_4"
+        android:layout_marginTop="@dimen/pos_space_4"
+        android:layout_marginEnd="@dimen/pos_space_4" />
+
+    <!-- ══════════ Tiga kartu total berwarna ══════════ -->
+
+    <LinearLayout
+android:id="@+id/layoutQuickStats"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:layout_marginStart="@dimen/pos_space_4"
+android:layout_marginTop="@dimen/pos_gap"
+android:layout_marginEnd="@dimen/pos_space_4"
+android:baselineAligned="false"
+android:orientation="horizontal">
+
+<LinearLayout
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    android:background="@drawable/bg_pos_stat_blue"
+    android:orientation="vertical"
+    android:padding="@dimen/pos_space_3">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_pos_wrench"
+            app:tint="@color/pos_blue" />
+
+        <TextView
+            style="@style/TextAppearance.Pos.Label"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:fontFamily="@font/archivo_bold"
+            android:maxLines="1"
+            android:text="@string/label_service"
+            android:textColor="@color/pos_blue" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/txtServiceTotal"
+        style="@style/TextAppearance.Pos.Numeric"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/pos_gap_sm"
+        android:text="@string/amount_zero_usd"
+        android:textColor="@color/pos_blue_deep" />
+</LinearLayout>
+
+<LinearLayout
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/pos_gap_sm"
+    android:layout_weight="1"
+    android:background="@drawable/bg_pos_stat_orange"
+    android:orientation="vertical"
+    android:padding="@dimen/pos_space_3">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_pos_cog"
+            app:tint="@color/pos_orange_mid" />
+
+        <TextView
+            style="@style/TextAppearance.Pos.Label"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:fontFamily="@font/archivo_bold"
+            android:maxLines="1"
+            android:text="@string/label_part"
+            android:textColor="@color/pos_orange_mid" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/txtPartsTotal"
+        style="@style/TextAppearance.Pos.Numeric"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/pos_gap_sm"
+        android:text="@string/amount_zero_usd"
+        android:textColor="@color/pos_orange_deep" />
+</LinearLayout>
+
+<LinearLayout
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/pos_gap_sm"
+    android:layout_weight="1"
+    android:background="@drawable/bg_pos_stat_green"
+    android:orientation="vertical"
+    android:padding="@dimen/pos_space_3">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_pos_shopping_bag"
+            app:tint="@color/pos_green" />
+
+        <TextView
+            style="@style/TextAppearance.Pos.Label"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:fontFamily="@font/archivo_bold"
+            android:maxLines="1"
+            android:text="@string/label_product"
+            android:textColor="@color/pos_green" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/txtProductTotal"
+        style="@style/TextAppearance.Pos.Numeric"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/pos_gap_sm"
+        android:text="@string/amount_zero_usd"
+        android:textColor="@color/pos_green_deep" />
+</LinearLayout>
+    </LinearLayout>
+
+    <!-- ══════════ Kartu kelompok isi ══════════ -->
+
+    <!--
+      Kartu kelompok isi mengambil sisa tinggi layar, bukan sekadar setinggi
+      isinya. Tanpa itu, pada tablet tegak yang keranjangnya masih pendek
+      tersisa lubang lavender setinggi ratusan dp antara kartu ini dan bilah
+      total - ruang yang tidak ditempati apa pun dan membuat layarnya terlihat
+      belum selesai dimuat.
+
+      wrap_content DITAMBAH weight, bukan 0dp ditambah weight. Dengan 0dp,
+      kartu ini hanya mendapat SISA ruang, dan begitu isi di atasnya melebihi
+      tinggi layar sisa itu menjadi negatif - kartunya menghilang sama sekali
+      tanpa galat apa pun. Dengan wrap_content ia selalu setinggi isinya dulu,
+      lalu ikut menikmati sisa ruang kalau memang ada.
+    -->
+    <LinearLayout
+android:id="@+id/layoutItemsContainer"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:layout_weight="1"
+android:layout_marginStart="@dimen/pos_space_4"
+android:layout_marginTop="@dimen/pos_gap"
+android:layout_marginEnd="@dimen/pos_space_4"
+android:layout_marginBottom="@dimen/pos_gap"
+android:background="@drawable/bg_pos_card"
+android:minHeight="@dimen/pos_items_min_height"
+android:orientation="vertical"
+android:paddingStart="@dimen/pos_space_3"
+android:paddingEnd="@dimen/pos_space_3">
+
+<TextView
+    android:id="@+id/txtItemsLabel"
+    style="@style/TextAppearance.Pos.Item"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="@dimen/pos_space_3"
+    android:paddingBottom="@dimen/pos_space_2"
+    android:text="@string/pos_section_lines" />
+
+<androidx.recyclerview.widget.RecyclerView
+    android:id="@+id/recyclerWorkspace"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:nestedScrollingEnabled="false"
+    android:clipToPadding="false"
+    android:paddingBottom="@dimen/pos_space_2"
+    android:scrollbars="none" />
+
+<!--
+  Keadaan kosong. WorkshopPOSFragment menyalakannya ketika keranjang
+  belum berisi apa pun; tanpa ini kartu kelompok isi hanya menampilkan
+  judul dan ruang putih setinggi pos_items_min_height, dan kasir baru
+  tidak punya petunjuk apa pun tentang langkah berikutnya.
+
+  Diperiksa null di sisi Java, tapi itu justru sebabnya ketiadaannya
+  sempat lolos tanpa terdeteksi sama sekali.
+-->
+<LinearLayout
+    android:id="@+id/workshopItemsEmpty"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/pos_space_3"
+    android:paddingBottom="@dimen/pos_space_4"
+    android:visibility="gone"
+    tools:visibility="visible">
+
+    <ImageView
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@drawable/bg_pos_tile_accent_lg"
+        android:contentDescription="@null"
+        android:padding="13dp"
+        android:src="@drawable/ic_pos_basket"
+        app:tint="@color/pos_accent" />
+
+    <TextView
+        style="@style/TextAppearance.Pos.Title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/pos_gap_sm"
+        android:gravity="center"
+        android:text="@string/pos_empty_title"
+        android:textSize="15sp" />
+</LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Tombol "bon baru". Garis putus-putus, bukan penuh: ia bukan bon yang ada,
+  melainkan tempat kosong untuk bon berikutnya - dan garis putus-putus adalah
+  cara paling cepat menyatakan itu tanpa teks.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@android:color/transparent" />
+    <corners android:radius="@dimen/pos_radius_pill" />
+    <stroke
+        android:width="@dimen/pos_stroke"
+        android:color="@color/pos_dashed"
+        android:dashGap="3dp"
+        android:dashWidth="5dp" />
+</shape>

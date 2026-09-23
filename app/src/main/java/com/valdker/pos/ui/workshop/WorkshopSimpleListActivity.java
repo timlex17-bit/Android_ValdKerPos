@@ -1,7 +1,10 @@
 package com.valdker.pos.ui.workshop;
 
 import androidx.appcompat.app.AlertDialog;
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
@@ -31,6 +34,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.valdker.pos.R;
 import com.valdker.pos.SessionManager;
+import com.valdker.pos.ui.common.RecordPickerDialog;
 import com.valdker.pos.ui.common.SystemBars;
 import com.valdker.pos.models.Customer;
 import com.valdker.pos.network.ApiClient;
@@ -45,10 +49,12 @@ import org.json.JSONTokener;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
@@ -67,6 +73,8 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
     private FloatingActionButton fabAdd;
     private boolean loading = false;
     private final Map<String, Integer> selectedRelationIds = new HashMap<>();
+    /** Nilai enum yang dipilih, dipetakan dari label yang dibaca pengguna. */
+    private final Map<String, String> selectedChoiceValues = new HashMap<>();
 
     @NonNull
     protected abstract String moduleKey();
@@ -160,7 +168,8 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
         if (tvSubtitle != null) tvSubtitle.setText(subtitle());
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new WorkshopRowAdapter(new WorkshopRowAdapter.Listener() {
+        boolean crud = supportsCrud();
+        adapter = new WorkshopRowAdapter(crud, new WorkshopRowAdapter.Listener() {
             @Override
             public void onEdit(@NonNull WorkshopRow row) {
                 showFormDialog(row);
@@ -174,7 +183,37 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         if (fabAdd != null) {
-            fabAdd.setOnClickListener(v -> showFormDialog(null));
+            // Modul tanpa formulir - retur pembelian saat ini - dulu tetap
+            // menampilkan tombol tambah dan tombol Edit di tiap baris, yang
+            // hanya menghasilkan pesan "Create form is not configured".
+            // Kontrol yang bisa ditekan dan tidak melakukan apa pun lebih baik
+            // disembunyikan sampai formulirnya benar-benar ada.
+            if (crud) {
+                fabAdd.setOnClickListener(v -> showFormDialog(null));
+            } else {
+                fabAdd.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    /**
+     * Menaruh data baru tanpa memindahkan daftar.
+     *
+     * <p>{@code notifyDataSetChanged()} membuang seluruh keadaan daftar,
+     * termasuk posisi gulirnya. Dua penjagaan: kalau isinya sama persis -
+     * yang menjadi kasus biasa saat kembali dari layar lain - tidak ada
+     * pemberitahuan sama sekali; kalau berubah, posisi gulir disimpan dan
+     * dipasang kembali setelahnya.
+     */
+    private void submitKeepingScroll(@NonNull List<WorkshopRow> rows) {
+        if (adapter == null) return;
+        Parcelable scroll = null;
+        if (recyclerView != null && recyclerView.getLayoutManager() != null) {
+            scroll = recyclerView.getLayoutManager().onSaveInstanceState();
+        }
+        if (!adapter.submit(rows)) return;
+        if (scroll != null && recyclerView.getLayoutManager() != null) {
+            recyclerView.getLayoutManager().onRestoreInstanceState(scroll);
         }
     }
 
@@ -184,8 +223,13 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
 
     protected void loadData() {
         loading = true;
-        showLoading();
-        if (adapter != null) adapter.submit(new ArrayList<>());
+        // Pemintal hanya untuk pemuatan pertama. Setiap kembali dari layar lain
+        // memicu onResume() -> loadData(); kalau daftarnya dikosongkan dan
+        // disembunyikan lebih dulu, layar berkedip kosong lalu isinya muncul
+        // lagi dari baris teratas - itulah "lari ke atas" yang dikeluhkan.
+        if (adapter == null || adapter.getItemCount() == 0) {
+            showLoading();
+        }
 
         String url = ApiConfig.url(session, endpoint());
         Log.i(logTag(), "GET " + url);
@@ -197,7 +241,7 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
                     try {
                         List<WorkshopRow> rows = parseRows(extractArray(response));
                         Log.i(logTag(), "API success. rows=" + rows.size());
-                        if (adapter != null) adapter.submit(rows);
+                        submitKeepingScroll(rows);
                         if (rows.isEmpty()) {
                             showEmpty();
                         } else {
@@ -231,6 +275,7 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
 
         boolean isEdit = row != null;
         selectedRelationIds.clear();
+        selectedChoiceValues.clear();
         View view = buildFormView(row);
         AlertDialog dialog = new MaterialAlertDialogBuilder(this)
                 .setView(view)
@@ -276,27 +321,55 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
         for (FormField field : formFields()) {
             EditText input = new EditText(this);
             input.setTag(field.key);
-            input.setHint(field.label + (field.required ? " *" : ""));
+            input.setHint(hintFor(field));
             input.setBackgroundResource(R.drawable.bg_input);
             input.setPadding(dp(14), 0, dp(14), 0);
             input.setTextColor(0xFF111827);
             input.setHintTextColor(0xFF94A3B8);
 
-            if (isCustomerRelation(field)) {
-                int customerId = initialRelationId(row, field);
-                if (customerId > 0) {
-                    selectedRelationIds.put(field.key, customerId);
-                    input.setText(initialCustomerLabel(row, customerId));
+            switch (field.kind) {
+                case FormField.KIND_RELATION: {
+                    int id = initialRelationId(row, field);
+                    if (id > 0) {
+                        selectedRelationIds.put(field.key, id);
+                        input.setText(initialRelationLabel(row, field, id));
+                    }
+                    makeTapOnly(input);
+                    if (isCustomerRelation(field)) {
+                        input.setOnClickListener(v -> showCustomerPicker(field, input));
+                    } else {
+                        input.setOnClickListener(v -> showRelationPicker(field, input));
+                    }
+                    break;
                 }
-                input.setInputType(InputType.TYPE_NULL);
-                input.setFocusable(false);
-                input.setClickable(true);
-                input.setSingleLine(true);
-                input.setOnClickListener(v -> showCustomerPicker(field, input));
-            } else {
-                input.setInputType(field.inputType);
-                input.setSingleLine((field.inputType & InputType.TYPE_TEXT_FLAG_MULTI_LINE) == 0);
-                input.setText(initialValue(row, field));
+                case FormField.KIND_CHOICE: {
+                    String value = initialValue(row, field);
+                    if (!value.isEmpty()) {
+                        selectedChoiceValues.put(field.key, value);
+                        input.setText(choiceLabelOf(field, value));
+                    }
+                    makeTapOnly(input);
+                    input.setOnClickListener(v -> showChoicePicker(field, input));
+                    break;
+                }
+                case FormField.KIND_DATE: {
+                    input.setText(initialValue(row, field));
+                    makeTapOnly(input);
+                    input.setOnClickListener(v -> showDatePicker(input));
+                    break;
+                }
+                case FormField.KIND_TIME: {
+                    input.setText(trimSeconds(initialValue(row, field)));
+                    makeTapOnly(input);
+                    input.setOnClickListener(v -> showTimePicker(input));
+                    break;
+                }
+                default: {
+                    input.setInputType(field.inputType);
+                    input.setSingleLine((field.inputType & InputType.TYPE_TEXT_FLAG_MULTI_LINE) == 0);
+                    input.setText(initialValue(row, field));
+                    break;
+                }
             }
 
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
@@ -306,7 +379,243 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
             lp.topMargin = dp(12);
             container.addView(input, lp);
         }
-        return container;
+
+        // Formulir work order dan riwayat servis punya tujuh kolom; pada layar
+        // 720x1612 kolom terakhir jatuh di bawah tombol dialog dan tidak bisa
+        // dijangkau sama sekali. Dialog tidak menggulir sendiri, jadi isinya
+        // yang dibungkus.
+        android.widget.ScrollView scroller = new android.widget.ScrollView(this);
+        scroller.setFillViewport(true);
+        scroller.addView(container, new android.widget.FrameLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT));
+        return scroller;
+    }
+
+    /**
+     * Kolom yang diisi lewat dialog tidak boleh bisa diketik. Kalau papan
+     * ketiknya tetap muncul, pengguna akan mengetik sesuatu yang tidak pernah
+     * dibaca - nilai yang dikirim berasal dari pilihan, bukan dari teksnya.
+     */
+    private static void makeTapOnly(@NonNull EditText input) {
+        input.setInputType(InputType.TYPE_NULL);
+        input.setFocusable(false);
+        input.setFocusableInTouchMode(false);
+        input.setCursorVisible(false);
+        input.setLongClickable(false);
+        input.setSingleLine(true);
+        input.setClickable(true);
+    }
+
+    @NonNull
+    private String hintFor(@NonNull FormField field) {
+        String suffix;
+        switch (field.kind) {
+            case FormField.KIND_RELATION:
+            case FormField.KIND_CHOICE:
+                suffix = " - " + getString(R.string.workshop_field_tap_to_pick);
+                break;
+            case FormField.KIND_DATE:
+            case FormField.KIND_TIME:
+                suffix = " - " + getString(R.string.workshop_field_tap_to_set);
+                break;
+            default:
+                suffix = "";
+                break;
+        }
+        return field.label + (field.required ? " *" : "") + suffix;
+    }
+
+    private void showRelationPicker(@NonNull FormField field, @NonNull EditText input) {
+        // Relasi opsional mendapat baris "Kosongkan" di paling atas; yang wajib
+        // tidak, karena mengosongkannya hanya akan ditolak saat disimpan.
+        RecordPickerDialog.Option clearRow = field.required
+                ? null
+                : new RecordPickerDialog.Option("", getString(R.string.workshop_pick_none));
+
+        RecordPickerDialog.fromEndpoint(
+                this,
+                pickerTitleFor(field),
+                field.relationEndpoint,
+                clearRow,
+                item -> {
+                    int id = item.optInt("id", 0);
+                    if (id <= 0) return null;
+                    return new RecordPickerDialog.Option(
+                            String.valueOf(id), relationOptionLabel(field, item));
+                },
+                option -> {
+                    int id = option.asId();
+                    selectedRelationIds.put(field.key, id);
+                    input.setText(id > 0 ? option.label : "");
+                });
+    }
+
+    private void showChoicePicker(@NonNull FormField field, @NonNull EditText input) {
+        String current = selectedChoiceValues.get(field.key);
+        int checked = -1;
+        for (int i = 0; i < field.choiceValues.length; i++) {
+            if (field.choiceValues[i].equals(current)) {
+                checked = i;
+                break;
+            }
+        }
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(field.label)
+                .setSingleChoiceItems(field.choiceLabels, checked, (d, which) -> {
+                    selectedChoiceValues.put(field.key, field.choiceValues[which]);
+                    input.setText(field.choiceLabels[which]);
+                    d.dismiss();
+                })
+                .setNegativeButton(getString(R.string.action_cancel), null)
+                .show();
+    }
+
+    private void showDatePicker(@NonNull EditText input) {
+        Calendar cal = Calendar.getInstance();
+        String current = input.getText() == null ? "" : input.getText().toString().trim();
+        String[] parts = current.split("-");
+        if (parts.length == 3) {
+            try {
+                cal.set(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]) - 1, Integer.parseInt(parts[2]));
+            } catch (NumberFormatException ignored) {
+                // Teks lama yang tidak terbaca cukup diabaikan; hari ini tetap
+                // menjadi titik awal yang masuk akal.
+            }
+        }
+        new DatePickerDialog(
+                this,
+                (view, year, month, dayOfMonth) -> input.setText(
+                        String.format(Locale.US, "%04d-%02d-%02d", year, month + 1, dayOfMonth)),
+                cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH),
+                cal.get(Calendar.DAY_OF_MONTH)
+        ).show();
+    }
+
+    private void showTimePicker(@NonNull EditText input) {
+        Calendar cal = Calendar.getInstance();
+        String current = input.getText() == null ? "" : input.getText().toString().trim();
+        String[] parts = current.split(":");
+        if (parts.length >= 2) {
+            try {
+                cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(parts[0]));
+                cal.set(Calendar.MINUTE, Integer.parseInt(parts[1]));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        new TimePickerDialog(
+                this,
+                (view, hourOfDay, minute) -> input.setText(
+                        String.format(Locale.US, "%02d:%02d", hourOfDay, minute)),
+                cal.get(Calendar.HOUR_OF_DAY),
+                cal.get(Calendar.MINUTE),
+                true
+        ).show();
+    }
+
+    /**
+     * Server mengembalikan jam sebagai {@code HH:MM:SS}; yang dipilih pengguna
+     * hanya jam dan menit, jadi detiknya dipangkas supaya kolomnya tidak
+     * berubah tampilan setiap kali dibuka ulang.
+     */
+    @NonNull
+    private static String trimSeconds(@NonNull String time) {
+        String[] parts = time.split(":");
+        return parts.length >= 2 ? parts[0] + ":" + parts[1] : time;
+    }
+
+    /** Judul dialog pemilih. Dipetakan dari kunci supaya tetap satu bahasa. */
+    @NonNull
+    protected String pickerTitleFor(@NonNull FormField field) {
+        switch (field.key) {
+            case "customer":
+                return getString(R.string.workshop_pick_customer);
+            case "vehicle":
+                return getString(R.string.workshop_pick_vehicle);
+            case "mechanic":
+                return getString(R.string.workshop_pick_mechanic);
+            case "work_order":
+                return getString(R.string.workshop_pick_work_order);
+            default:
+                return field.label;
+        }
+    }
+
+    /**
+     * Satu baris di dalam dialog pemilih. Turunan boleh menimpanya, tetapi
+     * bentuk baku ini sudah mencakup ketiga relasi yang ada.
+     */
+    @NonNull
+    protected String relationOptionLabel(@NonNull FormField field, @NonNull JSONObject item) {
+        int id = item.optInt("id", 0);
+        switch (field.key) {
+            case "vehicle": {
+                String plate = item.optString("plate_number", "").trim();
+                String make = firstNonEmpty(
+                        (item.optString("brand", "").trim() + " " + item.optString("model", "").trim()).trim(),
+                        item.optString("vehicle_type", "").trim());
+                String owner = item.optString("customer_name", "").trim();
+                String head = plate.isEmpty() ? getString(R.string.workshop_row_unnamed, id) : plate;
+                String tail = firstNonEmpty(make, owner);
+                return tail.isEmpty() ? head : head + " - " + tail;
+            }
+            case "mechanic": {
+                String name = item.optString("name", "").trim();
+                String extra = firstNonEmpty(
+                        item.optString("specialization", ""),
+                        item.optString("phone", ""));
+                String head = name.isEmpty() ? getString(R.string.workshop_row_unnamed, id) : name;
+                return extra.isEmpty() ? head : head + " - " + extra;
+            }
+            case "work_order": {
+                String head = getString(R.string.workshop_work_order_short, id);
+                String tail = firstNonEmpty(
+                        item.optString("vehicle_plate_number", ""),
+                        item.optString("customer_name", ""),
+                        item.optString("complaint", ""));
+                return tail.isEmpty() ? head : head + " - " + tail;
+            }
+            default: {
+                String label = firstNonEmpty(
+                        item.optString("name", ""),
+                        item.optString("title", ""),
+                        item.optString("plate_number", ""));
+                return label.isEmpty() ? getString(R.string.workshop_row_unnamed, id) : label;
+            }
+        }
+    }
+
+    /** Label relasi yang sudah tersimpan, dibaca dari baris yang sedang diedit. */
+    @NonNull
+    private String initialRelationLabel(@Nullable WorkshopRow row, @NonNull FormField field, int id) {
+        if (isCustomerRelation(field)) return initialCustomerLabel(row, id);
+        if (row != null) {
+            Object nested = row.raw.opt(field.key);
+            if (nested instanceof JSONObject) {
+                String label = relationOptionLabel(field, (JSONObject) nested).trim();
+                if (!label.isEmpty()) return label;
+            }
+            String flat = firstNonEmpty(
+                    row.raw.optString(field.key + "_name", ""),
+                    row.raw.optString(field.key + "_plate_number", ""),
+                    row.raw.optString(field.key + "_number", ""));
+            if (!flat.isEmpty()) return flat;
+        }
+        if ("work_order".equals(field.key)) {
+            return getString(R.string.workshop_work_order_short, id);
+        }
+        return getString(R.string.workshop_row_unnamed, id);
+    }
+
+    @NonNull
+    private String choiceLabelOf(@NonNull FormField field, @NonNull String value) {
+        for (int i = 0; i < field.choiceValues.length; i++) {
+            if (field.choiceValues[i].equals(value)) return field.choiceLabels[i];
+        }
+        // Nilai yang tidak dikenal berasal dari server, bukan dari layar ini -
+        // tampilkan apa adanya alih-alih menyembunyikannya.
+        return value;
     }
 
     private void showCustomerPicker(@NonNull FormField field, @NonNull EditText input) {
@@ -333,28 +642,52 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
         for (FormField field : formFields()) {
             EditText input = formView.findViewWithTag(field.key);
 
-            if (isCustomerRelation(field)) {
-                Integer customerId = selectedRelationIds.get(field.key);
-                if (customerId == null || customerId <= 0) {
+            if (field.kind == FormField.KIND_RELATION) {
+                Integer relationId = selectedRelationIds.get(field.key);
+                if (relationId == null || relationId <= 0) {
                     if (field.required) {
-                        Toast.makeText(this, "Please select customer first.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this,
+                                getString(R.string.workshop_pick_required, relationNameOf(field)),
+                                Toast.LENGTH_LONG).show();
                         if (input != null) input.performClick();
                         return null;
                     }
-                    if (customerId != null) {
+                    // Null hanya dikirim kalau pengguna memang menyentuh kolom
+                    // ini dan mengosongkannya. Tanpa syarat itu, setiap
+                    // penyuntingan akan ikut menghapus relasi yang tidak
+                    // ditampilkan di layar.
+                    if (relationId != null) {
                         try {
                             payload.put(field.key, JSONObject.NULL);
                         } catch (Exception ex) {
-                            Toast.makeText(this, "Invalid customer", Toast.LENGTH_LONG).show();
                             return null;
                         }
                     }
                     continue;
                 }
                 try {
-                    payload.put(field.key, customerId);
+                    payload.put(field.key, relationId);
                 } catch (Exception ex) {
-                    Toast.makeText(this, "Invalid customer", Toast.LENGTH_LONG).show();
+                    return null;
+                }
+                continue;
+            }
+
+            if (field.kind == FormField.KIND_CHOICE) {
+                String choice = selectedChoiceValues.get(field.key);
+                if (choice == null || choice.trim().isEmpty()) {
+                    if (field.required) {
+                        Toast.makeText(this,
+                                getString(R.string.workshop_pick_required, field.label),
+                                Toast.LENGTH_LONG).show();
+                        if (input != null) input.performClick();
+                        return null;
+                    }
+                    continue;
+                }
+                try {
+                    payload.put(field.key, choice);
+                } catch (Exception ex) {
                     return null;
                 }
                 continue;
@@ -364,7 +697,12 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
 
             if (TextUtils.isEmpty(value)) {
                 if (field.required) {
-                    if (!field.relationLabel.isEmpty()) {
+                    if (field.kind == FormField.KIND_DATE || field.kind == FormField.KIND_TIME) {
+                        Toast.makeText(this,
+                                getString(R.string.workshop_pick_required, field.label),
+                                Toast.LENGTH_LONG).show();
+                        if (input != null) input.performClick();
+                    } else if (!field.relationLabel.isEmpty()) {
                         Toast.makeText(this, "Please select " + field.relationLabel + " first.", Toast.LENGTH_LONG).show();
                     } else if (input != null) {
                         input.setError(getString(R.string.error_required));
@@ -405,6 +743,22 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
             }
         }
         return payload;
+    }
+
+    @NonNull
+    private String relationNameOf(@NonNull FormField field) {
+        switch (field.key) {
+            case "customer":
+                return getString(R.string.workshop_label_customer);
+            case "vehicle":
+                return getString(R.string.workshop_label_vehicle);
+            case "mechanic":
+                return getString(R.string.workshop_label_mechanic);
+            case "work_order":
+                return getString(R.string.workshop_label_work_order);
+            default:
+                return field.label;
+        }
     }
 
     private static boolean isCustomerRelation(@NonNull FormField field) {
@@ -619,14 +973,30 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
     }
 
     @NonNull
-    private static List<WorkshopRow> parseRows(@NonNull JSONArray arr) {
+    private List<WorkshopRow> parseRows(@NonNull JSONArray arr) {
         List<WorkshopRow> rows = new ArrayList<>();
         for (int i = 0; i < arr.length(); i++) {
             JSONObject item = arr.optJSONObject(i);
             if (item == null) continue;
-            rows.add(new WorkshopRow(item.optInt("id", 0), titleOf(item, i), subtitleOf(item), item));
+            rows.add(new WorkshopRow(item.optInt("id", 0), titleOf(item, i), describeRow(item), item));
         }
         return rows;
+    }
+
+    /**
+     * Baris kedua pada kartu daftar.
+     *
+     * <p>Bentuk bakunya menebak dari sekumpulan nama field yang lazim. Tebakan
+     * itu meleset untuk kendaraan - serializer kendaraan tidak memuat satu pun
+     * di antaranya - dan dulu sisanya jatuh ke {@code item.toString()}, yang
+     * menumpahkan seluruh objek JSON Django ke dalam kartu informasi mobil.
+     * Karena itu tiap modul menimpa metode ini dengan kalimat yang memang
+     * dibaca manusia, dan bentuk bakunya kini mengembalikan kosong alih-alih
+     * menampilkan isi mentah.
+     */
+    @NonNull
+    protected String describeRow(@NonNull JSONObject item) {
+        return subtitleOf(item);
     }
 
     @NonNull
@@ -664,7 +1034,9 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
                 item.optString("notes", ""),
                 item.optString("created_at", "")
         );
-        return subtitle.isEmpty() ? item.toString() : subtitle;
+        // Sengaja kosong ketika tidak ada yang cocok: baris subjudul yang
+        // kosong lebih baik daripada satu objek JSON mentah di dalam kartu.
+        return subtitle;
     }
 
     @NonNull
@@ -703,6 +1075,10 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
         static final int KIND_INT = 1;
         static final int KIND_DECIMAL = 2;
         static final int KIND_RELATION = 3;
+        /** Satu dari sekumpulan nilai tetap (enum server), dipilih bukan diketik. */
+        static final int KIND_CHOICE = 4;
+        static final int KIND_DATE = 5;
+        static final int KIND_TIME = 6;
 
         final String key;
         final String label;
@@ -712,6 +1088,12 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
         final String defaultValue;
         final int inputType;
         final boolean multiLine;
+        /** Endpoint sumber untuk KIND_RELATION; kosong untuk relasi customer. */
+        final String relationEndpoint;
+        /** Nilai yang dikirim ke server, sejajar dengan choiceLabels. */
+        final String[] choiceValues;
+        /** Yang dibaca pengguna. */
+        final String[] choiceLabels;
 
         private FormField(@NonNull String key,
                           @NonNull String label,
@@ -720,7 +1102,10 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
                           @Nullable String relationLabel,
                           @Nullable String defaultValue,
                           int inputType,
-                          boolean multiLine) {
+                          boolean multiLine,
+                          @Nullable String relationEndpoint,
+                          @Nullable String[] choiceValues,
+                          @Nullable String[] choiceLabels) {
             this.key = key;
             this.label = label;
             this.kind = kind;
@@ -729,46 +1114,78 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
             this.defaultValue = defaultValue == null ? "" : defaultValue;
             this.inputType = inputType;
             this.multiLine = multiLine;
+            this.relationEndpoint = relationEndpoint == null ? "" : relationEndpoint;
+            this.choiceValues = choiceValues == null ? new String[0] : choiceValues;
+            this.choiceLabels = choiceLabels == null ? new String[0] : choiceLabels;
         }
 
         @NonNull
         protected static FormField text(@NonNull String key, @NonNull String label, boolean required) {
-            return new FormField(key, label, KIND_TEXT, required, "", "", InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES, false);
+            return new FormField(key, label, KIND_TEXT, required, "", "", InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES, false, null, null, null);
         }
 
         @NonNull
         protected static FormField multiline(@NonNull String key, @NonNull String label, boolean required) {
-            return new FormField(key, label, KIND_TEXT, required, "", "", InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES, true);
+            return new FormField(key, label, KIND_TEXT, required, "", "", InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES, true, null, null, null);
         }
 
         @NonNull
         protected static FormField integer(@NonNull String key, @NonNull String label, boolean required, @Nullable String defaultValue) {
-            return new FormField(key, label, KIND_INT, required, "", defaultValue, InputType.TYPE_CLASS_NUMBER, false);
+            return new FormField(key, label, KIND_INT, required, "", defaultValue, InputType.TYPE_CLASS_NUMBER, false, null, null, null);
         }
 
         @NonNull
         protected static FormField decimal(@NonNull String key, @NonNull String label, boolean required, @Nullable String defaultValue) {
-            return new FormField(key, label, KIND_DECIMAL, required, "", defaultValue, InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL, false);
+            return new FormField(key, label, KIND_DECIMAL, required, "", defaultValue, InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL, false, null, null, null);
         }
 
         @NonNull
         protected static FormField relation(@NonNull String key, @NonNull String label, boolean required, @NonNull String relationLabel) {
-            return new FormField(key, label, KIND_RELATION, required, relationLabel, "", InputType.TYPE_CLASS_NUMBER, false);
+            return new FormField(key, label, KIND_RELATION, required, relationLabel, "", InputType.TYPE_CLASS_NUMBER, false, null, null, null);
+        }
+
+        /**
+         * Relasi yang dipilih dari daftar catatan endpoint lain.
+         *
+         * <p>{@code endpoint} kosong berarti relasi pelanggan, yang punya
+         * pemilihnya sendiri (CustomerPickerDialog) dengan pencarian.
+         */
+        @NonNull
+        protected static FormField relation(@NonNull String key,
+                                            @NonNull String label,
+                                            boolean required,
+                                            @NonNull String relationLabel,
+                                            @NonNull String endpoint) {
+            return new FormField(key, label, KIND_RELATION, required, relationLabel, "",
+                    InputType.TYPE_NULL, false, endpoint, null, null);
+        }
+
+        /** Nilai tetap dari server - dipilih, tidak pernah diketik. */
+        @NonNull
+        protected static FormField choice(@NonNull String key,
+                                          @NonNull String label,
+                                          boolean required,
+                                          @NonNull String[] values,
+                                          @NonNull String[] labels,
+                                          @Nullable String defaultValue) {
+            return new FormField(key, label, KIND_CHOICE, required, "", defaultValue,
+                    InputType.TYPE_NULL, false, null, values, labels);
         }
 
         @NonNull
         protected static FormField date(@NonNull String key, @NonNull String label, boolean required) {
-            return new FormField(key, label, KIND_TEXT, required, "", "", InputType.TYPE_CLASS_DATETIME | InputType.TYPE_DATETIME_VARIATION_DATE, false);
+            return new FormField(key, label, KIND_DATE, required, "", "", InputType.TYPE_NULL, false, null, null, null);
         }
 
         @NonNull
         protected static FormField time(@NonNull String key, @NonNull String label, boolean required) {
-            return new FormField(key, label, KIND_TEXT, required, "", "", InputType.TYPE_CLASS_DATETIME | InputType.TYPE_DATETIME_VARIATION_TIME, false);
+            return new FormField(key, label, KIND_TIME, required, "", "", InputType.TYPE_NULL, false, null, null, null);
         }
 
         @NonNull
         protected FormField defaultValue(@NonNull String value) {
-            return new FormField(key, label, kind, required, relationLabel, value, inputType, multiLine);
+            return new FormField(key, label, kind, required, relationLabel, value, inputType, multiLine,
+                    relationEndpoint, choiceValues, choiceLabels);
         }
     }
 
@@ -793,16 +1210,35 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
         }
 
         private final List<WorkshopRow> rows = new ArrayList<>();
+        private final boolean showActions;
         private final Listener listener;
 
-        WorkshopRowAdapter(@NonNull Listener listener) {
+        WorkshopRowAdapter(boolean showActions, @NonNull Listener listener) {
+            this.showActions = showActions;
             this.listener = listener;
         }
 
-        void submit(@NonNull List<WorkshopRow> next) {
+        /** @return true kalau isinya benar-benar berubah. */
+        boolean submit(@NonNull List<WorkshopRow> next) {
+            if (sameContent(next)) return false;
             rows.clear();
             rows.addAll(next);
             notifyDataSetChanged();
+            return true;
+        }
+
+        private boolean sameContent(@NonNull List<WorkshopRow> next) {
+            if (rows.size() != next.size()) return false;
+            for (int i = 0; i < rows.size(); i++) {
+                WorkshopRow a = rows.get(i);
+                WorkshopRow b = next.get(i);
+                if (a.id != b.id
+                        || !a.title.equals(b.title)
+                        || !a.subtitle.equals(b.subtitle)) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         @NonNull
@@ -818,6 +1254,12 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
             WorkshopRow row = rows.get(position);
             holder.title.setText(row.title);
             holder.subtitle.setText(row.subtitle);
+            // Subjudul kosong berarti modulnya memang tidak punya keterangan
+            // baris; menyisakan barisnya membuat tinggi kartu tidak rata.
+            holder.subtitle.setVisibility(row.subtitle.isEmpty() ? View.GONE : View.VISIBLE);
+            if (holder.actions != null) {
+                holder.actions.setVisibility(showActions ? View.VISIBLE : View.GONE);
+            }
             holder.btnEdit.setOnClickListener(v -> listener.onEdit(row));
             holder.btnDelete.setOnClickListener(v -> listener.onDelete(row));
         }
@@ -832,11 +1274,13 @@ public abstract class WorkshopSimpleListActivity extends AppCompatActivity {
             final TextView subtitle;
             final Button btnEdit;
             final Button btnDelete;
+            final View actions;
 
             VH(@NonNull View itemView) {
                 super(itemView);
                 this.title = itemView.findViewById(R.id.tvRowTitle);
                 this.subtitle = itemView.findViewById(R.id.tvRowSubtitle);
+                this.actions = itemView.findViewById(R.id.rowActions);
                 this.btnEdit = itemView.findViewById(R.id.btnEdit);
                 this.btnDelete = itemView.findViewById(R.id.btnDelete);
             }

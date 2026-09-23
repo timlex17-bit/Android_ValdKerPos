@@ -318,7 +318,7 @@ public class CategoriesFragment extends BaseFragment {
             isLoading = false;
             setLoading(false);
             setEmpty(true);
-            showToast(getContext(), "Token is missing. Please login again.");
+            showToast(getContext(), getString(R.string.error_session_expired));
             return;
         }
 

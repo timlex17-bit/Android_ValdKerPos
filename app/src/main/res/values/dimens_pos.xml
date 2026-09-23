@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Ukuran layar kasir - implementasi 4.
+
+  Berawalan pos_ dan terpisah dari dimens.xml. radius_dialog, radius_surface,
+  dan topbar_min_height tidak berubah: yang membulat di sini hanya kasir.
+-->
+<resources>
+
+    <!-- ============ Jarak ============ -->
+    <dimen name="pos_space_1">4dp</dimen>
+    <dimen name="pos_space_2">8dp</dimen>
+    <dimen name="pos_space_3">12dp</dimen>
+    <dimen name="pos_space_4">16dp</dimen>
+    <dimen name="pos_space_6">24dp</dimen>
+    <dimen name="pos_space_8">32dp</dimen>
+
+    <!-- Jarak antar kartu di badan layar. -->
+    <dimen name="pos_gap">14dp</dimen>
+    <dimen name="pos_gap_sm">10dp</dimen>
+
+    <!--
+      Pias kiri-kanan untuk blok kasir yang MEMBENTANG SELEBAR LAYAR dan tetap
+      satu kolom di layar lebar.
+
+      Nol pada ponsel: di sana lebar layar memang lebar isinya. Pada tablet ia
+      naik mengikuti kelompok lebar (values-w600dp sampai values-w1400dp),
+      sehingga baris keranjang tidak membentang sejauh 1200dp - jarak yang
+      membuat mata kehilangan jejak antara nama barang di kiri dan harganya di
+      kanan, dan yang tidak diperbaiki oleh ukuran huruf apa pun.
+
+      Bukan lebar maksimum yang dipusatkan, melainkan pias: LinearLayout tidak
+      punya maxWidth, dan menambahkan pembungkus baru hanya untuk itu berarti
+      satu tingkat view lagi di layar yang sudah dalam.
+
+      JANGAN dipakai pada blok yang bisa menjadi kolom samping. Nilainya
+      mengikuti lebar LAYAR, bukan lebar wadahnya, jadi di dalam kolom selebar
+      260dp ia menghasilkan padding 320dp dan isinya berlebar nol. Urutan
+      pemilihan sumber daya tidak bisa memisahkan kedua keadaan itu -
+      lebar-tersedia mengalahkan orientasi - jadi pemisahannya harus dilakukan
+      di layout, dengan tidak memakai nama ini di sana.
+    -->
+    <dimen name="pos_gutter">0dp</dimen>
+
+    <!-- ============ Sudut ============
+
+      Bukan satu radius untuk semuanya. Tiga tingkat, dan besarnya mengikuti
+      besar benda yang dibulatkan - sebuah ubin ikon 24dp dengan radius 20dp
+      akan berubah jadi lingkaran, sementara kartu 340dp dengan radius 8dp
+      terlihat hampir siku. Perbandingan itulah yang dijaga, bukan angkanya.
+    -->
+
+    <!-- Lengkung terbesar: tepi bawah header, tepi atas bilah total. -->
+    <dimen name="pos_radius_shell">26dp</dimen>
+
+    <!-- Kartu kelompok isi dan kartu produk. -->
+    <dimen name="pos_radius_card">20dp</dimen>
+
+    <!-- Kartu aksi cepat, kartu total per jenis, kotak isian. -->
+    <dimen name="pos_radius_tile">18dp</dimen>
+
+    <!-- Kotak pencarian di dalam header, tombol bayar. -->
+    <dimen name="pos_radius_field">16dp</dimen>
+
+    <!-- Tombol kecil dan ubin ikon 36-44dp. -->
+    <dimen name="pos_radius_sm">14dp</dimen>
+
+    <!-- Ubin ikon kecil di baris keranjang. -->
+    <dimen name="pos_radius_xs">12dp</dimen>
+
+    <!-- Pil: chip bon, chip kategori, stepper, lencana jumlah. -->
+    <dimen name="pos_radius_pill">999dp</dimen>
+
+    <!-- ============ Garis ============ -->
+
+    <!--
+      Satu ketebalan saja sekarang. Implementasi sebelumnya memakai garis
+      tinta 2dp sebagai pemisah blok; di sini blok dipisahkan oleh KARTU dan
+      oleh jarak, jadi garis hanya tersisa di dalam kartu - antar baris
+      keranjang - dan di sana ia harus setipis mungkin.
+    -->
+    <dimen name="pos_hairline">1dp</dimen>
+
+    <!-- Bingkai pilihan aktif (jenis kendaraan terpilih, chip putus-putus). -->
+    <dimen name="pos_stroke">2dp</dimen>
+
+    <!-- ============ Ukuran komponen ============ -->
+
+    <dimen name="pos_header_tile">44dp</dimen>
+    <dimen name="pos_group_tile">38dp</dimen>
+    <dimen name="pos_quick_tile">36dp</dimen>
+    <dimen name="pos_dot_tile">24dp</dimen>
+    <dimen name="pos_search_height">48dp</dimen>
+    <dimen name="pos_scan_button">36dp</dimen>
+    <dimen name="pos_pay_height">54dp</dimen>
+    <dimen name="pos_stepper_button">28dp</dimen>
+    <dimen name="pos_stepper_qty_width">26dp</dimen>
+    <dimen name="pos_chip_height">34dp</dimen>
+    <dimen name="pos_product_photo_height">84dp</dimen>
+    <dimen name="pos_login_mark">58dp</dimen>
+    <dimen name="pos_field_tile">38dp</dimen>
+
+    <!--
+      Tinggi sentuh minimum. Mockup menggambar beberapa tombol lebih pendek
+      dari ini; di kasir yang ditekan ratusan kali per hari, 44dp ditegakkan.
+    -->
+    <dimen name="pos_touch_min">44dp</dimen>
+
+    <!--
+      Tinggi minimum kartu daftar item.
+
+      Tanpa ini, kartu itu memakai layout_weight=1 dan akan tergencet sampai
+      NOL pada kasir bengkel, yang punya paling banyak blok di atas dan di
+      bawahnya - kepala, kartu kendaraan, aksi cepat, bon, tiga kartu total,
+      strip tambah, dan bilah bayar. Hasilnya layar tanpa daftar sama sekali,
+      dan tidak ada galat apa pun yang memberi tahu.
+    -->
+    <dimen name="pos_items_min_height">132dp</dimen>
+
+    <!-- ============ Tipografi ============ -->
+    <dimen name="pos_text_display">28sp</dimen>
+    <dimen name="pos_text_title">17sp</dimen>
+    <dimen name="pos_text_mode">18sp</dimen>
+    <dimen name="pos_text_item">13.5sp</dimen>
+    <dimen name="pos_text_body">12.5sp</dimen>
+    <dimen name="pos_text_meta">11sp</dimen>
+    <dimen name="pos_text_label">11sp</dimen>
+    <dimen name="pos_text_badge">10sp</dimen>
+
+    <!--
+      Lebar kolom samping kasir bengkel dalam susunan lanskap.
+
+      Lebih lebar daripada pos_side_panel_width milik kasir retail, dan
+      sebabnya satu: kolom ini tidak hanya memuat total dan tombol bayar,
+      tapi juga strip tambah yang berjajar EMPAT - Pakote, Servisu, Peca,
+      Produtu. Pada 220dp satu selnya tinggal sekitar 39dp dan "Package"
+      dipenggal di tengah kata; pada 280dp ia utuh.
+
+      Kalau strip itu suatu saat berubah jadi tiga tombol atau dua, angka ini
+      boleh ikut mengecil - ia mengikuti isi kolomnya, bukan ukuran layar.
+    -->
+    <dimen name="pos_workshop_panel_width">280dp</dimen>
+</resources>

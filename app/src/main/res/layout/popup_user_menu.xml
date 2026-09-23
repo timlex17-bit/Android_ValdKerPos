@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
+    xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="260dp"
     android:layout_height="wrap_content"
@@ -17,7 +18,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Signed in as"
+            android:text="@string/label_signed_in_as"
             android:textSize="12sp"
             android:textColor="@color/text_secondary"/>
 
@@ -25,7 +26,7 @@
             android:id="@+id/tvUserName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="admin"
+            tools:text="admin"
             android:textStyle="bold"
             android:textSize="18sp"
             android:textColor="@color/text_primary"
@@ -35,7 +36,7 @@
             android:id="@+id/tvUserRole"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="cashier"
+            tools:text="cashier"
             android:textSize="12sp"
             android:textColor="@color/text_secondary"
             android:paddingTop="2dp"/>
@@ -62,7 +63,7 @@
         android:gravity="center_vertical"
         android:paddingLeft="14dp"
         android:paddingRight="14dp"
-        android:text="🛡️   Privacy Policy"
+        tools:text="🛡️   Privacy Policy"
         android:textStyle="bold"
         android:textColor="@color/text_primary"
         android:background="?android:attr/selectableItemBackground" />
@@ -75,7 +76,7 @@
         android:gravity="center_vertical"
         android:paddingLeft="14dp"
         android:paddingRight="14dp"
-        android:text="🧾   Close Shift"
+        tools:text="🧾   Close Shift"
         android:textStyle="bold"
         android:textColor="@color/text_primary"
         android:background="?android:attr/selectableItemBackground" />
@@ -95,7 +96,7 @@
         android:gravity="center_vertical"
         android:paddingLeft="14dp"
         android:paddingRight="14dp"
-        android:text="🚪   Log Out"
+        tools:text="🚪   Log Out"
         android:textStyle="bold"
         android:textColor="@color/state_danger"
         android:background="?android:attr/selectableItemBackground" />

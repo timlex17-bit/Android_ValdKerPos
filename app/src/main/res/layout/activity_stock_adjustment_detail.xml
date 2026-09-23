@@ -8,6 +8,7 @@
   dipaksa terang jadi tidak terbaca di Android 15+.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/detailRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -34,7 +35,7 @@
             android:id="@+id/tvTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Product Name"
+            tools:text="Product Name"
             android:textColor="@color/text_primary"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -44,7 +45,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="19/02/2026 15:15"
+            tools:text="19/02/2026 15:15"
             android:textColor="@color/text_secondary"
             android:textSize="12sp" />
 
@@ -70,7 +71,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Reason"
+                        android:text="@string/label_reason"
                         android:textColor="@color/text_tertiary"
                         android:textSize="11sp"
                         android:textStyle="bold" />
@@ -80,7 +81,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="3dp"
-                        android:text="LOST"
+                        tools:text="LOST"
                         android:textColor="@color/text_primary"
                         android:textSize="13sp" />
                 </LinearLayout>
@@ -94,7 +95,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Adjusted by"
+                        android:text="@string/label_adjusted_by"
                         android:textColor="@color/text_tertiary"
                         android:textSize="11sp"
                         android:textStyle="bold" />
@@ -125,7 +126,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Stock"
+                        android:text="@string/label_stock"
                         android:textColor="@color/text_tertiary"
                         android:textSize="11sp"
                         android:textStyle="bold" />
@@ -135,7 +136,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="3dp"
-                        android:text="49 → 50"
+                        tools:text="49 → 50"
                         android:textColor="@color/text_primary"
                         android:textSize="13sp" />
                 </LinearLayout>
@@ -149,7 +150,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Difference"
+                        android:text="@string/label_difference"
                         android:textColor="@color/text_tertiary"
                         android:textSize="11sp"
                         android:textStyle="bold" />
@@ -170,7 +171,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:text="Note"
+                android:text="@string/label_note"
                 android:textColor="@color/text_tertiary"
                 android:textSize="11sp"
                 android:textStyle="bold" />
@@ -190,7 +191,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:text="Adjustment ID: 1"
+                tools:text="Adjustment ID: 1"
                 android:textColor="@color/text_tertiary"
                 android:textSize="11sp" />
         </LinearLayout>

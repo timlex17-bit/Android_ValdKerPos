@@ -1,77 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  POS kasir (retail) - tablet.
+  4a - Kasir retail, tablet (lebar terkecil >= 600dp).
 
-  Dua kolom: daftar item bon di kiri, panel ringkasan + checkout di kanan.
+  Dua kolom: daftar isi di kiri, total dan tombol bayar sebagai kolom penuh
+  di kanan. Berlaku di kedua orientasi - smallest-width menang atas orientasi
+  dalam urutan pemilihan sumber daya Android, jadi berkas ini juga yang
+  dipakai tablet mendatar.
 
-  Yang diperbaiki dibanding versi sebelumnya:
+  Seluruh isinya <include> yang sama dengan versi ponsel. Yang berbeda hanya
+  susunannya, dan satu berkas lagi yang ikut bervarian:
+  layout-sw600dp/view_pos_checkout.xml, yang mengubah bilah melintang menjadi
+  kolom penuh.
 
-  1. Kolom kanan tidak lagi berisi bilah ponsel yang didorong ke dasar dengan
-     <Space android:layout_weight="1"/>. Kolomnya kini panel penuh - lihat
-     layout-sw600dp/view_pos_checkout.xml - jadi ruang 360dp itu dipakai,
-     bukan dibiarkan kosong dengan satu tombol menggantung di bawahnya.
-  2. Lebar kolom kanan datang dari bucket lebar layar (values-w###dp), bukan
-     dari values-sw600dp. Tablet 800dp dalam potret dan tablet yang sama
-     dalam lanskap punya ruang yang jauh berbeda; smallest-width tidak bisa
-     membedakannya dan memberi keduanya lebar yang sama.
-  3. ConstraintLayout dengan batas min/max, bukan LinearLayout berbobot, jadi
-     kolom kanan tidak pernah lebih sempit dari yang terbaca maupun melebar
-     jadi kolom kosong pada tablet sangat lebar.
-
-  Bilah atas dan panel kendali di-<include> dari berkas yang sama dengan
-  varian ponsel, jadi chip bon dan kolom cari tidak bisa menyimpang antar
-  varian.
+  Lebar kolom kanan mengikuti pos_side_panel_width, yang punya nilai berbeda
+  di setiap kelompok lebar layar (w600dp sampai w1400dp): 220dp pada tablet
+  kecil, 320dp pada tablet 13 inci. Ia tidak pernah memakai bobot, karena
+  kolom yang melebar mengikuti layar akan berakhir sebagai kolom kosong
+  dengan satu angka di tengahnya.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/rootRetailPos"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/app_bg"
+    android:background="@color/pos_ground"
     android:orientation="vertical">
 
     <include layout="@layout/view_pos_topbar" />
 
-    <include layout="@layout/view_pos_controls" />
+    <!--
+      Baris bon saja - TANPA tiga kartu aksi cepat.
 
+      Kartu "Skaneia", "Buka produtu", dan "Retornu" dihapus dari kasir
+      retail karena ketiganya tidak pernah punya perilaku apa pun: tidak ada
+      satu pun pemasang listener untuk posQuickCard1/2/3 di seluruh kode, jadi
+      menekannya tidak melakukan apa-apa. Kontrol yang terlihat bisa ditekan
+      akan dicoba, dan kasir yang menekannya lalu tidak terjadi apa-apa akan
+      menyimpulkan aplikasinya rusak - itu lebih buruk daripada tidak ada
+      tombolnya sama sekali. Memindai barcode sudah punya tombolnya sendiri di
+      dalam kepala ungu, dan mencari produk sudah punya kolom cari di sana.
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    -->
+    <include
+        layout="@layout/view_pos_bon_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/pos_space_4"
+        android:layout_marginTop="@dimen/pos_space_4"
+        android:layout_marginEnd="@dimen/pos_space_4" />
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:paddingStart="14dp"
-        android:paddingTop="10dp"
-        android:paddingEnd="14dp"
-        android:paddingBottom="18dp">
+        android:baselineAligned="false"
+        android:orientation="horizontal">
 
-        <com.google.android.material.card.MaterialCardView
-
-            style="@style/Widget.Valora.PanelCard"
-            android:id="@+id/cardRetailWorkspace"
+        <!--
+          Daftar isi. Tidak dibungkus kartu lagi - view_pos_list sudah
+          menggambar kartunya sendiri berikut jaraknya.
+        -->
+        <FrameLayout
             android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginEnd="12dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/panelRetailCheckout"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/pos_gap"
+            android:layout_marginBottom="@dimen/pos_gap"
+            android:layout_weight="1">
 
             <include layout="@layout/view_pos_list" />
-        </com.google.android.material.card.MaterialCardView>
-
-        <FrameLayout
-            android:id="@+id/panelRetailCheckout"
-            android:layout_width="@dimen/pos_side_panel_width"
-            android:layout_height="0dp"
-            android:minWidth="@dimen/pos_side_panel_min_width"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_max="@dimen/pos_side_panel_max_width">
-
-            <include layout="@layout/view_pos_checkout" />
         </FrameLayout>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <LinearLayout
+            android:layout_width="@dimen/pos_side_panel_width"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/pos_gap"
+            android:layout_marginEnd="@dimen/pos_space_4"
+            android:layout_marginBottom="@dimen/pos_gap"
+            android:minWidth="@dimen/pos_side_panel_min_width"
+            android:orientation="vertical">
+
+            <include layout="@layout/view_pos_checkout" />
+        </LinearLayout>
+    </LinearLayout>
 
 </LinearLayout>

@@ -1,0 +1,479 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  3c - Lembar "Troka": pilih pelanggan & kendaraan.
+
+  BOTTOM SHEET, BUKAN DIALOG TENGAH
+
+  Sebelumnya ini AlertDialog yang dirakit dari kode - sebelas View dibuat
+  dengan new TextView(...) dan diberi warna hex satu per satu - dan muncul di
+  tengah layar. Dua alasan memindahkannya ke bawah:
+
+  Isinya panjang. Tiga bagian dengan kolom isian dan pemilih; sebuah dialog
+  tengah pada ponsel lanskap menyisakan tinggi di bawah 300dp untuk semuanya.
+  Lembar bawah boleh setinggi 88% layar dan menggulir di dalamnya.
+
+  Jempol ada di bawah. Kasir memegang ponsel satu tangan sambil menulis nota;
+  kontrol yang paling sering dipakai - dan lembar ini dibuka tiap kali
+  pelanggan baru datang - sebaiknya berada dalam jangkauan ibu jari, bukan di
+  tengah layar.
+
+  Bentuknya mengikuti sisa kasir: tanpa sudut, dipisahkan garis tinta 2dp,
+  label rata kiri. Nomor bagian (1 · 2 · 3) memakai balok tinta yang sama
+  dengan kepala kelompok keranjang, sehingga urutan pengisiannya terbaca
+  tanpa perlu dijelaskan.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/sheetWorkshopInfo"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_pos_bottom_sheet"
+    android:orientation="vertical">
+
+    <!--
+      Pegangan. Lembar ini dibuka penuh sejak awal, jadi pegangannya bukan
+      petunjuk "tarik aku" melainkan penanda bahwa isinya bisa ditutup dengan
+      menyeret ke bawah - gerakan yang lebih cepat daripada mencari tombol X.
+    -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="5dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/pos_gap_sm"
+        android:background="@drawable/bg_pos_grabber" />
+
+    <!-- ══════ Kepala lembar ══════ -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="@dimen/pos_space_4">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                style="@style/TextAppearance.Pos.Label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/pos_type_workshop" />
+
+            <TextView
+                style="@style/TextAppearance.Pos.Title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/dialog_workshop_info_title" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btnSheetClose"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="@dimen/pos_space_3"
+            android:background="@drawable/bg_pos_chip_neutral"
+            android:contentDescription="@string/action_close"
+            android:padding="10dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_close"
+            app:tint="@color/pos_ink" />
+    </LinearLayout>
+
+    <!-- ══════ Isi yang menggulir ══════ -->
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="false"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- ── 1 · Kliente ── -->
+
+            <TextView
+                style="@style/TextAppearance.Pos.Label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/archivo_bold"
+                android:gravity="start|center_vertical"
+                android:minHeight="30dp"
+                android:paddingStart="@dimen/pos_space_4"
+                android:paddingTop="@dimen/pos_gap_sm"
+                android:paddingEnd="@dimen/pos_space_4"
+                android:text="@string/sheet_step_customer" />
+
+            <LinearLayout
+                android:id="@+id/rowSheetCustomer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/pos_space_4"
+                android:layout_marginEnd="@dimen/pos_space_4"
+                android:layout_marginBottom="@dimen/pos_space_2"
+                android:background="@drawable/bg_pos_ghost_row"
+                android:baselineAligned="false"
+                android:gravity="center_vertical"
+                android:minHeight="@dimen/pos_touch_min"
+                android:orientation="horizontal"
+                android:paddingStart="@dimen/pos_space_4"
+                android:paddingTop="@dimen/pos_space_3"
+                android:paddingEnd="@dimen/pos_space_4"
+                android:paddingBottom="@dimen/pos_space_3">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/TextAppearance.Pos.Label"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:letterSpacing="0.1"
+                        android:text="@string/label_name" />
+
+                    <TextView
+                        android:id="@+id/txtSheetCustomer"
+                        style="@style/TextAppearance.Pos.Item"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textSize="14sp"
+                        tools:text="Walk-in Customer" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_pos_chevron_right"
+                    app:tint="@color/pos_accent" />
+            </LinearLayout>
+
+
+            <!-- ── 2 · Veikulu ── -->
+
+            <TextView
+                style="@style/TextAppearance.Pos.Label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/archivo_bold"
+                android:gravity="start|center_vertical"
+                android:minHeight="30dp"
+                android:paddingStart="@dimen/pos_space_4"
+                android:paddingTop="@dimen/pos_gap_sm"
+                android:paddingEnd="@dimen/pos_space_4"
+                android:text="@string/sheet_step_vehicle" />
+
+            <!--
+              Jenis kendaraan sebagai kisi dua kolom, bukan Spinner. Spinner
+              menyembunyikan pilihannya sampai ditekan dan membuka daftar
+              melayang bersudut membulat - dua hal yang bertentangan dengan
+              sistem ini. Empat sel yang semuanya terlihat lebih cepat
+              ditekan, dan yang terpilih terbaca tanpa membuka apa pun.
+            -->
+            <LinearLayout
+                android:id="@+id/gridVehicleType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:baselineAligned="false"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/chipVehCar"
+                        style="@style/Widget.Pos.ActionCell"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical"
+                        android:textAppearance="@style/TextAppearance.Pos.Item"
+                        android:text="@string/workshop_type_car" />
+
+                    <View
+                        style="@style/Widget.Pos.Hairline"
+                        android:layout_width="@dimen/pos_hairline"
+                        android:layout_height="match_parent" />
+
+                    <TextView
+                        android:id="@+id/chipVehMotorcycle"
+                        style="@style/Widget.Pos.ActionCell"
+                        android:layout_width="0dp"
+                        android:layout_marginStart="@dimen/pos_gap_sm"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical"
+                        android:textAppearance="@style/TextAppearance.Pos.Item"
+                        android:text="@string/workshop_type_motorcycle" />
+                </LinearLayout>
+
+                </LinearLayout>
+
+            <!-- Nama kendaraan -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/pos_space_4"
+                android:paddingTop="@dimen/pos_space_3"
+                android:paddingEnd="@dimen/pos_space_4"
+                android:paddingBottom="@dimen/pos_space_2">
+
+                <TextView
+                    style="@style/TextAppearance.Pos.Label"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.1"
+                    android:text="@string/label_vehicle" />
+
+                <EditText
+                    android:id="@+id/etSheetVehicleName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/bg_pos_field"
+                    android:fontFamily="@font/archivo_bold"
+                    android:hint="@string/hint_vehicle_name"
+                    android:inputType="textCapWords"
+                    android:maxLines="1"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="6dp"
+                    android:textColor="@color/pos_ink"
+                    android:textColorHint="@color/pos_neutral_600"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+            <!-- Nomor pelat -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/pos_space_4"
+                android:paddingTop="@dimen/pos_space_2"
+                android:paddingEnd="@dimen/pos_space_4"
+                android:paddingBottom="@dimen/pos_space_3">
+
+                <TextView
+                    style="@style/TextAppearance.Pos.Label"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.1"
+                    android:text="@string/label_plate" />
+
+                <EditText
+                    android:id="@+id/etSheetPlate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/bg_pos_field"
+                    android:fontFamily="@font/archivo_bold"
+                    android:hint="@string/hint_plate_number"
+                    android:inputType="textCapCharacters"
+                    android:maxLines="1"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="6dp"
+                    android:textColor="@color/pos_ink"
+                    android:textColorHint="@color/pos_neutral_600"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+
+            <!-- ── 3 · Mekanik & work order ── -->
+
+            <TextView
+                style="@style/TextAppearance.Pos.Label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/archivo_bold"
+                android:gravity="start|center_vertical"
+                android:minHeight="30dp"
+                android:paddingStart="@dimen/pos_space_4"
+                android:paddingTop="@dimen/pos_gap_sm"
+                android:paddingEnd="@dimen/pos_space_4"
+                android:text="@string/sheet_step_mechanic" />
+
+            <LinearLayout
+                android:id="@+id/rowSheetMechanic"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/pos_space_4"
+                android:layout_marginEnd="@dimen/pos_space_4"
+                android:layout_marginBottom="@dimen/pos_space_2"
+                android:background="@drawable/bg_pos_ghost_row"
+                android:baselineAligned="false"
+                android:gravity="center_vertical"
+                android:minHeight="@dimen/pos_touch_min"
+                android:orientation="horizontal"
+                android:paddingStart="@dimen/pos_space_4"
+                android:paddingTop="@dimen/pos_space_3"
+                android:paddingEnd="@dimen/pos_space_4"
+                android:paddingBottom="@dimen/pos_space_3">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/TextAppearance.Pos.Label"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:letterSpacing="0.1"
+                        android:text="@string/label_mechanic" />
+
+                    <TextView
+                        android:id="@+id/txtSheetMechanic"
+                        style="@style/TextAppearance.Pos.Item"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textSize="14sp"
+                        tools:text="Jose Ximenes" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_pos_chevron_right"
+                    app:tint="@color/pos_accent" />
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:id="@+id/rowSheetWorkOrder"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/pos_space_4"
+                android:layout_marginEnd="@dimen/pos_space_4"
+                android:layout_marginBottom="@dimen/pos_space_2"
+                android:background="@drawable/bg_pos_ghost_row"
+                android:baselineAligned="false"
+                android:gravity="center_vertical"
+                android:minHeight="@dimen/pos_touch_min"
+                android:orientation="horizontal"
+                android:paddingStart="@dimen/pos_space_4"
+                android:paddingTop="@dimen/pos_space_3"
+                android:paddingEnd="@dimen/pos_space_4"
+                android:paddingBottom="@dimen/pos_space_3">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/TextAppearance.Pos.Label"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:letterSpacing="0.1"
+                        android:text="@string/label_work_order" />
+
+                    <TextView
+                        android:id="@+id/txtSheetWorkOrder"
+                        style="@style/TextAppearance.Pos.Item"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textSize="14sp"
+                        tools:text="WO-0142" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_pos_chevron_right"
+                    app:tint="@color/pos_accent" />
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:id="@+id/rowSheetBooking"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/pos_space_4"
+                android:layout_marginEnd="@dimen/pos_space_4"
+                android:layout_marginBottom="@dimen/pos_space_2"
+                android:background="@drawable/bg_pos_ghost_row"
+                android:baselineAligned="false"
+                android:gravity="center_vertical"
+                android:minHeight="@dimen/pos_touch_min"
+                android:orientation="horizontal"
+                android:paddingStart="@dimen/pos_space_4"
+                android:paddingTop="@dimen/pos_space_3"
+                android:paddingEnd="@dimen/pos_space_4"
+                android:paddingBottom="@dimen/pos_space_3">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/TextAppearance.Pos.Label"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:letterSpacing="0.1"
+                        android:text="@string/label_booking" />
+
+                    <TextView
+                        android:id="@+id/txtSheetBooking"
+                        style="@style/TextAppearance.Pos.Item"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textSize="14sp"
+                        tools:text="-" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_pos_chevron_right"
+                    app:tint="@color/pos_accent" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- ══════ Simpan ══════ -->
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSheetSave"
+        style="@style/Widget.Pos.MaterialPrimary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/pos_space_4"
+        android:text="@string/action_save"
+        app:icon="@drawable/ic_pos_check"
+        app:iconGravity="end"
+        app:iconTint="@color/pos_on_accent" />
+
+</LinearLayout>

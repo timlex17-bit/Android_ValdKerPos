@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kartu kelompok isi. Satu-satunya tempat kartu dipakai - isi layar tidak dibungkus kartu berlapis. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/pos_card" />
+    <corners android:radius="@dimen/pos_radius_card" />
+</shape>

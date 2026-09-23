@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView
+    xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -63,7 +64,7 @@
             android:id="@+id/tvTileTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Point of Sale"
+            tools:text="Point of Sale"
             android:textStyle="bold"
             android:textSize="15sp"
             android:textColor="#1F2937"
@@ -79,7 +80,7 @@
             android:id="@+id/tvTileSubtitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Start selling products"
+            tools:text="Start selling products"
             android:textSize="12sp"
             android:textColor="@color/text_secondary"
             android:layout_marginTop="4dp"

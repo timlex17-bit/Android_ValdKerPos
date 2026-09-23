@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ubin ikon blue ukuran besar (baris keranjang, tombol tambah). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/pos_blue_tint" />
+    <corners android:radius="@dimen/pos_radius_sm" />
+</shape>

@@ -129,8 +129,8 @@ public class ProductReturnAddDialog extends DialogFragment {
 
         androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
                 .setView(v)
-                .setNegativeButton("Cancel", (d, w) -> dismiss())
-                .setPositiveButton("Save", null)
+                .setNegativeButton(getString(R.string.action_cancel), (d, w) -> dismiss())
+                .setPositiveButton(getString(R.string.action_save), null)
                 .create();
 
         return dialog;
@@ -711,7 +711,7 @@ public class ProductReturnAddDialog extends DialogFragment {
                 .setTitle("Edit Qty")
                 .setMessage(msg)
                 .setView(input)
-                .setNegativeButton("Cancel", (d, w) -> {
+                .setNegativeButton(getString(R.string.action_cancel), (d, w) -> {
                 })
                 .setPositiveButton("Update", (d, w) -> {
                     String s = input.getText().toString().trim();

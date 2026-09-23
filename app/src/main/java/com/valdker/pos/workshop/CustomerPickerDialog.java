@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import com.valdker.pos.utils.Toast;
+import com.valdker.pos.R;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -98,7 +99,7 @@ public class CustomerPickerDialog extends DialogFragment {
 
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Select Customer")
-                .setNegativeButton("Close", null)
+                .setNegativeButton(getString(R.string.action_close), null)
                 .setView(listView);
 
         Bundle args = getArguments();
@@ -144,8 +145,8 @@ public class CustomerPickerDialog extends DialogFragment {
 
         String token = sessionManager.getToken();
         if (TextUtils.isEmpty(token)) {
-            showErrorState("Token login tidak ditemukan");
-            Toast.makeText(requireContext(), "Token login tidak ditemukan", Toast.LENGTH_SHORT).show();
+            showErrorState(getString(R.string.error_session_expired));
+            Toast.makeText(requireContext(), getString(R.string.error_session_expired), Toast.LENGTH_SHORT).show();
             return;
         }
 

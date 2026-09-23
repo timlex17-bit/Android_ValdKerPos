@@ -29,10 +29,12 @@
     android:layout_width="0dp"
     android:layout_height="wrap_content"
     android:minHeight="@dimen/category_bar_min_height"
-    app:cardBackgroundColor="@color/surface"
-    app:cardCornerRadius="@dimen/radius_surface"
-    app:cardElevation="4dp"
-    app:cardUseCompatPadding="false">
+    app:cardBackgroundColor="@color/pos_card"
+    app:cardCornerRadius="@dimen/pos_radius_card"
+    app:cardElevation="0dp"
+    app:cardUseCompatPadding="false"
+    app:strokeColor="@color/pos_divider"
+    app:strokeWidth="@dimen/pos_hairline">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvCategories"

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--
+      Tablet (lebar terkecil >= 600dp) boleh berputar bebas.
+
+      Batasnya sw600dp, bukan ukuran layar fisik, karena itu pula batas yang
+      dipakai seluruh tata letak kasir: begitu sebuah perangkat membaca
+      layout-sw600dp/, ia sudah punya susunan dua kolom yang dirancang untuk
+      dilihat mendatar. Ponsel lipat yang dibuka masuk kelompok ini dan ikut
+      boleh berputar - memang seharusnya, karena dalam keadaan terbuka ia
+      sebuah tablet kecil.
+    -->
+    <bool name="pos_allow_rotation">true</bool>
+</resources>

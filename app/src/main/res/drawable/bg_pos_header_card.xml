@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kartu konteks di DALAM header ungu - putih 14%, bukan putih penuh, supaya ia terbaca sebagai bagian header dan bukan kartu yang mengambang di atasnya. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#24FFFFFF" />
+    <corners android:radius="@dimen/pos_radius_tile" />
+</shape>

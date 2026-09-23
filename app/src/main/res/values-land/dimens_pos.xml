@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Ukuran kasir - PONSEL YANG DIMIRINGKAN.
+
+  Dalam lanskap tinggi layar ponsel kerap tinggal sekitar 360dp, sementara
+  kasir menumpuk kepala, aksi cepat, bon, daftar, dan bilah bayar. Dengan
+  nilai potret, jumlah tinggi blok tetapnya saja sudah melewati tinggi layar
+  dan daftar item tergencet sampai hampir hilang. Di sini komponennya
+  dipendekkan - bukan tata letaknya yang ditulis ulang.
+
+  pos_touch_min SENGAJA TIDAK ikut dipendekkan. Ia batas ukuran sentuh, bukan
+  hiasan; memendekkannya berarti membuat tombol kasir lebih sulit ditekan
+  justru pada perangkat yang dipegang mendatar dengan dua tangan.
+
+  TABLET TIDAK BOLEH MEMBACA BERKAS INI
+
+  Urutan pemilihan sumber daya Android memang menaruh smallest-width di atas
+  orientasi, TAPI itu hanya menentukan mana yang menang di antara kelompok
+  yang benar-benar MEMUAT nama sumber daya itu. Kalau sebuah nama hanya ada
+  di values/ dan values-land/, maka tablet mendatar akan mengambil nilai
+  values-land/ - karena values-sw600dp/ tidak ikut mencalonkan diri.
+
+  Karena itu setiap nama di berkas ini WAJIB punya pasangannya di
+  values-sw600dp/dimens_pos.xml dengan nilai lapang. Dijaga oleh
+  PosLandscapeTokenParityTest.
+-->
+<resources>
+    <dimen name="pos_space_4">12dp</dimen>
+    <dimen name="pos_space_6">18dp</dimen>
+    <dimen name="pos_space_8">24dp</dimen>
+
+    <dimen name="pos_gap">10dp</dimen>
+    <dimen name="pos_gap_sm">8dp</dimen>
+
+    <dimen name="pos_radius_shell">20dp</dimen>
+
+    <dimen name="pos_header_tile">36dp</dimen>
+    <dimen name="pos_group_tile">32dp</dimen>
+    <dimen name="pos_quick_tile">30dp</dimen>
+    <dimen name="pos_search_height">42dp</dimen>
+    <dimen name="pos_scan_button">32dp</dimen>
+    <dimen name="pos_pay_height">46dp</dimen>
+    <dimen name="pos_chip_height">30dp</dimen>
+    <dimen name="pos_product_photo_height">64dp</dimen>
+    <dimen name="pos_field_tile">32dp</dimen>
+    <dimen name="pos_login_mark">44dp</dimen>
+
+    <!--
+      Daftar item boleh lebih pendek, tapi tidak boleh hilang: 96dp masih
+      memuat satu baris keranjang penuh berikut judul kelompoknya.
+    -->
+    <dimen name="pos_items_min_height">96dp</dimen>
+
+    <dimen name="pos_text_display">22sp</dimen>
+    <dimen name="pos_text_title">15sp</dimen>
+    <dimen name="pos_text_mode">16sp</dimen>
+</resources>

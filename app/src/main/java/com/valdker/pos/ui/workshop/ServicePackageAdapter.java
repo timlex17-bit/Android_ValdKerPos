@@ -28,10 +28,37 @@ public class ServicePackageAdapter extends RecyclerView.Adapter<ServicePackageAd
         this.listener = listener;
     }
 
-    public void submit(@NonNull List<ServicePackageResponse> next) {
+    /**
+     * @return true kalau isinya benar-benar berubah.
+     *
+     * <p>Daftar ini dimuat ulang setiap {@code onResume()}, jadi kembali dari
+     * layar lain biasanya menghasilkan isi yang sama persis. Tanpa penjagaan
+     * ini, {@code notifyDataSetChanged()} tetap dipanggil dan posisi gulir
+     * terlempar kembali ke baris teratas.
+     */
+    public boolean submit(@NonNull List<ServicePackageResponse> next) {
+        if (sameContent(next)) return false;
         items.clear();
         items.addAll(next);
         notifyDataSetChanged();
+        return true;
+    }
+
+    private boolean sameContent(@NonNull List<ServicePackageResponse> next) {
+        if (items.size() != next.size()) return false;
+        for (int i = 0; i < items.size(); i++) {
+            ServicePackageResponse a = items.get(i);
+            ServicePackageResponse b = next.get(i);
+            if (a.id != b.id
+                    || !a.name.equals(b.name)
+                    || !a.description.equals(b.description)
+                    || !a.price.equals(b.price)
+                    || a.durationMinutes != b.durationMinutes
+                    || a.isActive != b.isActive) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @NonNull

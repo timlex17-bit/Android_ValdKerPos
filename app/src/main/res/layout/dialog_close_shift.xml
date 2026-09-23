@@ -1,59 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+  Dibungkus ScrollView agar isinya tetap terjangkau di layar pendek.
+
+  Di lanskap ponsel tinggi yang tersisa untuk sebuah dialog bisa di bawah
+  300dp; tanpa pembungkus ini kolom terakhir dan tombolnya berada di luar
+  layar dan tidak ada cara menggulirnya. fillViewport dibiarkan false supaya
+  dialog pendek tetap membungkus isinya alih-alih memuai.
+-->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="18dp">
+    android:fillViewport="false"
+    android:scrollbars="none">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/shift_close_title"
-        android:textStyle="bold"
-        android:textSize="18sp"
-        android:paddingBottom="8dp" />
+        android:orientation="vertical"
+        android:padding="18dp">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/shift_close_hint"
-        android:textSize="13sp"
-        android:alpha="0.75"
-        android:paddingBottom="14dp" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/shift_close_title"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:paddingBottom="8dp" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/shift_close_cash_label"
-        android:textStyle="bold"
-        android:paddingBottom="6dp" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/shift_close_hint"
+            android:textSize="13sp"
+            android:alpha="0.75"
+            android:paddingBottom="14dp" />
 
-    <EditText
-        style="@style/Widget.Valora.EditText"
-        android:id="@+id/etClosingCash"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/shift_close_cash_hint"
-        android:inputType="numberDecimal"
-        android:padding="12dp" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/shift_close_cash_label"
+            android:textStyle="bold"
+            android:paddingBottom="6dp" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/shift_note_label"
-        android:textStyle="bold"
-        android:paddingTop="12dp"
-        android:paddingBottom="6dp" />
+        <EditText
+            style="@style/Widget.Valora.EditText"
+            android:id="@+id/etClosingCash"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/shift_close_cash_hint"
+            android:inputType="numberDecimal"
+            android:padding="12dp" />
 
-    <EditText
-        style="@style/Widget.Valora.EditText"
-        android:id="@+id/etNote"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/shift_close_note_hint"
-        android:minLines="2"
-        android:gravity="top"
-        android:inputType="textMultiLine"
-        android:padding="12dp" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/shift_note_label"
+            android:textStyle="bold"
+            android:paddingTop="12dp"
+            android:paddingBottom="6dp" />
 
-</LinearLayout>
+        <EditText
+            style="@style/Widget.Valora.EditText"
+            android:id="@+id/etNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/shift_close_note_hint"
+            android:minLines="2"
+            android:gravity="top"
+            android:inputType="textMultiLine"
+            android:padding="12dp" />
+
+    </LinearLayout>
+</ScrollView>

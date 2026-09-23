@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Ukuran kasir - TABLET (lebar terkecil >= 600dp).
+
+  Berkas ini tidak memperbesar apa pun. Isinya persis nilai potret dari
+  values/dimens_pos.xml, dan ia ada semata-mata untuk MEMBATALKAN
+  values-land/dimens_pos.xml pada tablet yang sedang mendatar.
+
+  Sebabnya halus. Android memilih sumber daya hanya di antara kelompok yang
+  benar-benar memuat nama yang diminta. Kalau pos_gap hanya ada di values/
+  dan values-land/, tablet mendatar akan mendapat nilai values-land/ - yaitu
+  nilai yang sengaja dipendekkan untuk ponsel setinggi 360dp - meskipun
+  layarnya setinggi 800dp. Urutan "smallest-width di atas orientasi" tidak
+  menolong, karena values-sw600dp/ tidak ikut mencalonkan diri untuk nama
+  yang tidak dimuatnya.
+
+  Jadi: setiap nama yang dipendekkan di values-land/dimens_pos.xml harus
+  muncul di sini dengan nilai lapangnya. Dijaga oleh
+  PosLandscapeTokenParityTest, yang membandingkan kedua daftar nama dan
+  memastikan nilai di sini sama dengan values/.
+
+  Kalau suatu saat tablet memang perlu ukuran yang BERBEDA dari ponsel
+  potret, ubah nilainya di sini - pemeriksaannya akan ikut menyesuaikan
+  hanya jika nilai itu juga diubah di values/. Sampai saat itu tiba, dp
+  sudah satuan fisik: tombol 48dp tetap 48dp di tablet 7 maupun 13 inci.
+-->
+<resources>
+    <dimen name="pos_space_4">16dp</dimen>
+    <dimen name="pos_space_6">24dp</dimen>
+    <dimen name="pos_space_8">32dp</dimen>
+    <dimen name="pos_gap">14dp</dimen>
+    <dimen name="pos_gap_sm">10dp</dimen>
+    <dimen name="pos_radius_shell">26dp</dimen>
+    <dimen name="pos_header_tile">44dp</dimen>
+    <dimen name="pos_group_tile">38dp</dimen>
+    <dimen name="pos_quick_tile">36dp</dimen>
+    <dimen name="pos_search_height">48dp</dimen>
+    <dimen name="pos_scan_button">36dp</dimen>
+    <dimen name="pos_pay_height">54dp</dimen>
+    <dimen name="pos_chip_height">34dp</dimen>
+    <dimen name="pos_product_photo_height">84dp</dimen>
+    <dimen name="pos_field_tile">38dp</dimen>
+    <dimen name="pos_login_mark">58dp</dimen>
+    <dimen name="pos_items_min_height">132dp</dimen>
+    <dimen name="pos_text_display">28sp</dimen>
+    <dimen name="pos_text_title">17sp</dimen>
+    <dimen name="pos_text_mode">18sp</dimen>
+</resources>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--
+      Bolehkah layar ikut berputar mengikuti perangkat?
+
+      Tidak, pada ponsel. Aplikasi ini kasir: layarnya dipegang tegak dengan
+      satu tangan sementara tangan lain memindai, mengambil uang, atau
+      menyerahkan kembalian. Memutar perangkat di tengah transaksi bukan
+      sesuatu yang disengaja kasir - ia terjadi karena perangkatnya dimiringkan
+      saat diletakkan atau diserahkan - dan setiap putaran membangun ulang
+      layarnya, yang di tengah antrean hanya memperlambat.
+
+      Pada tablet jawabannya YA, dan itu diatur values-sw600dp/bools.xml.
+      Tablet kasir justru kerap dipasang mendatar pada dudukan, dan kedua
+      susunan dua kolomnya - retail dan bengkel - memang ditulis untuk itu.
+    -->
+    <bool name="pos_allow_rotation">false</bool>
+</resources>

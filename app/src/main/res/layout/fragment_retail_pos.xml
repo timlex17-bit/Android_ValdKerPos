@@ -1,44 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  POS kasir (retail) - potret.
+  4a - Kasir retail, implementasi 4.
 
-  Susunannya sekarang persis sama dengan modul lain yang dirapikan
-  (Pesanan Offline, Owner Chat): bilah atas ungu -> panel kendali -> isi ->
-  satu aksi utama di dasar layar. Keempat bagiannya di-<include> dari berkas
-  bersama, sehingga varian lanskap dan tablet memakai komponen dan id yang
-  sama persis - tidak bisa lagi ada chip bon yang hanya muncul di potret.
+  Urutan bloknya sama persis dengan 3a; yang berganti bahasa visualnya:
 
-  Bilah atas dan bilah bawah yang mengurus inset, bukan akar layout. Versi
-  lama menambahkan tinggi bilah status sebagai padding pada akar yang berlatar
-  abu-abu terang, sementara ikon bilah status dipaksa putih - di Android 15+
-  hasilnya jam dan ikon baterai putih di atas abu-abu terang.
+      header ungu melengkung + pencarian DI DALAMNYA
+      tiga kartu aksi cepat berikon warna
+      baris bon
+      kartu kelompok isi
+      bilah total melengkung di atas
+
+  Tidak ada pembungkus kartu di sekeliling daftar. Kartu hanya dipakai untuk
+  kelompok isi; membungkusnya lagi hanya menggambar garis kedua yang tidak
+  memisahkan apa pun. Id rootRetailPos dan cardRetailWorkspace tetap ada
+  karena varian lanskap dan tablet merujuknya.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/rootRetailPos"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/app_bg"
+    android:background="@color/pos_ground"
     android:orientation="vertical">
 
     <include layout="@layout/view_pos_topbar" />
 
-    <include layout="@layout/view_pos_controls" />
+    <!--
+      Baris bon saja - TANPA tiga kartu aksi cepat.
 
+      Kartu "Skaneia", "Buka produtu", dan "Retornu" dihapus dari kasir
+      retail karena ketiganya tidak pernah punya perilaku apa pun: tidak ada
+      satu pun pemasang listener untuk posQuickCard1/2/3 di seluruh kode, jadi
+      menekannya tidak melakukan apa-apa. Kontrol yang terlihat bisa ditekan
+      akan dicoba, dan kasir yang menekannya lalu tidak terjadi apa-apa akan
+      menyimpulkan aplikasinya rusak - itu lebih buruk daripada tidak ada
+      tombolnya sama sekali. Memindai barcode sudah punya tombolnya sendiri di
+      dalam kepala ungu, dan mencari produk sudah punya kolom cari di sana.
 
-    <com.google.android.material.card.MaterialCardView
-    style="@style/Widget.Valora.PanelCard"
+    -->
+    <include
+        layout="@layout/view_pos_bon_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/pos_space_4"
+        android:layout_marginTop="@dimen/pos_space_4"
+        android:layout_marginEnd="@dimen/pos_space_4" />
+
+    <LinearLayout
         android:id="@+id/cardRetailWorkspace"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginBottom="8dp"
-        android:layout_weight="1">
+        android:layout_marginTop="@dimen/pos_gap"
+        android:layout_marginBottom="@dimen/pos_gap"
+        android:layout_weight="1"
+        android:orientation="vertical">
 
         <include layout="@layout/view_pos_list" />
-    </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
 
     <include layout="@layout/view_pos_checkout" />
 

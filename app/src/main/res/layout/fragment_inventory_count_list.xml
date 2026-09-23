@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/swipe"
@@ -139,7 +140,7 @@
                     android:id="@+id/tvEmpty"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="No inventory counts found"
+                    tools:text="No inventory counts found"
                     android:textColor="@color/text_secondary"
                     android:textSize="15sp"
                     android:textStyle="bold" />
@@ -150,7 +151,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:gravity="center"
-                    android:text="Tap + to create a new inventory count."
+                    tools:text="Tap + to create a new inventory count."
                     android:textColor="@color/text_tertiary"
                     android:textSize="13sp" />
             </LinearLayout>

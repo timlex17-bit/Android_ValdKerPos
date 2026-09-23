@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pil lencana tipe terkunci di dalam header ungu. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/pos_header_tile" />
+    <corners android:radius="@dimen/pos_radius_pill" />
+</shape>

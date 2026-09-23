@@ -246,6 +246,19 @@ public class ShopActivationActivity extends AppCompatActivity {
 
         Log.i(TAG, "Aktivasi berhasil untuk " + (serverCode.isEmpty() ? typedCode : serverCode));
         sm.setActivatedShop(serverCode.isEmpty() ? typedCode : serverCode, shopName);
+
+        // Jenis usaha sudah diketahui DI SINI, sebelum siapa pun masuk:
+        // POST /api/shops/activate/ mengembalikannya (docs/api/SHOP_ACTIVATE_API.md).
+        // Sebelumnya nilai itu dibuang dan layar masuk tidak punya cara
+        // menyebut tipe toko, sehingga kasir baru tahu ia di kasir mana
+        // setelah berhasil login. Menyimpannya di sini membuat lencana
+        // terkunci di layar masuk menampilkan sesuatu yang benar-benar
+        // berasal dari server, bukan tebakan.
+        String businessType = response.optString("business_type", "").trim();
+        if (!businessType.isEmpty()) {
+            sm.setShopBusinessType(businessType);
+        }
+
         openLogin();
     }
 

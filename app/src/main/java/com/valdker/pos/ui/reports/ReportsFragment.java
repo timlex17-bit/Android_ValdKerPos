@@ -25,7 +25,10 @@ import com.valdker.pos.money.Money;
 import com.valdker.pos.SessionManager;
 import com.valdker.pos.base.BaseFragment;
 import com.valdker.pos.repositories.ReportCacheRepository;
+import com.valdker.pos.reports.ReportFilterRules;
+import com.valdker.pos.reports.ReportSummaryRules;
 import com.valdker.pos.repositories.ReportRepository;
+import com.valdker.pos.ui.common.RecordPickerDialog;
 import com.valdker.pos.utils.NetworkUtils;
 import com.valdker.pos.utils.Toast;
 
@@ -72,6 +75,20 @@ public class ReportsFragment extends BaseFragment {
     private String businessFilterValue = "";
     private boolean isLoading = false;
 
+    /**
+     * Penyaring mana yang sah untuk laporan ini. Sebelum respons pertama tiba
+     * dipakai tebakan berdasarkan jenis usaha; setelah itu jawaban server
+     * ({@code filters.accepted}) yang menentukan.
+     */
+    private ReportFilterRules filterRules = ReportFilterRules.fallbackFor("retail", ReportRepository.TYPE_SALES);
+
+    // Nilai yang dipilih, dipisah dari labelnya: yang satu dikirim ke server,
+    // yang lain ditampilkan. Dulu keduanya adalah teks yang sama yang diketik
+    // pengguna - itulah kenapa kategori harus diketik sebagai NOMOR.
+    private String productFilterValue = "";
+    private String categoryFilterValue = "";
+    private String paymentFilterValue = "";
+
     public ReportsFragment() {
         super(R.layout.fragment_reports);
     }
@@ -90,6 +107,7 @@ public class ReportsFragment extends BaseFragment {
         setupHeader();
         setupRecycler();
         setupDates();
+        setupFilterPickers();
         setupReportTypeChips();
         configureBusinessFilters();
         setupActions();
@@ -152,6 +170,15 @@ public class ReportsFragment extends BaseFragment {
     }
 
     private void setupReportTypeChips() {
+        // Chip "Barang" mengikuti bahasa jenis usahanya, sama seperti judul
+        // laporannya: restoran menjual menu, bengkel menjual jasa dan suku
+        // cadang, dan "Products / Items" tidak berarti apa-apa bagi keduanya.
+        if (chipGroupReportType != null) {
+            Chip itemsChip = chipGroupReportType.findViewById(R.id.chipItems);
+            if (itemsChip != null) {
+                itemsChip.setText(ReportSummaryRules.itemsChipResFor(businessType));
+            }
+        }
         setReportChip(R.id.chipDaily, ReportRepository.TYPE_DAILY);
         setReportChip(R.id.chipSales, ReportRepository.TYPE_SALES);
         setReportChip(R.id.chipPayments, ReportRepository.TYPE_PAYMENTS);
@@ -166,6 +193,10 @@ public class ReportsFragment extends BaseFragment {
         if (chip == null) return;
         chip.setOnClickListener(v -> {
             reportType = type;
+            // Penyaring per-item hanya berlaku di laporan Items, jadi daftar
+            // kolom yang tampil ikut berubah begitu jenis laporannya berganti.
+            filterRules = ReportFilterRules.fallbackFor(businessType, reportType);
+            applyFilterVisibility();
             updateTitles();
             fetch();
         });
@@ -178,13 +209,15 @@ public class ReportsFragment extends BaseFragment {
         businessFilterKey = "";
         businessFilterValue = "";
 
+        filterRules = ReportFilterRules.fallbackFor(businessType, reportType);
+
         if ("workshop".equals(businessType)) {
             businessFilterKey = "item_type";
             addBusinessFilter("Semua", "");
             addBusinessFilter("Menu", "MENU");
             addBusinessFilter("Service", "SERVICE");
             addBusinessFilter("Sparepart", "SPAREPART");
-            setRetailFields(false);
+            applyFilterVisibility();
             return;
         }
 
@@ -194,11 +227,11 @@ public class ReportsFragment extends BaseFragment {
             addBusinessFilter("Dine In", "DINE_IN");
             addBusinessFilter("Takeaway", "TAKEAWAY");
             addBusinessFilter("Delivery", "DELIVERY");
-            setRetailFields(false);
+            applyFilterVisibility();
             return;
         }
 
-        setRetailFields(true);
+        applyFilterVisibility();
     }
 
     private void addBusinessFilter(@NonNull String label, @NonNull String value) {
@@ -214,10 +247,137 @@ public class ReportsFragment extends BaseFragment {
         chipGroupBusinessFilter.addView(chip);
     }
 
-    private void setRetailFields(boolean visible) {
-        int visibility = visible ? View.VISIBLE : View.GONE;
-        if (etSearch != null) etSearch.setVisibility(visibility);
-        if (etCategory != null) etCategory.setVisibility(visibility);
+    /**
+     * Menampilkan hanya penyaring yang benar-benar dibaca server untuk toko
+     * dan laporan ini.
+     *
+     * <p>Sebelumnya kolom Category selalu ada untuk ritel dan selalu hilang
+     * untuk yang lain, tanpa memandang laporan yang dibuka. Restoran kehilangan
+     * penyaring kategori menu yang sebenarnya didukung server
+     * ({@code menu_category}), dan laporan Shift tetap menampilkan kolom
+     * produk yang tidak pernah berpengaruh.
+     */
+    private void applyFilterVisibility() {
+        setFilterVisible(etSearch, filterRules.showsProductFilter());
+        setFilterVisible(etCategory, filterRules.showsCategoryFilter());
+        setFilterVisible(etPaymentMethod, filterRules.showsPaymentFilter());
+    }
+
+    private void setFilterVisible(@Nullable EditText field, boolean visible) {
+        if (field == null) return;
+        field.setVisibility(visible ? View.VISIBLE : View.GONE);
+        if (!visible) {
+            // Penyaring yang disembunyikan tidak boleh diam-diam tetap ikut
+            // terkirim; kalau tidak, pengguna melihat hasil tersaring tanpa
+            // ada satu pun kolom di layar yang menjelaskan kenapa.
+            if (field == etSearch) {
+                productFilterValue = "";
+            } else if (field == etCategory) {
+                categoryFilterValue = "";
+            } else if (field == etPaymentMethod) {
+                paymentFilterValue = "";
+            }
+            field.setText("");
+        }
+    }
+
+    private void setupFilterPickers() {
+        bindPicker(etSearch, R.string.report_filter_product, this::openProductPicker);
+        bindPicker(etCategory, R.string.report_filter_category, this::openCategoryPicker);
+        bindPicker(etPaymentMethod, R.string.report_filter_payment, this::openPaymentPicker);
+    }
+
+    /** Kolom penyaring diisi lewat dialog, jadi papan ketik tidak boleh muncul. */
+    private void bindPicker(@Nullable EditText field, int labelRes, @NonNull Runnable onTap) {
+        if (field == null) return;
+        field.setHint(getString(labelRes) + " - " + getString(R.string.report_filter_tap_to_pick));
+        field.setInputType(android.text.InputType.TYPE_NULL);
+        field.setFocusable(false);
+        field.setFocusableInTouchMode(false);
+        field.setCursorVisible(false);
+        field.setLongClickable(false);
+        field.setSingleLine(true);
+        field.setClickable(true);
+        field.setOnClickListener(v -> {
+            if (!isLoading) onTap.run();
+        });
+    }
+
+    @NonNull
+    private RecordPickerDialog.Option allOption() {
+        return new RecordPickerDialog.Option("", getString(R.string.report_filter_all));
+    }
+
+    private void openProductPicker() {
+        if (!isAdded()) return;
+        boolean byId = filterRules.productFilterUsesId();
+        RecordPickerDialog.fromEndpoint(
+                requireContext(),
+                getString(R.string.report_pick_product),
+                "api/products/?page_size=1000",
+                allOption(),
+                item -> {
+                    String name = item.optString("name", "").trim();
+                    if (name.isEmpty()) return null;
+                    // Nilai yang dikirim mengikuti penyaring yang didukung:
+                    // product_id mencocokkan satu baris, search mencocokkan
+                    // nama/kode/SKU.
+                    String value = byId ? String.valueOf(item.optInt("id", 0)) : name;
+                    if (byId && item.optInt("id", 0) <= 0) return null;
+                    String code = item.optString("code", "").trim();
+                    return new RecordPickerDialog.Option(
+                            value, code.isEmpty() ? name : name + " - " + code);
+                },
+                option -> {
+                    productFilterValue = option.value;
+                    if (etSearch != null) etSearch.setText(option.isEmpty() ? "" : option.label);
+                    fetch();
+                });
+    }
+
+    private void openCategoryPicker() {
+        if (!isAdded()) return;
+        RecordPickerDialog.fromEndpoint(
+                requireContext(),
+                getString(R.string.report_pick_category),
+                "api/categories/",
+                allOption(),
+                item -> {
+                    int id = item.optInt("id", 0);
+                    String name = item.optString("name", "").trim();
+                    if (id <= 0 || name.isEmpty()) return null;
+                    return new RecordPickerDialog.Option(String.valueOf(id), name);
+                },
+                option -> {
+                    categoryFilterValue = option.value;
+                    if (etCategory != null) etCategory.setText(option.isEmpty() ? "" : option.label);
+                    fetch();
+                });
+    }
+
+    private void openPaymentPicker() {
+        if (!isAdded()) return;
+        RecordPickerDialog.fromEndpoint(
+                requireContext(),
+                getString(R.string.report_pick_payment),
+                "api/payment-methods/",
+                allOption(),
+                item -> {
+                    // Server menyimpan KODE metode di Order.payment_method
+                    // (pos/services/payment_service.py), bukan namanya dan
+                    // bukan id-nya.
+                    String code = item.optString("code", "").trim();
+                    String name = item.optString("name", "").trim();
+                    if (code.isEmpty()) return null;
+                    return new RecordPickerDialog.Option(code, name.isEmpty() ? code : name);
+                },
+                option -> {
+                    paymentFilterValue = option.value;
+                    if (etPaymentMethod != null) {
+                        etPaymentMethod.setText(option.isEmpty() ? "" : option.label);
+                    }
+                    fetch();
+                });
     }
 
     private void setupActions() {
@@ -307,20 +467,24 @@ public class ReportsFragment extends BaseFragment {
             query.put(businessFilterKey, businessFilterValue);
         }
 
-        String payment = text(etPaymentMethod);
-        if (!TextUtils.isEmpty(payment)) query.put("payment_method", payment);
-
-        if ("retail".equals(businessType)) {
-            String search = text(etSearch);
-            String category = text(etCategory);
-            if (!TextUtils.isEmpty(search)) query.put("search", search);
-            if (!TextUtils.isEmpty(category)) query.put("category_id", category);
+        // Nama penyaingnya ditentukan ReportFilterRules, bukan dipaku di sini:
+        // ritel memakai category_id, restoran memakai menu_category, dan
+        // mengirim nama yang salah berarti server mengabaikannya diam-diam.
+        if (!TextUtils.isEmpty(paymentFilterValue) && filterRules.showsPaymentFilter()) {
+            query.put(ReportFilterRules.KEY_PAYMENT_METHOD, paymentFilterValue);
+        }
+        if (!TextUtils.isEmpty(productFilterValue) && filterRules.showsProductFilter()) {
+            query.put(filterRules.productFilterKey(), productFilterValue);
+        }
+        if (!TextUtils.isEmpty(categoryFilterValue) && filterRules.showsCategoryFilter()) {
+            query.put(filterRules.categoryFilterKey(), categoryFilterValue);
         }
 
         return query;
     }
 
     private void render(@NonNull ReportRepository.ReportResponse response) {
+        applyAcceptedFilters(response.filters);
         updateTitles();
         renderSummary(response.summary, response.breakdown);
 
@@ -340,33 +504,28 @@ public class ReportsFragment extends BaseFragment {
 
         LinkedHashMap<String, String> cards = new LinkedHashMap<>();
 
-        if (ReportRepository.TYPE_SALES.equals(reportType) || ReportRepository.TYPE_ITEMS.equals(reportType)) {
-            if ("workshop".equals(businessType)) {
-                cards.put("Total Revenue", money(summary, "total_revenue", "revenue", "total_sales"));
-                cards.put("Service Revenue", moneyAny(summary, breakdown, "service_revenue", "service"));
-                cards.put("Sparepart Revenue", moneyAny(summary, breakdown, "sparepart_revenue", "sparepart"));
-                cards.put("Menu Revenue", moneyAny(summary, breakdown, "menu_revenue", "menu"));
-                cards.put("Net Sales", money(summary, "net_sales", "net", "net_revenue"));
-            } else if ("restaurant".equals(businessType)) {
-                cards.put("Total Revenue", money(summary, "total_revenue", "revenue", "total_sales"));
-                cards.put("Dine In Revenue", moneyAny(summary, breakdown, "dine_in_revenue", "dine_in"));
-                cards.put("Takeaway Revenue", moneyAny(summary, breakdown, "takeaway_revenue", "takeaway"));
-                cards.put("Delivery Revenue", moneyAny(summary, breakdown, "delivery_revenue", "delivery"));
-                cards.put("Net Sales", money(summary, "net_sales", "net", "net_revenue"));
-            } else {
-                cards.put("Total Revenue", money(summary, "total_revenue", "revenue", "total_sales"));
-                cards.put("Product Sold", plain(summary, "product_sold", "products_sold", "qty", "quantity"));
-                cards.put("Net Sales", money(summary, "net_sales", "net", "net_revenue"));
-                cards.put("Gross Profit", money(summary, "gross_profit", "profit"));
-                cards.put("Margin %", percent(summary, "margin", "margin_percent"));
-            }
-        } else {
-            addGenericSummary(cards, summary);
+        // Kartu mana yang muncul ditentukan ReportSummaryRules - satu tempat
+        // yang tahu nama field server untuk tiap laporan dan tiap jenis usaha.
+        // Sebelumnya nama itu ditulis langsung di sini dan sebagian SALAH:
+        // bengkel mencari "service_revenue" sementara server mengirim
+        // "total_service_revenue", jadi kartunya selalu $0.00.
+        for (ReportSummaryRules.Card card : ReportSummaryRules.cardsFor(reportType, businessType)) {
+            String value = firstValue(summary, card.keys);
+            if (TextUtils.isEmpty(value)) value = firstValue(breakdown, card.keys);
+            if (TextUtils.isEmpty(value)) continue;
+
+            cards.put(getString(card.labelRes), formatByRule(value, card.format));
         }
 
+        addPaymentBreakdown(cards, breakdown);
+
         if (cards.isEmpty()) {
-            cards.put("Total Revenue", "$0.00");
-            cards.put("Net Sales", "$0.00");
+            // Dulu di sini dipasang "Total Revenue $0.00" dan "Net Sales
+            // $0.00". Angka yang tidak pernah dikirim server tidak boleh
+            // ditampilkan sebagai nol - pemilik toko membacanya sebagai
+            // "tidak ada penjualan", padahal artinya "tidak ada jawaban".
+            showState(getString(R.string.report_no_summary));
+            return;
         }
 
         for (Map.Entry<String, String> entry : cards.entrySet()) {
@@ -374,16 +533,51 @@ public class ReportsFragment extends BaseFragment {
         }
     }
 
-    private void addGenericSummary(@NonNull LinkedHashMap<String, String> out, @NonNull JSONObject summary) {
-        JSONArray names = summary.names();
-        if (names == null) return;
-        for (int i = 0; i < names.length() && out.size() < 6; i++) {
-            String key = names.optString(i, "");
-            if (TextUtils.isEmpty(key)) continue;
-            Object value = summary.opt(key);
-            out.put(titleize(key), value != null ? String.valueOf(value) : "-");
+    /**
+     * Rincian per metode pembayaran.
+     *
+     * <p>Server sudah mengirimnya sebagai {@code breakdown.by_method} pada
+     * laporan pembayaran, dan layar ini tidak pernah menampilkannya - padahal
+     * "berapa yang masuk lewat tunai dibanding transfer" justru pertanyaan
+     * utama pemilik toko pada laporan itu.
+     */
+    private void addPaymentBreakdown(@NonNull LinkedHashMap<String, String> cards,
+                                     @NonNull JSONObject breakdown) {
+        JSONArray byMethod = breakdown.optJSONArray("by_method");
+        if (byMethod == null || byMethod.length() == 0) return;
+
+        for (int i = 0; i < byMethod.length(); i++) {
+            JSONObject row = byMethod.optJSONObject(i);
+            if (row == null) continue;
+
+            String name = firstValue(row, "payment_method__name", "payment_method", "name");
+            if (TextUtils.isEmpty(name) || "null".equalsIgnoreCase(name)) {
+                name = getString(R.string.report_payment_unpaid);
+            }
+            String total = firstValue(row, "total", "amount");
+            if (TextUtils.isEmpty(total)) continue;
+
+            String count = firstValue(row, "count");
+            String label = getString(R.string.report_breakdown_by_method) + " - " + name;
+            String value = formatMoney(total);
+            if (!TextUtils.isEmpty(count)) value = value + "  (" + count + ")";
+
+            cards.put(label, value);
         }
     }
+
+    @NonNull
+    private String formatByRule(@NonNull String raw, @NonNull ReportSummaryRules.Format format) {
+        switch (format) {
+            case COUNT:
+                return raw;
+            case PERCENT:
+                return raw.endsWith("%") ? raw : raw + "%";
+            default:
+                return formatMoney(raw);
+        }
+    }
+
 
     @NonNull
     private View createSummaryCard(@NonNull String label, @NonNull String value) {
@@ -421,6 +615,28 @@ public class ReportsFragment extends BaseFragment {
         return card;
     }
 
+    /**
+     * Mengambil daftar penyaring yang sah dari respons.
+     *
+     * <p>Server mengirimkannya di {@code filters.accepted} dan aplikasi ini
+     * belum pernah membacanya, sehingga layar menebak sendiri - dan tebakannya
+     * meleset untuk restoran, yang sebenarnya mendukung {@code menu_category}.
+     */
+    private void applyAcceptedFilters(@NonNull JSONObject filters) {
+        JSONArray accepted = filters.optJSONArray("accepted");
+        if (accepted == null || accepted.length() == 0) return;
+
+        List<String> keys = new ArrayList<>();
+        for (int i = 0; i < accepted.length(); i++) {
+            String key = accepted.optString(i, "");
+            if (!TextUtils.isEmpty(key)) keys.add(key);
+        }
+        if (keys.isEmpty()) return;
+
+        filterRules = ReportFilterRules.of(keys, reportType);
+        applyFilterVisibility();
+    }
+
     private void applyResponseBusinessType(@NonNull JSONObject shop) {
         String responseType = shop.optString("business_type", "");
         if (TextUtils.isEmpty(responseType)) responseType = shop.optString("shop_business_type", "");
@@ -435,30 +651,49 @@ public class ReportsFragment extends BaseFragment {
     }
 
     private void updateTitles() {
-        if (tvTitle != null) tvTitle.setText(titleForReport());
-        if (tvListTitle != null) tvListTitle.setText(titleForReport());
-        if (tvSubtitle != null) {
-            tvSubtitle.setText("Shop type: " + businessType.toUpperCase(Locale.US));
-        }
+        String title = titleForReport();
+        if (tvTitle != null) tvTitle.setText(title);
+        if (tvListTitle != null) tvListTitle.setText(title);
+        if (tvSubtitle != null) tvSubtitle.setText(subtitleText());
     }
 
+    /**
+     * Baris di bawah judul: jenis usaha dalam kata yang dibaca manusia, lalu
+     * rentang tanggal yang sedang ditampilkan. Sebelumnya isinya
+     * "Shop type: WORKSHOP" - enum server apa adanya, tanpa menyebut periode
+     * yang sedang dilihat sama sekali.
+     */
+    @NonNull
+    private String subtitleText() {
+        String business = getString(ReportSummaryRules.businessLabelRes(businessType));
+        String start = text(etStart);
+        String end = text(etEnd);
+        String range = TextUtils.isEmpty(start) || TextUtils.isEmpty(end)
+                ? ""
+                : (start.equals(end) ? start : start + " - " + end);
+        return TextUtils.isEmpty(range)
+                ? business
+                : getString(R.string.report_subtitle, business, range);
+    }
+
+    /**
+     * Subjudul dengan keterangan kesegaran data ditempel di bawahnya. Memakai
+     * {@link #subtitleText()} yang sama, supaya jenis usaha dan periode tidak
+     * pernah tampil dalam dua bentuk berbeda di layar yang sama.
+     */
     private void showCacheLabel(@NonNull ReportCacheRepository.CacheInfo cacheInfo) {
         if (tvSubtitle == null) return;
-        tvSubtitle.setText("Shop type: "
-                + businessType.toUpperCase(Locale.US)
-                + "\n"
-                + cacheInfo.label());
+        tvSubtitle.setText(subtitleText() + "\n" + cacheInfo.label());
     }
 
+    /**
+     * Judul laporan dalam bahasa jenis usahanya. "Product / Item Report" tidak
+     * berarti apa-apa bagi pemilik restoran yang menjual menu, atau bengkel
+     * yang menjual jasa dan suku cadang.
+     */
     @NonNull
     private String titleForReport() {
-        switch (reportType) {
-            case ReportRepository.TYPE_DAILY: return "Daily Summary";
-            case ReportRepository.TYPE_PAYMENTS: return "Payment Report";
-            case ReportRepository.TYPE_SHIFTS: return "Shift Report";
-            case ReportRepository.TYPE_ITEMS: return "Product / Item Report";
-            default: return "Sales Report";
-        }
+        return getString(ReportSummaryRules.titleResFor(reportType, businessType));
     }
 
     private void setLoading(boolean loading) {
@@ -537,33 +772,9 @@ public class ReportsFragment extends BaseFragment {
         return clean.isEmpty() ? "retail" : clean;
     }
 
-    @NonNull
-    private static String money(@NonNull JSONObject obj, @NonNull String... keys) {
-        return formatMoney(firstValue(obj, keys));
-    }
 
-    @NonNull
-    private static String moneyAny(@NonNull JSONObject first,
-                                   @NonNull JSONObject second,
-                                   @NonNull String... keys) {
-        String value = firstValue(first, keys);
-        if (TextUtils.isEmpty(value)) value = firstValue(second, keys);
-        return formatMoney(value);
-    }
 
-    @NonNull
-    private static String plain(@NonNull JSONObject obj, @NonNull String... keys) {
-        String value = firstValue(obj, keys);
-        return TextUtils.isEmpty(value) ? "0" : value;
-    }
 
-    @NonNull
-    private static String percent(@NonNull JSONObject obj, @NonNull String... keys) {
-        String value = firstValue(obj, keys);
-        if (TextUtils.isEmpty(value)) return "0%";
-        if (value.endsWith("%")) return value;
-        return value + "%";
-    }
 
     @NonNull
     private static String firstValue(@NonNull JSONObject obj, @NonNull String... keys) {
@@ -584,7 +795,7 @@ public class ReportsFragment extends BaseFragment {
      */
     @NonNull
     private static String formatMoney(@Nullable String raw) {
-        if (TextUtils.isEmpty(raw)) return "$0.00";
+        if (TextUtils.isEmpty(raw)) return Money.zero().format();
         Money parsed = Money.of(raw);
         if (parsed.isZero() && !isZeroText(raw)) return raw;
         return "$" + parsed.toPlainString();
@@ -602,18 +813,6 @@ public class ReportsFragment extends BaseFragment {
         }
     }
 
-    @NonNull
-    private static String titleize(@NonNull String key) {
-        String[] parts = key.replace('_', ' ').split(" ");
-        StringBuilder out = new StringBuilder();
-        for (String part : parts) {
-            if (part.isEmpty()) continue;
-            if (out.length() > 0) out.append(' ');
-            out.append(part.substring(0, 1).toUpperCase(Locale.US));
-            if (part.length() > 1) out.append(part.substring(1));
-        }
-        return out.toString();
-    }
 
     private int reportDp(int value) {
         return Math.round(value * getResources().getDisplayMetrics().density);

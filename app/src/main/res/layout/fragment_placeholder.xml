@@ -9,7 +9,7 @@
         android:id="@+id/tvPlaceholder"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Coming soon"
+        android:text="@string/label_coming_soon"
         android:textColor="@color/text_secondary"
         android:textSize="18sp" />
 

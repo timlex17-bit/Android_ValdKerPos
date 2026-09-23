@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import com.valdker.pos.money.Money;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
@@ -115,7 +116,7 @@ public class BankAccountAdapter extends RecyclerView.Adapter<BankAccountAdapter.
             NumberFormat format = NumberFormat.getCurrencyInstance(Locale.US);
             return format.format(amount);
         } catch (Exception e) {
-            return "$0.00";
+            return Money.zero().format();
         }
     }
 

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Header ungu. Hanya dua sudut BAWAH yang membulat: sudut atas menempel pada
+  bilah status dan membulatkannya akan meninggalkan dua celah berlatar ground
+  di pojok layar.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/pos_header" />
+    <corners
+        android:bottomLeftRadius="@dimen/pos_radius_shell"
+        android:bottomRightRadius="@dimen/pos_radius_shell"
+        android:topLeftRadius="0dp"
+        android:topRightRadius="0dp" />
+</shape>

@@ -23,12 +23,47 @@ public class DashboardAdapter extends RecyclerView.Adapter<DashboardAdapter.VH> 
         void onClick(@NonNull DashboardItem item);
     }
 
-    private final List<DashboardItem> data;
+    private final List<DashboardItem> data = new java.util.ArrayList<>();
     private final Listener listener;
 
     public DashboardAdapter(@NonNull List<DashboardItem> data, @NonNull Listener listener) {
-        this.data = data;
+        this.data.addAll(data);
         this.listener = listener;
+    }
+
+    /**
+     * Memperbarui daftar modul tanpa mengganti adapternya.
+     *
+     * <p>Layar Home menyusun ulang daftarnya di setiap {@code onResume()},
+     * dan dulu itu berarti {@code setAdapter()} dengan adapter baru - yang
+     * selalu mengembalikan gulir ke baris teratas. Akibatnya modul bengkel,
+     * yang duduk di bagian bawah daftar, mengharuskan pengguna menggulir dari
+     * awal setiap kali ia kembali dari salah satunya.
+     *
+     * @return true kalau daftarnya benar-benar berubah.
+     */
+    public boolean submit(@NonNull List<DashboardItem> next) {
+        if (sameContent(next)) return false;
+        data.clear();
+        data.addAll(next);
+        notifyDataSetChanged();
+        return true;
+    }
+
+    private boolean sameContent(@NonNull List<DashboardItem> next) {
+        if (data.size() != next.size()) return false;
+        for (int i = 0; i < data.size(); i++) {
+            DashboardItem a = data.get(i);
+            DashboardItem b = next.get(i);
+            if (a.id != b.id
+                    || !a.title.equals(b.title)
+                    || !a.subtitle.equals(b.subtitle)
+                    || a.iconRes != b.iconRes
+                    || a.accentRes != b.accentRes) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @NonNull

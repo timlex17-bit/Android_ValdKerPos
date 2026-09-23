@@ -89,8 +89,8 @@ public class StockAdjustmentFormDialog extends DialogFragment {
 
         androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
                 .setView(v)
-                .setNegativeButton("Cancel", (d, which) -> dismiss())
-                .setPositiveButton("Save", null)
+                .setNegativeButton(getString(R.string.action_cancel), (d, which) -> dismiss())
+                .setPositiveButton(getString(R.string.action_save), null)
                 .create();
 
         return dialog;

@@ -183,9 +183,6 @@ public class WorkshopPOSFragment extends Fragment
     private android.widget.ImageView imgLogo;
     private TextView tvBrand;
     private TextView tvShopAddress;
-    private Chip chipDraftA;
-    private Chip chipDraftB;
-    private Chip chipDraftC;
     private Chip chipAddDraft;
     private ChipGroup chipGroupDrafts;
 
@@ -202,10 +199,19 @@ public class WorkshopPOSFragment extends Fragment
     private MaterialButton btnSelectMechanic;
     private MaterialButton btnSelectWorkOrder;
     private MaterialButton btnSelectBooking;
-    private MaterialButton btnAddService;
-    private MaterialButton btnAddPackage;
-    private MaterialButton btnAddPart;
-    private MaterialButton btnAddProduct;
+    /**
+     * Keempat tombol tambah adalah View, bukan MaterialButton.
+     *
+     * <p>Di implementasi 4 masing-masing berupa kartu berwarna berisi ikon di
+     * atas teks - dua anak dalam satu kotak - dan MaterialButton hanya bisa
+     * menampung satu teks dengan satu ikon di sampingnya. Yang dipakai kode di
+     * sini hanya setOnClickListener, setEnabled, dan setAlpha, yang ketiganya
+     * milik View, jadi tipenya diturunkan alih-alih memaksa bentuk tombolnya.
+     */
+    private View btnAddService;
+    private View btnAddPackage;
+    private View btnAddPart;
+    private View btnAddProduct;
     private MaterialButton btnCheckout;
     private WorkshopWorkspaceAdapter adapter;
     private CartManager cartManager;
@@ -293,14 +299,14 @@ public class WorkshopPOSFragment extends Fragment
      * setStatusBarColor, sehingga yang tampak di belakang bilah status adalah
      * latar abu-abu muda layar ini - dengan ikon terang di atasnya.
      *
-     * <p>Sekarang strip ungu digambar layout sendiri lewat statusBarScrim,
+     * <p>Sekarang strip ungu digambar layout sendiri lewat posHeaderScrim,
      * jadi hasilnya sama di setiap versi Android.
      */
     private void applyWorkshopSystemBars(@NonNull View root) {
         if (!isAdded()) return;
 
         SystemBars.apply(requireActivity());
-        SystemBars.fitStatusScrim(root.findViewById(R.id.statusBarScrim));
+        SystemBars.fitStatusScrim(root.findViewById(R.id.posHeaderScrim));
         SystemBars.padBottom(root.findViewById(R.id.workshopContent));
     }
 
@@ -345,11 +351,15 @@ public class WorkshopPOSFragment extends Fragment
 
     private void bindViews(@NonNull View view) {
         imgLogo = view.findViewById(R.id.imgLogo);
+
+        // Lencana tipe (gembok + "Workshop") dan strip tiga kartu aksi cepat
+        // sengaja TIDAK dipasang. Lencananya hanya mengulang satu hal yang
+        // tidak pernah berubah - satu login terikat pada satu jenis usaha -
+        // dan kartu aksi cepatnya tidak pernah punya listener sama sekali,
+        // jadi menekan Work order, Rezerva, atau Istoria benar-benar tidak
+        // melakukan apa-apa. Ketiganya tetap bisa dicapai lewat menunya.
         tvBrand = view.findViewById(R.id.tvBrand);
         tvShopAddress = view.findViewById(R.id.tvShopAddress);
-        chipDraftA = view.findViewById(R.id.chipDraftA);
-        chipDraftB = view.findViewById(R.id.chipDraftB);
-        chipDraftC = view.findViewById(R.id.chipDraftC);
         chipAddDraft = view.findViewById(R.id.chipAddDraft);
         chipGroupDrafts = view.findViewById(R.id.chipGroupDrafts);
 
@@ -386,32 +396,59 @@ public class WorkshopPOSFragment extends Fragment
         btnCheckout = view.findViewById(R.id.btnCheckout);
     }
 
+    /**
+     * Memasang tombol "+" bon baru. Hanya itu.
+     *
+     * <p>Chip bon-nya sendiri tidak ada di layout dan tidak dibuat di sini:
+     * seluruhnya dibangun {@link #renderDraftChips()} dari isi basis data.
+     *
+     * <p>Sebelumnya di sini terpasang tiga chip tetap berikut label contoh
+     * "A - 3", "B - 12", dan "Walk-in - 1" - sisa kerangka rancangan yang
+     * ikut terkirim ke pengguna. Kasir membuka aplikasi, melihat bon yang
+     * tidak pernah ia buat, menekannya, lalu menemukan keranjang kosong.
+     */
     private void setupDraftChips() {
-        if (chipDraftA == null && chipDraftB == null && chipDraftC == null && chipAddDraft == null) {
-            return;
-        }
+        if (chipAddDraft == null) return;
 
-        if (chipDraftA != null) {
-            chipDraftA.setOnClickListener(v -> setActiveDraftChip(chipDraftA, "Draft A aktif", true));
-        }
-        if (chipDraftB != null) {
-            chipDraftB.setOnClickListener(v -> setActiveDraftChip(chipDraftB, "Draft B aktif", true));
-        }
-        if (chipDraftC != null) {
-            chipDraftC.setOnClickListener(v -> setActiveDraftChip(chipDraftC, "Draft Walk-in aktif", true));
-        }
-        if (chipAddDraft != null) {
-            styleAddDraftChip(chipAddDraft);
-            chipAddDraft.setOnClickListener(v -> createAndActivateDraft());
-        }
-
-        setActiveDraftChip(chipDraftA, "", false);
+        styleAddDraftChip(chipAddDraft);
+        chipAddDraft.setOnClickListener(v -> createAndActivateDraft());
     }
 
     private void initDraftStorage() {
         if (!isAdded()) return;
         posDraftRepository = new PosDraftRepository(requireContext());
-        loadDraftsFromRoom(true, null);
+        loadDraftsAfterPruning();
+    }
+
+    /**
+     * Pembacaan pertama: bon kosong yang tersisa dari sesi sebelumnya dibuang
+     * lebih dulu, baru daftarnya ditampilkan.
+     *
+     * <p>Tanpa ini, satu kali tekan "+" yang tidak jadi dipakai meninggalkan
+     * "B - 0" di baris bon untuk selamanya. Yang tersisa sesudah pembersihan
+     * adalah bon aktif dan bon yang benar-benar ada isinya; selebihnya muncul
+     * ketika kasir menekan "+".
+     *
+     * <p>Hanya di pembacaan pertama. Sesudah layar terbuka, bon kosong yang
+     * baru saja dibuat kasir jelas masih dipakai.
+     */
+    private void loadDraftsAfterPruning() {
+        PosDraftRepository repository = posDraftRepository;
+        if (repository == null) return;
+
+        draftExecutor.execute(() -> {
+            try {
+                PosDraftSnapshot snapshot =
+                        repository.pruneEmptyInactiveDrafts(POS_TYPE_WORKSHOP);
+                mainHandler.post(() -> {
+                    if (!isAdded()) return;
+                    applyDraftSnapshot(snapshot, true);
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to prune empty workshop drafts", e);
+                loadDraftsFromRoom(true, null);
+            }
+        });
     }
 
     private void loadDraftsFromRoom(boolean loadItems, @Nullable String toastMessage) {
@@ -449,19 +486,18 @@ public class WorkshopPOSFragment extends Fragment
     }
 
     private void renderDraftChips() {
-        if (chipGroupDrafts == null) {
-            PosDraftEntity active = findActiveDraft();
-            setActiveDraftChip(chipDraftForName(active != null ? active.name : "A"), "", false);
-            return;
-        }
+        if (chipGroupDrafts == null) return;
 
         chipGroupDrafts.removeAllViews();
         for (int i = 0; i < posDrafts.size(); i++) {
             PosDraftEntity draft = posDrafts.get(i);
             Chip chip = createDraftChip();
-            if (i == 0) chip.setId(R.id.chipDraftA);
-            else if (i == 1) chip.setId(R.id.chipDraftB);
-            else if (i == 2) chip.setId(R.id.chipDraftC);
+
+            // Id dibangkitkan, bukan dipetakan ke chipDraftA/B/C seperti dulu.
+            // Pemetaan itu hanya menjangkau tiga bon pertama, sehingga bon
+            // keempat dan seterusnya tidak punya id sama sekali - padahal
+            // ChipGroup memakai id untuk melacak mana yang sedang terpilih.
+            chip.setId(View.generateViewId());
 
             boolean active = draft.id == activeDraftId;
             int count = draftItemCounts.containsKey(draft.id) ? draftItemCounts.get(draft.id) : 0;
@@ -503,14 +539,6 @@ public class WorkshopPOSFragment extends Fragment
             if (draft != null && draft.id == activeDraftId) return draft;
         }
         return null;
-    }
-
-    @Nullable
-    private Chip chipDraftForName(@NonNull String name) {
-        if ("A".equalsIgnoreCase(name)) return chipDraftA;
-        if ("B".equalsIgnoreCase(name)) return chipDraftB;
-        if ("C".equalsIgnoreCase(name) || name.toLowerCase(Locale.US).contains("walk")) return chipDraftC;
-        return chipDraftA;
     }
 
     private void activateDraft(long draftId, @NonNull String toastMessage) {
@@ -644,29 +672,6 @@ public class WorkshopPOSFragment extends Fragment
                 Log.e(TAG, "cleanup failed with error pos=workshop draftId=" + draftId, e);
             }
         });
-    }
-
-    private void setActiveDraftChip(@Nullable Chip activeChip,
-                                    @NonNull String toastMessage,
-                                    boolean showToast) {
-        setDraftChipState(chipDraftA, activeChip == chipDraftA, "A \u2022 3");
-        setDraftChipState(chipDraftB, activeChip == chipDraftB, "B \u2022 12");
-        setDraftChipState(chipDraftC, activeChip == chipDraftC, "Walk-in \u2022 1");
-
-        if (showToast && isAdded() && !TextUtils.isEmpty(toastMessage)) {
-            Toast.makeText(requireContext(), toastMessage, Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void setDraftChipState(@Nullable Chip chip, boolean active, @NonNull String label) {
-        if (chip == null) return;
-
-        chip.setChecked(active);
-        chip.setText(active ? "\u25CF " + label : label);
-        chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor(active ? "#EBD9FD" : "#FFFFFF")));
-        chip.setChipStrokeColor(ColorStateList.valueOf(Color.parseColor(active ? "#BB80F4" : "#E2E8F0")));
-        chip.setTextColor(Color.parseColor(active ? "#3C0375" : "#334155"));
-        chip.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
     }
 
     private void styleAddDraftChip(@NonNull Chip chip) {
@@ -1323,7 +1328,7 @@ public class WorkshopPOSFragment extends Fragment
         String token = sessionManager.getToken();
         if (token == null || token.trim().isEmpty()) {
             productsLoading = false;
-            Toast.makeText(requireContext(), "Token login tidak ditemukan", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), getString(R.string.error_session_expired), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -1519,7 +1524,7 @@ public class WorkshopPOSFragment extends Fragment
                             selected.stock
                     );
                 })
-                .setNegativeButton("Batal", null)
+                .setNegativeButton(getString(R.string.action_cancel), null)
                 .show();
     }
 
@@ -1665,97 +1670,118 @@ public class WorkshopPOSFragment extends Fragment
         updateHeaderUI();
     }
 
+    /**
+     * Lembar "Troka": memilih pelanggan, kendaraan, mekanik, work order, dan
+     * booking untuk bon yang sedang dibuka.
+     *
+     * <p>Dulu ini AlertDialog di tengah layar yang seluruh isinya dirakit dari
+     * kode - sebelas View dibuat dengan {@code new TextView(...)}, masing-masing
+     * diberi ukuran dan warna hex sendiri. Sekarang isinya ada di
+     * {@code sheet_workshop_info.xml} dan muncul sebagai bottom sheet.
+     *
+     * <p>Alasannya bukan selera. Isinya tiga bagian dengan kolom isian; sebuah
+     * dialog tengah pada ponsel lanskap menyisakan tinggi di bawah 300dp untuk
+     * semuanya, sehingga tombol Simpan terdorong ke luar layar. Lembar bawah
+     * boleh setinggi 88% layar dan menggulir di dalamnya - dan ia muncul di
+     * tempat ibu jari kasir sudah berada.
+     */
     private void openWorkshopInfoDialog() {
         if (!isAdded()) return;
 
         WorkshopSelectionDraft draft = currentWorkshopSelectionDraft();
 
-        ScrollView scrollView = new ScrollView(requireContext());
-        scrollView.setFillViewport(false);
+        View sheet = LayoutInflater.from(requireContext())
+                .inflate(R.layout.sheet_workshop_info, null, false);
 
-        LinearLayout container = new LinearLayout(requireContext());
-        container.setOrientation(LinearLayout.VERTICAL);
-        int pad = dp(16);
-        container.setPadding(pad, dp(6), pad, dp(8));
-        scrollView.addView(container, new ScrollView.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        ));
+        TextView customerValue = sheet.findViewById(R.id.txtSheetCustomer);
+        TextView mechanicValue = sheet.findViewById(R.id.txtSheetMechanic);
+        TextView workOrderValue = sheet.findViewById(R.id.txtSheetWorkOrder);
+        TextView bookingValue = sheet.findViewById(R.id.txtSheetBooking);
+        EditText vehicleInput = sheet.findViewById(R.id.etSheetVehicleName);
+        EditText plateInput = sheet.findViewById(R.id.etSheetPlate);
+        TextView typeCar = sheet.findViewById(R.id.chipVehCar);
+        TextView typeMotorcycle = sheet.findViewById(R.id.chipVehMotorcycle);
 
-        container.addView(buildDialogSectionTitle(getString(R.string.label_workshop_job_info)));
-
-        TextView customerValue = buildDialogValueText(draft.customerName);
-        addPickerRow(container, getString(R.string.label_customer), customerValue, getString(R.string.action_select),
-                () -> openCustomerPickerForDialog(draft, customerValue));
-
-        Spinner vehicleTypeSpinner = new Spinner(requireContext());
-        ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(
-                requireContext(),
-                R.array.vehicle_types,
-                android.R.layout.simple_spinner_item
-        );
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        vehicleTypeSpinner.setAdapter(spinnerAdapter);
-        vehicleTypeSpinner.setSelection("MOTORCYCLE".equals(normalizeVehicleTypeCode(draft.vehicleTypeCode)) ? 1 : 0);
-        addSpinnerField(container, getString(R.string.label_vehicle_type), vehicleTypeSpinner);
-
-        EditText vehicleInput = buildDialogEditText(getString(R.string.hint_vehicle_name), false);
+        customerValue.setText(draft.customerName);
+        mechanicValue.setText(displayOrDash(draft.mechanicName));
+        workOrderValue.setText(displayOrDash(draft.workOrderInfo));
+        bookingValue.setText(displayOrDash(draft.bookingInfo));
         vehicleInput.setText(draft.vehicleName);
-        EditText plateInput = buildDialogEditText(getString(R.string.hint_plate_number), false);
         plateInput.setText(draft.plateNumber);
 
-        addInputWithPickerRow(container, getString(R.string.label_vehicle), vehicleInput,
-                () -> openVehiclePickerForDialog(draft, vehicleInput, plateInput, vehicleTypeSpinner));
+        // Jenis kendaraan: dua sel yang keduanya terlihat, bukan Spinner.
+        // Yang terpilih diberi latar aksen; yang lain transparan.
+        final String[] typeCode = {normalizeVehicleTypeCode(draft.vehicleTypeCode)};
+        Runnable paintType = () -> {
+            boolean motor = "MOTORCYCLE".equals(typeCode[0]);
+            // Yang terpilih memakai kartu ungu pucat, yang lain kartu netral.
+            // Dua keadaan itu harus berbeda pada WARNA LATAR, bukan hanya pada
+            // warna teks: pada layar yang dilihat sambil bergerak, perbedaan
+            // warna teks 13sp terlalu halus untuk terbaca sekilas.
+            typeCar.setBackgroundResource(motor
+                    ? R.drawable.bg_pos_ghost_row : R.drawable.bg_pos_add_accent);
+            typeCar.setTextColor(ContextCompat.getColor(requireContext(), motor
+                    ? R.color.pos_ink : R.color.pos_accent_deep));
+            typeMotorcycle.setBackgroundResource(motor
+                    ? R.drawable.bg_pos_add_accent : R.drawable.bg_pos_ghost_row);
+            typeMotorcycle.setTextColor(ContextCompat.getColor(requireContext(), motor
+                    ? R.color.pos_accent_deep : R.color.pos_ink));
+        };
+        paintType.run();
+        typeCar.setOnClickListener(v -> {
+            typeCode[0] = "CAR";
+            paintType.run();
+        });
+        typeMotorcycle.setOnClickListener(v -> {
+            typeCode[0] = "MOTORCYCLE";
+            paintType.run();
+        });
 
-        addInputField(container, getString(R.string.label_plate), plateInput);
+        sheet.findViewById(R.id.rowSheetCustomer).setOnClickListener(
+                v -> openCustomerPickerForDialog(draft, customerValue));
+        sheet.findViewById(R.id.rowSheetMechanic).setOnClickListener(
+                v -> openMechanicPickerForDialog(draft, mechanicValue));
+        sheet.findViewById(R.id.rowSheetWorkOrder).setOnClickListener(
+                v -> openWorkOrderPickerForDialog(draft, workOrderValue));
+        sheet.findViewById(R.id.rowSheetBooking).setOnClickListener(
+                v -> openBookingPickerForDialog(draft, bookingValue));
 
-        container.addView(buildDialogSectionTitle(getString(R.string.workshop_summary_prefix)));
+        com.google.android.material.bottomsheet.BottomSheetDialog dialog =
+                new com.google.android.material.bottomsheet.BottomSheetDialog(requireContext());
+        dialog.setContentView(sheet);
 
-        TextView mechanicValue = buildDialogValueText(displayOrDash(draft.mechanicName));
-        addPickerRow(container, getString(R.string.label_mechanic), mechanicValue, getString(R.string.action_select),
-                () -> openMechanicPickerForDialog(draft, mechanicValue));
+        // Pemilih kendaraan mengisi kembali nama, pelat, dan jenisnya.
+        vehicleInput.setOnClickListener(null);
+        sheet.findViewById(R.id.gridVehicleType).setTag(typeCode);
 
-        TextView workOrderValue = buildDialogValueText(displayOrDash(draft.workOrderInfo));
-        addPickerRow(container, getString(R.string.label_work_order), workOrderValue, getString(R.string.action_select),
-                () -> openWorkOrderPickerForDialog(draft, workOrderValue));
-
-        TextView bookingValue = buildDialogValueText(displayOrDash(draft.bookingInfo));
-        addPickerRow(container, getString(R.string.label_booking), bookingValue, getString(R.string.action_select),
-                () -> openBookingPickerForDialog(draft, bookingValue));
-
-        AlertDialog dialog = new AlertDialog.Builder(requireContext())
-                .setTitle(R.string.dialog_workshop_info_title)
-                .setView(scrollView)
-                .setNegativeButton(R.string.action_cancel, null)
-                .setPositiveButton(R.string.action_save, null)
-                .create();
-        dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
-            draft.vehicleTypeCode = getVehicleTypeCodeFromSpinner(vehicleTypeSpinner);
-            draft.vehicleName = cleanDash(vehicleInput.getText() != null ? vehicleInput.getText().toString() : "");
-            draft.plateNumber = cleanDash(plateInput.getText() != null ? plateInput.getText().toString() : "");
+        sheet.findViewById(R.id.btnSheetClose).setOnClickListener(v -> dialog.dismiss());
+        sheet.findViewById(R.id.btnSheetSave).setOnClickListener(v -> {
+            draft.vehicleTypeCode = typeCode[0];
+            draft.vehicleName = cleanDash(vehicleInput.getText() != null
+                    ? vehicleInput.getText().toString() : "");
+            draft.plateNumber = cleanDash(plateInput.getText() != null
+                    ? plateInput.getText().toString() : "");
             applyWorkshopSelectionDraft(draft);
             dialog.dismiss();
-        }));
+        });
+
+        // Lembar dibuka penuh sejak awal: separuh terbuka menyembunyikan
+        // bagian 2 dan 3, dan kasir tidak punya petunjuk bahwa keduanya ada.
+        dialog.setOnShowListener(d -> {
+            View parent = dialog.findViewById(
+                    com.google.android.material.R.id.design_bottom_sheet);
+            if (parent != null) {
+                com.google.android.material.bottomsheet.BottomSheetBehavior<View> behavior =
+                        com.google.android.material.bottomsheet.BottomSheetBehavior.from(parent);
+                behavior.setState(
+                        com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
+                behavior.setSkipCollapsed(true);
+            }
+        });
+
         dialog.show();
-        styleWorkshopInfoDialog(dialog);
     }
 
-    private TextView buildDialogSectionTitle(@NonNull String text) {
-        TextView label = new TextView(requireContext());
-        label.setText(text);
-        label.setTextColor(Color.parseColor("#64748B"));
-        label.setTextSize(11f);
-        label.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        label.setAllCaps(true);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        lp.topMargin = dp(12);
-        lp.bottomMargin = dp(2);
-        label.setLayoutParams(lp);
-        return label;
-    }
 
     private TextView buildDialogFieldLabel(@NonNull String text) {
         TextView label = new TextView(requireContext());
@@ -1768,17 +1794,6 @@ public class WorkshopPOSFragment extends Fragment
         return label;
     }
 
-    private TextView buildDialogValueText(@NonNull String text) {
-        TextView value = new TextView(requireContext());
-        value.setText(text);
-        value.setTextColor(Color.parseColor("#0F172A"));
-        value.setTextSize(13f);
-        value.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        value.setSingleLine(true);
-        value.setEllipsize(TextUtils.TruncateAt.END);
-        value.setGravity(android.view.Gravity.CENTER_VERTICAL);
-        return value;
-    }
 
     private LinearLayout.LayoutParams dialogCardLayoutParams() {
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
@@ -1802,135 +1817,9 @@ public class WorkshopPOSFragment extends Fragment
         return card;
     }
 
-    private void addPickerRow(@NonNull LinearLayout container,
-                              @NonNull String label,
-                              @NonNull TextView value,
-                              @NonNull String action,
-                              @NonNull Runnable onClick) {
-        MaterialCardView card = buildDialogFieldCard();
 
-        LinearLayout body = new LinearLayout(requireContext());
-        body.setOrientation(LinearLayout.VERTICAL);
-        body.addView(buildDialogFieldLabel(label));
 
-        LinearLayout row = new LinearLayout(requireContext());
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setGravity(android.view.Gravity.CENTER_VERTICAL);
-        LinearLayout.LayoutParams rowLp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        rowLp.topMargin = dp(2);
 
-        MaterialButton button = buildSmallDialogButton(action);
-        button.setOnClickListener(v -> onClick.run());
-        value.setOnClickListener(v -> onClick.run());
-        row.setOnClickListener(v -> onClick.run());
-        row.addView(value, new LinearLayout.LayoutParams(0, dp(34), 1f));
-        LinearLayout.LayoutParams buttonLp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                dp(34)
-        );
-        buttonLp.leftMargin = dp(8);
-        row.addView(button, buttonLp);
-        body.addView(row, rowLp);
-
-        card.setOnClickListener(v -> onClick.run());
-        card.addView(body, new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        ));
-        container.addView(card, dialogCardLayoutParams());
-    }
-
-    private void addInputWithPickerRow(@NonNull LinearLayout container,
-                                       @NonNull String label,
-                                       @NonNull EditText input,
-                                       @NonNull Runnable onClick) {
-        MaterialCardView card = buildDialogFieldCard();
-
-        LinearLayout body = new LinearLayout(requireContext());
-        body.setOrientation(LinearLayout.VERTICAL);
-        body.addView(buildDialogFieldLabel(label));
-
-        LinearLayout row = new LinearLayout(requireContext());
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setGravity(android.view.Gravity.CENTER_VERTICAL);
-
-        input.setBackgroundColor(Color.TRANSPARENT);
-        input.setPadding(0, 0, 0, 0);
-        row.addView(input, new LinearLayout.LayoutParams(0, dp(38), 1f));
-
-        MaterialButton button = buildSmallDialogButton(getString(R.string.action_select));
-        button.setOnClickListener(v -> onClick.run());
-        LinearLayout.LayoutParams buttonLp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                dp(34)
-        );
-        buttonLp.leftMargin = dp(8);
-        row.addView(button, buttonLp);
-
-        LinearLayout.LayoutParams rowLp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        rowLp.topMargin = dp(2);
-        body.addView(row, rowLp);
-
-        card.addView(body, new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        ));
-        container.addView(card, dialogCardLayoutParams());
-    }
-
-    private void addInputField(@NonNull LinearLayout container,
-                               @NonNull String label,
-                               @NonNull EditText input) {
-        MaterialCardView card = buildDialogFieldCard();
-
-        LinearLayout body = new LinearLayout(requireContext());
-        body.setOrientation(LinearLayout.VERTICAL);
-        body.addView(buildDialogFieldLabel(label));
-
-        input.setBackgroundColor(Color.TRANSPARENT);
-        input.setPadding(0, 0, 0, 0);
-        LinearLayout.LayoutParams inputLp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                dp(38)
-        );
-        inputLp.topMargin = dp(2);
-        body.addView(input, inputLp);
-
-        card.addView(body, new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        ));
-        container.addView(card, dialogCardLayoutParams());
-    }
-
-    private void addSpinnerField(@NonNull LinearLayout container,
-                                 @NonNull String label,
-                                 @NonNull Spinner spinner) {
-        MaterialCardView card = buildDialogFieldCard();
-
-        LinearLayout body = new LinearLayout(requireContext());
-        body.setOrientation(LinearLayout.VERTICAL);
-        body.addView(buildDialogFieldLabel(label));
-
-        LinearLayout.LayoutParams spinnerLp = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                dp(38)
-        );
-        spinnerLp.topMargin = dp(2);
-        body.addView(spinner, spinnerLp);
-
-        card.addView(body, new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        ));
-        container.addView(card, dialogCardLayoutParams());
-    }
 
     private MaterialButton buildSmallDialogButton(@NonNull String text) {
         MaterialButton button = new MaterialButton(requireContext(), null, com.google.android.material.R.attr.materialButtonOutlinedStyle);
@@ -1950,21 +1839,6 @@ public class WorkshopPOSFragment extends Fragment
         return button;
     }
 
-    private void styleWorkshopInfoDialog(@NonNull AlertDialog dialog) {
-        if (dialog.getButton(AlertDialog.BUTTON_POSITIVE) != null) {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.parseColor("#6204BF"));
-        }
-        if (dialog.getButton(AlertDialog.BUTTON_NEGATIVE) != null) {
-            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.parseColor("#64748B"));
-        }
-
-        Window window = dialog.getWindow();
-        if (window != null) {
-            int width = (int) (getResources().getDisplayMetrics().widthPixels * 0.94f);
-            window.setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT);
-            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        }
-    }
 
     private void openCustomerPickerForDialog(@NonNull WorkshopSelectionDraft draft,
                                              @NonNull TextView customerValue) {
@@ -1997,7 +1871,7 @@ public class WorkshopPOSFragment extends Fragment
     private void openVehiclePickerForDialog(@NonNull WorkshopSelectionDraft draft,
                                             @NonNull EditText vehicleInput,
                                             @NonNull EditText plateInput,
-                                            @NonNull Spinner vehicleTypeSpinner) {
+                                            @Nullable Runnable onTypeChanged) {
         if (!ensureWorkshopModule(ModuleRegistry.VEHICLES, getString(R.string.menu_vehicles))) return;
 
         AlertDialog loading = showLoadingDialog("Memuat kendaraan...");
@@ -2023,7 +1897,7 @@ public class WorkshopPOSFragment extends Fragment
                 }
 
                 new AlertDialog.Builder(requireContext())
-                        .setTitle("Pilih Vehicle")
+                        .setTitle(getString(R.string.select_vehicle))
                         .setItems(labels, (dialog, which) -> {
                             JSONObject row = rows.get(which);
                             draft.vehicleId = longOrNull(row.opt("id"));
@@ -2032,9 +1906,9 @@ public class WorkshopPOSFragment extends Fragment
                             draft.plateNumber = firstNonEmpty(row.optString("plate_number", ""), row.optString("plate", ""));
                             vehicleInput.setText(draft.vehicleName);
                             plateInput.setText(draft.plateNumber);
-                            vehicleTypeSpinner.setSelection("MOTORCYCLE".equals(draft.vehicleTypeCode) ? 1 : 0);
+                            if (onTypeChanged != null) onTypeChanged.run();
                         })
-                        .setNegativeButton("Batal", null)
+                        .setNegativeButton(getString(R.string.action_cancel), null)
                         .show();
             }
 
@@ -2074,14 +1948,14 @@ public class WorkshopPOSFragment extends Fragment
                 }
 
                 new AlertDialog.Builder(requireContext())
-                        .setTitle("Pilih Mechanic")
+                        .setTitle(getString(R.string.select_mechanic))
                         .setItems(labels, (dialog, which) -> {
                             JSONObject selected = rows.get(which);
                             draft.mechanicId = longOrNull(selected.opt("id"));
                             draft.mechanicName = firstNonEmpty(selected.optString("name", ""), labels[which]);
                             mechanicValue.setText(displayOrDash(draft.mechanicName));
                         })
-                        .setNegativeButton("Batal", null)
+                        .setNegativeButton(getString(R.string.action_cancel), null)
                         .show();
             }
 
@@ -2121,14 +1995,14 @@ public class WorkshopPOSFragment extends Fragment
                 }
 
                 new AlertDialog.Builder(requireContext())
-                        .setTitle("Pilih Work Order")
+                        .setTitle(getString(R.string.select_work_order))
                         .setItems(labels, (dialog, which) -> {
                             JSONObject selected = rows.get(which);
                             draft.workOrderId = longOrNull(selected.opt("id"));
                             draft.workOrderInfo = labels[which];
                             workOrderValue.setText(displayOrDash(draft.workOrderInfo));
                         })
-                        .setNegativeButton("Batal", null)
+                        .setNegativeButton(getString(R.string.action_cancel), null)
                         .show();
             }
 
@@ -2168,14 +2042,14 @@ public class WorkshopPOSFragment extends Fragment
                 }
 
                 new AlertDialog.Builder(requireContext())
-                        .setTitle("Pilih Booking")
+                        .setTitle(getString(R.string.select_booking))
                         .setItems(labels, (dialog, which) -> {
                             JSONObject selected = rows.get(which);
                             draft.bookingId = longOrNull(selected.opt("id"));
                             draft.bookingInfo = labels[which];
                             bookingValue.setText(displayOrDash(draft.bookingInfo));
                         })
-                        .setNegativeButton("Batal", null)
+                        .setNegativeButton(getString(R.string.action_cancel), null)
                         .show();
             }
 
@@ -2312,9 +2186,9 @@ public class WorkshopPOSFragment extends Fragment
                 }
 
                 new AlertDialog.Builder(requireContext())
-                        .setTitle("Pilih Vehicle")
+                        .setTitle(getString(R.string.select_vehicle))
                         .setItems(labels, (dialog, which) -> applySelectedVehicle(rows.get(which)))
-                        .setNegativeButton("Batal", null)
+                        .setNegativeButton(getString(R.string.action_cancel), null)
                         .show();
             }
 
@@ -2353,14 +2227,14 @@ public class WorkshopPOSFragment extends Fragment
                 }
 
                 new AlertDialog.Builder(requireContext())
-                        .setTitle("Pilih Mechanic")
+                        .setTitle(getString(R.string.select_mechanic))
                         .setItems(labels, (dialog, which) -> {
                             JSONObject selected = rows.get(which);
                             selectedMechanicId = longOrNull(selected.opt("id"));
                             selectedMechanicName = firstNonEmpty(selected.optString("name", ""), labels[which]);
                             updateHeaderUI();
                         })
-                        .setNegativeButton("Batal", null)
+                        .setNegativeButton(getString(R.string.action_cancel), null)
                         .show();
             }
 
@@ -2399,14 +2273,14 @@ public class WorkshopPOSFragment extends Fragment
                 }
 
                 new AlertDialog.Builder(requireContext())
-                        .setTitle("Pilih Booking")
+                        .setTitle(getString(R.string.select_booking))
                         .setItems(labels, (dialog, which) -> {
                             JSONObject selected = rows.get(which);
                             selectedBookingId = longOrNull(selected.opt("id"));
                             selectedBookingInfo = labels[which];
                             updateHeaderUI();
                         })
-                        .setNegativeButton("Batal", null)
+                        .setNegativeButton(getString(R.string.action_cancel), null)
                         .show();
             }
 
@@ -2441,7 +2315,7 @@ public class WorkshopPOSFragment extends Fragment
                 }
 
                 new AlertDialog.Builder(requireContext())
-                        .setTitle("Pilih Work Order")
+                        .setTitle(getString(R.string.select_work_order))
                         .setItems(labels, (dialog, which) -> {
                             if (which == 0) {
                                 openCreateWorkOrderDialog();
@@ -2452,7 +2326,7 @@ public class WorkshopPOSFragment extends Fragment
                             selectedWorkOrderInfo = labels[which];
                             updateHeaderUI();
                         })
-                        .setNegativeButton("Batal", null)
+                        .setNegativeButton(getString(R.string.action_cancel), null)
                         .show();
             }
 
@@ -2487,7 +2361,7 @@ public class WorkshopPOSFragment extends Fragment
                 .setTitle("Create Work Order")
                 .setView(container)
                 .setPositiveButton(getString(R.string.action_create), null)
-                .setNegativeButton("Batal", null)
+                .setNegativeButton(getString(R.string.action_cancel), null)
                 .create();
         dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
             String complaintValue = complaint.getText() != null ? complaint.getText().toString().trim() : "";
@@ -2571,7 +2445,7 @@ public class WorkshopPOSFragment extends Fragment
                 new AlertDialog.Builder(requireContext())
                         .setTitle("Pilih Package")
                         .setItems(labels, (dialog, which) -> addServicePackageToCart(active.get(which)))
-                        .setNegativeButton("Batal", null)
+                        .setNegativeButton(getString(R.string.action_cancel), null)
                         .show();
             }
 
@@ -2694,26 +2568,113 @@ public class WorkshopPOSFragment extends Fragment
         if (cartManager == null || item.id <= 0) return;
 
         String name = safeText(item.name, "Package #" + item.id);
-        CartItem existing = findExistingServicePackageCartItem(item.id);
-        if (existing != null) {
-            cartManager.setQtyByCartKey(existing.cartKey, existing.qty + 1);
-        } else {
-            CartItem cartItem = new CartItem();
-            cartItem.productId = item.id;
-            cartItem.servicePackageId = item.id;
-            cartItem.shopId = sessionManager != null ? sessionManager.getShopId() : 0;
-            cartItem.name = name;
-            cartItem.price = parseMoney(item.price);
-            cartItem.imageUrl = "";
-            cartItem.qty = 1;
-            cartItem.orderType = "";
-            cartItem.itemType = CartItem.ITEM_TYPE_SERVICE;
-            cartManager.add(cartItem);
+
+        if (!item.isActive) {
+            // openServicePackagePicker() already filters inactive packages
+            // out of the list, so this only fires for a package that went
+            // inactive between opening the dialog and tapping it - the
+            // authoritative rejection still happens server-side at
+            // checkout regardless (an inactive package's product is kept
+            // is_active=false in lockstep - see sync_service_package_
+            // product), this is just an immediate, clearer message.
+            Toast.makeText(requireContext(), getString(R.string.workshop_service_package_inactive, name), Toast.LENGTH_LONG).show();
+            return;
         }
+
+        if (item.productId == null || item.productId <= 0) {
+            // The package has no linked sellable product yet - an old
+            // cached response, a package created before the one-time
+            // backfill ran, or a sync that hasn't completed. Never falls
+            // back to sending service_package_id in its place - the
+            // server has nowhere to put that on OrderItem (see the
+            // saleability audit); the only fix is a real product_id.
+            showServicePackageMissingProduct(name);
+            return;
+        }
+
+        CartItem cartItem = new CartItem();
+        cartItem.productId = item.productId;
+        // Metadata only - identifies which package this line came from
+        // for receipt/analytics purposes. The checkout payload always
+        // sends "product": productId, never service_package_id (see
+        // buildOrderPayload's item-building loop) - selling still goes
+        // through the exact same product-based OrderItem path as any
+        // other item, unchanged.
+        cartItem.servicePackageId = item.id;
+        cartItem.shopId = sessionManager != null ? sessionManager.getShopId() : 0;
+        cartItem.name = name;
+        // The price shown/held locally is for display only - the server
+        // always resolves the authoritative sale price itself from the
+        // linked product's current sell_price at checkout (see
+        // OrderItemSerializer.validate() on the backend) and ignores
+        // whatever price this cart item carries.
+        cartItem.setPrice(Money.of(item.price));
+        cartItem.imageUrl = "";
+        cartItem.qty = 1;
+        cartItem.orderType = "";
+        cartItem.itemType = CartItem.ITEM_TYPE_SERVICE;
+        cartItem.refreshCartKey();
+        cartManager.add(cartItem);
 
         Toast.makeText(requireContext(), name + " ditambahkan", Toast.LENGTH_SHORT).show();
         loadCartFromManager();
         persistWorkshopCartToActiveDraft();
+    }
+
+    private void showServicePackageMissingProduct(@NonNull String name) {
+        if (!isAdded()) return;
+
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                .setTitle(getString(R.string.workshop_service_package_title))
+                .setMessage(getString(R.string.workshop_service_package_missing_product, name))
+                .setPositiveButton(getString(R.string.action_close), null)
+                .show();
+    }
+
+    /**
+     * Menjelaskan kenapa paket servis belum bisa dijual, dan menawarkan jalan
+     * keluar yang benar-benar bekerja hari ini.
+     *
+     * @param cartKey bila bukan null, paketnya sudah telanjur ada di keranjang
+     *                (mis. dari draf lama) dan bisa dihapus dari dialog ini
+     */
+    private void showServicePackageUnsupported(@NonNull String name, @Nullable String cartKey) {
+        if (!isAdded()) return;
+
+        androidx.appcompat.app.AlertDialog.Builder builder =
+                new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                        .setTitle(getString(R.string.workshop_service_package_title))
+                        .setMessage(getString(R.string.workshop_service_package_unsupported, name))
+                        .setPositiveButton(getString(R.string.action_close), null);
+
+        if (cartKey != null && !cartKey.trim().isEmpty() && cartManager != null) {
+            builder.setNegativeButton(getString(R.string.workshop_service_package_remove),
+                    (dialog, which) -> {
+                        cartManager.removeByCartKey(cartKey);
+                        loadCartFromManager();
+                        persistWorkshopCartToActiveDraft();
+                    });
+        }
+
+        builder.show();
+    }
+
+    /**
+     * Paket servis yang masih tersangkut di keranjang tanpa product_id
+     * yang valid, bila ada - satu-satunya bentuk yang benar-benar tidak
+     * bisa dijual (peninggalan draf lama dari sebelum fitur ini ada).
+     * Sebuah paket dengan servicePackageId &gt; 0 TAPI productId valid
+     * (dibuat lewat addServicePackageToCart() sejak perbaikan ini) sah
+     * untuk checkout seperti item lain - method ini sengaja tidak
+     * memakai isServicePackage() sendirian, supaya tidak ikut menghadang
+     * paket yang justru sudah benar.
+     */
+    @Nullable
+    private WorkshopCartItem firstServicePackageInCart() {
+        for (WorkshopCartItem item : cartItems) {
+            if (item != null && item.isServicePackage() && item.getProductId() <= 0) return item;
+        }
+        return null;
     }
 
     @NonNull
@@ -3017,7 +2978,7 @@ public class WorkshopPOSFragment extends Fragment
 
         String token = sessionManager.getToken();
         if (token == null || token.trim().isEmpty()) {
-            Toast.makeText(requireContext(), "Token login tidak ditemukan", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), getString(R.string.error_session_expired), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -3124,6 +3085,15 @@ public class WorkshopPOSFragment extends Fragment
     }
 
     private void openCheckoutDialog() {
+        // Draf yang disimpan sebelum penjagaan di atas ada masih bisa memuat
+        // paket servis. Menghadangnya di sini menghemat seluruh pengisian
+        // dialog pembayaran yang ujungnya pasti ditolak server.
+        WorkshopCartItem stuckPackage = firstServicePackageInCart();
+        if (stuckPackage != null) {
+            showServicePackageUnsupported(stuckPackage.getName(), stuckPackage.getCartKey());
+            return;
+        }
+
         double total = getCartGrandTotal();
 
         boolean needTable = false;
@@ -3206,7 +3176,7 @@ public class WorkshopPOSFragment extends Fragment
         Context appCtx = requireContext().getApplicationContext();
         String token = sessionManager.getToken();
         if (token == null || token.trim().isEmpty()) {
-            Toast.makeText(requireContext(), "Token login tidak ditemukan", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), getString(R.string.error_session_expired), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -3542,15 +3512,16 @@ public class WorkshopPOSFragment extends Fragment
                     + ", quantity=" + item.getQuantity()
                     + ", price=" + item.getPrice());
 
+            // Standard shape for every item, service packages included -
+            // a package's cart item always carries a real productId by
+            // the time it can reach checkout (see addServicePackageToCart
+            // and firstServicePackageInCart's guard above). No separate
+            // service_package_id field is sent: the backend's OrderItem
+            // has nowhere to put it, and selling a package is, by design,
+            // indistinguishable from selling any other product-backed
+            // item once it's in the cart.
             JSONObject itemObj = new JSONObject();
-            if (item.isServicePackage()) {
-                itemObj.put("product", JSONObject.NULL);
-                itemObj.put("service_package_id", item.getServicePackageId() > 0
-                        ? item.getServicePackageId()
-                        : item.getProductId());
-            } else {
-                itemObj.put("product", item.getProductId());
-            }
+            itemObj.put("product", item.getProductId());
             itemObj.put("item_type", backendItemType);
             itemObj.put("name", item.getName());
             itemObj.put("quantity", item.getQuantity());
@@ -3890,7 +3861,7 @@ public class WorkshopPOSFragment extends Fragment
         AlertDialog dialog = new AlertDialog.Builder(requireContext())
                 .setMessage("Transaction saved, but receipt failed to print. Retry print?")
                 .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton("Retry", null)
+                .setPositiveButton(getString(R.string.action_retry), null)
                 .show();
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
             v.setEnabled(false);

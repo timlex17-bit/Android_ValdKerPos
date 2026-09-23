@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ukuran kasir untuk kelompok lebar layar w1400dp. -->
+<resources>
+
+    <dimen name="pos_gutter">300dp</dimen>
+
+    <dimen name="pos_workshop_panel_width">340dp</dimen>
+</resources>

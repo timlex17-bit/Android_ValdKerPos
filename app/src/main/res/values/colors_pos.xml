@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Warna layar kasir - implementasi 4, "modern & berwarna".
+
+  SEMUA nama berawalan pos_ dan tidak satu pun token global disentuh.
+  brand_primary, radius_dialog, app_bg dan kawan-kawannya tetap seperti
+  semula, jadi dashboard, laporan, dan setiap dialog di luar kasir tidak ikut
+  berubah warna.
+
+  WARNA SEBAGAI PENANDA, BUKAN HIASAN
+
+  Tiap jenis barang punya satu warna tetap dan memakainya di SETIAP tempat ia
+  muncul - ubin ikon di baris keranjang, kartu total, tombol tambah, ikon
+  kelompok:
+
+      biru   #2F6FEB  Servisu, dan aksi memindai
+      oranye #E8700F  Peca, dan makanan di kasir restoran
+      hijau  #0F9A63  Produtu
+
+  Konsistensi itu yang membuat warnanya berguna. Kasir bengkel membaca nota
+  campuran puluhan kali sehari; kalau baris servis selalu biru dan suku cadang
+  selalu oranye, matanya memisahkan keduanya tanpa membaca satu huruf pun.
+  Warna yang dipilih sekadar "biar cerah" tidak melakukan itu - ia hanya
+  menambah kebisingan.
+
+  Tiap keluarga punya dua nilai: warna penuh untuk ikon dan teks, dan warna
+  pucatnya untuk latar ubin. Pasangan itu datang dari mockup apa adanya.
+-->
+<resources>
+
+    <!-- ============ Ground & tinta ============ -->
+
+    <!--
+      Latar aplikasi bukan putih dan bukan abu netral, melainkan lavender
+      sangat pucat. Ia menempatkan kartu putih di atasnya tanpa perlu garis:
+      bedanya cukup untuk terlihat, terlalu kecil untuk mengganggu.
+    -->
+    <color name="pos_ground">#F6F4FB</color>
+    <color name="pos_card">#FFFFFF</color>
+
+    <color name="pos_ink">#201E1D</color>
+    <color name="pos_on_ink">#FFFFFF</color>
+
+    <!-- Teks kedua dan ketiga. -->
+    <color name="pos_muted">#6C6679</color>
+    <color name="pos_faint">#8A8398</color>
+
+    <!-- Latar chip netral dan garis pemisah di DALAM kartu. -->
+    <color name="pos_chip_bg">#F3F0FA</color>
+    <color name="pos_divider">#F0EDF5</color>
+
+    <color name="pos_neutral_100">#F6F4FB</color>
+    <color name="pos_neutral_200">#EFEAF7</color>
+    <color name="pos_neutral_300">#E6E1EF</color>
+    <color name="pos_neutral_600">#8A8398</color>
+    <color name="pos_neutral_700">#6C6679</color>
+
+    <!-- ============ Aksen merek ============ -->
+
+    <color name="pos_accent">@color/brand_primary</color>
+    <color name="pos_accent_pressed">#4E0399</color>
+    <color name="pos_accent_deep">#3C0375</color>
+    <color name="pos_accent_tint">#F1E8FD</color>
+    <color name="pos_accent_tint_pressed">#E3D1FB</color>
+    <color name="pos_on_accent">#FFFFFF</color>
+
+    <!-- Header ungu dan garis putus-putus tombol tambah bon. -->
+    <color name="pos_header">@color/brand_primary</color>
+    <color name="pos_header_tile">#33FFFFFF</color>
+    <color name="pos_header_meta">#CCFFFFFF</color>
+    <color name="pos_dashed">#BB80F4</color>
+
+    <!-- ============ Keluarga warna penanda ============ -->
+
+    <!-- Biru: Servisu, dan aksi memindai. -->
+    <color name="pos_blue">#2F6FEB</color>
+    <color name="pos_blue_tint">#E6EEFD</color>
+    <color name="pos_blue_tint_pressed">#D3E1FB</color>
+    <color name="pos_blue_deep">#1B3F8A</color>
+
+    <!-- Oranye: Peca, dan makanan di kasir restoran. -->
+    <color name="pos_orange">#E8700F</color>
+    <color name="pos_orange_mid">#C45D0B</color>
+    <color name="pos_orange_tint">#FDEEDD</color>
+    <color name="pos_orange_tint_pressed">#FBDFC0</color>
+    <color name="pos_orange_deep">#7A3A06</color>
+
+    <!-- Hijau: Produtu, dan penanda jumlah item di bilah total. -->
+    <color name="pos_green">#0F9A63</color>
+    <color name="pos_green_tint">#DDF4EA</color>
+    <color name="pos_green_tint_pressed">#C7EDDB</color>
+    <color name="pos_green_deep">#0A5C3B</color>
+
+    <!-- Dua warna sisanya dipakai foto produk bergiliran dan aksi Retornu. -->
+    <color name="pos_pink">#D93A73</color>
+    <color name="pos_pink_tint">#FCE4EC</color>
+    <color name="pos_teal">#0B93A8</color>
+    <color name="pos_teal_tint">#DDF3F6</color>
+
+    <!-- Titik hijau pada chip bon aktif: bon ini yang sedang diisi. -->
+    <color name="pos_dot_active">#7CE3B0</color>
+
+    <!-- ============ Keadaan mati ============ -->
+
+    <color name="pos_disabled_bg">#E6E1EF</color>
+    <color name="pos_disabled_fg">#8A8398</color>
+</resources>

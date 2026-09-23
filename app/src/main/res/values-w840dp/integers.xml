@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Jumlah kolom grid untuk lebar layar >= 840dp.
+
+  Dikunci pada LEBAR TERSEDIA (w840dp), bukan lebar terkecil (sw600dp).
+  Keduanya terlihat mirip, tapi urutan pemilihan sumber daya Android menaruh
+  smallest-width DI ATAS available-width: selama values-sw600dp/ masih memuat
+  nama ini, tablet 13 inci akan terkunci pada angka yang ditulis untuk tablet
+  7 inci, dan menambah values-w1400dp/ tidak akan berpengaruh sama sekali.
+  Karena itu nama ini sengaja tidak ada di values-sw600dp/.
+
+  Lebar tersedia juga yang benar secara makna: yang menentukan berapa kartu
+  muat berjajar adalah lebar layar saat ini, bukan lebar sisi terpendeknya.
+-->
+<resources>
+    <integer name="dashboard_grid_span">4</integer>
+    <integer name="product_grid_span">4</integer>
+</resources>

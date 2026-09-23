@@ -1,834 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  POS bengkel.
+  4c - Kasir bengkel, ponsel yang dimiringkan.
 
-  Akar layout dibungkus LinearLayout dengan strip ungu setinggi bilah status di
-  atasnya. Sebelumnya akar ConstraintLayout berlatar #F6F7FB langsung menempel
-  ke tepi atas layar dan fragment hanya menambahkan tinggi bilah status sebagai
-  padding; warna ungu di belakang bilah status datang dari
-  window.setStatusBarColor, yang sejak targetSdk 36 diabaikan Android 15+.
-  Hasilnya di perangkat baru: ikon bilah status yang sengaja dibuat terang
-  berada di atas latar abu-abu sangat muda.
+  Memakai <include> yang sama persis dengan potret - header, badan, dan lembar
+  total adalah berkas yang sama - hanya disusun dua kolom.
+
+  MENGAPA TIDAK DITUMPUK SEPERTI POTRET
+
+  Dalam lanskap tinggi layar ponsel tinggal sekitar 360dp. Kepala berikut kartu
+  kendaraannya memakan sekitar 130dp dan lembar total sekitar 170dp, sehingga
+  yang tersisa untuk daftar barang - satu-satunya bagian yang benar-benar
+  dikerjakan kasir - hanya sekitar 60dp, yaitu kurang dari dua baris. Layarnya
+  tidak rusak, semuanya masih bisa digulir, tapi ruang kerjanya tinggal sepotong
+  pita tipis.
+
+  Dengan lembar total dipindah ke samping, badan mendapat hampir seluruh sisa
+  tinggi - sekitar 230dp, hampir empat kali lipat - dan total berikut tombol
+  bayarnya tetap terlihat sepanjang waktu.
+
+  BERKAS INI JUGA DIPAKAI TABLET YANG MENDATAR
+
+  Tidak ada varian layout-sw600dp untuk kasir bengkel, dan aturan
+  "smallest-width mengalahkan orientasi" hanya memilih di antara varian yang
+  ADA. Karena satu-satunya varian mendatar adalah berkas ini, tablet 10 dan 13
+  inci yang dipegang mendatar ikut memakainya - dan memang seharusnya begitu:
+  susunan dua kolom justru paling masuk akal di layar selebar itu.
+
+  Konsekuensinya kolom kanan harus tahan pada lebar 220dp maupun 320dp, dan
+  lembar total di dalamnya tidak boleh memakai pias selebar pos_gutter -
+  lihat catatan di view_workshop_bottom.xml.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/rootWorkshopPos"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/app_bg"
+    android:background="@color/pos_ground"
     android:orientation="vertical">
 
-    <View
-        android:id="@+id/statusBarScrim"
+    <include layout="@layout/view_workshop_header" />
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="@color/status_bar_brand" />
+        android:layout_weight="1"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-    android:id="@+id/workshopContent"
-    android:layout_width="match_parent"
-    android:layout_height="0dp"
-    android:layout_weight="1"
-    android:background="@color/app_bg"
-    android:clipToPadding="false"
-    android:paddingStart="6dp"
-    android:paddingTop="6dp"
-    android:paddingEnd="6dp"
-    android:paddingBottom="6dp">
-
-
-    <LinearLayout
-        android:id="@+id/leftPanel"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:orientation="vertical"
-        android:paddingEnd="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/layoutItemsContainer"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_default="percent"
-        app:layout_constraintWidth_percent="0.42">
-
-        <com.google.android.material.card.MaterialCardView
-
-            style="@style/Widget.Valora.PanelCard"
-            android:id="@+id/cardWorkshopHeader"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:backgroundTint="#FFFFFF">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingStart="@dimen/workspace_card_padding"
-                android:paddingTop="@dimen/workspace_card_padding"
-                android:paddingEnd="@dimen/workspace_card_padding"
-                android:paddingBottom="@dimen/workspace_card_padding">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:minHeight="@dimen/workshop_header_row_min_height"
-                    android:orientation="horizontal">
-
-                    <com.google.android.material.card.MaterialCardView
-
-                        style="@style/Widget.Valora.PanelCard"
-                        android:layout_width="@dimen/workshop_avatar_size"
-                        android:layout_height="@dimen/workshop_avatar_size"
-                        android:layout_marginEnd="7dp"
-                        android:backgroundTint="#1F2937">
-
-                        <ImageView
-                            android:id="@+id/imgLogo"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:contentDescription="@string/cd_shop_logo"
-                            android:scaleType="centerCrop"
-                            android:src="@drawable/bg_logo_circle" />
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:paddingEnd="5dp">
-
-                        <TextView
-                            android:id="@+id/tvBrand"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:text="@string/workshop_default_title"
-                            android:textColor="@color/valora_ink"
-                            android:textSize="17sp"
-                            android:textStyle="bold"
-                            tools:text="Valora POS Workshop" />
-
-                        <TextView
-                            android:id="@+id/tvShopAddress"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:text="@string/workshop_default_address"
-                            android:textColor="#98A2B3"
-                            android:textSize="13sp"
-                            tools:text="Becora, Dili" />
-                    </LinearLayout>
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipAddDraft"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="@dimen/workshop_draft_add_chip_size"
-                        android:layout_height="@dimen/workshop_draft_add_chip_size"
-                        android:gravity="center"
-                        android:minWidth="@dimen/workshop_draft_add_chip_size"
-                        android:text="@string/draft_add"
-                        android:textAlignment="center"
-                        android:textColor="#FFFFFF"
-                        android:textSize="15sp"
-                        android:textStyle="bold"
-                        app:checkedIconVisible="false"
-                        app:chipBackgroundColor="@color/brand_primary"
-                        app:chipCornerRadius="15dp"
-                        app:chipMinHeight="30dp"
-                        app:chipStrokeWidth="0dp"
-                        app:ensureMinTouchTargetSize="false" />
-                </LinearLayout>
-
-                <HorizontalScrollView
-                    android:id="@+id/draftChipScroll"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="3dp"
-                    android:clipToPadding="false"
-                    android:fillViewport="false"
-                    android:overScrollMode="ifContentScrolls"
-                    android:scrollbars="none">
-
-                    <com.google.android.material.chip.ChipGroup
-                        android:id="@+id/chipGroupDrafts"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:chipSpacingHorizontal="4dp"
-                        app:chipSpacingVertical="0dp"
-                        app:singleLine="true"
-                        app:singleSelection="true">
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipDraftA"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:checked="true"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:minHeight="@dimen/workshop_draft_chip_min_height"
-                            android:text="@string/draft_a_preview"
-                            android:textColor="@color/brand_on_tint"
-                            android:textSize="11sp"
-                            android:textStyle="bold"
-                            app:checkedIconVisible="false"
-                            app:chipBackgroundColor="@color/brand_tint"
-                            app:chipCornerRadius="15dp"
-                            app:chipMinHeight="30dp"
-                            app:chipStrokeColor="@color/brand_stroke"
-                            app:chipStrokeWidth="1dp"
-                            app:ensureMinTouchTargetSize="false" />
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipDraftB"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:minHeight="@dimen/workshop_draft_chip_min_height"
-                            android:text="@string/draft_b_preview"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="11sp"
-                            android:textStyle="bold"
-                            app:checkedIconVisible="false"
-                            app:chipBackgroundColor="#FFFFFF"
-                            app:chipCornerRadius="15dp"
-                            app:chipMinHeight="30dp"
-                            app:chipStrokeColor="@color/stroke"
-                            app:chipStrokeWidth="1dp"
-                            app:ensureMinTouchTargetSize="false" />
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipDraftC"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:ellipsize="end"
-                            android:maxLines="1"
-                            android:minHeight="@dimen/workshop_draft_chip_min_height"
-                            android:text="@string/draft_walkin_preview"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="11sp"
-                            android:textStyle="bold"
-                            app:checkedIconVisible="false"
-                            app:chipBackgroundColor="#FFFFFF"
-                            app:chipCornerRadius="15dp"
-                            app:chipMinHeight="30dp"
-                            app:chipStrokeColor="@color/stroke"
-                            app:chipStrokeWidth="1dp"
-                            app:ensureMinTouchTargetSize="false" />
-                    </com.google.android.material.chip.ChipGroup>
-                </HorizontalScrollView>
-
-                <LinearLayout
-                    android:id="@+id/layoutWorkshopSummary"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minHeight="@dimen/workshop_summary_row_min_height"
-                    android:layout_marginTop="3dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/txtWorkshopJobInfoLabel"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:text="@string/label_workshop_job_info"
-                        android:textAllCaps="true"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-                <!--
-                  "Ganti" duduk di baris NILAI, bukan baris label.
-
-                  Sebelumnya ia sebaris dengan "PELANGGAN & KENDARAAN" - label
-                  kecil huruf kapital - sehingga tombolnya tampak sejajar
-                  dengan judul, bukan dengan hal yang diubahnya.
-
-                  letterSpacing nol: gaya TextButton bawaan Material membawa
-                  jarak huruf 0,089em yang memang untuk teks kapital, dan pada
-                  kata biasa jarak itu terbaca seperti huruf tercerai-berai.
-                  Itulah "teks Change terlihat aneh" yang dilaporkan. Tinggi
-                  sentuhnya dinaikkan ke ambang 48dp; sebelumnya 28dp.
-                -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:baselineAligned="false"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/txtCustomerName"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:minHeight="@dimen/workshop_summary_line_min_height"
-                        android:ellipsize="end"
-                        android:gravity="center_vertical"
-                        android:maxLines="1"
-                        android:text="@string/workshop_vehicle_not_selected"
-                        android:textColor="@color/valora_ink"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        tools:text="Walk-in Customer • Veikulu belum dipilih" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnSelectCustomer"
-                        style="@style/Widget.Material3.Button.TextButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:letterSpacing="0"
-                        android:maxLines="1"
-                        android:minWidth="@dimen/workshop_customer_button_min_width"
-                        android:minHeight="@dimen/touch_target_min"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
-                        android:text="@string/action_change"
-                        android:textAllCaps="false"
-                        android:textColor="@color/brand_primary"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        app:cornerRadius="@dimen/radius_surface_sm"
-                        app:rippleColor="@color/brand_tint" />
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/txtVehicleSummary"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minHeight="@dimen/workshop_summary_line_min_height"
-                    android:layout_marginTop="1dp"
-                    android:ellipsize="end"
-                    android:gravity="center_vertical"
-                    android:maxLines="1"
-                    android:visibility="gone"
-                    android:text="@string/workshop_vehicle_not_selected"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="11sp"
-                    android:textStyle="bold"
-                    tools:text="Veikulu: CAR - Toyota Hilux - B1234" />
-
-                <TextView
-                    android:id="@+id/txtWorkshopSummary"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minHeight="@dimen/workshop_summary_line_min_height"
-                    android:ellipsize="end"
-                    android:gravity="center_vertical"
-                    android:maxLines="1"
-                    android:visibility="gone"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <com.google.android.material.chip.ChipGroup
-                    android:id="@+id/layoutWorkshopChips"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:visibility="gone"
-                    app:chipSpacingHorizontal="4dp"
-                    app:chipSpacingVertical="1dp"
-                    app:singleLine="true"
-                    tools:visibility="visible">
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipMechanicSummary"
-                        style="@style/Widget.MaterialComponents.Chip.Action"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:minHeight="@dimen/workshop_status_chip_min_height"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="11sp"
-                        app:chipBackgroundColor="@color/surface_subtle"
-                        app:chipCornerRadius="11dp"
-                        app:chipMinHeight="22dp"
-                        app:chipStrokeColor="@color/stroke"
-                        app:chipStrokeWidth="1dp"
-                        app:ensureMinTouchTargetSize="false"
-                        tools:text="Mekanik: Antonio" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipWorkOrderSummary"
-                        style="@style/Widget.MaterialComponents.Chip.Action"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:minHeight="@dimen/workshop_status_chip_min_height"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="11sp"
-                        app:chipBackgroundColor="@color/surface_subtle"
-                        app:chipCornerRadius="11dp"
-                        app:chipMinHeight="22dp"
-                        app:chipStrokeColor="@color/stroke"
-                        app:chipStrokeWidth="1dp"
-                        app:ensureMinTouchTargetSize="false"
-                        tools:text="WO: WO-001" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipBookingSummary"
-                        style="@style/Widget.MaterialComponents.Chip.Action"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:minHeight="@dimen/workshop_status_chip_min_height"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="11sp"
-                        app:chipBackgroundColor="@color/surface_subtle"
-                        app:chipCornerRadius="11dp"
-                        app:chipMinHeight="22dp"
-                        app:chipStrokeColor="@color/stroke"
-                        app:chipStrokeWidth="1dp"
-                        app:ensureMinTouchTargetSize="false"
-                        tools:text="Rezerva: BK-001" />
-                </com.google.android.material.chip.ChipGroup>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <LinearLayout
-            android:id="@+id/layoutQuickStats"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="@dimen/workshop_stats_row_min_height"
-            android:layout_marginTop="5dp"
-            android:baselineAligned="false"
-            android:orientation="horizontal"
-            android:weightSum="3">
-
-            <!--
-              Label di atas angka. Varian ini sempat menampilkan tiga angka
-              telanjang berdampingan - "$0.00  $0.00  $0.00" - tanpa satu kata
-              pun yang menyebutkan mana servis, mana suku cadang, mana produk.
-              Varian ponsel selalu punya labelnya; yang lebar kehilangannya
-              entah sejak kapan, dan tiga angka identik tanpa nama tidak bisa
-              dibaca siapa pun.
-            -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginEnd="4dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_card"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingStart="3dp"
-                android:paddingEnd="3dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:gravity="center"
-                    android:maxLines="1"
-                    android:text="@string/label_service"
-                    android:textColor="@color/valora_ink"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/txtServiceTotal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="1dp"
-                    android:ellipsize="end"
-                    android:gravity="center"
-                    android:maxLines="1"
-                    android:text="@string/amount_zero_usd"
-                    android:textColor="@color/brand_primary"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    tools:text="$40.99" />
-            </LinearLayout>
-
-            <!--
-              Label di atas angka. Varian ini sempat menampilkan tiga angka
-              telanjang berdampingan - "$0.00  $0.00  $0.00" - tanpa satu kata
-              pun yang menyebutkan mana servis, mana suku cadang, mana produk.
-              Varian ponsel selalu punya labelnya; yang lebar kehilangannya
-              entah sejak kapan, dan tiga angka identik tanpa nama tidak bisa
-              dibaca siapa pun.
-            -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginEnd="4dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_card"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingStart="3dp"
-                android:paddingEnd="3dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:gravity="center"
-                    android:maxLines="1"
-                    android:text="@string/label_part"
-                    android:textColor="@color/valora_ink"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/txtPartsTotal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="1dp"
-                    android:ellipsize="end"
-                    android:gravity="center"
-                    android:maxLines="1"
-                    android:text="@string/amount_zero_usd"
-                    android:textColor="@color/brand_primary"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    tools:text="$40.99" />
-            </LinearLayout>
-
-            <!--
-              Label di atas angka. Varian ini sempat menampilkan tiga angka
-              telanjang berdampingan - "$0.00  $0.00  $0.00" - tanpa satu kata
-              pun yang menyebutkan mana servis, mana suku cadang, mana produk.
-              Varian ponsel selalu punya labelnya; yang lebar kehilangannya
-              entah sejak kapan, dan tiga angka identik tanpa nama tidak bisa
-              dibaca siapa pun.
-            -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@drawable/bg_card"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingStart="3dp"
-                android:paddingEnd="3dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:gravity="center"
-                    android:maxLines="1"
-                    android:text="@string/label_product"
-                    android:textColor="@color/valora_ink"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/txtProductTotal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="1dp"
-                    android:ellipsize="end"
-                    android:gravity="center"
-                    android:maxLines="1"
-                    android:text="@string/amount_zero_usd"
-                    android:textColor="@color/brand_primary"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    tools:text="$40.99" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <com.google.android.material.card.MaterialCardView
-
-            style="@style/Widget.Valora.PanelCard"
-            android:id="@+id/layoutBottomPanel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:backgroundTint="#FFFFFF">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="7dp">
-
-                <LinearLayout
-                    android:id="@+id/layoutCheckoutSummary"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minHeight="@dimen/workshop_checkout_row_min_height"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/txtGrandTotal"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1.15"
-                        android:autoSizeMaxTextSize="20sp"
-                        android:autoSizeMinTextSize="13sp"
-                        android:autoSizeStepGranularity="1sp"
-                        android:autoSizeTextType="uniform"
-                        android:ellipsize="end"
-                        android:gravity="center_vertical"
-                        android:maxLines="1"
-                        android:text="@string/amount_zero_usd"
-                        android:textColor="@color/brand_primary"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        tools:text="$1,240.99" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnCheckout"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0.85"
-                        android:ellipsize="end"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:maxLines="1"
-                        android:minHeight="@dimen/workshop_checkout_button_min_height"
-                        android:paddingStart="6dp"
-                        android:paddingEnd="6dp"
-                        android:text="@string/action_checkout"
-                        android:textAllCaps="false"
-                        android:textColor="#FFFFFF"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        app:backgroundTint="@color/brand_primary"
-                        app:cornerRadius="14dp"
-                        app:elevation="0dp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/layoutWorkshopActions"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minHeight="@dimen/workshop_action_button_min_height"
-                    android:layout_marginTop="5dp"
-                    android:orientation="horizontal"
-                    android:weightSum="4">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnAddPackage"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:minHeight="@dimen/workshop_action_button_min_height"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="8dp"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:text="@string/label_package"
-                        android:textAllCaps="false"
-                        android:textColor="@color/brand_primary"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        app:backgroundTint="@color/brand_tint_soft"
-                        app:cornerRadius="12dp"
-                        app:strokeColor="@color/brand_stroke"
-                        app:strokeWidth="1dp" app:autoSizeTextType="uniform"
-                        app:autoSizeMinTextSize="9sp"
-                        app:autoSizeMaxTextSize="11sp"
-                        app:autoSizeStepGranularity="1sp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnAddService"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_marginStart="4dp"
-                        android:layout_weight="1"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:minHeight="@dimen/workshop_action_button_min_height"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="8dp"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:text="@string/label_service"
-                        android:textAllCaps="false"
-                        android:textColor="@color/brand_primary"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        app:backgroundTint="@color/brand_tint_soft"
-                        app:cornerRadius="12dp"
-                        app:strokeColor="@color/brand_stroke"
-                        app:strokeWidth="1dp" app:autoSizeTextType="uniform"
-                        app:autoSizeMinTextSize="9sp"
-                        app:autoSizeMaxTextSize="11sp"
-                        app:autoSizeStepGranularity="1sp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnAddPart"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_marginStart="4dp"
-                        android:layout_weight="1"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:minHeight="@dimen/workshop_action_button_min_height"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="8dp"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:text="@string/label_part"
-                        android:textAllCaps="false"
-                        android:textColor="@color/brand_primary"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        app:backgroundTint="@color/brand_tint_soft"
-                        app:cornerRadius="12dp"
-                        app:strokeColor="@color/brand_stroke"
-                        app:strokeWidth="1dp" app:autoSizeTextType="uniform"
-                        app:autoSizeMinTextSize="9sp"
-                        app:autoSizeMaxTextSize="11sp"
-                        app:autoSizeStepGranularity="1sp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnAddProduct"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_marginStart="4dp"
-                        android:layout_weight="1"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:minHeight="@dimen/workshop_action_button_min_height"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="8dp"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:text="@string/label_product"
-                        android:textAllCaps="false"
-                        android:textColor="@color/brand_primary"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        app:backgroundTint="@color/brand_tint_soft"
-                        app:cornerRadius="12dp"
-                        app:strokeColor="@color/brand_stroke"
-                        app:strokeWidth="1dp" app:autoSizeTextType="uniform"
-                        app:autoSizeMinTextSize="9sp"
-                        app:autoSizeMaxTextSize="11sp"
-                        app:autoSizeStepGranularity="1sp" />
-                </LinearLayout>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/layoutItemsContainer"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/leftPanel"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <TextView
-            android:id="@+id/txtItemsLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:text="@string/label_workshop_cart_items"
-            android:textColor="@color/valora_ink"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-
-        <com.google.android.material.card.MaterialCardView
-
-            style="@style/Widget.Valora.PanelCard"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:backgroundTint="#FFFFFF">
+            android:clipToPadding="false"
+            android:fillViewport="true"
+            android:scrollbars="none">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerWorkspace"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clipToPadding="false"
-                android:nestedScrollingEnabled="true"
-                android:overScrollMode="ifContentScrolls"
-                android:paddingStart="8dp"
-                android:paddingTop="8dp"
-                android:paddingEnd="8dp"
-                android:paddingBottom="8dp"
-                android:scrollbars="vertical"
-                tools:listitem="@layout/item_product_list" />
+            <include layout="@layout/view_workshop_body" />
+        </androidx.core.widget.NestedScrollView>
 
-            <!--
-              Keadaan kosong. Kolom ini yang paling luas di layar kasir
-              bengkel, dan saat bon baru dimulai ia kosong seluruhnya - tanpa
-              satu kata pun yang memberi tahu apa yang harus ditekan
-              berikutnya, padahal tombolnya ada tepat di bawah kolom sebelah.
-              WorkshopPOSFragment yang menyalakan/mematikannya.
-            -->
+        <!--
+          Kolom kanan. Strip tambah yang di potret berjajar empat kini
+          menyempit jadi kolom selebar pos_workshop_panel_width; labelnya boleh
+          melipat jadi dua baris - Widget.Pos.AddCell memakai wrap_content
+          berikut minHeight, jadi selnya ikut memanjang alih-alih memotong
+          hurufnya.
+
+          Kolomnya MENGGULIR. Tanpa itu, LinearLayout mengukur lembar total -
+          yang tingginya mengikuti isi - dengan AT_MOST sebesar sisa ruang,
+          dan pada ponsel lanskap dengan skala huruf 1,3x sisa itu lebih kecil
+          daripada yang dibutuhkan: tombol bayarnya tergencet sampai setinggi
+          tujuh dp dan hurufnya terpotong. Digulir, ia selalu utuh.
+
+          fillViewport membuat isinya tetap menempel ke dasar kolom selama
+          masih muat, lewat Space berbobot di atasnya.
+        -->
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="@dimen/pos_workshop_panel_width"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:minWidth="@dimen/pos_workshop_panel_width"
+            android:scrollbars="none">
+
             <LinearLayout
-                android:id="@+id/workshopItemsEmpty"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp"
-                android:visibility="gone"
-                tools:visibility="visible">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-                <ImageView
-                    android:layout_width="@dimen/cart_empty_icon_size"
-                    android:layout_height="@dimen/cart_empty_icon_size"
-                    android:alpha="0.28"
-                    android:contentDescription="@null"
-                    android:src="@drawable/ic_shopping_cart"
-                    app:tint="@color/text_secondary" />
-
-                <TextView
+                <Space
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:gravity="center"
-                    android:text="@string/workshop_items_empty_title"
-                    android:textColor="@color/text_primary"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:gravity="center"
-                    android:lineSpacingExtra="2dp"
-                    android:text="@string/workshop_items_empty_message"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="13sp" />
+                <include layout="@layout/view_workshop_bottom" />
             </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+        </androidx.core.widget.NestedScrollView>
     </LinearLayout>
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </LinearLayout>

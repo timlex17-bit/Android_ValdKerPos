@@ -67,7 +67,7 @@ public class VehicleInputDialog extends DialogFragment {
 
                 .setView(v)
 
-                .setPositiveButton("Save",(d,i)->{
+                .setPositiveButton(getString(R.string.action_save),(d,i)->{
 
                     if(listener!=null){
 
@@ -85,7 +85,7 @@ public class VehicleInputDialog extends DialogFragment {
 
                 })
 
-                .setNegativeButton("Cancel",null)
+                .setNegativeButton(getString(R.string.action_cancel),null)
 
                 .create();
 
